@@ -48,7 +48,7 @@ const LoginForm = () => {
           </div>
           <CardTitle className="text-2xl text-center">Iniciar sesión</CardTitle>
           <CardDescription className="text-center">
-            Ingrese sus datos para acceder al sistema
+            Acceda al Sistema ERP de Multilimp
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -88,7 +88,8 @@ const LoginForm = () => {
             </Button>
             <div className="text-center text-sm text-gray-500 mt-4">
               <p>Credenciales de demostración:</p>
-              <p>admin@multilimp.com / admin123</p>
+              <p>Admin: admin@multilimp.com / admin123</p>
+              <p>Usuario: usuario@multilimp.com / user123</p>
             </div>
           </form>
         </CardContent>

@@ -8,6 +8,7 @@ interface User {
   email: string;
   role: "admin" | "user" | "manager";
   avatar?: string;
+  permissions: string[];
 }
 
 interface AuthState {
@@ -17,7 +18,52 @@ interface AuthState {
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   setLoading: (loading: boolean) => void;
+  hasPermission: (permission: string) => boolean;
 }
+
+// Permissions by role
+const ROLE_PERMISSIONS = {
+  admin: [
+    "view_dashboard",
+    "manage_users",
+    "manage_companies",
+    "manage_clients",
+    "manage_suppliers",
+    "manage_transports",
+    "manage_quotes",
+    "manage_sales",
+    "manage_orders",
+    "manage_treasury",
+    "manage_tracking",
+    "manage_billing",
+    "manage_collections",
+    "view_reports",
+  ],
+  user: [
+    "view_dashboard",
+    "manage_companies",
+    "manage_clients",
+    "manage_suppliers",
+    "manage_transports",
+    "manage_quotes",
+    "manage_sales",
+    "manage_orders",
+    "manage_treasury",
+    "manage_tracking",
+    "manage_billing",
+    "manage_collections",
+    "view_reports",
+  ],
+  manager: [
+    "view_dashboard",
+    "manage_clients",
+    "manage_suppliers",
+    "manage_quotes",
+    "manage_sales",
+    "manage_orders",
+    "view_reports",
+  ],
+};
 
 // Mock user data
 const MOCK_USERS = [
@@ -28,6 +74,7 @@ const MOCK_USERS = [
     password: "admin123",
     role: "admin" as const,
     avatar: "",
+    permissions: ROLE_PERMISSIONS.admin,
   },
   {
     id: "2",
@@ -36,12 +83,13 @@ const MOCK_USERS = [
     password: "user123",
     role: "user" as const,
     avatar: "",
+    permissions: ROLE_PERMISSIONS.user,
   },
 ];
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
       isAuthenticated: false,
       isLoading: true,
@@ -74,6 +122,11 @@ export const useAuthStore = create<AuthState>()(
           isAuthenticated: false 
         });
       },
+      hasPermission: (permission) => {
+        const { user } = get();
+        if (!user) return false;
+        return user.permissions.includes(permission);
+      }
     }),
     {
       name: "multilimp-auth-storage",

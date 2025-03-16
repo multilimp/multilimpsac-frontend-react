@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -28,6 +29,9 @@ const SupplierPage = lazy(() => import("./pages/SupplierPage"));
 const TransportPage = lazy(() => import("./pages/TransportPage"));
 const UserPage = lazy(() => import("./pages/UserPage"));
 const ModulePage = lazy(() => import("./pages/ModulePage"));
+const ProfilePage = lazy(() => import("./pages/ProfilePage"));
+const SettingsPage = lazy(() => import("./pages/SettingsPage"));
+const SalesReportPage = lazy(() => import("./pages/reports/SalesReportPage"));
 
 // Loading component
 const LoadingFallback = () => (
@@ -115,7 +119,7 @@ const App = () => {
                   } 
                 />
                 
-                {/* Operaciones */}
+                {/* Operaciones/Procesos */}
                 <Route 
                   path="/cotizaciones" 
                   element={
@@ -203,16 +207,66 @@ const App = () => {
                   } 
                 />
                 
-                {/* Informes */}
+                {/* Reportes */}
                 <Route 
-                  path="/reportes" 
+                  path="/reportes/ventas" 
+                  element={
+                    <RequireAuth>
+                      <SalesReportPage />
+                    </RequireAuth>
+                  } 
+                />
+                <Route 
+                  path="/reportes/cobranzas" 
                   element={
                     <RequireAuth>
                       <ModulePage 
-                        title="Reportes" 
-                        description="Visualice los reportes del sistema" 
+                        title="Reporte de Cobranzas" 
+                        description="Visualice los reportes de cobranzas" 
+                        icon={<ReceiptText className="h-8 w-8 text-multilimp-green" />} 
+                      />
+                    </RequireAuth>
+                  } 
+                />
+                <Route 
+                  path="/reportes/entregas" 
+                  element={
+                    <RequireAuth>
+                      <ModulePage 
+                        title="Reporte de Entregas OC" 
+                        description="Visualice los reportes de entregas de órdenes de compra" 
+                        icon={<Package className="h-8 w-8 text-multilimp-green" />} 
+                      />
+                    </RequireAuth>
+                  } 
+                />
+                <Route 
+                  path="/reportes/ranking" 
+                  element={
+                    <RequireAuth>
+                      <ModulePage 
+                        title="Ranking" 
+                        description="Visualice el ranking de ventas y clientes" 
                         icon={<BookOpen className="h-8 w-8 text-multilimp-green" />} 
                       />
+                    </RequireAuth>
+                  } 
+                />
+                
+                {/* Perfil y Configuración */}
+                <Route 
+                  path="/perfil" 
+                  element={
+                    <RequireAuth>
+                      <ProfilePage />
+                    </RequireAuth>
+                  } 
+                />
+                <Route 
+                  path="/configuracion" 
+                  element={
+                    <RequireAuth>
+                      <SettingsPage />
                     </RequireAuth>
                   } 
                 />
