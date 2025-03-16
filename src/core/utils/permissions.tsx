@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useAuthStore } from "@/store/authStore";
 
@@ -13,9 +12,21 @@ export const RequirePermission: React.FC<RequirePermissionProps> = ({
   children,
   fallback = <AccessDenied />
 }) => {
-  const hasPermission = useAuthStore(state => state.hasPermission(permission));
+  // Primero obtenemos la función y el estado de carga
+  const hasPermissionFn = useAuthStore(state => state.hasPermission);
+  const isLoading = useAuthStore(state => state.isLoading);
+  
+  // Mostramos un loader mientras se está cargando
+  if (isLoading) {
+    return (
+      <div className="p-4">
+        <div className="animate-pulse text-multilimp-green">Cargando...</div>
+      </div>
+    );
+  }
 
-  if (!hasPermission) {
+  // Ahora llamamos a la función de forma segura
+  if (!hasPermissionFn(permission)) {
     return <>{fallback}</>;
   }
 

@@ -96,35 +96,36 @@ export const useAuthStore = create<AuthState>()(
       setLoading: (loading) => set({ isLoading: loading }),
       login: async (email, password) => {
         set({ isLoading: true });
-        
+
         // Simulate API call delay
         await new Promise(resolve => setTimeout(resolve, 1000));
-        
+
         const foundUser = MOCK_USERS.find(u => u.email === email && u.password === password);
-        
+
         if (!foundUser) {
           set({ isLoading: false });
           throw new Error("Credenciales incorrectas");
         }
-        
+
         // Remove password from user object
         const { password: _, ...userWithoutPassword } = foundUser;
-        
-        set({ 
+
+        set({
           user: userWithoutPassword,
           isAuthenticated: true,
-          isLoading: false 
+          isLoading: false
         });
       },
       logout: () => {
-        set({ 
+        set({
           user: null,
-          isAuthenticated: false 
+          isAuthenticated: false
         });
       },
       hasPermission: (permission) => {
         const { user } = get();
-        if (!user) return false;
+        // Protección contra null y undefined
+        if (!user || !user.permissions) return false;
         return user.permissions.includes(permission);
       }
     }),
