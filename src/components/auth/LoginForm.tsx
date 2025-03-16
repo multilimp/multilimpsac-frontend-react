@@ -5,14 +5,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 import Logo from "@/components/layout/Logo";
+import { useAuthStore } from "@/store/authStore";
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { login } = useAuth();
+  const login = useAuthStore(state => state.login);
+  const { toast } = useToast();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -21,9 +23,17 @@ const LoginForm = () => {
 
     try {
       await login(email, password);
+      toast({
+        title: "Inicio de sesión exitoso",
+        description: "Bienvenido al sistema ERP de Multilimp",
+      });
       navigate("/");
     } catch (error) {
-      console.error("Login error:", error);
+      toast({
+        variant: "destructive",
+        title: "Error de inicio de sesión",
+        description: error instanceof Error ? error.message : "Ocurrió un error",
+      });
     } finally {
       setIsSubmitting(false);
     }

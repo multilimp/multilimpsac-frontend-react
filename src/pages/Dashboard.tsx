@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import StatCard from "@/components/dashboard/StatCard";
 import DashboardChart from "@/components/dashboard/DashboardChart";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuthStore } from "@/store/authStore";
 
 // Mock data
 const salesData = [
@@ -37,7 +37,7 @@ const quotesData = [
 ];
 
 const Dashboard = () => {
-  const { user } = useAuth();
+  const user = useAuthStore(state => state.user);
 
   return (
     <DashboardLayout>

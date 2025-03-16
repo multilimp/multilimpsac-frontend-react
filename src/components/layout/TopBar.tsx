@@ -11,10 +11,23 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuthStore } from "@/store/authStore";
+import { useToast } from "@/hooks/use-toast";
 
 const TopBar = () => {
-  const { user, logout } = useAuth();
+  const { user, logout } = useAuthStore(state => ({
+    user: state.user,
+    logout: state.logout
+  }));
+  const { toast } = useToast();
+
+  const handleLogout = () => {
+    logout();
+    toast({
+      title: "Sesión cerrada",
+      description: "Has cerrado sesión correctamente",
+    });
+  };
 
   return (
     <div className="border-b bg-white p-4 shadow-sm">
@@ -54,7 +67,7 @@ const TopBar = () => {
               <DropdownMenuItem>Perfil</DropdownMenuItem>
               <DropdownMenuItem>Configuración</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={logout}>Cerrar Sesión</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout}>Cerrar Sesión</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

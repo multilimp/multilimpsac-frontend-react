@@ -1,24 +1,18 @@
 
 import React from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
 import { Sidebar, SidebarContent, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import SidebarNav from "./SidebarNav";
 import TopBar from "./TopBar";
+import { useAuthStore } from "@/store/authStore";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuth();
-  const navigate = useNavigate();
-
-  React.useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      navigate("/login");
-    }
-  }, [isAuthenticated, isLoading, navigate]);
+  const { isLoading } = useAuthStore(state => ({ 
+    isLoading: state.isLoading 
+  }));
 
   if (isLoading) {
     return (
@@ -26,10 +20,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         <div className="animate-pulse text-multilimp-green text-lg">Cargando...</div>
       </div>
     );
-  }
-
-  if (!isAuthenticated) {
-    return null;
   }
 
   return (
