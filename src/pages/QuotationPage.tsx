@@ -48,14 +48,25 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import QuotationForm from "@/components/quotations/QuotationForm";
 import QuotationList from "@/components/quotations/QuotationList";
 import { useAuthStore } from "@/store/authStore";
+import BreadcrumbNav from "@/components/layout/BreadcrumbNav";
 
 const QuotationPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>("list");
   const { user } = useAuthStore();
 
+  // Custom breadcrumb items for the Quotation page
+  const breadcrumbItems = [
+    {
+      label: "Cotizaciones",
+      path: "/cotizaciones",
+      isCurrentPage: true
+    }
+  ];
+
   return (
     <div className="container mx-auto py-6 space-y-6">
       <RequirePermission permission="manage_quotes">
+        <BreadcrumbNav items={breadcrumbItems} />
         <PageHeader 
           title="Gestión de Cotizaciones" 
           subtitle="Administre las cotizaciones para sus clientes"

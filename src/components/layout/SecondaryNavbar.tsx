@@ -15,6 +15,10 @@ interface SecondaryNavbarProps {
 }
 
 const SecondaryNavbar: React.FC<SecondaryNavbarProps> = ({ items, title }) => {
+  if (items.length === 0) {
+    return null;
+  }
+  
   return (
     <div className="bg-secondary/10 border-b mb-4 animate-fade-in">
       <div className="container mx-auto px-4">
