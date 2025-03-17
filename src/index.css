@@ -14,10 +14,10 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 152 40% 47%;
+    --primary: 210 50% 18%; /* Blue primary color #1B2B41 */
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 210 40% 96.1%;
+    --secondary: 152 40% 47%; /* Green secondary color #47A882 */
     --secondary-foreground: 222.2 47.4% 11.2%;
 
     --muted: 210 40% 96.1%;
@@ -35,13 +35,13 @@
 
     --radius: 0.5rem;
 
-    --sidebar-background: 214 41% 18%;
+    --sidebar-background: 210 50% 18%; /* Blue primary color #1B2B41 */
     --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 152 40% 47%;
+    --sidebar-primary: 152 40% 47%; /* Green secondary color #47A882 */
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 214 32% 25%;
+    --sidebar-accent: 210 32% 25%;
     --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 214 32% 25%;
+    --sidebar-border: 210 32% 25%;
     --sidebar-ring: 152 40% 47%;
   }
 
