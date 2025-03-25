@@ -1,69 +1,14 @@
 
 import React, { useState, useEffect, useMemo } from "react";
-import { ChevronDown, ChevronUp, FileDown, Loader, Columns3 } from "lucide-react";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { DataGridFilter } from "./DataGridFilter";
+import { Table } from "@/components/ui/table";
 import { DataGridPagination } from "./DataGridPagination";
-import { cn, formatDate } from "@/lib/utils";
+import { DataGridTableHead } from "./DataGridTableHead";
+import { DataGridHeader } from "./DataGridHeader";
+import { DataGridBody } from "./DataGridBody";
+import { generateCSV, downloadCSV } from "./utils";
+import { ColumnType, DataGridColumn, DataGridProps } from "./types";
 
-// Define the column types
-export type ColumnType = 'string' | 'number' | 'date' | 'boolean';
-
-// Column definition interface
-export interface DataGridColumn {
-  key: string;
-  name: string;
-  type: ColumnType;
-  sortable?: boolean;
-  filterable?: boolean;
-}
-
-// Main DataGrid props interface
-export interface DataGridProps<T> {
-  data: T[];
-  columns: DataGridColumn[];
-  loading?: boolean;
-  pageSize?: number;
-  onFilterChange?: (filters: Record<string, any>) => void;
-  onColumnToggle?: (columns: string[]) => void;
-  onRowClick?: (row: T) => void;
-  onDownload?: () => void;
-  onReload?: () => void;
-}
-
-function getValueByPath(obj: any, path: string) {
-  return path.split('.').reduce((prev, curr) => (prev ? prev[curr] : null), obj);
-}
-
-function formatCellValue(value: any, type: ColumnType): string {
-  if (value === null || value === undefined) return '';
-  
-  switch (type) {
-    case 'date':
-      return typeof value === 'string' ? formatDate(value) : String(value);
-    case 'number':
-      return typeof value === 'number' ? value.toLocaleString() : String(value);
-    default:
-      return String(value);
-  }
-}
+export type { ColumnType, DataGridColumn, DataGridProps };
 
 export function DataGrid<T extends { id: string | number }>({
   data,
@@ -146,40 +91,8 @@ export function DataGrid<T extends { id: string | number }>({
     }
     
     // Default download implementation
-    const visibleData = filteredData.map(row => {
-      const rowData: Record<string, any> = {};
-      visibleColumns.forEach(colKey => {
-        const column = columns.find(col => col.key === colKey);
-        if (column) {
-          const value = getValueByPath(row, colKey);
-          rowData[column.name] = formatCellValue(value, column.type);
-        }
-      });
-      return rowData;
-    });
-    
-    const csvContent = [
-      visibleColumns.map(colKey => {
-        const column = columns.find(col => col.key === colKey);
-        return column ? column.name : colKey;
-      }).join(','),
-      ...visibleData.map(row => 
-        Object.values(row).map(value => 
-          typeof value === 'string' && value.includes(',') 
-            ? `"${value}"`
-            : value
-        ).join(',')
-      )
-    ].join('\n');
-    
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `data-export-${new Date().toISOString()}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const csvContent = generateCSV(filteredData, visibleColumns, columns);
+    downloadCSV(csvContent);
   };
   
   // Handle table reload
@@ -266,184 +179,42 @@ export function DataGrid<T extends { id: string | number }>({
   // Total pages
   const totalPages = Math.ceil(filteredData.length / pageSize);
   
-  // Render table head
-  const renderTableHead = () => {
-    return (
-      <TableHeader>
-        <TableRow>
-          {columns
-            .filter(column => visibleColumns.includes(column.key))
-            .map(column => (
-              <TableHead 
-                key={column.key}
-                className={cn(
-                  "whitespace-nowrap font-medium text-muted-foreground",
-                  column.sortable && "cursor-pointer select-none"
-                )}
-                onClick={() => column.sortable && handleSort(column.key)}
-              >
-                <div className="flex items-center gap-1">
-                  {column.name}
-                  {sortConfig && sortConfig.key === column.key && (
-                    sortConfig.direction === 'asc' 
-                      ? <ChevronUp className="h-4 w-4" /> 
-                      : <ChevronDown className="h-4 w-4" />
-                  )}
-                </div>
-              </TableHead>
-            ))}
-        </TableRow>
-        <TableRow>
-          {columns
-            .filter(column => visibleColumns.includes(column.key))
-            .map(column => (
-              <TableHead key={`filter-${column.key}`} className="p-0">
-                {column.filterable && (
-                  <div className="p-2">
-                    <DataGridFilter 
-                      column={column}
-                      value={filters[column.key]}
-                      onChange={(value) => handleFilterChange(column.key, value)}
-                    />
-                  </div>
-                )}
-              </TableHead>
-            ))}
-        </TableRow>
-      </TableHeader>
-    );
-  };
-  
-  // Render table body
-  const renderTableBody = () => {
-    if (loading) {
-      return (
-        <TableBody>
-          {Array.from({ length: pageSize }).map((_, index) => (
-            <TableRow key={`skeleton-${index}`}>
-              {visibleColumns.map(colKey => (
-                <TableCell key={`skeleton-${index}-${colKey}`}>
-                  <Skeleton className="h-4 w-full" />
-                </TableCell>
-              ))}
-            </TableRow>
-          ))}
-        </TableBody>
-      );
-    }
-    
-    if (paginatedData.length === 0) {
-      return (
-        <TableBody>
-          <TableRow>
-            <TableCell 
-              colSpan={visibleColumns.length} 
-              className="h-24 text-center"
-            >
-              No results found.
-            </TableCell>
-          </TableRow>
-        </TableBody>
-      );
-    }
-    
-    return (
-      <TableBody>
-        {paginatedData.map((row) => (
-          <TableRow 
-            key={row.id} 
-            className={cn(onRowClick && "cursor-pointer hover:bg-muted/60")}
-            onClick={() => onRowClick && onRowClick(row)}
-          >
-            {visibleColumns.map(colKey => {
-              const column = columns.find(col => col.key === colKey);
-              if (!column) return null;
-              
-              const value = getValueByPath(row, colKey);
-              return (
-                <TableCell key={`${row.id}-${colKey}`}>
-                  {formatCellValue(value, column.type)}
-                </TableCell>
-              );
-            })}
-          </TableRow>
-        ))}
-      </TableBody>
-    );
-  };
-  
+  // Import getValueByPath function from utils
+  function getValueByPath(obj: any, path: string) {
+    return path.split('.').reduce((prev, curr) => (prev ? prev[curr] : null), obj);
+  }
+
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="relative w-full sm:w-72">
-          <Input 
-            placeholder="Search..."
-            value={searchTerm}
-            onChange={handleSearch}
-            className="pr-8"
-          />
-        </div>
-        
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                <Columns3 className="h-4 w-4 mr-2" />
-                Columns
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {columns.map((column) => (
-                <DropdownMenuCheckboxItem
-                  key={column.key}
-                  checked={visibleColumns.includes(column.key)}
-                  onCheckedChange={() => handleColumnToggle(column.key)}
-                >
-                  {column.name}
-                </DropdownMenuCheckboxItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-          
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleDownload}
-          >
-            <FileDown className="h-4 w-4 mr-2" />
-            Export
-          </Button>
-          
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleReload}
-            disabled={loading}
-          >
-            {loading ? (
-              <>
-                <Loader className="h-4 w-4 mr-2 animate-spin" />
-                Loading
-              </>
-            ) : (
-              <>
-                <svg className="h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
-                  <path d="M3 3v5h5"></path>
-                  <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path>
-                  <path d="M16 21h5v-5"></path>
-                </svg>
-                Reload
-              </>
-            )}
-          </Button>
-        </div>
-      </div>
+      <DataGridHeader
+        columns={columns}
+        visibleColumns={visibleColumns}
+        loading={loading}
+        searchTerm={searchTerm}
+        onSearchChange={handleSearch}
+        onColumnToggle={handleColumnToggle}
+        onDownload={handleDownload}
+        onReload={handleReload}
+      />
       
       <div className="rounded-md border">
         <Table>
-          {renderTableHead()}
-          {renderTableBody()}
+          <DataGridTableHead
+            columns={columns}
+            visibleColumns={visibleColumns}
+            filters={filters}
+            sortConfig={sortConfig}
+            onSort={handleSort}
+            onFilterChange={handleFilterChange}
+          />
+          <DataGridBody
+            data={paginatedData}
+            columns={columns}
+            visibleColumns={visibleColumns}
+            loading={loading}
+            pageSize={pageSize}
+            onRowClick={onRowClick}
+          />
         </Table>
       </div>
       
