@@ -1,15 +1,12 @@
-
 import React, { useState } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import PageHeader from "@/components/common/PageHeader";
-import SearchBar from "@/components/common/SearchBar";
-import DataTable, { Column } from "@/components/common/DataTable";
+import { DataGrid, DataGridColumn } from "@/components/ui/data-grid";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -17,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
+import BreadcrumbNav from "@/components/layout/BreadcrumbNav";
 
 interface Company {
   id: string;
@@ -65,21 +63,49 @@ const mockCompanies: Company[] = [
 
 const CompanyPage = () => {
   const [companies, setCompanies] = useState<Company[]>(mockCompanies);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newCompany, setNewCompany] = useState<Partial<Company>>({
     status: "active",
   });
   const { toast } = useToast();
 
-  const filteredCompanies = companies.filter((company) =>
-    company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    company.ruc.includes(searchTerm) ||
-    company.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const breadcrumbItems = [
+    {
+      label: "Empresas",
+      path: "/empresas",
+      isCurrentPage: true
+    }
+  ];
 
-  const handleSearch = (value: string) => {
-    setSearchTerm(value);
+  const columns: DataGridColumn[] = [
+    { key: 'id', name: 'ID', type: 'string', sortable: true, filterable: true },
+    { key: 'name', name: 'Empresa', type: 'string', sortable: true, filterable: true },
+    { key: 'ruc', name: 'RUC', type: 'string', sortable: true, filterable: true },
+    { key: 'contact', name: 'Contacto', type: 'string', sortable: true, filterable: true },
+    { key: 'phone', name: 'Teléfono', type: 'string', sortable: true, filterable: true },
+    { key: 'email', name: 'Email', type: 'string', sortable: true, filterable: true },
+    { key: 'status', name: 'Estado', type: 'string', sortable: true, filterable: true },
+  ];
+
+  const handleReload = () => {
+    setLoading(true);
+    // Simulate API call
+    setTimeout(() => {
+      setLoading(false);
+      toast({
+        title: "Datos actualizados",
+        description: "La lista de empresas ha sido actualizada",
+      });
+    }, 1000);
+  };
+
+  const handleRowClick = (row: Company) => {
+    console.log('Empresa seleccionada:', row);
+    toast({
+      title: "Empresa seleccionada",
+      description: `${row.name}`,
+    });
   };
 
   const handleAddCompany = () => {
@@ -127,37 +153,9 @@ const CompanyPage = () => {
     });
   };
 
-  const handleDeleteCompany = (company: Company) => {
-    setCompanies(companies.filter((c) => c.id !== company.id));
-    toast({
-      title: "Empresa eliminada",
-      description: "La empresa ha sido eliminada correctamente",
-    });
-  };
-
-  const columns: Column<Company>[] = [
-    { header: "Empresa", accessorKey: "name" },
-    { header: "RUC", accessorKey: "ruc" },
-    { header: "Contacto", accessorKey: "contact" },
-    { header: "Teléfono", accessorKey: "phone" },
-    { header: "Email", accessorKey: "email" },
-    {
-      header: "Estado",
-      accessorKey: "status",
-      cell: (company) => (
-        <span
-          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-            company.status === "active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
-          }`}
-        >
-          {company.status === "active" ? "Activo" : "Inactivo"}
-        </span>
-      ),
-    },
-  ];
-
   return (
     <DashboardLayout>
+      <BreadcrumbNav items={breadcrumbItems} />
       <PageHeader
         title="Empresas"
         subtitle="Gestione las empresas en el sistema"
@@ -167,19 +165,15 @@ const CompanyPage = () => {
       />
 
       <div className="mb-6">
-        <SearchBar
-          placeholder="Buscar por nombre, RUC o email..."
-          onChange={handleSearch}
+        <DataGrid 
+          data={companies}
+          columns={columns}
+          loading={loading}
+          pageSize={10}
+          onRowClick={handleRowClick}
+          onReload={handleReload}
         />
       </div>
-
-      <DataTable
-        columns={columns}
-        data={filteredCompanies}
-        onDelete={handleDeleteCompany}
-        onEdit={() => {}}
-        onView={() => {}}
-      />
 
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent className="sm:max-w-md">

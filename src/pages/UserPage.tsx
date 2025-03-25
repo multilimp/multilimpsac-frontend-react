@@ -2,9 +2,9 @@
 import React, { useState } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import PageHeader from "@/components/common/PageHeader";
-import SearchBar from "@/components/common/SearchBar";
-import DataTable, { Column } from "@/components/common/DataTable";
+import { DataGrid, DataGridColumn } from "@/components/ui/data-grid";
 import { useToast } from "@/components/ui/use-toast";
+import BreadcrumbNav from "@/components/layout/BreadcrumbNav";
 
 interface User {
   id: string;
@@ -52,27 +52,17 @@ const mockUsers: User[] = [
 ];
 
 const UserPage = () => {
-  const [users, setUsers] = useState<User[]>(mockUsers);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [users] = useState<User[]>(mockUsers);
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const filteredUsers = users.filter((user) =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.role.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const handleSearch = (value: string) => {
-    setSearchTerm(value);
-  };
-
-  const handleDeleteUser = (user: User) => {
-    setUsers(users.filter((u) => u.id !== user.id));
-    toast({
-      title: "Usuario eliminado",
-      description: "El usuario ha sido eliminado correctamente",
-    });
-  };
+  const breadcrumbItems = [
+    {
+      label: "Usuarios",
+      path: "/usuarios",
+      isCurrentPage: true
+    }
+  ];
 
   const getRoleName = (role: string) => {
     switch (role) {
@@ -87,53 +77,55 @@ const UserPage = () => {
     }
   };
 
-  const columns: Column<User>[] = [
-    { header: "Nombre", accessorKey: "name" },
-    { header: "Email", accessorKey: "email" },
-    { 
-      header: "Rol", 
-      accessorKey: "role",
-      cell: (user) => getRoleName(user.role)
-    },
-    { header: "Último acceso", accessorKey: "lastLogin" },
-    {
-      header: "Estado",
-      accessorKey: "status",
-      cell: (user) => (
-        <span
-          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-            user.status === "active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
-          }`}
-        >
-          {user.status === "active" ? "Activo" : "Inactivo"}
-        </span>
-      ),
-    },
+  const columns: DataGridColumn[] = [
+    { key: 'id', name: 'ID', type: 'string', sortable: true, filterable: true },
+    { key: 'name', name: 'Nombre', type: 'string', sortable: true, filterable: true },
+    { key: 'email', name: 'Email', type: 'string', sortable: true, filterable: true },
+    { key: 'role', name: 'Rol', type: 'string', sortable: true, filterable: true },
+    { key: 'lastLogin', name: 'Último acceso', type: 'string', sortable: true, filterable: true },
+    { key: 'status', name: 'Estado', type: 'string', sortable: true, filterable: true },
   ];
+
+  const handleReload = () => {
+    setLoading(true);
+    // Simulate API call
+    setTimeout(() => {
+      setLoading(false);
+      toast({
+        title: "Datos actualizados",
+        description: "La lista de usuarios ha sido actualizada",
+      });
+    }, 1000);
+  };
+
+  const handleRowClick = (row: User) => {
+    console.log('Usuario seleccionado:', row);
+    toast({
+      title: "Usuario seleccionado",
+      description: `${row.name} (${getRoleName(row.role)})`,
+    });
+  };
 
   return (
     <DashboardLayout>
+      <BreadcrumbNav items={breadcrumbItems} />
       <PageHeader
         title="Usuarios"
         subtitle="Gestione los usuarios del sistema"
         showAddButton
         addButtonText="Agregar Usuario"
       />
-
+      
       <div className="mb-6">
-        <SearchBar
-          placeholder="Buscar por nombre, email o rol..."
-          onChange={handleSearch}
+        <DataGrid 
+          data={users}
+          columns={columns}
+          loading={loading}
+          pageSize={10}
+          onRowClick={handleRowClick}
+          onReload={handleReload}
         />
       </div>
-
-      <DataTable
-        columns={columns}
-        data={filteredUsers}
-        onDelete={handleDeleteUser}
-        onEdit={() => {}}
-        onView={() => {}}
-      />
     </DashboardLayout>
   );
 };

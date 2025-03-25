@@ -2,9 +2,9 @@
 import React, { useState } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import PageHeader from "@/components/common/PageHeader";
-import SearchBar from "@/components/common/SearchBar";
-import DataTable, { Column } from "@/components/common/DataTable";
+import { DataGrid, DataGridColumn } from "@/components/ui/data-grid";
 import { useToast } from "@/components/ui/use-toast";
+import BreadcrumbNav from "@/components/layout/BreadcrumbNav";
 
 interface Supplier {
   id: string;
@@ -56,73 +56,68 @@ const mockSuppliers: Supplier[] = [
 ];
 
 const SupplierPage = () => {
-  const [suppliers, setSuppliers] = useState<Supplier[]>(mockSuppliers);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [suppliers] = useState<Supplier[]>(mockSuppliers);
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const filteredSuppliers = suppliers.filter((supplier) =>
-    supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    supplier.ruc.includes(searchTerm) ||
-    supplier.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    supplier.category.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const breadcrumbItems = [
+    {
+      label: "Proveedores",
+      path: "/proveedores",
+      isCurrentPage: true
+    }
+  ];
 
-  const handleSearch = (value: string) => {
-    setSearchTerm(value);
+  const columns: DataGridColumn[] = [
+    { key: 'id', name: 'ID', type: 'string', sortable: true, filterable: true },
+    { key: 'name', name: 'Proveedor', type: 'string', sortable: true, filterable: true },
+    { key: 'ruc', name: 'RUC', type: 'string', sortable: true, filterable: true },
+    { key: 'category', name: 'Categoría', type: 'string', sortable: true, filterable: true },
+    { key: 'contact', name: 'Contacto', type: 'string', sortable: true, filterable: true },
+    { key: 'email', name: 'Email', type: 'string', sortable: true, filterable: true },
+    { key: 'status', name: 'Estado', type: 'string', sortable: true, filterable: true },
+  ];
+
+  const handleReload = () => {
+    setLoading(true);
+    // Simulate API call
+    setTimeout(() => {
+      setLoading(false);
+      toast({
+        title: "Datos actualizados",
+        description: "La lista de proveedores ha sido actualizada",
+      });
+    }, 1000);
   };
 
-  const handleDeleteSupplier = (supplier: Supplier) => {
-    setSuppliers(suppliers.filter((s) => s.id !== supplier.id));
+  const handleRowClick = (row: Supplier) => {
+    console.log('Proveedor seleccionado:', row);
     toast({
-      title: "Proveedor eliminado",
-      description: "El proveedor ha sido eliminado correctamente",
+      title: "Proveedor seleccionado",
+      description: `${row.name}`,
     });
   };
 
-  const columns: Column<Supplier>[] = [
-    { header: "Proveedor", accessorKey: "name" },
-    { header: "RUC", accessorKey: "ruc" },
-    { header: "Categoría", accessorKey: "category" },
-    { header: "Contacto", accessorKey: "contact" },
-    { header: "Email", accessorKey: "email" },
-    {
-      header: "Estado",
-      accessorKey: "status",
-      cell: (supplier) => (
-        <span
-          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-            supplier.status === "active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
-          }`}
-        >
-          {supplier.status === "active" ? "Activo" : "Inactivo"}
-        </span>
-      ),
-    },
-  ];
-
   return (
     <DashboardLayout>
+      <BreadcrumbNav items={breadcrumbItems} />
       <PageHeader
         title="Proveedores"
         subtitle="Gestione los proveedores en el sistema"
         showAddButton
         addButtonText="Agregar Proveedor"
       />
-
+      
       <div className="mb-6">
-        <SearchBar
-          placeholder="Buscar por nombre, RUC, email o categoría..."
-          onChange={handleSearch}
+        <DataGrid 
+          data={suppliers}
+          columns={columns}
+          loading={loading}
+          pageSize={10}
+          onRowClick={handleRowClick}
+          onReload={handleReload}
         />
       </div>
-
-      <DataTable
-        columns={columns}
-        data={filteredSuppliers}
-        onDelete={handleDeleteSupplier}
-        onEdit={() => {}}
-        onView={() => {}}
-      />
     </DashboardLayout>
   );
 };

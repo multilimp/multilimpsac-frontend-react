@@ -2,9 +2,9 @@
 import React, { useState } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import PageHeader from "@/components/common/PageHeader";
-import SearchBar from "@/components/common/SearchBar";
-import DataTable, { Column } from "@/components/common/DataTable";
+import { DataGrid, DataGridColumn } from "@/components/ui/data-grid";
 import { useToast } from "@/components/ui/use-toast";
+import BreadcrumbNav from "@/components/layout/BreadcrumbNav";
 
 interface Transport {
   id: string;
@@ -60,73 +60,68 @@ const mockTransports: Transport[] = [
 ];
 
 const TransportPage = () => {
-  const [transports, setTransports] = useState<Transport[]>(mockTransports);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [transports] = useState<Transport[]>(mockTransports);
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const filteredTransports = transports.filter((transport) =>
-    transport.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    transport.ruc.includes(searchTerm) ||
-    transport.vehiclePlate.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    transport.vehicleType.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const breadcrumbItems = [
+    {
+      label: "Transportes",
+      path: "/transportes",
+      isCurrentPage: true
+    }
+  ];
 
-  const handleSearch = (value: string) => {
-    setSearchTerm(value);
+  const columns: DataGridColumn[] = [
+    { key: 'id', name: 'ID', type: 'string', sortable: true, filterable: true },
+    { key: 'company', name: 'Empresa', type: 'string', sortable: true, filterable: true },
+    { key: 'ruc', name: 'RUC', type: 'string', sortable: true, filterable: true },
+    { key: 'vehicleType', name: 'Tipo Vehículo', type: 'string', sortable: true, filterable: true },
+    { key: 'vehiclePlate', name: 'Placa', type: 'string', sortable: true, filterable: true },
+    { key: 'contact', name: 'Contacto', type: 'string', sortable: true, filterable: true },
+    { key: 'status', name: 'Estado', type: 'string', sortable: true, filterable: true },
+  ];
+
+  const handleReload = () => {
+    setLoading(true);
+    // Simulate API call
+    setTimeout(() => {
+      setLoading(false);
+      toast({
+        title: "Datos actualizados",
+        description: "La lista de transportes ha sido actualizada",
+      });
+    }, 1000);
   };
 
-  const handleDeleteTransport = (transport: Transport) => {
-    setTransports(transports.filter((t) => t.id !== transport.id));
+  const handleRowClick = (row: Transport) => {
+    console.log('Transporte seleccionado:', row);
     toast({
-      title: "Transporte eliminado",
-      description: "El transporte ha sido eliminado correctamente",
+      title: "Transporte seleccionado",
+      description: `${row.company}`,
     });
   };
 
-  const columns: Column<Transport>[] = [
-    { header: "Empresa", accessorKey: "company" },
-    { header: "RUC", accessorKey: "ruc" },
-    { header: "Tipo de Vehículo", accessorKey: "vehicleType" },
-    { header: "Placa", accessorKey: "vehiclePlate" },
-    { header: "Contacto", accessorKey: "contact" },
-    {
-      header: "Estado",
-      accessorKey: "status",
-      cell: (transport) => (
-        <span
-          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-            transport.status === "active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
-          }`}
-        >
-          {transport.status === "active" ? "Activo" : "Inactivo"}
-        </span>
-      ),
-    },
-  ];
-
   return (
     <DashboardLayout>
+      <BreadcrumbNav items={breadcrumbItems} />
       <PageHeader
         title="Transportes"
         subtitle="Gestione las empresas de transporte en el sistema"
         showAddButton
         addButtonText="Agregar Transporte"
       />
-
+      
       <div className="mb-6">
-        <SearchBar
-          placeholder="Buscar por empresa, RUC o placa..."
-          onChange={handleSearch}
+        <DataGrid 
+          data={transports}
+          columns={columns}
+          loading={loading}
+          pageSize={10}
+          onRowClick={handleRowClick}
+          onReload={handleReload}
         />
       </div>
-
-      <DataTable
-        columns={columns}
-        data={filteredTransports}
-        onDelete={handleDeleteTransport}
-        onEdit={() => {}}
-        onView={() => {}}
-      />
     </DashboardLayout>
   );
 };

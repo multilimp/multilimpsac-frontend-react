@@ -3,8 +3,9 @@ import React, { useState } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import PageHeader from "@/components/common/PageHeader";
 import SearchBar from "@/components/common/SearchBar";
-import DataTable, { Column } from "@/components/common/DataTable";
+import { DataGrid, DataGridColumn } from "@/components/ui/data-grid";
 import { useToast } from "@/components/ui/use-toast";
+import BreadcrumbNav from "@/components/layout/BreadcrumbNav";
 
 interface Client {
   id: string;
@@ -52,51 +53,51 @@ const mockClients: Client[] = [
 ];
 
 const ClientPage = () => {
-  const [clients, setClients] = useState<Client[]>(mockClients);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [clients] = useState<Client[]>(mockClients);
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const filteredClients = clients.filter((client) =>
-    client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.ruc.includes(searchTerm) ||
-    client.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const breadcrumbItems = [
+    {
+      label: "Clientes",
+      path: "/clientes",
+      isCurrentPage: true
+    }
+  ];
 
-  const handleSearch = (value: string) => {
-    setSearchTerm(value);
+  const columns: DataGridColumn[] = [
+    { key: 'id', name: 'ID', type: 'string', sortable: true, filterable: true },
+    { key: 'name', name: 'Nombre', type: 'string', sortable: true, filterable: true },
+    { key: 'ruc', name: 'RUC', type: 'string', sortable: true, filterable: true },
+    { key: 'contact', name: 'Contacto', type: 'string', sortable: true, filterable: true },
+    { key: 'phone', name: 'Teléfono', type: 'string', sortable: true, filterable: true },
+    { key: 'email', name: 'Email', type: 'string', sortable: true, filterable: true },
+    { key: 'status', name: 'Estado', type: 'string', sortable: true, filterable: true },
+  ];
+
+  const handleReload = () => {
+    setLoading(true);
+    // Simulate API call
+    setTimeout(() => {
+      setLoading(false);
+      toast({
+        title: "Datos actualizados",
+        description: "La lista de clientes ha sido actualizada",
+      });
+    }, 1000);
   };
 
-  const handleDeleteClient = (client: Client) => {
-    setClients(clients.filter((c) => c.id !== client.id));
+  const handleRowClick = (row: Client) => {
+    console.log('Cliente seleccionado:', row);
     toast({
-      title: "Cliente eliminado",
-      description: "El cliente ha sido eliminado correctamente",
+      title: "Cliente seleccionado",
+      description: `${row.name}`,
     });
   };
 
-  const columns: Column<Client>[] = [
-    { header: "Cliente", accessorKey: "name" },
-    { header: "RUC", accessorKey: "ruc" },
-    { header: "Contacto", accessorKey: "contact" },
-    { header: "Teléfono", accessorKey: "phone" },
-    { header: "Email", accessorKey: "email" },
-    {
-      header: "Estado",
-      accessorKey: "status",
-      cell: (client) => (
-        <span
-          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-            client.status === "active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
-          }`}
-        >
-          {client.status === "active" ? "Activo" : "Inactivo"}
-        </span>
-      ),
-    },
-  ];
-
   return (
     <DashboardLayout>
+      <BreadcrumbNav items={breadcrumbItems} />
       <PageHeader
         title="Clientes"
         subtitle="Gestione los clientes en el sistema"
@@ -105,19 +106,15 @@ const ClientPage = () => {
       />
 
       <div className="mb-6">
-        <SearchBar
-          placeholder="Buscar por nombre, RUC o email..."
-          onChange={handleSearch}
+        <DataGrid 
+          data={clients}
+          columns={columns}
+          loading={loading}
+          pageSize={10}
+          onRowClick={handleRowClick}
+          onReload={handleReload}
         />
       </div>
-
-      <DataTable
-        columns={columns}
-        data={filteredClients}
-        onDelete={handleDeleteClient}
-        onEdit={() => {}}
-        onView={() => {}}
-      />
     </DashboardLayout>
   );
 };
