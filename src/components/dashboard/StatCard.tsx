@@ -32,16 +32,19 @@ const StatCard: React.FC<StatCardProps> = ({
           <p className="text-xs text-muted-foreground">{description}</p>
         )}
         {trend !== undefined && (
-          <div className="mt-2 flex items-center text-xs">
-            <span
+          <div className="mt-2 flex items-center">
+            <div 
               className={cn(
-                "mr-1",
-                trend > 0 ? "text-green-600" : "text-red-600"
+                "rounded-full px-2 py-1 text-xs font-medium flex items-center",
+                trend > 0 
+                  ? "bg-green-100 text-green-800" 
+                  : "bg-red-100 text-red-800"
               )}
             >
-              {trend > 0 ? "↑" : "↓"} {Math.abs(trend)}%
-            </span>
-            <span className="text-muted-foreground">desde el mes pasado</span>
+              <span className="mr-1">{trend > 0 ? "↑" : "↓"}</span>
+              <span>{Math.abs(trend)}%</span>
+            </div>
+            <span className="ml-2 text-xs text-muted-foreground">desde el mes pasado</span>
           </div>
         )}
       </CardContent>

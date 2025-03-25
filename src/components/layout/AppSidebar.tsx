@@ -15,8 +15,12 @@ import {
   ReceiptText,
   Settings,
   User,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 import DynamicSidebar, { RouteGroup } from "./DynamicSidebar";
+import { Button } from "@/components/ui/button";
+import { useSidebar } from "@/components/ui/sidebar";
 
 const mainGroups: RouteGroup[] = [
   {
@@ -71,12 +75,34 @@ const dynamicGroups = {
   },
 };
 
+const SidebarToggleButton = () => {
+  const { open, toggleSidebar } = useSidebar();
+  
+  return (
+    <Button 
+      variant="ghost" 
+      size="icon" 
+      onClick={toggleSidebar}
+      className="absolute top-4 right-[-12px] z-50 h-6 w-6 rounded-full bg-sidebar-background text-white"
+    >
+      {open ? (
+        <PanelLeftClose className="h-3 w-3" />
+      ) : (
+        <PanelLeftOpen className="h-3 w-3" />
+      )}
+    </Button>
+  );
+};
+
 const AppSidebar: React.FC = () => {
   return (
-    <DynamicSidebar 
-      groups={mainGroups} 
-      dynamicGroups={dynamicGroups} 
-    />
+    <>
+      <DynamicSidebar 
+        groups={mainGroups} 
+        dynamicGroups={dynamicGroups} 
+      />
+      <SidebarToggleButton />
+    </>
   );
 };
 

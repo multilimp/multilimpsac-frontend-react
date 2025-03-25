@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import {
@@ -13,6 +13,7 @@ import {
   SidebarMenuButton,
   SidebarHeader,
   SidebarFooter,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
@@ -52,6 +53,8 @@ const DynamicSidebar: React.FC<DynamicSidebarProps> = ({ groups, dynamicGroups =
     logout: state.logout 
   }));
   
+  const { open } = useSidebar();
+  
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
     // Initialize with all dynamic groups closed except the active one
     const initial: Record<string, boolean> = {};
@@ -89,57 +92,61 @@ const DynamicSidebar: React.FC<DynamicSidebarProps> = ({ groups, dynamicGroups =
         >
           <div className="flex items-center">
             <group.icon className="h-4 w-4 mr-2" />
-            <span>{group.label}</span>
+            <span className={cn(open ? "opacity-100" : "opacity-0 md:hidden")}>{group.label}</span>
           </div>
-          {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          {open && (isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />)}
         </button>
         
-        <div 
-          className={cn(
-            "pl-6 pt-1 space-y-1 overflow-hidden transition-all duration-200",
-            isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-          )}
-        >
-          {group.routes.map((route) => (
-            <RequirePermission key={route.path} permission={route.permission || "view_dashboard"}>
-              <NavLink
-                to={route.path}
-                className={({ isActive }) =>
-                  cn(
-                    "flex items-center px-2 py-1 rounded-md text-sm transition-colors",
-                    isActive 
-                      ? "bg-sidebar-accent text-sidebar-accent-foreground" 
-                      : "text-sidebar-foreground hover:bg-sidebar-accent/50"
-                  )
-                }
-              >
-                {route.icon && <route.icon className="h-4 w-4 mr-2" />}
-                <span>{route.label}</span>
-              </NavLink>
-            </RequirePermission>
-          ))}
-        </div>
+        {open && (
+          <div 
+            className={cn(
+              "pl-6 pt-1 space-y-1 overflow-hidden transition-all duration-200",
+              isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+            )}
+          >
+            {group.routes.map((route) => (
+              <RequirePermission key={route.path} permission={route.permission || "view_dashboard"}>
+                <NavLink
+                  to={route.path}
+                  className={({ isActive }) =>
+                    cn(
+                      "flex items-center px-2 py-1 rounded-md text-sm transition-colors",
+                      isActive 
+                        ? "bg-sidebar-accent text-sidebar-accent-foreground" 
+                        : "text-sidebar-foreground hover:bg-sidebar-accent/50"
+                    )
+                  }
+                >
+                  {route.icon && <route.icon className="h-4 w-4 mr-2" />}
+                  <span>{route.label}</span>
+                </NavLink>
+              </RequirePermission>
+            ))}
+          </div>
+        )}
       </div>
     );
   };
 
   return (
-    <Sidebar>
+    <Sidebar variant="sidebar" collapsible="icon">
       <SidebarHeader className="py-4 px-2">
         <Logo />
-        <div className="text-sm text-center text-white/70 mt-1">Sistema ERP</div>
+        {open && (
+          <div className="text-sm text-center text-white/70 mt-1">Sistema ERP</div>
+        )}
       </SidebarHeader>
       
       <SidebarContent>
         {groups.map((group) => (
           <SidebarGroup key={group.label}>
-            <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+            {open && <SidebarGroupLabel>{group.label}</SidebarGroupLabel>}
             <SidebarGroupContent>
               <SidebarMenu>
                 {group.routes.map((route) => (
                   <RequirePermission key={route.path} permission={route.permission || "view_dashboard"}>
                     <SidebarMenuItem>
-                      <SidebarMenuButton asChild>
+                      <SidebarMenuButton asChild tooltip={!open ? route.label : undefined}>
                         <NavLink
                           to={route.path}
                           className={({ isActive }) =>
@@ -147,7 +154,7 @@ const DynamicSidebar: React.FC<DynamicSidebarProps> = ({ groups, dynamicGroups =
                           }
                         >
                           {route.icon && <route.icon className="h-4 w-4 mr-2" />}
-                          <span>{route.label}</span>
+                          {open && <span>{route.label}</span>}
                         </NavLink>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -169,7 +176,7 @@ const DynamicSidebar: React.FC<DynamicSidebarProps> = ({ groups, dynamicGroups =
       
       <SidebarFooter>
         <div className="p-4">
-          {user && (
+          {user && open && (
             <div className="mb-3 text-xs text-white/70 px-2">
               Sesión: <span className="font-medium text-white">{user.name}</span>
               <div className="text-xs text-white/50">
@@ -182,7 +189,7 @@ const DynamicSidebar: React.FC<DynamicSidebarProps> = ({ groups, dynamicGroups =
             onClick={logout} 
             className="w-full flex items-center justify-center"
           >
-            <span>Cerrar Sesión</span>
+            {open ? <span>Cerrar Sesión</span> : <span>Salir</span>}
           </Button>
         </div>
       </SidebarFooter>
