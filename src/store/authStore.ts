@@ -2,7 +2,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-interface User {
+// Export the User interface so it can be imported in other files
+export interface User {
   id: string;
   name: string;
   email: string;
