@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import PageHeader from "@/components/common/PageHeader";
 import { DataGrid, DataGridColumn } from "@/components/ui/data-grid";
@@ -15,60 +17,36 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import BreadcrumbNav from "@/components/layout/BreadcrumbNav";
-
-interface Company {
-  id: string;
-  name: string;
-  ruc: string;
-  address: string;
-  phone: string;
-  email: string;
-  contact: string;
-  status: "active" | "inactive";
-}
-
-// Mock data
-const mockCompanies: Company[] = [
-  {
-    id: "1",
-    name: "Empresa 1 S.A.C.",
-    ruc: "20123456789",
-    address: "Av. Principal 123, Lima",
-    phone: "987654321",
-    email: "contacto@empresa1.com",
-    contact: "Juan Pérez",
-    status: "active",
-  },
-  {
-    id: "2",
-    name: "Empresa 2 E.I.R.L.",
-    ruc: "20567891234",
-    address: "Jr. Secundario 456, Lima",
-    phone: "987123456",
-    email: "info@empresa2.com",
-    contact: "María López",
-    status: "active",
-  },
-  {
-    id: "3",
-    name: "Empresa 3 S.A.",
-    ruc: "20654321987",
-    address: "Calle Nueva 789, Lima",
-    phone: "912345678",
-    email: "ventas@empresa3.com",
-    contact: "Pedro Gómez",
-    status: "inactive",
-  },
-];
+import { 
+  fetchCompanies, 
+  createCompany, 
+  updateCompany, 
+  deleteCompany 
+} from "@/data/services/companyService";
+import { Company } from "@/data/models/company";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Switch } from "@/components/ui/switch";
 
 const CompanyPage = () => {
-  const [companies, setCompanies] = useState<Company[]>(mockCompanies);
-  const [loading, setLoading] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [newCompany, setNewCompany] = useState<Partial<Company>>({
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
+  const [formData, setFormData] = useState<Partial<Company>>({
     status: "active",
   });
+  
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const breadcrumbItems = [
     {
@@ -77,6 +55,75 @@ const CompanyPage = () => {
       isCurrentPage: true
     }
   ];
+
+  // Fetch companies data
+  const { data: companies = [], isLoading, refetch } = useQuery({
+    queryKey: ["companies"],
+    queryFn: fetchCompanies,
+  });
+
+  // Create company mutation
+  const createMutation = useMutation({
+    mutationFn: createCompany,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["companies"] });
+      toast({
+        title: "Empresa agregada",
+        description: "La empresa ha sido agregada correctamente",
+      });
+      resetForm();
+      setIsAddDialogOpen(false);
+    },
+    onError: (error: Error) => {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "Error al agregar la empresa",
+      });
+    },
+  });
+
+  // Update company mutation
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<Company> }) => 
+      updateCompany(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["companies"] });
+      toast({
+        title: "Empresa actualizada",
+        description: "La empresa ha sido actualizada correctamente",
+      });
+      resetForm();
+      setIsEditDialogOpen(false);
+    },
+    onError: (error: Error) => {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "Error al actualizar la empresa",
+      });
+    },
+  });
+
+  // Delete company mutation
+  const deleteMutation = useMutation({
+    mutationFn: deleteCompany,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["companies"] });
+      toast({
+        title: "Empresa eliminada",
+        description: "La empresa ha sido eliminada correctamente",
+      });
+      setIsDeleteDialogOpen(false);
+    },
+    onError: (error: Error) => {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "Error al eliminar la empresa",
+      });
+    },
+  });
 
   const columns: DataGridColumn[] = [
     { key: 'id', name: 'ID', type: 'string', sortable: true, filterable: true },
@@ -89,28 +136,45 @@ const CompanyPage = () => {
   ];
 
   const handleReload = () => {
-    setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
-      toast({
-        title: "Datos actualizados",
-        description: "La lista de empresas ha sido actualizada",
-      });
-    }, 1000);
+    refetch();
+    toast({
+      title: "Datos actualizados",
+      description: "La lista de empresas ha sido actualizada",
+    });
   };
 
   const handleRowClick = (row: Company) => {
-    console.log('Empresa seleccionada:', row);
-    toast({
-      title: "Empresa seleccionada",
-      description: `${row.name}`,
+    setSelectedCompany(row);
+    setFormData({
+      name: row.name,
+      ruc: row.ruc,
+      address: row.address,
+      phone: row.phone,
+      email: row.email,
+      contact: row.contact,
+      status: row.status,
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+
+  const handleStatusChange = (checked: boolean) => {
+    setFormData({
+      ...formData,
+      status: checked ? "active" : "inactive",
     });
   };
 
   const handleAddCompany = () => {
     // Validate fields
-    if (!newCompany.name || !newCompany.ruc || !newCompany.email) {
+    if (!formData.name || !formData.ruc || !formData.email) {
       toast({
         variant: "destructive",
         title: "Error",
@@ -119,38 +183,48 @@ const CompanyPage = () => {
       return;
     }
 
-    // Create new company
-    const company: Company = {
-      id: `${companies.length + 1}`,
-      name: newCompany.name || "",
-      ruc: newCompany.ruc || "",
-      address: newCompany.address || "",
-      phone: newCompany.phone || "",
-      email: newCompany.email || "",
-      contact: newCompany.contact || "",
-      status: newCompany.status as "active" | "inactive" || "active",
-    };
-
-    // Add to companies
-    setCompanies([...companies, company]);
-
-    // Reset form and close dialog
-    setNewCompany({ status: "active" });
-    setIsAddDialogOpen(false);
-
-    // Show toast
-    toast({
-      title: "Empresa agregada",
-      description: "La empresa ha sido agregada correctamente",
-    });
+    createMutation.mutate(formData);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setNewCompany({
-      ...newCompany,
-      [name]: value,
-    });
+  const handleUpdateCompany = () => {
+    if (!selectedCompany) return;
+    
+    // Validate fields
+    if (!formData.name || !formData.ruc || !formData.email) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Por favor, complete los campos obligatorios",
+      });
+      return;
+    }
+
+    updateMutation.mutate({ id: selectedCompany.id, data: formData });
+  };
+
+  const handleDeleteCompany = () => {
+    if (!selectedCompany) return;
+    deleteMutation.mutate(selectedCompany.id);
+  };
+
+  const openDeleteDialog = (company: Company) => {
+    setSelectedCompany(company);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const resetForm = () => {
+    setFormData({ status: "active" });
+    setSelectedCompany(null);
+  };
+
+  const handleCloseAddDialog = () => {
+    resetForm();
+    setIsAddDialogOpen(false);
+  };
+
+  const handleCloseEditDialog = () => {
+    resetForm();
+    setIsEditDialogOpen(false);
   };
 
   return (
@@ -168,14 +242,15 @@ const CompanyPage = () => {
         <DataGrid 
           data={companies}
           columns={columns}
-          loading={loading}
+          loading={isLoading}
           pageSize={10}
           onRowClick={handleRowClick}
           onReload={handleReload}
         />
       </div>
 
-      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+      {/* Add Company Dialog */}
+      <Dialog open={isAddDialogOpen} onOpenChange={handleCloseAddDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Agregar Nueva Empresa</DialogTitle>
@@ -186,7 +261,7 @@ const CompanyPage = () => {
               <Input
                 id="name"
                 name="name"
-                value={newCompany.name || ""}
+                value={formData.name || ""}
                 onChange={handleInputChange}
                 placeholder="Ingrese el nombre de la empresa"
               />
@@ -196,7 +271,7 @@ const CompanyPage = () => {
               <Input
                 id="ruc"
                 name="ruc"
-                value={newCompany.ruc || ""}
+                value={formData.ruc || ""}
                 onChange={handleInputChange}
                 placeholder="Ingrese el RUC"
               />
@@ -206,7 +281,7 @@ const CompanyPage = () => {
               <Textarea
                 id="address"
                 name="address"
-                value={newCompany.address || ""}
+                value={formData.address || ""}
                 onChange={handleInputChange}
                 placeholder="Ingrese la dirección"
               />
@@ -217,7 +292,7 @@ const CompanyPage = () => {
                 <Input
                   id="phone"
                   name="phone"
-                  value={newCompany.phone || ""}
+                  value={formData.phone || ""}
                   onChange={handleInputChange}
                   placeholder="Ingrese el teléfono"
                 />
@@ -228,7 +303,7 @@ const CompanyPage = () => {
                   id="email"
                   name="email"
                   type="email"
-                  value={newCompany.email || ""}
+                  value={formData.email || ""}
                   onChange={handleInputChange}
                   placeholder="Ingrese el email"
                 />
@@ -239,20 +314,165 @@ const CompanyPage = () => {
               <Input
                 id="contact"
                 name="contact"
-                value={newCompany.contact || ""}
+                value={formData.contact || ""}
                 onChange={handleInputChange}
                 placeholder="Ingrese la persona de contacto"
               />
             </div>
+            <div className="flex items-center space-x-2">
+              <Switch 
+                id="status" 
+                checked={formData.status === "active"}
+                onCheckedChange={handleStatusChange}
+              />
+              <Label htmlFor="status">
+                {formData.status === "active" ? "Activo" : "Inactivo"}
+              </Label>
+            </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+            <Button variant="outline" onClick={handleCloseAddDialog}>
               Cancelar
             </Button>
-            <Button onClick={handleAddCompany}>Guardar</Button>
+            <Button 
+              onClick={handleAddCompany}
+              disabled={createMutation.isPending}
+            >
+              {createMutation.isPending ? "Guardando..." : "Guardar"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Company Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={handleCloseEditDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Editar Empresa</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-1 gap-2">
+              <Label htmlFor="edit-name">Nombre de la Empresa*</Label>
+              <Input
+                id="edit-name"
+                name="name"
+                value={formData.name || ""}
+                onChange={handleInputChange}
+                placeholder="Ingrese el nombre de la empresa"
+              />
+            </div>
+            <div className="grid grid-cols-1 gap-2">
+              <Label htmlFor="edit-ruc">RUC*</Label>
+              <Input
+                id="edit-ruc"
+                name="ruc"
+                value={formData.ruc || ""}
+                onChange={handleInputChange}
+                placeholder="Ingrese el RUC"
+              />
+            </div>
+            <div className="grid grid-cols-1 gap-2">
+              <Label htmlFor="edit-address">Dirección</Label>
+              <Textarea
+                id="edit-address"
+                name="address"
+                value={formData.address || ""}
+                onChange={handleInputChange}
+                placeholder="Ingrese la dirección"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-2">
+                <Label htmlFor="edit-phone">Teléfono</Label>
+                <Input
+                  id="edit-phone"
+                  name="phone"
+                  value={formData.phone || ""}
+                  onChange={handleInputChange}
+                  placeholder="Ingrese el teléfono"
+                />
+              </div>
+              <div className="grid grid-cols-1 gap-2">
+                <Label htmlFor="edit-email">Email*</Label>
+                <Input
+                  id="edit-email"
+                  name="email"
+                  type="email"
+                  value={formData.email || ""}
+                  onChange={handleInputChange}
+                  placeholder="Ingrese el email"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 gap-2">
+              <Label htmlFor="edit-contact">Persona de Contacto</Label>
+              <Input
+                id="edit-contact"
+                name="contact"
+                value={formData.contact || ""}
+                onChange={handleInputChange}
+                placeholder="Ingrese la persona de contacto"
+              />
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch 
+                id="edit-status" 
+                checked={formData.status === "active"}
+                onCheckedChange={handleStatusChange}
+              />
+              <Label htmlFor="edit-status">
+                {formData.status === "active" ? "Activo" : "Inactivo"}
+              </Label>
+            </div>
+          </div>
+          <DialogFooter className="flex justify-between">
+            <Button 
+              variant="destructive" 
+              onClick={() => {
+                handleCloseEditDialog();
+                if (selectedCompany) {
+                  openDeleteDialog(selectedCompany);
+                }
+              }}
+            >
+              Eliminar
+            </Button>
+            <div>
+              <Button variant="outline" onClick={handleCloseEditDialog} className="mr-2">
+                Cancelar
+              </Button>
+              <Button 
+                onClick={handleUpdateCompany}
+                disabled={updateMutation.isPending}
+              >
+                {updateMutation.isPending ? "Guardando..." : "Guardar"}
+              </Button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Está seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción eliminará permanentemente la empresa {selectedCompany?.name}. 
+              Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteCompany}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {deleteMutation.isPending ? "Eliminando..." : "Eliminar"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 };
