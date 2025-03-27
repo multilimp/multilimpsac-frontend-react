@@ -163,7 +163,7 @@ export async function deleteQuotation(id: string): Promise<void> {
     const { error: itemsError } = await supabase
       .from('cotizacion_productos')
       .delete()
-      .eq('cotizacion_id', parseInt(id)) as any; // Using type assertion to resolve recursion
+      .eq('cotizacion_id', parseInt(id));
 
     if (itemsError) {
       console.error("Error deleting quotation items:", itemsError);
@@ -174,7 +174,7 @@ export async function deleteQuotation(id: string): Promise<void> {
     const { error } = await supabase
       .from('cotizaciones')
       .delete()
-      .eq('id', parseInt(id)) as any; // Using type assertion to resolve recursion
+      .eq('id', parseInt(id));
 
     if (error) {
       console.error("Error deleting quotation:", error);
