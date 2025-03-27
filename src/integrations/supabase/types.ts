@@ -12,66 +12,54 @@ export type Database = {
       catalogo_empresas: {
         Row: {
           codigo: string | null
-          created_at: string | null
           id: number
           id_empresa: number | null
-          updated_at: string | null
         }
         Insert: {
           codigo?: string | null
-          created_at?: string | null
           id: number
           id_empresa?: number | null
-          updated_at?: string | null
         }
         Update: {
           codigo?: string | null
-          created_at?: string | null
           id?: number
           id_empresa?: number | null
-          updated_at?: string | null
         }
         Relationships: []
       }
       clientes: {
         Row: {
-          cod_unidad: number | null
-          created_at: string | null
+          cod_unidad: string | null
           departamento: string | null
           direccion: string | null
           distrito: string | null
-          estado: number | null
+          estado: boolean | null
           id: number
           provincia: string | null
           razon_social: string | null
           ruc: string | null
-          updated_at: string | null
         }
         Insert: {
-          cod_unidad?: number | null
-          created_at?: string | null
+          cod_unidad?: string | null
           departamento?: string | null
           direccion?: string | null
           distrito?: string | null
-          estado?: number | null
+          estado?: boolean | null
           id: number
           provincia?: string | null
           razon_social?: string | null
           ruc?: string | null
-          updated_at?: string | null
         }
         Update: {
-          cod_unidad?: number | null
-          created_at?: string | null
+          cod_unidad?: string | null
           departamento?: string | null
           direccion?: string | null
           distrito?: string | null
-          estado?: number | null
+          estado?: boolean | null
           id?: number
           provincia?: string | null
           razon_social?: string | null
           ruc?: string | null
-          updated_at?: string | null
         }
         Relationships: []
       }
@@ -79,35 +67,29 @@ export type Database = {
         Row: {
           cargo: string | null
           correo: string | null
-          created_at: string | null
-          estado: number | null
+          estado: boolean | null
           id: number
           id_cliente: number | null
           nombre: string | null
           telefono: string | null
-          updated_at: string | null
         }
         Insert: {
           cargo?: string | null
           correo?: string | null
-          created_at?: string | null
-          estado?: number | null
+          estado?: boolean | null
           id: number
           id_cliente?: number | null
           nombre?: string | null
           telefono?: string | null
-          updated_at?: string | null
         }
         Update: {
           cargo?: string | null
           correo?: string | null
-          created_at?: string | null
-          estado?: number | null
+          estado?: boolean | null
           id?: number
           id_cliente?: number | null
           nombre?: string | null
           telefono?: string | null
-          updated_at?: string | null
         }
         Relationships: []
       }
@@ -115,32 +97,26 @@ export type Database = {
         Row: {
           cargo: string | null
           correo: string | null
-          created_at: string | null
           id: number
           id_cliente: number | null
           nombre: string | null
           telefono: string | null
-          updated_at: string | null
         }
         Insert: {
           cargo?: string | null
           correo?: string | null
-          created_at?: string | null
           id: number
           id_cliente?: number | null
           nombre?: string | null
           telefono?: string | null
-          updated_at?: string | null
         }
         Update: {
           cargo?: string | null
           correo?: string | null
-          created_at?: string | null
           id?: number
           id_cliente?: number | null
           nombre?: string | null
           telefono?: string | null
-          updated_at?: string | null
         }
         Relationships: []
       }
@@ -148,35 +124,29 @@ export type Database = {
         Row: {
           cargo: string | null
           correo: string | null
-          created_at: string | null
-          estado: number | null
+          estado: boolean | null
           id: number
           id_cliente: number | null
           nombre: string | null
           telefono: string | null
-          updated_at: string | null
         }
         Insert: {
           cargo?: string | null
           correo?: string | null
-          created_at?: string | null
-          estado?: number | null
+          estado?: boolean | null
           id: number
           id_cliente?: number | null
           nombre?: string | null
           telefono?: string | null
-          updated_at?: string | null
         }
         Update: {
           cargo?: string | null
           correo?: string | null
-          created_at?: string | null
-          estado?: number | null
+          estado?: boolean | null
           id?: number
           id_cliente?: number | null
           nombre?: string | null
           telefono?: string | null
-          updated_at?: string | null
         }
         Relationships: []
       }
@@ -184,35 +154,29 @@ export type Database = {
         Row: {
           cargo: string | null
           correo: string | null
-          created_at: string | null
-          estado: number | null
+          estado: boolean | null
           id: number
           id_cliente: number | null
           nombre: string | null
           telefono: string | null
-          updated_at: string | null
         }
         Insert: {
           cargo?: string | null
           correo?: string | null
-          created_at?: string | null
-          estado?: number | null
+          estado?: boolean | null
           id: number
           id_cliente?: number | null
           nombre?: string | null
           telefono?: string | null
-          updated_at?: string | null
         }
         Update: {
           cargo?: string | null
           correo?: string | null
-          created_at?: string | null
-          estado?: number | null
+          estado?: boolean | null
           id?: number
           id_cliente?: number | null
           nombre?: string | null
           telefono?: string | null
-          updated_at?: string | null
         }
         Relationships: []
       }
@@ -220,41 +184,35 @@ export type Database = {
         Row: {
           cantidad: number | null
           codigo: string | null
-          created_at: string | null
           descripcion: string | null
           id: number
           id_cotizacion: number | null
-          medida: number | null
+          medida: string | null
           p_cliente: string | null
           precio_unitario: number | null
           total: number | null
-          updated_at: string | null
         }
         Insert: {
           cantidad?: number | null
           codigo?: string | null
-          created_at?: string | null
           descripcion?: string | null
           id: number
           id_cotizacion?: number | null
-          medida?: number | null
+          medida?: string | null
           p_cliente?: string | null
           precio_unitario?: number | null
           total?: number | null
-          updated_at?: string | null
         }
         Update: {
           cantidad?: number | null
           codigo?: string | null
-          created_at?: string | null
           descripcion?: string | null
           id?: number
           id_cotizacion?: number | null
-          medida?: number | null
+          medida?: string | null
           p_cliente?: string | null
           precio_unitario?: number | null
           total?: number | null
-          updated_at?: string | null
         }
         Relationships: []
       }
@@ -265,20 +223,18 @@ export type Database = {
           c_distrito: string | null
           c_provincia: string | null
           c_referencia: string | null
-          created_at: string | null
-          estado: number | null
+          estado: boolean | null
           fecha_cotizacion: string | null
           fecha_entrega: string | null
           id: number
           id_cliente: number | null
           id_contacto_cliente: number | null
-          id_cotizacion: number | null
+          id_cotizacion: string | null
           id_empresa: number | null
           monto: number | null
           nota_pago: string | null
-          nota_pedido: number | null
+          nota_pedido: string | null
           tipo_pago: string | null
-          updated_at: string | null
         }
         Insert: {
           c_departamento?: string | null
@@ -286,20 +242,18 @@ export type Database = {
           c_distrito?: string | null
           c_provincia?: string | null
           c_referencia?: string | null
-          created_at?: string | null
-          estado?: number | null
+          estado?: boolean | null
           fecha_cotizacion?: string | null
           fecha_entrega?: string | null
           id: number
           id_cliente?: number | null
           id_contacto_cliente?: number | null
-          id_cotizacion?: number | null
+          id_cotizacion?: string | null
           id_empresa?: number | null
           monto?: number | null
           nota_pago?: string | null
-          nota_pedido?: number | null
+          nota_pedido?: string | null
           tipo_pago?: string | null
-          updated_at?: string | null
         }
         Update: {
           c_departamento?: string | null
@@ -307,76 +261,68 @@ export type Database = {
           c_distrito?: string | null
           c_provincia?: string | null
           c_referencia?: string | null
-          created_at?: string | null
-          estado?: number | null
+          estado?: boolean | null
           fecha_cotizacion?: string | null
           fecha_entrega?: string | null
           id?: number
           id_cliente?: number | null
           id_contacto_cliente?: number | null
-          id_cotizacion?: number | null
+          id_cotizacion?: string | null
           id_empresa?: number | null
           monto?: number | null
           nota_pago?: string | null
-          nota_pedido?: number | null
+          nota_pedido?: string | null
           tipo_pago?: string | null
-          updated_at?: string | null
         }
         Relationships: []
       }
       empresas: {
         Row: {
-          cod_unidad: number | null
+          cod_unidad: string | null
           correo: string | null
-          created_at: string | null
           departamento: string | null
           direccion: string | null
           direcciones: string | null
           distrito: string | null
-          estado: number | null
+          estado: boolean | null
           id: number
           logo: string | null
           provincia: string | null
           razon_social: string | null
           ruc: string | null
           telefono: string | null
-          updated_at: string | null
           web: string | null
         }
         Insert: {
-          cod_unidad?: number | null
+          cod_unidad?: string | null
           correo?: string | null
-          created_at?: string | null
           departamento?: string | null
           direccion?: string | null
           direcciones?: string | null
           distrito?: string | null
-          estado?: number | null
+          estado?: boolean | null
           id: number
           logo?: string | null
           provincia?: string | null
           razon_social?: string | null
           ruc?: string | null
           telefono?: string | null
-          updated_at?: string | null
           web?: string | null
         }
         Update: {
-          cod_unidad?: number | null
+          cod_unidad?: string | null
           correo?: string | null
-          created_at?: string | null
           departamento?: string | null
           direccion?: string | null
           direcciones?: string | null
           distrito?: string | null
-          estado?: number | null
+          estado?: boolean | null
           id?: number
           logo?: string | null
           provincia?: string | null
           razon_social?: string | null
           ruc?: string | null
           telefono?: string | null
-          updated_at?: string | null
           web?: string | null
         }
         Relationships: []
@@ -638,43 +584,37 @@ export type Database = {
       }
       proveedores: {
         Row: {
-          created_at: string | null
           departamento: string | null
           direccion: string | null
           distrito: string | null
-          estado: number | null
+          estado: boolean | null
           id: number
           monto: number | null
           provincia: string | null
           razon_social: string | null
           ruc: string | null
-          updated_at: string | null
         }
         Insert: {
-          created_at?: string | null
           departamento?: string | null
           direccion?: string | null
           distrito?: string | null
-          estado?: number | null
+          estado?: boolean | null
           id: number
           monto?: number | null
           provincia?: string | null
           razon_social?: string | null
           ruc?: string | null
-          updated_at?: string | null
         }
         Update: {
-          created_at?: string | null
           departamento?: string | null
           direccion?: string | null
           distrito?: string | null
-          estado?: number | null
+          estado?: boolean | null
           id?: number
           monto?: number | null
           provincia?: string | null
           razon_social?: string | null
           ruc?: string | null
-          updated_at?: string | null
         }
         Relationships: []
       }
