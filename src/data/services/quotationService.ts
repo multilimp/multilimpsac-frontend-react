@@ -163,7 +163,8 @@ export async function deleteQuotation(id: string): Promise<void> {
     const { error: itemsError } = await supabase
       .from('cotizacion_productos')
       .delete()
-      .eq('cotizacion_id', parseInt(id));
+      .eq('cotizacion_id', parseInt(id))
+      .returns<null>();
 
     if (itemsError) {
       console.error("Error deleting quotation items:", itemsError);
@@ -174,7 +175,8 @@ export async function deleteQuotation(id: string): Promise<void> {
     const { error } = await supabase
       .from('cotizaciones')
       .delete()
-      .eq('id', parseInt(id));
+      .eq('id', parseInt(id))
+      .returns<null>();
 
     if (error) {
       console.error("Error deleting quotation:", error);
