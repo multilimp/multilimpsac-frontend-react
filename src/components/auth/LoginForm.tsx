@@ -42,22 +42,22 @@ const LoginForm = () => {
   };
 
   return (
-    <Card className="w-full max-w-md shadow-lg border-0">
+    <Card className="w-full shadow-xl border-0 bg-white/90 backdrop-blur-sm">
       <CardHeader className="space-y-1 flex flex-col items-center">
-        <div className="mb-4">
+        <div className="mb-6 mt-2">
           <Logo />
         </div>
-        <CardTitle className="text-2xl text-center">Iniciar sesión</CardTitle>
-        <CardDescription className="text-center">
+        <CardTitle className="text-2xl font-bold text-center text-multilimp-navy">Iniciar sesión</CardTitle>
+        <CardDescription className="text-center text-multilimp-navy/70">
           Acceda al Sistema ERP de Multilimp
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
-            <Label htmlFor="email">Correo electrónico</Label>
+            <Label htmlFor="email" className="text-multilimp-navy">Correo electrónico</Label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-multilimp-green">
                 <User size={18} />
               </div>
               <Input
@@ -66,20 +66,20 @@ const LoginForm = () => {
                 placeholder="ejemplo@multilimp.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="pl-10"
+                className="pl-10 border-multilimp-green/30 focus:border-multilimp-green focus-visible:ring-multilimp-green/20"
                 required
               />
             </div>
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="password">Contraseña</Label>
-              <Button variant="link" className="p-0 h-auto text-xs" type="button">
+              <Label htmlFor="password" className="text-multilimp-navy">Contraseña</Label>
+              <Button variant="link" className="p-0 h-auto text-xs text-multilimp-green" type="button">
                 ¿Olvidó su contraseña?
               </Button>
             </div>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-multilimp-green">
                 <Lock size={18} />
               </div>
               <Input
@@ -87,13 +87,13 @@ const LoginForm = () => {
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="pl-10"
+                className="pl-10 border-multilimp-green/30 focus:border-multilimp-green focus-visible:ring-multilimp-green/20"
                 required
               />
               <Button
                 type="button"
                 variant="ghost"
-                className="absolute inset-y-0 right-0 px-3 flex items-center"
+                className="absolute inset-y-0 right-0 px-3 flex items-center text-multilimp-green hover:text-multilimp-green-dark"
                 onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -102,12 +102,12 @@ const LoginForm = () => {
           </div>
           <Button 
             type="submit" 
-            className="w-full bg-multilimp-green hover:bg-multilimp-green-dark transition-all duration-300"
+            className="w-full bg-multilimp-green hover:bg-multilimp-green-dark transition-all duration-300 mt-6"
             disabled={isSubmitting}
           >
             {isSubmitting ? "Iniciando sesión..." : "Iniciar sesión"}
           </Button>
-          <div className="text-center mt-6 p-4 bg-gray-50 rounded-lg border border-gray-100">
+          <div className="text-center mt-6 p-4 bg-gray-50/80 rounded-lg border border-gray-100">
             <p className="text-sm font-semibold text-gray-700 mb-2">Credenciales de demostración:</p>
             <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-xs text-gray-600">
               <div className="text-right font-medium">Admin:</div>

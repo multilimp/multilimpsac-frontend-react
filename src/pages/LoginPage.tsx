@@ -22,9 +22,12 @@ const LoginPage = () => {
         </div>
       </div>
       
-      {/* Columna de formulario */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
-        <LoginForm />
+      {/* Columna de formulario con fondo mejorado */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 relative">
+        <div className="absolute inset-0 bg-white/70 backdrop-blur-sm z-0"></div>
+        <div className="relative z-10 w-full max-w-md">
+          <LoginForm />
+        </div>
       </div>
     </div>
   );
