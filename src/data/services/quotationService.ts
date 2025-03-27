@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Quotation, QuotationItem } from "@/data/models/quotation";
 
@@ -55,11 +54,16 @@ export async function fetchQuotations(): Promise<Quotation[]> {
         }));
 
         // Map the quotation to our model
+        // Handle potential issue with cliente_id and razon_social
+        const clientName = typeof cotizacion.clientes === 'object' && cotizacion.clientes 
+          ? (cotizacion.clientes as any).razon_social || 'Cliente sin nombre'
+          : 'Cliente sin nombre';
+          
         return {
           id: cotizacion.id.toString(),
           number: cotizacion.codigo_cotizacion,
           clientId: cotizacion.cliente_id?.toString() || '',
-          clientName: cotizacion.clientes?.razon_social || 'Cliente sin nombre',
+          clientName,
           date: cotizacion.fecha_cotizacion || '',
           expiryDate: cotizacion.fecha_entrega || '',
           total: cotizacion.monto_total || 0,

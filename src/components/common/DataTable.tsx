@@ -8,16 +8,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { MoreHorizontal } from "lucide-react";
+import TableActions from "./TableActions";
+import TableEmptyState from "./TableEmptyState";
 
 export interface Column<T> {
   header: string;
@@ -44,6 +36,9 @@ function DataTable<T>({
   onView,
   loading = false,
 }: DataTableProps<T>) {
+  const hasActions = !!(onEdit || onDelete || onView);
+  const totalColumns = columns.length + (hasActions ? 1 : 0);
+
   return (
     <div className="border rounded-md">
       <Table>
@@ -54,28 +49,12 @@ function DataTable<T>({
                 {column.header}
               </TableHead>
             ))}
-            {(onEdit || onDelete || onView) && <TableHead>Acciones</TableHead>}
+            {hasActions && <TableHead>Acciones</TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
-          {loading ? (
-            <TableRow>
-              <TableCell
-                colSpan={columns.length + (onEdit || onDelete || onView ? 1 : 0)}
-                className="h-24 text-center"
-              >
-                Cargando datos...
-              </TableCell>
-            </TableRow>
-          ) : data.length === 0 ? (
-            <TableRow>
-              <TableCell
-                colSpan={columns.length + (onEdit || onDelete || onView ? 1 : 0)}
-                className="h-24 text-center"
-              >
-                No hay datos disponibles
-              </TableCell>
-            </TableRow>
+          {loading || data.length === 0 ? (
+            <TableEmptyState colSpan={totalColumns} loading={loading} />
           ) : (
             data.map((row) => (
               <TableRow key={String(row[idField])}>
@@ -84,38 +63,14 @@ function DataTable<T>({
                     {column.cell ? column.cell(row) : String(row[column.accessorKey] || "")}
                   </TableCell>
                 ))}
-                {(onEdit || onDelete || onView) && (
+                {hasActions && (
                   <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                          <span className="sr-only">Abrir menú</span>
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        {onView && (
-                          <DropdownMenuItem onClick={() => onView(row)}>
-                            Ver detalles
-                          </DropdownMenuItem>
-                        )}
-                        {onEdit && (
-                          <DropdownMenuItem onClick={() => onEdit(row)}>
-                            Editar
-                          </DropdownMenuItem>
-                        )}
-                        {onDelete && (
-                          <DropdownMenuItem
-                            className="text-red-600"
-                            onClick={() => onDelete(row)}
-                          >
-                            Eliminar
-                          </DropdownMenuItem>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <TableActions 
+                      row={row}
+                      onView={onView}
+                      onEdit={onEdit}
+                      onDelete={onDelete}
+                    />
                   </TableCell>
                 )}
               </TableRow>
