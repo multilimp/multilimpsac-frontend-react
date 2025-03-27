@@ -2,6 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Quotation, QuotationItem } from "@/data/models/quotation";
 
+// Define interfaces for database tables to help with type safety
 interface CotizacionesDB {
   id: number;
   codigo_cotizacion: string;
@@ -30,7 +31,7 @@ interface CotizacionProductosDB {
 
 export async function fetchQuotations(): Promise<Quotation[]> {
   try {
-    // Use type assertion to handle the Database type issues
+    // Using explicit type for the query result
     const { data: quotizacionesData, error } = await supabase
       .from('cotizaciones')
       .select(`
@@ -45,7 +46,7 @@ export async function fetchQuotations(): Promise<Quotation[]> {
         created_at,
         updated_at,
         clientes:cliente_id (razon_social)
-      `) as { data: CotizacionesDB[] | null, error: any };
+      `);
 
     if (error) {
       console.error("Error fetching quotations:", error);
@@ -58,12 +59,12 @@ export async function fetchQuotations(): Promise<Quotation[]> {
 
     // Transform the data to match our Quotation model
     const quotations: Quotation[] = await Promise.all(
-      quotizacionesData.map(async (cotizacion) => {
+      quotizacionesData.map(async (cotizacion: any) => {
         // Fetch quotation items for this quotation
         const { data: itemsData, error: itemsError } = await supabase
           .from('cotizacion_productos')
           .select('*')
-          .eq('cotizacion_id', cotizacion.id) as { data: CotizacionProductosDB[] | null, error: any };
+          .eq('cotizacion_id', cotizacion.id);
 
         if (itemsError) {
           console.error("Error fetching quotation items:", itemsError);
@@ -71,7 +72,7 @@ export async function fetchQuotations(): Promise<Quotation[]> {
         }
 
         // Map items to our model
-        const items: QuotationItem[] = (itemsData || []).map(item => ({
+        const items: QuotationItem[] = (itemsData || []).map((item: any) => ({
           id: item.id.toString(),
           productId: item.codigo || '',
           productName: item.descripcion || '',
@@ -144,7 +145,7 @@ export async function updateQuotationStatus(id: string, status: Quotation['statu
     const { error } = await supabase
       .from('cotizaciones')
       .update({ estado: dbStatus })
-      .eq('id', parseInt(id)) as { error: any };
+      .eq('id', parseInt(id));
 
     if (error) {
       console.error("Error updating quotation status:", error);
@@ -162,7 +163,7 @@ export async function deleteQuotation(id: string): Promise<void> {
     const { error: itemsError } = await supabase
       .from('cotizacion_productos')
       .delete()
-      .eq('cotizacion_id', parseInt(id)) as { error: any };
+      .eq('cotizacion_id', parseInt(id));
 
     if (itemsError) {
       console.error("Error deleting quotation items:", itemsError);
@@ -173,7 +174,7 @@ export async function deleteQuotation(id: string): Promise<void> {
     const { error } = await supabase
       .from('cotizaciones')
       .delete()
-      .eq('id', parseInt(id)) as { error: any };
+      .eq('id', parseInt(id));
 
     if (error) {
       console.error("Error deleting quotation:", error);
