@@ -32,6 +32,7 @@ interface DataTableProps<T> {
   onEdit?: (item: T) => void;
   onDelete?: (item: T) => void;
   onView?: (item: T) => void;
+  loading?: boolean;
 }
 
 function DataTable<T>({
@@ -41,6 +42,7 @@ function DataTable<T>({
   onEdit,
   onDelete,
   onView,
+  loading = false,
 }: DataTableProps<T>) {
   return (
     <div className="border rounded-md">
@@ -56,7 +58,16 @@ function DataTable<T>({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.length === 0 ? (
+          {loading ? (
+            <TableRow>
+              <TableCell
+                colSpan={columns.length + (onEdit || onDelete || onView ? 1 : 0)}
+                className="h-24 text-center"
+              >
+                Cargando datos...
+              </TableCell>
+            </TableRow>
+          ) : data.length === 0 ? (
             <TableRow>
               <TableCell
                 colSpan={columns.length + (onEdit || onDelete || onView ? 1 : 0)}
