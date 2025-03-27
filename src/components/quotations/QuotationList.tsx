@@ -34,89 +34,34 @@ import {
 } from "@/components/ui/badge";
 import { Quotation } from "@/data/models/quotation";
 import { useToast } from "@/hooks/use-toast";
-
-// Mock data for demonstration
-const mockQuotations: Quotation[] = [
-  {
-    id: "1",
-    number: "COT-2023-001",
-    clientId: "1",
-    clientName: "Empresa ABC",
-    date: "2023-09-01",
-    expiryDate: "2023-09-30",
-    total: 1500.0,
-    status: "sent",
-    items: [
-      {
-        id: "1",
-        productId: "1",
-        productName: "Servicio de Limpieza",
-        description: "Limpieza de oficinas",
-        quantity: 1,
-        unitPrice: 1500.0,
-        total: 1500.0,
-      },
-    ],
-    createdBy: "1",
-    createdAt: "2023-09-01T10:00:00",
-    updatedAt: "2023-09-01T10:00:00",
-  },
-  {
-    id: "2",
-    number: "COT-2023-002",
-    clientId: "2",
-    clientName: "Empresa XYZ",
-    date: "2023-09-05",
-    expiryDate: "2023-10-05",
-    total: 2500.0,
-    status: "approved",
-    items: [
-      {
-        id: "2",
-        productId: "2",
-        productName: "Mantenimiento",
-        description: "Mantenimiento de equipos",
-        quantity: 2,
-        unitPrice: 1250.0,
-        total: 2500.0,
-      },
-    ],
-    notes: "Cliente solicita factura a 30 días",
-    createdBy: "1",
-    createdAt: "2023-09-05T14:30:00",
-    updatedAt: "2023-09-06T09:15:00",
-  },
-  {
-    id: "3",
-    number: "COT-2023-003",
-    clientId: "3",
-    clientName: "Corporación DEF",
-    date: "2023-09-10",
-    expiryDate: "2023-09-25",
-    total: 3200.0,
-    status: "draft",
-    items: [
-      {
-        id: "3",
-        productId: "3",
-        productName: "Fumigación",
-        description: "Servicio de fumigación completo",
-        quantity: 1,
-        unitPrice: 3200.0,
-        total: 3200.0,
-      },
-    ],
-    createdBy: "2",
-    createdAt: "2023-09-10T16:45:00",
-    updatedAt: "2023-09-10T16:45:00",
-  },
-];
+import { fetchQuotations, updateQuotationStatus, deleteQuotation } from "@/data/services/quotationService";
 
 const QuotationList: React.FC = () => {
-  const [quotations, setQuotations] = useState<Quotation[]>(mockQuotations);
+  const [quotations, setQuotations] = useState<Quotation[]>([]);
   const [selectedQuotation, setSelectedQuotation] = useState<Quotation | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+
+  useEffect(() => {
+    loadQuotations();
+  }, []);
+
+  const loadQuotations = async () => {
+    try {
+      setIsLoading(true);
+      const data = await fetchQuotations();
+      setQuotations(data);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error al cargar cotizaciones",
+        description: error instanceof Error ? error.message : "Ocurrió un error",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleEdit = (quotation: Quotation) => {
     // Implementation for editing
@@ -139,36 +84,56 @@ const QuotationList: React.FC = () => {
     setDeleteDialogOpen(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (selectedQuotation) {
-      setQuotations(quotations.filter(q => q.id !== selectedQuotation.id));
-      toast({
-        title: "Cotización eliminada",
-        description: `Se ha eliminado la cotización ${selectedQuotation.number}`,
-      });
-      setDeleteDialogOpen(false);
+      try {
+        await deleteQuotation(selectedQuotation.id);
+        setQuotations(quotations.filter(q => q.id !== selectedQuotation.id));
+        toast({
+          title: "Cotización eliminada",
+          description: `Se ha eliminado la cotización ${selectedQuotation.number}`,
+        });
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Error al eliminar",
+          description: error instanceof Error ? error.message : "Ocurrió un error al eliminar la cotización",
+        });
+      } finally {
+        setDeleteDialogOpen(false);
+      }
     }
   };
 
-  const handleStatusChange = (quotation: Quotation, newStatus: Quotation['status']) => {
-    setQuotations(
-      quotations.map(q => 
-        q.id === quotation.id ? { ...q, status: newStatus } : q
-      )
-    );
-    
-    const statusMessages = {
-      approved: "aprobada",
-      rejected: "rechazada",
-      sent: "enviada al cliente",
-      draft: "movida a borrador",
-      expired: "marcada como expirada"
-    };
-    
-    toast({
-      title: "Estado actualizado",
-      description: `La cotización ${quotation.number} ha sido ${statusMessages[newStatus]}.`,
-    });
+  const handleStatusChange = async (quotation: Quotation, newStatus: Quotation['status']) => {
+    try {
+      await updateQuotationStatus(quotation.id, newStatus);
+      
+      setQuotations(
+        quotations.map(q => 
+          q.id === quotation.id ? { ...q, status: newStatus } : q
+        )
+      );
+      
+      const statusMessages = {
+        approved: "aprobada",
+        rejected: "rechazada",
+        sent: "enviada al cliente",
+        draft: "movida a borrador",
+        expired: "marcada como expirada"
+      };
+      
+      toast({
+        title: "Estado actualizado",
+        description: `La cotización ${quotation.number} ha sido ${statusMessages[newStatus]}.`,
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error al actualizar estado",
+        description: error instanceof Error ? error.message : "Ocurrió un error al actualizar el estado",
+      });
+    }
   };
 
   const getStatusBadge = (status: Quotation['status']) => {
@@ -224,6 +189,7 @@ const QuotationList: React.FC = () => {
           onView={handleView}
           onEdit={handleEdit}
           onDelete={handleDelete}
+          loading={isLoading}
         />
         
         <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
