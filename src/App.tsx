@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -21,7 +22,7 @@ import { initializeAuthStore } from "@/store/authStore";
 
 // Lazy load pages
 const Dashboard = lazy(() => import("./pages/Dashboard"));
-const LoginPage = lazy(() => import("./pages/LoginPage"));
+const LoginPage = lazy(() => import("./features/auth/pages/LoginPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const CompanyPage = lazy(() => import("./pages/CompanyPage"));
 const ClientPage = lazy(() => import("./pages/ClientPage"));
