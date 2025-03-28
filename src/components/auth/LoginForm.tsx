@@ -7,15 +7,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import Logo from "@/components/layout/Logo";
-import { useAuthStore } from "@/store/authStore";
 import { Eye, EyeOff, User, Lock } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const login = useAuthStore(state => state.login);
+  const { login } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -31,11 +31,8 @@ const LoginForm = () => {
       });
       navigate("/");
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error de inicio de sesión",
-        description: error instanceof Error ? error.message : "Ocurrió un error",
-      });
+      console.error("Error de login:", error);
+      // El mensaje de error ya se muestra en el contexto de autenticación
     } finally {
       setIsSubmitting(false);
     }
@@ -107,7 +104,7 @@ const LoginForm = () => {
           >
             {isSubmitting ? "Iniciando sesión..." : "Iniciar sesión"}
           </Button>
-          {/* <div className="text-center mt-6 p-4 bg-gray-50/80 rounded-lg border border-gray-100">
+          <div className="text-center mt-6 p-4 bg-gray-50/80 rounded-lg border border-gray-100">
             <p className="text-sm font-semibold text-gray-700 mb-2">Credenciales de demostración:</p>
             <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-xs text-gray-600">
               <div className="text-right font-medium">Admin:</div>
@@ -115,7 +112,7 @@ const LoginForm = () => {
               <div className="text-right font-medium">Usuario:</div>
               <div>usuario@multilimp.com / user123</div>
             </div>
-          </div> */}
+          </div>
         </form>
       </CardContent>
     </Card>

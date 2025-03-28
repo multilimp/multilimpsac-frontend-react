@@ -16,77 +16,11 @@ interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
+  setUser: (user: User | null) => void;
+  setAuthenticated: (isAuthenticated: boolean) => void;
   setLoading: (loading: boolean) => void;
   hasPermission: (permission: string) => boolean;
 }
-
-// Permissions by role
-const ROLE_PERMISSIONS = {
-  admin: [
-    "view_dashboard",
-    "manage_users",
-    "manage_companies",
-    "manage_clients",
-    "manage_suppliers",
-    "manage_transports",
-    "manage_quotes",
-    "manage_sales",
-    "manage_orders",
-    "manage_treasury",
-    "manage_tracking",
-    "manage_billing",
-    "manage_collections",
-    "view_reports",
-  ],
-  user: [
-    "view_dashboard",
-    "manage_companies",
-    "manage_clients",
-    "manage_suppliers",
-    "manage_transports",
-    "manage_quotes",
-    "manage_sales",
-    "manage_orders",
-    "manage_treasury",
-    "manage_tracking",
-    "manage_billing",
-    "manage_collections",
-    "view_reports",
-  ],
-  manager: [
-    "view_dashboard",
-    "manage_clients",
-    "manage_suppliers",
-    "manage_quotes",
-    "manage_sales",
-    "manage_orders",
-    "view_reports",
-  ],
-};
-
-// Mock user data
-const MOCK_USERS = [
-  {
-    id: "1",
-    name: "Admin Usuario",
-    email: "admin@multilimp.com",
-    password: "admin123",
-    role: "admin" as const,
-    avatar: "",
-    permissions: ROLE_PERMISSIONS.admin,
-  },
-  {
-    id: "2",
-    name: "Usuario Regular",
-    email: "usuario@multilimp.com",
-    password: "user123",
-    role: "user" as const,
-    avatar: "",
-    permissions: ROLE_PERMISSIONS.user,
-  },
-];
 
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -94,35 +28,9 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       isAuthenticated: false,
       isLoading: true,
+      setUser: (user) => set({ user }),
+      setAuthenticated: (isAuthenticated) => set({ isAuthenticated }),
       setLoading: (loading) => set({ isLoading: loading }),
-      login: async (email, password) => {
-        set({ isLoading: true });
-
-        // Simulate API call delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        const foundUser = MOCK_USERS.find(u => u.email === email && u.password === password);
-
-        if (!foundUser) {
-          set({ isLoading: false });
-          throw new Error("Credenciales incorrectas");
-        }
-
-        // Remove password from user object
-        const { password: _, ...userWithoutPassword } = foundUser;
-
-        set({
-          user: userWithoutPassword,
-          isAuthenticated: true,
-          isLoading: false
-        });
-      },
-      logout: () => {
-        set({
-          user: null,
-          isAuthenticated: false
-        });
-      },
       hasPermission: (permission) => {
         const { user } = get();
         // Protección contra null y undefined

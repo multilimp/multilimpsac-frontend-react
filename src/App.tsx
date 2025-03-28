@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -33,6 +32,7 @@ const ModulePage = lazy(() => import("./pages/ModulePage"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 const SalesReportPage = lazy(() => import("./pages/reports/SalesReportPage"));
+const UsersManagementPage = lazy(() => import("./features/auth/pages/UsersManagementPage"));
 
 // Loading component
 const LoadingFallback = () => (
@@ -269,6 +269,16 @@ const App = () => {
                     element={
                       <RequireAuth>
                         <SettingsPage />
+                      </RequireAuth>
+                    } 
+                  />
+                  
+                  {/* Admin */}
+                  <Route 
+                    path="/admin/usuarios" 
+                    element={
+                      <RequireAuth>
+                        <UsersManagementPage />
                       </RequireAuth>
                     } 
                   />
