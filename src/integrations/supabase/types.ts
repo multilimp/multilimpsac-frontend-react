@@ -9,27 +9,64 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      banco_proveedores: {
+        Row: {
+          banco: string | null
+          created_at: string | null
+          estado: boolean | null
+          id: number
+          numero_cuenta: string | null
+          proveedor_id: number
+          updated_at: string | null
+        }
+        Insert: {
+          banco?: string | null
+          created_at?: string | null
+          estado?: boolean | null
+          id: number
+          numero_cuenta?: string | null
+          proveedor_id: number
+          updated_at?: string | null
+        }
+        Update: {
+          banco?: string | null
+          created_at?: string | null
+          estado?: boolean | null
+          id?: number
+          numero_cuenta?: string | null
+          proveedor_id?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       catalogo_empresas: {
         Row: {
           codigo: string | null
+          created_at: string | null
+          empresa_id: number | null
           id: number
-          id_empresa: number | null
+          updated_at: string | null
         }
         Insert: {
           codigo?: string | null
+          created_at?: string | null
+          empresa_id?: number | null
           id: number
-          id_empresa?: number | null
+          updated_at?: string | null
         }
         Update: {
           codigo?: string | null
+          created_at?: string | null
+          empresa_id?: number | null
           id?: number
-          id_empresa?: number | null
+          updated_at?: string | null
         }
         Relationships: []
       }
       clientes: {
         Row: {
           cod_unidad: string | null
+          created_at: string | null
           departamento: string | null
           direccion: string | null
           distrito: string | null
@@ -38,9 +75,11 @@ export type Database = {
           provincia: string | null
           razon_social: string | null
           ruc: string | null
+          updated_at: string | null
         }
         Insert: {
           cod_unidad?: string | null
+          created_at?: string | null
           departamento?: string | null
           direccion?: string | null
           distrito?: string | null
@@ -49,9 +88,11 @@ export type Database = {
           provincia?: string | null
           razon_social?: string | null
           ruc?: string | null
+          updated_at?: string | null
         }
         Update: {
           cod_unidad?: string | null
+          created_at?: string | null
           departamento?: string | null
           direccion?: string | null
           distrito?: string | null
@@ -60,36 +101,43 @@ export type Database = {
           provincia?: string | null
           razon_social?: string | null
           ruc?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
       contacto_clientes: {
         Row: {
           cargo: string | null
+          cliente_id: number | null
           correo: string | null
+          created_at: string | null
           estado: boolean | null
           id: number
-          id_cliente: number | null
           nombre: string | null
           telefono: string | null
+          updated_at: string | null
         }
         Insert: {
           cargo?: string | null
+          cliente_id?: number | null
           correo?: string | null
+          created_at?: string | null
           estado?: boolean | null
           id: number
-          id_cliente?: number | null
           nombre?: string | null
           telefono?: string | null
+          updated_at?: string | null
         }
         Update: {
           cargo?: string | null
+          cliente_id?: number | null
           correo?: string | null
+          created_at?: string | null
           estado?: boolean | null
           id?: number
-          id_cliente?: number | null
           nombre?: string | null
           telefono?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -97,26 +145,32 @@ export type Database = {
         Row: {
           cargo: string | null
           correo: string | null
+          created_at: string | null
+          empresa_id: number | null
           id: number
-          id_cliente: number | null
           nombre: string | null
           telefono: string | null
+          updated_at: string | null
         }
         Insert: {
           cargo?: string | null
           correo?: string | null
+          created_at?: string | null
+          empresa_id?: number | null
           id: number
-          id_cliente?: number | null
           nombre?: string | null
           telefono?: string | null
+          updated_at?: string | null
         }
         Update: {
           cargo?: string | null
           correo?: string | null
+          created_at?: string | null
+          empresa_id?: number | null
           id?: number
-          id_cliente?: number | null
           nombre?: string | null
           telefono?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -124,29 +178,35 @@ export type Database = {
         Row: {
           cargo: string | null
           correo: string | null
+          created_at: string | null
           estado: boolean | null
           id: number
-          id_cliente: number | null
           nombre: string | null
+          proveedor_id: number | null
           telefono: string | null
+          updated_at: string | null
         }
         Insert: {
           cargo?: string | null
           correo?: string | null
+          created_at?: string | null
           estado?: boolean | null
           id: number
-          id_cliente?: number | null
           nombre?: string | null
+          proveedor_id?: number | null
           telefono?: string | null
+          updated_at?: string | null
         }
         Update: {
           cargo?: string | null
           correo?: string | null
+          created_at?: string | null
           estado?: boolean | null
           id?: number
-          id_cliente?: number | null
           nombre?: string | null
+          proveedor_id?: number | null
           telefono?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -154,29 +214,35 @@ export type Database = {
         Row: {
           cargo: string | null
           correo: string | null
+          created_at: string | null
           estado: boolean | null
           id: number
-          id_cliente: number | null
           nombre: string | null
           telefono: string | null
+          transporte_id: number | null
+          updated_at: string | null
         }
         Insert: {
           cargo?: string | null
           correo?: string | null
+          created_at?: string | null
           estado?: boolean | null
           id: number
-          id_cliente?: number | null
           nombre?: string | null
           telefono?: string | null
+          transporte_id?: number | null
+          updated_at?: string | null
         }
         Update: {
           cargo?: string | null
           correo?: string | null
+          created_at?: string | null
           estado?: boolean | null
           id?: number
-          id_cliente?: number | null
           nombre?: string | null
           telefono?: string | null
+          transporte_id?: number | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -184,102 +250,115 @@ export type Database = {
         Row: {
           cantidad: number | null
           codigo: string | null
+          cotizacion_id: number | null
+          created_at: string | null
           descripcion: string | null
           id: number
-          id_cotizacion: number | null
           medida: string | null
           p_cliente: string | null
           precio_unitario: number | null
           total: number | null
+          updated_at: string | null
         }
         Insert: {
           cantidad?: number | null
           codigo?: string | null
+          cotizacion_id?: number | null
+          created_at?: string | null
           descripcion?: string | null
           id: number
-          id_cotizacion?: number | null
           medida?: string | null
           p_cliente?: string | null
           precio_unitario?: number | null
           total?: number | null
+          updated_at?: string | null
         }
         Update: {
           cantidad?: number | null
           codigo?: string | null
+          cotizacion_id?: number | null
+          created_at?: string | null
           descripcion?: string | null
           id?: number
-          id_cotizacion?: number | null
           medida?: string | null
           p_cliente?: string | null
           precio_unitario?: number | null
           total?: number | null
+          updated_at?: string | null
         }
         Relationships: []
       }
       cotizaciones: {
         Row: {
-          c_departamento: string | null
-          c_direccion: string | null
-          c_distrito: string | null
-          c_provincia: string | null
-          c_referencia: string | null
+          cliente_id: number | null
+          codigo_cotizacion: string | null
+          contacto_cliente_id: number | null
+          created_at: string | null
+          departamento_entrega: string | null
+          direccion_entrega: string | null
+          distrito_entrega: string | null
+          empresa_id: number | null
           estado: boolean | null
           fecha_cotizacion: string | null
           fecha_entrega: string | null
           id: number
-          id_cliente: number | null
-          id_contacto_cliente: number | null
-          id_cotizacion: string | null
-          id_empresa: number | null
           monto: number | null
           nota_pago: string | null
           nota_pedido: string | null
+          provincia_entrega: string | null
+          referencia_entrega: string | null
           tipo_pago: string | null
+          updated_at: string | null
         }
         Insert: {
-          c_departamento?: string | null
-          c_direccion?: string | null
-          c_distrito?: string | null
-          c_provincia?: string | null
-          c_referencia?: string | null
+          cliente_id?: number | null
+          codigo_cotizacion?: string | null
+          contacto_cliente_id?: number | null
+          created_at?: string | null
+          departamento_entrega?: string | null
+          direccion_entrega?: string | null
+          distrito_entrega?: string | null
+          empresa_id?: number | null
           estado?: boolean | null
           fecha_cotizacion?: string | null
           fecha_entrega?: string | null
           id: number
-          id_cliente?: number | null
-          id_contacto_cliente?: number | null
-          id_cotizacion?: string | null
-          id_empresa?: number | null
           monto?: number | null
           nota_pago?: string | null
           nota_pedido?: string | null
+          provincia_entrega?: string | null
+          referencia_entrega?: string | null
           tipo_pago?: string | null
+          updated_at?: string | null
         }
         Update: {
-          c_departamento?: string | null
-          c_direccion?: string | null
-          c_distrito?: string | null
-          c_provincia?: string | null
-          c_referencia?: string | null
+          cliente_id?: number | null
+          codigo_cotizacion?: string | null
+          contacto_cliente_id?: number | null
+          created_at?: string | null
+          departamento_entrega?: string | null
+          direccion_entrega?: string | null
+          distrito_entrega?: string | null
+          empresa_id?: number | null
           estado?: boolean | null
           fecha_cotizacion?: string | null
           fecha_entrega?: string | null
           id?: number
-          id_cliente?: number | null
-          id_contacto_cliente?: number | null
-          id_cotizacion?: string | null
-          id_empresa?: number | null
           monto?: number | null
           nota_pago?: string | null
           nota_pedido?: string | null
+          provincia_entrega?: string | null
+          referencia_entrega?: string | null
           tipo_pago?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
       empresas: {
         Row: {
-          cod_unidad: string | null
+          cod_unidad: number | null
           correo: string | null
+          created_at: string | null
           departamento: string | null
           direccion: string | null
           direcciones: string | null
@@ -291,11 +370,13 @@ export type Database = {
           razon_social: string | null
           ruc: string | null
           telefono: string | null
+          updated_at: string | null
           web: string | null
         }
         Insert: {
-          cod_unidad?: string | null
+          cod_unidad?: number | null
           correo?: string | null
+          created_at?: string | null
           departamento?: string | null
           direccion?: string | null
           direcciones?: string | null
@@ -307,11 +388,13 @@ export type Database = {
           razon_social?: string | null
           ruc?: string | null
           telefono?: string | null
+          updated_at?: string | null
           web?: string | null
         }
         Update: {
-          cod_unidad?: string | null
+          cod_unidad?: number | null
           correo?: string | null
+          created_at?: string | null
           departamento?: string | null
           direccion?: string | null
           direcciones?: string | null
@@ -323,6 +406,7 @@ export type Database = {
           razon_social?: string | null
           ruc?: string | null
           telefono?: string | null
+          updated_at?: string | null
           web?: string | null
         }
         Relationships: []
@@ -336,7 +420,6 @@ export type Database = {
           forma_envio: string | null
           grr: string | null
           id: number
-          id_ventas: number | null
           re_detraccion: string | null
           re_factura: string | null
           re_fecha_factura: string | null
@@ -345,6 +428,7 @@ export type Database = {
           re_retencion: string | null
           retencion: string | null
           updated_at: string | null
+          venta_id: number | null
         }
         Insert: {
           created_at?: string | null
@@ -354,7 +438,6 @@ export type Database = {
           forma_envio?: string | null
           grr?: string | null
           id: number
-          id_ventas?: number | null
           re_detraccion?: string | null
           re_factura?: string | null
           re_fecha_factura?: string | null
@@ -363,6 +446,7 @@ export type Database = {
           re_retencion?: string | null
           retencion?: string | null
           updated_at?: string | null
+          venta_id?: number | null
         }
         Update: {
           created_at?: string | null
@@ -372,7 +456,6 @@ export type Database = {
           forma_envio?: string | null
           grr?: string | null
           id?: number
-          id_ventas?: number | null
           re_detraccion?: string | null
           re_factura?: string | null
           re_fecha_factura?: string | null
@@ -381,6 +464,7 @@ export type Database = {
           re_retencion?: string | null
           retencion?: string | null
           updated_at?: string | null
+          venta_id?: number | null
         }
         Relationships: []
       }
@@ -391,7 +475,7 @@ export type Database = {
           fecha_gestion: string | null
           historial: string | null
           id: number
-          id_seguimiento: number | null
+          seguimiento_id: number | null
           updated_at: string | null
         }
         Insert: {
@@ -400,7 +484,7 @@ export type Database = {
           fecha_gestion?: string | null
           historial?: string | null
           id: number
-          id_seguimiento?: number | null
+          seguimiento_id?: number | null
           updated_at?: string | null
         }
         Update: {
@@ -409,7 +493,7 @@ export type Database = {
           fecha_gestion?: string | null
           historial?: string | null
           id?: number
-          id_seguimiento?: number | null
+          seguimiento_id?: number | null
           updated_at?: string | null
         }
         Relationships: []
@@ -422,11 +506,11 @@ export type Database = {
           created_at: string | null
           descripcion: string | null
           id: number
-          id_orden_pedido: number | null
-          id_seguimiento: number | null
-          medida: number | null
+          medida: string | null
+          orden_pedido_id: string | null
           p_cliente: string | null
           precio_unitario: number | null
+          seguimiento_id: string | null
           total: number | null
           updated_at: string | null
         }
@@ -437,11 +521,11 @@ export type Database = {
           created_at?: string | null
           descripcion?: string | null
           id: number
-          id_orden_pedido?: number | null
-          id_seguimiento?: number | null
-          medida?: number | null
+          medida?: string | null
+          orden_pedido_id?: string | null
           p_cliente?: string | null
           precio_unitario?: number | null
+          seguimiento_id?: string | null
           total?: number | null
           updated_at?: string | null
         }
@@ -452,11 +536,11 @@ export type Database = {
           created_at?: string | null
           descripcion?: string | null
           id?: number
-          id_orden_pedido?: number | null
-          id_seguimiento?: number | null
-          medida?: number | null
+          medida?: string | null
+          orden_pedido_id?: string | null
           p_cliente?: string | null
           precio_unitario?: number | null
+          seguimiento_id?: string | null
           total?: number | null
           updated_at?: string | null
         }
@@ -465,30 +549,29 @@ export type Database = {
       orden_pedidos: {
         Row: {
           cargo_oea: string | null
+          codigo_op: string | null
           contacto_proveedor: string | null
           contacto_transporte: string | null
           cot_transporte: string | null
           created_at: string | null
           embalaje: string | null
-          estado_op: number | null
+          empresa_id: number | null
+          estado_op: string | null
           etiquetado: string | null
           fecha_despacho: string | null
           fecha_entrega: string | null
-          fecha_orden_pedido: number | null
+          fecha_orden_pedido: string | null
           fecha_programacion: string | null
           fecha_recepcion: string | null
           flete: string | null
           id: number
-          id_empresa: number | null
-          id_op: number | null
-          id_proveedor: number | null
-          id_seguimiento: number | null
-          id_transporte: number | null
           nota_op: string | null
           nota_pago: string | null
-          nota_pedido: number | null
+          nota_pedido: string | null
           observaciones: string | null
+          proveedor_id: number | null
           retorno_mercaderia: string | null
+          seguimiento_id: number | null
           t_departamento: string | null
           t_direccion: string | null
           t_distrito: string | null
@@ -499,35 +582,35 @@ export type Database = {
           tipo_envio: string | null
           tipo_pago: string | null
           total_proveedor: number | null
+          transporte_id: number | null
           transporte_nota: string | null
           updated_at: string | null
         }
         Insert: {
           cargo_oea?: string | null
+          codigo_op?: string | null
           contacto_proveedor?: string | null
           contacto_transporte?: string | null
           cot_transporte?: string | null
           created_at?: string | null
           embalaje?: string | null
-          estado_op?: number | null
+          empresa_id?: number | null
+          estado_op?: string | null
           etiquetado?: string | null
           fecha_despacho?: string | null
           fecha_entrega?: string | null
-          fecha_orden_pedido?: number | null
+          fecha_orden_pedido?: string | null
           fecha_programacion?: string | null
           fecha_recepcion?: string | null
           flete?: string | null
           id: number
-          id_empresa?: number | null
-          id_op?: number | null
-          id_proveedor?: number | null
-          id_seguimiento?: number | null
-          id_transporte?: number | null
           nota_op?: string | null
           nota_pago?: string | null
-          nota_pedido?: number | null
+          nota_pedido?: string | null
           observaciones?: string | null
+          proveedor_id?: number | null
           retorno_mercaderia?: string | null
+          seguimiento_id?: number | null
           t_departamento?: string | null
           t_direccion?: string | null
           t_distrito?: string | null
@@ -538,35 +621,35 @@ export type Database = {
           tipo_envio?: string | null
           tipo_pago?: string | null
           total_proveedor?: number | null
+          transporte_id?: number | null
           transporte_nota?: string | null
           updated_at?: string | null
         }
         Update: {
           cargo_oea?: string | null
+          codigo_op?: string | null
           contacto_proveedor?: string | null
           contacto_transporte?: string | null
           cot_transporte?: string | null
           created_at?: string | null
           embalaje?: string | null
-          estado_op?: number | null
+          empresa_id?: number | null
+          estado_op?: string | null
           etiquetado?: string | null
           fecha_despacho?: string | null
           fecha_entrega?: string | null
-          fecha_orden_pedido?: number | null
+          fecha_orden_pedido?: string | null
           fecha_programacion?: string | null
           fecha_recepcion?: string | null
           flete?: string | null
           id?: number
-          id_empresa?: number | null
-          id_op?: number | null
-          id_proveedor?: number | null
-          id_seguimiento?: number | null
-          id_transporte?: number | null
           nota_op?: string | null
           nota_pago?: string | null
-          nota_pedido?: number | null
+          nota_pedido?: string | null
           observaciones?: string | null
+          proveedor_id?: number | null
           retorno_mercaderia?: string | null
+          seguimiento_id?: number | null
           t_departamento?: string | null
           t_direccion?: string | null
           t_distrito?: string | null
@@ -577,6 +660,7 @@ export type Database = {
           tipo_envio?: string | null
           tipo_pago?: string | null
           total_proveedor?: number | null
+          transporte_id?: number | null
           transporte_nota?: string | null
           updated_at?: string | null
         }
@@ -584,6 +668,7 @@ export type Database = {
       }
       proveedores: {
         Row: {
+          created_at: string | null
           departamento: string | null
           direccion: string | null
           distrito: string | null
@@ -593,8 +678,10 @@ export type Database = {
           provincia: string | null
           razon_social: string | null
           ruc: string | null
+          updated_at: string | null
         }
         Insert: {
+          created_at?: string | null
           departamento?: string | null
           direccion?: string | null
           distrito?: string | null
@@ -604,8 +691,10 @@ export type Database = {
           provincia?: string | null
           razon_social?: string | null
           ruc?: string | null
+          updated_at?: string | null
         }
         Update: {
+          created_at?: string | null
           departamento?: string | null
           direccion?: string | null
           distrito?: string | null
@@ -615,6 +704,7 @@ export type Database = {
           provincia?: string | null
           razon_social?: string | null
           ruc?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -625,8 +715,8 @@ export type Database = {
           descripcion: string | null
           fecha_pago: string | null
           id: number
-          id_proveedor: number | null
           monto: number | null
+          proveedor_id: number | null
           tipo: string | null
           total: number | null
           updated_at: string | null
@@ -637,8 +727,8 @@ export type Database = {
           descripcion?: string | null
           fecha_pago?: string | null
           id: number
-          id_proveedor?: number | null
           monto?: number | null
+          proveedor_id?: number | null
           tipo?: string | null
           total?: number | null
           updated_at?: string | null
@@ -649,8 +739,8 @@ export type Database = {
           descripcion?: string | null
           fecha_pago?: string | null
           id?: number
-          id_proveedor?: number | null
           monto?: number | null
+          proveedor_id?: number | null
           tipo?: string | null
           total?: number | null
           updated_at?: string | null
@@ -664,15 +754,18 @@ export type Database = {
           cdepartamento: string | null
           cdireccion: string | null
           cdistrito: string | null
+          cliente_id: number | null
+          codigo_venta: string | null
           contacto_cliente: string | null
           contacto_cobrador: string | null
           cprovincia: string | null
           created_at: string | null
           creferencia: string | null
           detraccion: string | null
+          empresa_id: number | null
           estado_activo: number | null
           estado_facturacion: number | null
-          estado_moroza: number | null
+          estado_moroza: string | null
           estado_tesoreria: number | null
           etapa_siaf: string | null
           factura: string | null
@@ -688,9 +781,6 @@ export type Database = {
           forma_envio: string | null
           grr: string | null
           id: number
-          id_cliente: number | null
-          id_empresa: number | null
-          id_venta: number | null
           inicio_cobranza: string | null
           monto_detraccion: number | null
           monto_retencion: number | null
@@ -700,7 +790,7 @@ export type Database = {
           oce: string | null
           ocf: string | null
           op_proveedor: string | null
-          penalidad: number | null
+          penalidad: string | null
           peru_compras: string | null
           productos: string | null
           proxima_gestion: string | null
@@ -720,15 +810,18 @@ export type Database = {
           cdepartamento?: string | null
           cdireccion?: string | null
           cdistrito?: string | null
+          cliente_id?: number | null
+          codigo_venta?: string | null
           contacto_cliente?: string | null
           contacto_cobrador?: string | null
           cprovincia?: string | null
           created_at?: string | null
           creferencia?: string | null
           detraccion?: string | null
+          empresa_id?: number | null
           estado_activo?: number | null
           estado_facturacion?: number | null
-          estado_moroza?: number | null
+          estado_moroza?: string | null
           estado_tesoreria?: number | null
           etapa_siaf?: string | null
           factura?: string | null
@@ -744,9 +837,6 @@ export type Database = {
           forma_envio?: string | null
           grr?: string | null
           id: number
-          id_cliente?: number | null
-          id_empresa?: number | null
-          id_venta?: number | null
           inicio_cobranza?: string | null
           monto_detraccion?: number | null
           monto_retencion?: number | null
@@ -756,7 +846,7 @@ export type Database = {
           oce?: string | null
           ocf?: string | null
           op_proveedor?: string | null
-          penalidad?: number | null
+          penalidad?: string | null
           peru_compras?: string | null
           productos?: string | null
           proxima_gestion?: string | null
@@ -776,15 +866,18 @@ export type Database = {
           cdepartamento?: string | null
           cdireccion?: string | null
           cdistrito?: string | null
+          cliente_id?: number | null
+          codigo_venta?: string | null
           contacto_cliente?: string | null
           contacto_cobrador?: string | null
           cprovincia?: string | null
           created_at?: string | null
           creferencia?: string | null
           detraccion?: string | null
+          empresa_id?: number | null
           estado_activo?: number | null
           estado_facturacion?: number | null
-          estado_moroza?: number | null
+          estado_moroza?: string | null
           estado_tesoreria?: number | null
           etapa_siaf?: string | null
           factura?: string | null
@@ -800,9 +893,6 @@ export type Database = {
           forma_envio?: string | null
           grr?: string | null
           id?: number
-          id_cliente?: number | null
-          id_empresa?: number | null
-          id_venta?: number | null
           inicio_cobranza?: string | null
           monto_detraccion?: number | null
           monto_retencion?: number | null
@@ -812,7 +902,7 @@ export type Database = {
           oce?: string | null
           ocf?: string | null
           op_proveedor?: string | null
-          penalidad?: number | null
+          penalidad?: string | null
           peru_compras?: string | null
           productos?: string | null
           proxima_gestion?: string | null
@@ -835,8 +925,8 @@ export type Database = {
           descripcion: string | null
           fecha_pago: string | null
           id: number
-          id_orden_pedido: number | null
-          id_seguimiento: number | null
+          orden_pedido_id: number | null
+          seguimiento_id: number | null
           total: number | null
           updated_at: string | null
         }
@@ -846,8 +936,8 @@ export type Database = {
           descripcion?: string | null
           fecha_pago?: string | null
           id: number
-          id_orden_pedido?: number | null
-          id_seguimiento?: number | null
+          orden_pedido_id?: number | null
+          seguimiento_id?: number | null
           total?: number | null
           updated_at?: string | null
         }
@@ -857,8 +947,8 @@ export type Database = {
           descripcion?: string | null
           fecha_pago?: string | null
           id?: number
-          id_orden_pedido?: number | null
-          id_seguimiento?: number | null
+          orden_pedido_id?: number | null
+          seguimiento_id?: number | null
           total?: number | null
           updated_at?: string | null
         }
@@ -871,7 +961,7 @@ export type Database = {
           departamento: string | null
           direccion: string | null
           distrito: string | null
-          estado: number | null
+          estado: boolean | null
           id: number
           provincia: string | null
           razon_social: string | null
@@ -884,7 +974,7 @@ export type Database = {
           departamento?: string | null
           direccion?: string | null
           distrito?: string | null
-          estado?: number | null
+          estado?: boolean | null
           id: number
           provincia?: string | null
           razon_social?: string | null
@@ -897,59 +987,11 @@ export type Database = {
           departamento?: string | null
           direccion?: string | null
           distrito?: string | null
-          estado?: number | null
+          estado?: boolean | null
           id?: number
           provincia?: string | null
           razon_social?: string | null
           ruc?: string | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      users: {
-        Row: {
-          apellido: number | null
-          created_at: string | null
-          email: string | null
-          email_verified_at: string | null
-          foto: string | null
-          id: number
-          name: string | null
-          nombre: string | null
-          password: string | null
-          remember_token: string | null
-          rol: string | null
-          tabla: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          apellido?: number | null
-          created_at?: string | null
-          email?: string | null
-          email_verified_at?: string | null
-          foto?: string | null
-          id: number
-          name?: string | null
-          nombre?: string | null
-          password?: string | null
-          remember_token?: string | null
-          rol?: string | null
-          tabla?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          apellido?: number | null
-          created_at?: string | null
-          email?: string | null
-          email_verified_at?: string | null
-          foto?: string | null
-          id?: number
-          name?: string | null
-          nombre?: string | null
-          password?: string | null
-          remember_token?: string | null
-          rol?: string | null
-          tabla?: string | null
           updated_at?: string | null
         }
         Relationships: []

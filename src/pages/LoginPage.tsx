@@ -9,9 +9,9 @@ const LoginPage = () => {
       <div className="hidden lg:flex lg:w-1/2 bg-multilimp-green relative overflow-hidden">
         <div className="absolute inset-0 bg-[rgba(71,168,130,0.85)]"></div>
         <img 
-          src="/lovable-uploads/f3c433cb-2627-44da-9adf-e040b6f29cd4.png" 
-          alt="Multilimp Logo" 
-          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 object-contain z-10"
+          src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80" 
+          alt="Gestión de productos de limpieza" 
+          className="absolute inset-0 w-full h-full object-cover z-0 opacity-50"
         />
         <div className="absolute inset-0 bg-pattern opacity-20 z-0"></div>
         <div className="absolute bottom-10 left-10 right-10 text-white z-10">
