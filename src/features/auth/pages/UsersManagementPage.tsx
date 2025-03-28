@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -42,7 +41,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { RequirePermission } from "@/core/utils/permissions";
 import { DataGrid, DataGridColumn } from "@/components/ui/data-grid";
 
-// Esquema de validación para crear usuarios
 const createUserSchema = z.object({
   name: z.string().min(2, { message: "El nombre debe tener al menos 2 caracteres" }),
   email: z.string().email({ message: "Ingrese un correo electrónico válido" }),
@@ -52,7 +50,6 @@ const createUserSchema = z.object({
 
 type CreateUserFormValues = z.infer<typeof createUserSchema>;
 
-// Interfaz para los usuarios mostrados en la tabla
 interface UserRow {
   id: string;
   name: string;
@@ -79,27 +76,20 @@ const UsersManagementPage = () => {
     },
   });
 
-  // Cargar la lista de usuarios
   const loadUsers = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("id, name, role, created_at, email:auth.users(email)")
-        .order("created_at", { ascending: false });
+      const { data, error } = await supabase.functions.invoke('get-users');
 
       if (error) throw error;
 
-      // Transformar los datos para la tabla
-      const formattedData = data.map((item) => ({
-        id: item.id,
-        name: item.name || "Sin nombre",
-        email: item.email?.[0]?.email || "Sin correo",
-        role: item.role,
-        created_at: new Date(item.created_at).toLocaleDateString(),
-      }));
-
-      setUsers(formattedData);
+      setUsers(data.map((user: any) => ({
+        id: user.id,
+        name: user.name || "Sin nombre",
+        email: user.email || "Sin correo",
+        role: user.role,
+        created_at: new Date(user.created_at).toLocaleDateString(),
+      })));
     } catch (error) {
       console.error("Error al cargar usuarios:", error);
       toast({
@@ -122,7 +112,7 @@ const UsersManagementPage = () => {
       await createUser(values.email, values.password, values.name, values.role);
       form.reset();
       setIsOpen(false);
-      loadUsers(); // Recargar la lista de usuarios
+      loadUsers();
     } catch (error) {
       console.error("Error al crear usuario:", error);
     } finally {

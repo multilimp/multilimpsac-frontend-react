@@ -1,6 +1,7 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { supabase } from "@/integrations/supabase/client";
 
 // Export the User interface so it can be imported in other files
 export interface User {
@@ -20,6 +21,7 @@ interface AuthState {
   setAuthenticated: (isAuthenticated: boolean) => void;
   setLoading: (loading: boolean) => void;
   hasPermission: (permission: string) => boolean;
+  logout: () => Promise<void>; // Añadimos la función de logout
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -36,6 +38,14 @@ export const useAuthStore = create<AuthState>()(
         // Protección contra null y undefined
         if (!user || !user.permissions) return false;
         return user.permissions.includes(permission);
+      },
+      logout: async () => {
+        try {
+          await supabase.auth.signOut();
+          set({ user: null, isAuthenticated: false });
+        } catch (error) {
+          console.error("Error al cerrar sesión:", error);
+        }
       }
     }),
     {

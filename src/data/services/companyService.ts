@@ -75,9 +75,10 @@ export async function createCompany(company: Partial<Company>): Promise<Company>
   try {
     const dbRecord = mapCompanyToDb(company);
     
+    // Corregimos aquí: no enviar como array sino como objeto único
     const { data, error } = await supabase
       .from('empresas')
-      .insert([dbRecord])
+      .insert(dbRecord) // Aquí está el cambio, quitamos los corchetes
       .select()
       .single();
 
