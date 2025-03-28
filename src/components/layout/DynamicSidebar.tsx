@@ -133,7 +133,7 @@ const DynamicSidebar: React.FC<DynamicSidebarProps> = ({ groups, dynamicGroups =
       <SidebarHeader className="py-4 px-2">
         <Logo />
         {open && (
-          <div className="text-sm text-center text-white/70 mt-1">Sistema ERP</div>
+          <div className="text-sm text-center text-white/70 mt-1"></div>
         )}
       </SidebarHeader>
       
@@ -178,16 +178,16 @@ const DynamicSidebar: React.FC<DynamicSidebarProps> = ({ groups, dynamicGroups =
         <div className="p-4">
           {user && open && (
             <div className="mb-3 text-xs text-white/70 px-2">
-              Sesión: <span className="font-medium text-white">{user.name}</span>
+              {/* Sesión: <span className="font-medium text-white">{user.name}</span>
               <div className="text-xs text-white/50">
                 Rol: {user.role === "admin" ? "Administrador" : "Usuario"}
-              </div>
+              </div> */}
             </div>
           )}
           <Button 
             variant="outline" 
             onClick={logout} 
-            className="w-full flex items-center justify-center"
+            className="w-full flex items-center justify-center bg-multilimp-navy border-multilimp-navy hover:bg-red-600 hover:border-red-600 hover:text-white transition-colors duration-200"
           >
             {open ? <span>Cerrar Sesión</span> : <span>Salir</span>}
           </Button>

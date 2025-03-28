@@ -14,9 +14,9 @@ const LoginPage = () => {
           className="absolute inset-0 w-full h-full object-cover z-0 opacity-50"
         />
         <div className="absolute inset-0 bg-pattern opacity-20 z-0"></div>
-        <div className="absolute bottom-10 left-10 right-10 text-white z-10">
+        <div className="absolute bottom-10 left-10 right-10 text-multilimp-navy-dark z-10">
           <h2 className="text-3xl font-bold mb-4">Sistema ERP Multilimp</h2>
-          <p className="text-lg opacity-90">
+          <p className="text-lg font-semibold opacity-90">
             Gestión completa de operaciones para su empresa de limpieza
           </p>
         </div>

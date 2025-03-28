@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Bell, Search, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,6 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useAuthStore } from "@/store/authStore";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 const TopBar = () => {
   const { user, logout } = useAuthStore(state => ({
@@ -20,7 +20,7 @@ const TopBar = () => {
     logout: state.logout
   }));
   const { toast } = useToast();
-
+  const navigate = useNavigate();
   const handleLogout = () => {
     logout();
     toast({
@@ -64,8 +64,8 @@ const TopBar = () => {
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>Mi cuenta</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Perfil</DropdownMenuItem>
-              <DropdownMenuItem>Configuración</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/perfil")}>Perfil</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/configuracion")}>Configuración</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout}>Cerrar Sesión</DropdownMenuItem>
             </DropdownMenuContent>
