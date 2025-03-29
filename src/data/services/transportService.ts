@@ -70,6 +70,7 @@ export async function fetchTransportById(id: string): Promise<Transport> {
 
 export async function createTransport(transport: Partial<Transport>): Promise<Transport> {
   try {
+    // Convert our Transport model to a DB record without the id field
     const dbRecord = mapTransportToDb(transport);
     
     const { data, error } = await supabase

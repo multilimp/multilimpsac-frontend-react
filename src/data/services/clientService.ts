@@ -73,6 +73,7 @@ export async function fetchClientById(id: string): Promise<Client> {
 
 export async function createClient(client: Partial<Client>): Promise<Client> {
   try {
+    // Convert our Client model to a DB record without the id field
     const dbRecord = mapClientToDb(client);
     
     const { data, error } = await supabase

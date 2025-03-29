@@ -73,6 +73,7 @@ export async function fetchCompanyById(id: string): Promise<Company> {
 
 export async function createCompany(company: Partial<Company>): Promise<Company> {
   try {
+    // Convert our Company model to a DB record without the id field
     const dbRecord = mapCompanyToDb(company);
     
     const { data, error } = await supabase

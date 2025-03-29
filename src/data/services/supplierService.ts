@@ -71,6 +71,7 @@ export async function fetchSupplierById(id: string): Promise<Supplier> {
 
 export async function createSupplier(supplier: Partial<Supplier>): Promise<Supplier> {
   try {
+    // Convert our Supplier model to a DB record without the id field
     const dbRecord = mapSupplierToDb(supplier);
     
     const { data, error } = await supabase
