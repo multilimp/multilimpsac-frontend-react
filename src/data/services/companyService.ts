@@ -88,9 +88,10 @@ export async function createCompany(company: Partial<Company>): Promise<Company>
     // Convert our Company model to a DB record without the id field
     const dbRecord = mapCompanyToDbForInsert(company);
     
+    // Use type assertion to tell TypeScript this is correct
     const { data, error } = await supabase
       .from('empresas')
-      .insert([dbRecord]) // Use an array to ensure compatibility
+      .insert([dbRecord] as any)
       .select()
       .single();
 

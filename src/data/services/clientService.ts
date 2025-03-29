@@ -88,9 +88,10 @@ export async function createClient(client: Partial<Client>): Promise<Client> {
     // Convert our Client model to a DB record without the id field
     const dbRecord = mapClientToDbForInsert(client);
     
+    // Use type assertion to tell TypeScript this is correct
     const { data, error } = await supabase
       .from('clientes')
-      .insert([dbRecord]) // Use an array to ensure compatibility
+      .insert([dbRecord] as any)
       .select()
       .single();
 

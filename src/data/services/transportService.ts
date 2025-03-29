@@ -84,9 +84,10 @@ export async function createTransport(transport: Partial<Transport>): Promise<Tr
     // Convert our Transport model to a DB record without the id field
     const dbRecord = mapTransportToDbForInsert(transport);
     
+    // Use type assertion to tell TypeScript this is correct
     const { data, error } = await supabase
       .from('transportes')
-      .insert([dbRecord]) // Use an array to ensure compatibility
+      .insert([dbRecord] as any)
       .select()
       .single();
 

@@ -84,9 +84,10 @@ export async function createSupplier(supplier: Partial<Supplier>): Promise<Suppl
     // Convert our Supplier model to a DB record without the id field
     const dbRecord = mapSupplierToDbForInsert(supplier);
     
+    // Use type assertion to tell TypeScript this is correct
     const { data, error } = await supabase
       .from('proveedores')
-      .insert([dbRecord]) // Use an array to ensure compatibility
+      .insert([dbRecord] as any)
       .select()
       .single();
 
