@@ -18,8 +18,20 @@ function mapDbToCompany(record: CompanyDB): Company {
   };
 }
 
-// Map our Company model to database record
-function mapCompanyToDb(company: Partial<Company>): Partial<CompanyDB> {
+// Map our Company model to database record for inserts (without id)
+function mapCompanyToDbForInsert(company: Partial<Company>): Omit<Partial<CompanyDB>, 'id'> {
+  return {
+    razon_social: company.name,
+    ruc: company.ruc,
+    direccion: company.address,
+    telefono: company.phone,
+    correo: company.email,
+    estado: company.status === "active",
+  };
+}
+
+// Map our Company model to database record for updates
+function mapCompanyToDbForUpdate(company: Partial<Company>): Partial<CompanyDB> {
   return {
     razon_social: company.name,
     ruc: company.ruc,
@@ -74,7 +86,7 @@ export async function fetchCompanyById(id: string): Promise<Company> {
 export async function createCompany(company: Partial<Company>): Promise<Company> {
   try {
     // Convert our Company model to a DB record without the id field
-    const dbRecord = mapCompanyToDb(company);
+    const dbRecord = mapCompanyToDbForInsert(company);
     
     const { data, error } = await supabase
       .from('empresas')
@@ -96,7 +108,7 @@ export async function createCompany(company: Partial<Company>): Promise<Company>
 
 export async function updateCompany(id: string, company: Partial<Company>): Promise<Company> {
   try {
-    const dbRecord = mapCompanyToDb(company);
+    const dbRecord = mapCompanyToDbForUpdate(company);
     
     const { data, error } = await supabase
       .from('empresas')

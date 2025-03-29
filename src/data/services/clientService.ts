@@ -18,8 +18,20 @@ function mapDbToClient(record: ClientDB): Client {
   };
 }
 
-// Map our Client model to database record
-function mapClientToDb(client: Partial<Client>): Partial<ClientDB> {
+// Map our Client model to database record for inserts (without id)
+function mapClientToDbForInsert(client: Partial<Client>): Omit<Partial<ClientDB>, 'id'> {
+  return {
+    razon_social: client.name,
+    ruc: client.ruc,
+    direccion: client.address,
+    telefono: client.phone,
+    correo: client.email,
+    estado: client.status === "active",
+  };
+}
+
+// Map our Client model to database record for updates
+function mapClientToDbForUpdate(client: Partial<Client>): Partial<ClientDB> {
   return {
     razon_social: client.name,
     ruc: client.ruc,
@@ -74,7 +86,7 @@ export async function fetchClientById(id: string): Promise<Client> {
 export async function createClient(client: Partial<Client>): Promise<Client> {
   try {
     // Convert our Client model to a DB record without the id field
-    const dbRecord = mapClientToDb(client);
+    const dbRecord = mapClientToDbForInsert(client);
     
     const { data, error } = await supabase
       .from('clientes')
@@ -96,7 +108,7 @@ export async function createClient(client: Partial<Client>): Promise<Client> {
 
 export async function updateClient(id: string, client: Partial<Client>): Promise<Client> {
   try {
-    const dbRecord = mapClientToDb(client);
+    const dbRecord = mapClientToDbForUpdate(client);
     
     const { data, error } = await supabase
       .from('clientes')

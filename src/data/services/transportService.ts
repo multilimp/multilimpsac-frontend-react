@@ -16,8 +16,19 @@ function mapDbToTransport(record: TransportDB): Transport {
   };
 }
 
-// Map our Transport model to database record
-function mapTransportToDb(transport: Partial<Transport>): Partial<TransportDB> {
+// Map our Transport model to database record for inserts (without id)
+function mapTransportToDbForInsert(transport: Partial<Transport>): Omit<Partial<TransportDB>, 'id'> {
+  return {
+    razon_social: transport.name,
+    ruc: transport.ruc,
+    direccion: transport.address,
+    cobertura: transport.coverage,
+    estado: transport.status === "active",
+  };
+}
+
+// Map our Transport model to database record for updates
+function mapTransportToDbForUpdate(transport: Partial<Transport>): Partial<TransportDB> {
   return {
     razon_social: transport.name,
     ruc: transport.ruc,
@@ -71,7 +82,7 @@ export async function fetchTransportById(id: string): Promise<Transport> {
 export async function createTransport(transport: Partial<Transport>): Promise<Transport> {
   try {
     // Convert our Transport model to a DB record without the id field
-    const dbRecord = mapTransportToDb(transport);
+    const dbRecord = mapTransportToDbForInsert(transport);
     
     const { data, error } = await supabase
       .from('transportes')
@@ -93,7 +104,7 @@ export async function createTransport(transport: Partial<Transport>): Promise<Tr
 
 export async function updateTransport(id: string, transport: Partial<Transport>): Promise<Transport> {
   try {
-    const dbRecord = mapTransportToDb(transport);
+    const dbRecord = mapTransportToDbForUpdate(transport);
     
     const { data, error } = await supabase
       .from('transportes')
