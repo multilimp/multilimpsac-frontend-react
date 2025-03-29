@@ -19,7 +19,7 @@ function mapDbToCompany(record: CompanyDB): Company {
 }
 
 // Map our Company model to database record for inserts (without id)
-function mapCompanyToDbForInsert(company: Partial<Company>): Omit<Partial<CompanyDB>, 'id'> {
+function mapCompanyToDbForInsert(company: Partial<Company>) {
   return {
     razon_social: company.name,
     ruc: company.ruc,
@@ -31,7 +31,7 @@ function mapCompanyToDbForInsert(company: Partial<Company>): Omit<Partial<Compan
 }
 
 // Map our Company model to database record for updates
-function mapCompanyToDbForUpdate(company: Partial<Company>): Partial<CompanyDB> {
+function mapCompanyToDbForUpdate(company: Partial<Company>) {
   return {
     razon_social: company.name,
     ruc: company.ruc,
@@ -90,7 +90,7 @@ export async function createCompany(company: Partial<Company>): Promise<Company>
     
     const { data, error } = await supabase
       .from('empresas')
-      .insert(dbRecord)
+      .insert([dbRecord]) // Use an array to ensure compatibility
       .select()
       .single();
 

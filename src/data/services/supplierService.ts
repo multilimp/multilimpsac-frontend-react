@@ -19,7 +19,7 @@ function mapDbToSupplier(record: SupplierDB): Supplier {
 }
 
 // Map our Supplier model to database record for inserts (without id)
-function mapSupplierToDbForInsert(supplier: Partial<Supplier>): Omit<Partial<SupplierDB>, 'id'> {
+function mapSupplierToDbForInsert(supplier: Partial<Supplier>) {
   return {
     razon_social: supplier.name,
     ruc: supplier.ruc,
@@ -29,7 +29,7 @@ function mapSupplierToDbForInsert(supplier: Partial<Supplier>): Omit<Partial<Sup
 }
 
 // Map our Supplier model to database record for updates
-function mapSupplierToDbForUpdate(supplier: Partial<Supplier>): Partial<SupplierDB> {
+function mapSupplierToDbForUpdate(supplier: Partial<Supplier>) {
   return {
     razon_social: supplier.name,
     ruc: supplier.ruc,
@@ -86,7 +86,7 @@ export async function createSupplier(supplier: Partial<Supplier>): Promise<Suppl
     
     const { data, error } = await supabase
       .from('proveedores')
-      .insert(dbRecord)
+      .insert([dbRecord]) // Use an array to ensure compatibility
       .select()
       .single();
 

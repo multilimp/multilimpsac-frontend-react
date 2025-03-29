@@ -17,7 +17,7 @@ function mapDbToTransport(record: TransportDB): Transport {
 }
 
 // Map our Transport model to database record for inserts (without id)
-function mapTransportToDbForInsert(transport: Partial<Transport>): Omit<Partial<TransportDB>, 'id'> {
+function mapTransportToDbForInsert(transport: Partial<Transport>) {
   return {
     razon_social: transport.name,
     ruc: transport.ruc,
@@ -28,7 +28,7 @@ function mapTransportToDbForInsert(transport: Partial<Transport>): Omit<Partial<
 }
 
 // Map our Transport model to database record for updates
-function mapTransportToDbForUpdate(transport: Partial<Transport>): Partial<TransportDB> {
+function mapTransportToDbForUpdate(transport: Partial<Transport>) {
   return {
     razon_social: transport.name,
     ruc: transport.ruc,
@@ -86,7 +86,7 @@ export async function createTransport(transport: Partial<Transport>): Promise<Tr
     
     const { data, error } = await supabase
       .from('transportes')
-      .insert(dbRecord)
+      .insert([dbRecord]) // Use an array to ensure compatibility
       .select()
       .single();
 

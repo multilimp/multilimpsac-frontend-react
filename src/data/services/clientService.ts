@@ -19,7 +19,7 @@ function mapDbToClient(record: ClientDB): Client {
 }
 
 // Map our Client model to database record for inserts (without id)
-function mapClientToDbForInsert(client: Partial<Client>): Omit<Partial<ClientDB>, 'id'> {
+function mapClientToDbForInsert(client: Partial<Client>) {
   return {
     razon_social: client.name,
     ruc: client.ruc,
@@ -31,7 +31,7 @@ function mapClientToDbForInsert(client: Partial<Client>): Omit<Partial<ClientDB>
 }
 
 // Map our Client model to database record for updates
-function mapClientToDbForUpdate(client: Partial<Client>): Partial<ClientDB> {
+function mapClientToDbForUpdate(client: Partial<Client>) {
   return {
     razon_social: client.name,
     ruc: client.ruc,
@@ -90,7 +90,7 @@ export async function createClient(client: Partial<Client>): Promise<Client> {
     
     const { data, error } = await supabase
       .from('clientes')
-      .insert(dbRecord)
+      .insert([dbRecord]) // Use an array to ensure compatibility
       .select()
       .single();
 
