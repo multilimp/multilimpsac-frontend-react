@@ -104,15 +104,6 @@ const LoginForm = () => {
           >
             {isSubmitting ? "Iniciando sesión..." : "Iniciar sesión"}
           </Button>
-          <div className="text-center mt-6 p-4 bg-gray-50/80 rounded-lg border border-gray-100">
-            <p className="text-sm font-semibold text-gray-700 mb-2">Credenciales de demostración:</p>
-            <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-xs text-gray-600">
-              <div className="text-right font-medium">Admin:</div>
-              <div>admin@multilimp.com / admin123</div>
-              <div className="text-right font-medium">Usuario:</div>
-              <div>usuario@multilimp.com / user123</div>
-            </div>
-          </div>
         </form>
       </CardContent>
     </Card>
