@@ -3,15 +3,35 @@ import { supabase } from "@/integrations/supabase/client";
 import { Supplier, SupplierDB } from "@/data/models/supplier";
 
 // Map database supplier record to our Supplier model
-function mapDbToSupplier(record: SupplierDB): Supplier {
+async function mapDbToSupplier(record: SupplierDB): Promise<Supplier> {
+  // Fetch contact information for this supplier
+  const { data: contactData, error: contactError } = await supabase
+    .from('contacto_proveedores')
+    .select('*')
+    .eq('proveedor_id', record.id)
+    .eq('estado', true)
+    .order('id', { ascending: false })
+    .limit(1)
+    .single();
+
+  let phone = "";
+  let email = "";
+  let contact = "";
+
+  if (contactData && !contactError) {
+    phone = contactData.telefono || "";
+    email = contactData.correo || "";
+    contact = contactData.nombre || "";
+  }
+
   return {
     id: record.id.toString(),
     name: record.razon_social || "",
     ruc: record.ruc || "",
     address: record.direccion || "",
-    phone: "", // These fields would need to be fetched from contacto_proveedores
-    email: "",
-    contact: "", 
+    phone,
+    email,
+    contact,
     status: record.estado ? "active" : "inactive",
     createdAt: record.created_at,
     updatedAt: record.updated_at,
@@ -25,6 +45,22 @@ function mapSupplierToDbForInsert(supplier: Partial<Supplier>) {
     ruc: supplier.ruc,
     direccion: supplier.address,
     estado: supplier.status === "active",
+  };
+}
+
+// Map contact information to database record for inserts
+function mapContactToDbForInsert(supplierId: number, supplier: Partial<Supplier>) {
+  if (!supplier.contact && !supplier.email && !supplier.phone) {
+    return null;
+  }
+  
+  return {
+    proveedor_id: supplierId,
+    nombre: supplier.contact || "",
+    correo: supplier.email || "",
+    telefono: supplier.phone || "",
+    cargo: "Contacto Principal",
+    estado: true
   };
 }
 
@@ -51,7 +87,8 @@ export async function fetchSuppliers(): Promise<Supplier[]> {
     }
 
     // Transform data to match our Supplier model
-    return (data || []).map(mapDbToSupplier);
+    const suppliers = await Promise.all((data || []).map(mapDbToSupplier));
+    return suppliers;
   } catch (error) {
     console.error("Error in fetchSuppliers:", error);
     throw error;
@@ -72,7 +109,7 @@ export async function fetchSupplierById(id: string): Promise<Supplier> {
     }
 
     // Transform data to match our Supplier model
-    return mapDbToSupplier(data as SupplierDB);
+    return await mapDbToSupplier(data as SupplierDB);
   } catch (error) {
     console.error("Error in fetchSupplierById:", error);
     throw error;
@@ -96,7 +133,19 @@ export async function createSupplier(supplier: Partial<Supplier>): Promise<Suppl
       throw new Error(error.message);
     }
 
-    return mapDbToSupplier(data as SupplierDB);
+    // Now create contact information if provided
+    const contactData = mapContactToDbForInsert(data.id, supplier);
+    if (contactData) {
+      const { error: contactError } = await supabase
+        .from('contacto_proveedores')
+        .insert([contactData] as any);
+        
+      if (contactError) {
+        console.warn("Warning: Could not create supplier contact:", contactError);
+      }
+    }
+
+    return await mapDbToSupplier(data as SupplierDB);
   } catch (error) {
     console.error("Error in createSupplier:", error);
     throw error;
@@ -119,7 +168,39 @@ export async function updateSupplier(id: string, supplier: Partial<Supplier>): P
       throw new Error(error.message);
     }
 
-    return mapDbToSupplier(data as SupplierDB);
+    // Update or create contact information if provided
+    if (supplier.contact || supplier.email || supplier.phone) {
+      // First check if contact exists
+      const { data: existingContact } = await supabase
+        .from('contacto_proveedores')
+        .select('id')
+        .eq('proveedor_id', parseInt(id))
+        .eq('estado', true)
+        .limit(1)
+        .single();
+
+      if (existingContact) {
+        // Update existing contact
+        await supabase
+          .from('contacto_proveedores')
+          .update({
+            nombre: supplier.contact,
+            correo: supplier.email,
+            telefono: supplier.phone
+          })
+          .eq('id', existingContact.id);
+      } else {
+        // Create new contact
+        const contactData = mapContactToDbForInsert(parseInt(id), supplier);
+        if (contactData) {
+          await supabase
+            .from('contacto_proveedores')
+            .insert([contactData] as any);
+        }
+      }
+    }
+
+    return await mapDbToSupplier(data as SupplierDB);
   } catch (error) {
     console.error("Error in updateSupplier:", error);
     throw error;
@@ -128,6 +209,13 @@ export async function updateSupplier(id: string, supplier: Partial<Supplier>): P
 
 export async function deleteSupplier(id: string): Promise<void> {
   try {
+    // First delete related contacts to avoid foreign key constraints
+    await supabase
+      .from('contacto_proveedores')
+      .delete()
+      .eq('proveedor_id', parseInt(id));
+      
+    // Then delete the supplier
     const { error } = await supabase
       .from('proveedores')
       .delete()

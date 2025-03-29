@@ -3,15 +3,36 @@ import { supabase } from "@/integrations/supabase/client";
 import { Client, ClientDB } from "@/data/models/client";
 
 // Map database client record to our Client model
-function mapDbToClient(record: ClientDB): Client {
+async function mapDbToClient(record: ClientDB): Promise<Client> {
+  // Fetch contact information for this client
+  const { data: contactData, error: contactError } = await supabase
+    .from('contacto_clientes')
+    .select('*')
+    .eq('cliente_id', record.id)
+    .eq('estado', true)
+    .order('id', { ascending: false })
+    .limit(1)
+    .single();
+
+  let phone = record.telefono || "";
+  let email = record.correo || "";
+  let contact = "";
+
+  if (contactData && !contactError) {
+    // Override with contact data if available
+    if (contactData.telefono) phone = contactData.telefono;
+    if (contactData.correo) email = contactData.correo;
+    contact = contactData.nombre || "";
+  }
+
   return {
     id: record.id.toString(),
     name: record.razon_social || "",
     ruc: record.ruc || "",
     address: record.direccion || "",
-    phone: record.telefono || "",
-    email: record.correo || "",
-    contact: "", // This field is not directly in the DB schema, would need to join with contacts
+    phone,
+    email,
+    contact,
     status: record.estado ? "active" : "inactive",
     createdAt: record.created_at,
     updatedAt: record.updated_at,
@@ -27,6 +48,22 @@ function mapClientToDbForInsert(client: Partial<Client>) {
     telefono: client.phone,
     correo: client.email,
     estado: client.status === "active",
+  };
+}
+
+// Map contact information to database record for inserts
+function mapContactToDbForInsert(clientId: number, client: Partial<Client>) {
+  if (!client.contact && !client.email && !client.phone) {
+    return null;
+  }
+  
+  return {
+    cliente_id: clientId,
+    nombre: client.contact || "",
+    correo: client.email || "",
+    telefono: client.phone || "",
+    cargo: "Contacto Principal",
+    estado: true
   };
 }
 
@@ -55,7 +92,8 @@ export async function fetchClients(): Promise<Client[]> {
     }
 
     // Transform data to match our Client model
-    return (data || []).map(mapDbToClient);
+    const clients = await Promise.all((data || []).map(mapDbToClient));
+    return clients;
   } catch (error) {
     console.error("Error in fetchClients:", error);
     throw error;
@@ -76,7 +114,7 @@ export async function fetchClientById(id: string): Promise<Client> {
     }
 
     // Transform data to match our Client model
-    return mapDbToClient(data as ClientDB);
+    return await mapDbToClient(data as ClientDB);
   } catch (error) {
     console.error("Error in fetchClientById:", error);
     throw error;
@@ -100,7 +138,21 @@ export async function createClient(client: Partial<Client>): Promise<Client> {
       throw new Error(error.message);
     }
 
-    return mapDbToClient(data as ClientDB);
+    // Now create contact information if provided
+    if (client.contact) {
+      const contactData = mapContactToDbForInsert(data.id, client);
+      if (contactData) {
+        const { error: contactError } = await supabase
+          .from('contacto_clientes')
+          .insert([contactData] as any);
+          
+        if (contactError) {
+          console.warn("Warning: Could not create client contact:", contactError);
+        }
+      }
+    }
+
+    return await mapDbToClient(data as ClientDB);
   } catch (error) {
     console.error("Error in createClient:", error);
     throw error;
@@ -123,7 +175,39 @@ export async function updateClient(id: string, client: Partial<Client>): Promise
       throw new Error(error.message);
     }
 
-    return mapDbToClient(data as ClientDB);
+    // Update or create contact information if provided
+    if (client.contact) {
+      // First check if contact exists
+      const { data: existingContact } = await supabase
+        .from('contacto_clientes')
+        .select('id')
+        .eq('cliente_id', parseInt(id))
+        .eq('estado', true)
+        .limit(1)
+        .single();
+
+      if (existingContact) {
+        // Update existing contact
+        await supabase
+          .from('contacto_clientes')
+          .update({
+            nombre: client.contact,
+            correo: client.email,
+            telefono: client.phone
+          })
+          .eq('id', existingContact.id);
+      } else {
+        // Create new contact
+        const contactData = mapContactToDbForInsert(parseInt(id), client);
+        if (contactData) {
+          await supabase
+            .from('contacto_clientes')
+            .insert([contactData] as any);
+        }
+      }
+    }
+
+    return await mapDbToClient(data as ClientDB);
   } catch (error) {
     console.error("Error in updateClient:", error);
     throw error;
@@ -132,6 +216,13 @@ export async function updateClient(id: string, client: Partial<Client>): Promise
 
 export async function deleteClient(id: string): Promise<void> {
   try {
+    // First delete related contacts to avoid foreign key constraints
+    await supabase
+      .from('contacto_clientes')
+      .delete()
+      .eq('cliente_id', parseInt(id));
+      
+    // Then delete the client
     const { error } = await supabase
       .from('clientes')
       .delete()

@@ -5,6 +5,9 @@ export interface Transport {
   ruc: string;
   address: string;
   coverage: string;
+  phone: string;
+  email: string;
+  contact: string;
   status: "active" | "inactive";
   createdAt?: string;
   updatedAt?: string;
