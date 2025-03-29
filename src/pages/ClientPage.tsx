@@ -1,61 +1,39 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import PageHeader from "@/components/common/PageHeader";
-import SearchBar from "@/components/common/SearchBar";
 import { DataGrid, DataGridColumn } from "@/components/ui/data-grid";
 import { useToast } from "@/components/ui/use-toast";
 import BreadcrumbNav from "@/components/layout/BreadcrumbNav";
-
-interface Client {
-  id: string;
-  name: string;
-  ruc: string;
-  address: string;
-  phone: string;
-  email: string;
-  contact: string;
-  status: "active" | "inactive";
-}
-
-// Mock data
-const mockClients: Client[] = [
-  {
-    id: "1",
-    name: "Cliente Corporativo A",
-    ruc: "20987654321",
-    address: "Av. Principal 123, Lima",
-    phone: "987654321",
-    email: "contacto@clientea.com",
-    contact: "Juan Pérez",
-    status: "active",
-  },
-  {
-    id: "2",
-    name: "Cliente Corporativo B",
-    ruc: "20567891234",
-    address: "Jr. Secundario 456, Lima",
-    phone: "987123456",
-    email: "info@clienteb.com",
-    contact: "María López",
-    status: "active",
-  },
-  {
-    id: "3",
-    name: "Cliente Corporativo C",
-    ruc: "20654321987",
-    address: "Calle Nueva 789, Lima",
-    phone: "912345678",
-    email: "ventas@clientec.com",
-    contact: "Pedro Gómez",
-    status: "inactive",
-  },
-];
+import { Client } from "@/data/models/client";
+import { fetchClients } from "@/data/services/clientService";
+import TableActions from "@/components/common/TableActions";
 
 const ClientPage = () => {
-  const [clients] = useState<Client[]>(mockClients);
-  const [loading, setLoading] = useState(false);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+
+  useEffect(() => {
+    loadClients();
+  }, []);
+
+  const loadClients = async () => {
+    setLoading(true);
+    try {
+      const data = await fetchClients();
+      setClients(data);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error loading clients:", error);
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar los clientes",
+        variant: "destructive",
+      });
+      setLoading(false);
+    }
+  };
 
   const breadcrumbItems = [
     {
@@ -76,15 +54,7 @@ const ClientPage = () => {
   ];
 
   const handleReload = () => {
-    setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
-      toast({
-        title: "Datos actualizados",
-        description: "La lista de clientes ha sido actualizada",
-      });
-    }, 1000);
+    loadClients();
   };
 
   const handleRowClick = (row: Client) => {
