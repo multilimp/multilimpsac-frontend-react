@@ -75,7 +75,6 @@ export async function createCompany(company: Partial<Company>): Promise<Company>
   try {
     const dbRecord = mapCompanyToDb(company);
     
-    // Fix: Pasar el objeto directamente sin corchetes
     const { data, error } = await supabase
       .from('empresas')
       .insert(dbRecord)
