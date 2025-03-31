@@ -13,20 +13,33 @@ import { Input } from "@/components/ui/input";
 import { useAuthStore } from "@/store/authStore";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { ConnectionStatus } from "@/components/ui/ConnectionStatus";
+import { useAuth } from "@/contexts/AuthContext";
 
 const TopBar = () => {
-  const { user, logout } = useAuthStore(state => ({
-    user: state.user,
-    logout: state.logout
+  const { user } = useAuthStore(state => ({
+    user: state.user
   }));
+  const { logout } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const handleLogout = () => {
-    logout();
-    toast({
-      title: "Sesión cerrada",
-      description: "Has cerrado sesión correctamente",
-    });
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      toast({
+        title: "Sesión cerrada",
+        description: "Has cerrado sesión correctamente",
+      });
+      navigate("/login");
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No se pudo cerrar la sesión. Intente nuevamente.",
+      });
+    }
   };
 
   return (
@@ -43,6 +56,9 @@ const TopBar = () => {
           </Button>
         </div>
         <div className="flex items-center space-x-3">
+          {/* Indicador de estado de conexión */}
+          <ConnectionStatus showText={false} className="mr-2" />
+          
           <Button variant="ghost" size="icon" className="relative">
             <Bell className="h-5 w-5" />
             <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-multilimp-green text-[10px] text-white">

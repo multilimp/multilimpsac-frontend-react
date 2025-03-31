@@ -1,21 +1,24 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import Logo from "@/components/layout/Logo";
-import { Eye, EyeOff, User, Lock } from "lucide-react";
+import { Eye, EyeOff, User, Lock, Info } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+
+// Constante para verificar si estamos en modo demo (debe coincidir con la del AuthContext)
+const DEMO_MODE = true;
 
 const LoginForm = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState(DEMO_MODE ? "demo@multilimpsac.com" : "");
+  const [password, setPassword] = useState(DEMO_MODE ? "demo123" : "");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const { login } = useAuth();
+  const { login, connectionStatus } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -50,6 +53,24 @@ const LoginForm = () => {
         </CardDescription>
       </CardHeader>
       <CardContent>
+        {DEMO_MODE && (
+          <Alert className="mb-4 bg-blue-50 border-blue-200 text-blue-800">
+            <Info className="h-4 w-4 text-blue-600" />
+            <AlertDescription className="text-sm">
+              Modo demo activado. Use las credenciales pre-llenadas para ingresar.
+            </AlertDescription>
+          </Alert>
+        )}
+        
+        {connectionStatus === 'disconnected' && (
+          <Alert className="mb-4 bg-amber-50 border-amber-200 text-amber-800">
+            <Info className="h-4 w-4 text-amber-600" />
+            <AlertDescription className="text-sm">
+              No hay conexión con el servidor. Se usará el modo demo para iniciar sesión.
+            </AlertDescription>
+          </Alert>
+        )}
+        
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
             <Label htmlFor="email" className="text-multilimp-navy">Correo electrónico</Label>
@@ -106,6 +127,16 @@ const LoginForm = () => {
           </Button>
         </form>
       </CardContent>
+      
+      {DEMO_MODE && (
+        <CardFooter className="flex flex-col items-center justify-center pt-0">
+          <p className="text-xs text-gray-500 mt-4 text-center">
+            <span className="font-semibold">Modo demo:</span> La autenticación está desactivada temporalmente.
+            <br />
+            Se mantiene la conexión a Supabase para otras funcionalidades.
+          </p>
+        </CardFooter>
+      )}
     </Card>
   );
 };

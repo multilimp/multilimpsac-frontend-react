@@ -1,16 +1,19 @@
-
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { supabase } from "@/integrations/supabase/client";
+
+// Constante para habilitar/deshabilitar el modo demo
+const DEMO_MODE = true;
 
 // Export the User interface so it can be imported in other files
 export interface User {
   id: string;
   name: string;
   email: string;
-  role: "admin" | "user" | "manager";
+  role: "admin" | "user";
   avatar?: string;
   permissions: string[];
+  roles?: string[]; 
 }
 
 interface AuthState {
@@ -21,7 +24,8 @@ interface AuthState {
   setAuthenticated: (isAuthenticated: boolean) => void;
   setLoading: (loading: boolean) => void;
   hasPermission: (permission: string) => boolean;
-  logout: () => Promise<void>; // Añadimos la función de logout
+  hasRole: (role: string) => boolean; 
+  logout: () => Promise<void>; 
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -34,10 +38,27 @@ export const useAuthStore = create<AuthState>()(
       setAuthenticated: (isAuthenticated) => set({ isAuthenticated }),
       setLoading: (loading) => set({ isLoading: loading }),
       hasPermission: (permission) => {
+        // En modo demo, permitir todos los permisos
+        if (DEMO_MODE) return true;
+        
         const { user } = get();
-        // Protección contra null y undefined
         if (!user || !user.permissions) return false;
-        return user.permissions.includes(permission);
+        
+        // Verificar si el usuario tiene el permiso específico o el permiso comodín '*'
+        return user.permissions.includes('*') || user.permissions.includes(permission);
+      },
+      hasRole: (role) => {
+        // En modo demo, permitir todos los roles
+        if (DEMO_MODE) return true;
+        
+        const { user } = get();
+        if (!user) return false;
+        
+        if (user.roles && Array.isArray(user.roles)) {
+          return user.roles.includes(role) || user.roles.includes('admin');
+        }
+        
+        return user.role === role || user.role === 'admin';
       },
       logout: async () => {
         try {
@@ -54,9 +75,7 @@ export const useAuthStore = create<AuthState>()(
   )
 );
 
-// Initialize loading state
 export const initializeAuthStore = () => {
   const { setLoading } = useAuthStore.getState();
-  // Set loading to false after initial hydration is complete
   setTimeout(() => setLoading(false), 500);
 };

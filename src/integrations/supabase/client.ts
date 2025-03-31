@@ -2,10 +2,76 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = "https://ekxmysomkrmwhlxkwhvx.supabase.co";
+export const SUPABASE_URL = "https://ekxmysomkrmwhlxkwhvx.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVreG15c29ta3Jtd2hseGt3aHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5NDU2MDMsImV4cCI6MjA1ODUyMTYwM30.5kxkRIY4EFE4jRa8W-1pwIKH82crcCBOadE-rnYGFGU";
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+export const supabase = createClient<Database>(
+  SUPABASE_URL, 
+  SUPABASE_PUBLISHABLE_KEY,
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+      storageKey: 'multilimp-auth-token'
+    },
+    global: {
+      headers: {
+        'x-application-name': 'multilimp-erp'
+      }
+    },
+    db: {
+      schema: 'public'
+    },
+    realtime: {
+      params: {
+        eventsPerSecond: 10
+      }
+    }
+  }
+);
+
+// Helper function to check if Supabase connection is working
+export const checkSupabaseConnection = async (): Promise<boolean> => {
+  try {
+    // Primero intentamos una operación simple para verificar la conexión
+    const { error } = await supabase.from('clientes').select('count', { count: 'exact', head: true });
+    
+    if (error) {
+      console.error('Error checking Supabase connection:', error);
+      return false;
+    }
+    
+    return true;
+  } catch (err) {
+    console.error('Error checking Supabase connection:', err);
+    return false;
+  }
+};
+
+// Función para verificar si una tabla específica existe y es accesible
+export const checkTableAccess = async (tableName: string): Promise<{exists: boolean, error?: string}> => {
+  try {
+    // Usamos any para evitar problemas de tipado con las tablas
+    const { error } = await (supabase as any).from(tableName).select('count', { count: 'exact', head: true });
+    
+    if (error) {
+      console.error(`Error accessing table ${tableName}:`, error);
+      return { 
+        exists: false, 
+        error: error.message 
+      };
+    }
+    
+    return { exists: true };
+  } catch (err: any) {
+    console.error(`Error checking table ${tableName}:`, err);
+    return { 
+      exists: false, 
+      error: err.message || 'Error desconocido' 
+    };
+  }
+};
