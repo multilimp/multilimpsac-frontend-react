@@ -23,7 +23,7 @@ export type Database = {
           banco?: string | null
           created_at?: string | null
           estado?: boolean | null
-          id: number
+          id?: number
           numero_cuenta?: string | null
           proveedor_id: number
           updated_at?: string | null
@@ -37,7 +37,15 @@ export type Database = {
           proveedor_id?: number
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "banco_proveedores_proveedor_id_fkey"
+            columns: ["proveedor_id"]
+            isOneToOne: false
+            referencedRelation: "proveedores"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       catalogo_empresas: {
         Row: {
@@ -51,7 +59,7 @@ export type Database = {
           codigo?: string | null
           created_at?: string | null
           empresa_id?: number | null
-          id: number
+          id?: number
           updated_at?: string | null
         }
         Update: {
@@ -61,7 +69,15 @@ export type Database = {
           id?: number
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "catalogo_empresas_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       clientes: {
         Row: {
@@ -84,7 +100,7 @@ export type Database = {
           direccion?: string | null
           distrito?: string | null
           estado?: boolean | null
-          id: number
+          id?: number
           provincia?: string | null
           razon_social?: string | null
           ruc?: string | null
@@ -123,7 +139,7 @@ export type Database = {
           correo?: string | null
           created_at?: string | null
           estado?: boolean | null
-          id: number
+          id?: number
           nombre?: string | null
           telefono?: string | null
           updated_at?: string | null
@@ -139,7 +155,15 @@ export type Database = {
           telefono?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "contacto_clientes_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       contacto_empresas: {
         Row: {
@@ -157,7 +181,7 @@ export type Database = {
           correo?: string | null
           created_at?: string | null
           empresa_id?: number | null
-          id: number
+          id?: number
           nombre?: string | null
           telefono?: string | null
           updated_at?: string | null
@@ -172,7 +196,15 @@ export type Database = {
           telefono?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "contacto_empresas_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       contacto_proveedores: {
         Row: {
@@ -191,7 +223,7 @@ export type Database = {
           correo?: string | null
           created_at?: string | null
           estado?: boolean | null
-          id: number
+          id?: number
           nombre?: string | null
           proveedor_id?: number | null
           telefono?: string | null
@@ -208,7 +240,15 @@ export type Database = {
           telefono?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "contacto_proveedores_proveedor_id_fkey"
+            columns: ["proveedor_id"]
+            isOneToOne: false
+            referencedRelation: "proveedores"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       contacto_transportes: {
         Row: {
@@ -227,7 +267,7 @@ export type Database = {
           correo?: string | null
           created_at?: string | null
           estado?: boolean | null
-          id: number
+          id?: number
           nombre?: string | null
           telefono?: string | null
           transporte_id?: number | null
@@ -244,7 +284,15 @@ export type Database = {
           transporte_id?: number | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "contacto_transportes_transporte_id_fkey"
+            columns: ["transporte_id"]
+            isOneToOne: false
+            referencedRelation: "transportes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       cotizacion_productos: {
         Row: {
@@ -266,7 +314,7 @@ export type Database = {
           cotizacion_id?: number | null
           created_at?: string | null
           descripcion?: string | null
-          id: number
+          id?: number
           medida?: string | null
           p_cliente?: string | null
           precio_unitario?: number | null
@@ -286,7 +334,15 @@ export type Database = {
           total?: number | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "cotizacion_productos_cotizacion_id_fkey"
+            columns: ["cotizacion_id"]
+            isOneToOne: false
+            referencedRelation: "cotizaciones"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       cotizaciones: {
         Row: {
@@ -322,7 +378,7 @@ export type Database = {
           estado?: boolean | null
           fecha_cotizacion?: string | null
           fecha_entrega?: string | null
-          id: number
+          id?: number
           monto?: number | null
           nota_pago?: string | null
           nota_pedido?: string | null
@@ -352,7 +408,15 @@ export type Database = {
           tipo_pago?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "cotizaciones_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "cotizaciones"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       empresas: {
         Row: {
@@ -382,7 +446,7 @@ export type Database = {
           direcciones?: string | null
           distrito?: string | null
           estado?: boolean | null
-          id: number
+          id?: number
           logo?: string | null
           provincia?: string | null
           razon_social?: string | null
@@ -437,7 +501,7 @@ export type Database = {
           fecha_factura?: string | null
           forma_envio?: string | null
           grr?: string | null
-          id: number
+          id?: number
           re_detraccion?: string | null
           re_factura?: string | null
           re_fecha_factura?: string | null
@@ -483,7 +547,7 @@ export type Database = {
           descripcion?: string | null
           fecha_gestion?: string | null
           historial?: string | null
-          id: number
+          id?: number
           seguimiento_id?: number | null
           updated_at?: string | null
         }
@@ -496,7 +560,15 @@ export type Database = {
           seguimiento_id?: number | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "historial_gestiones_seguimiento_id_fkey"
+            columns: ["seguimiento_id"]
+            isOneToOne: false
+            referencedRelation: "seguimientos"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       op_productos: {
         Row: {
@@ -507,10 +579,9 @@ export type Database = {
           descripcion: string | null
           id: number
           medida: string | null
-          orden_pedido_id: string | null
+          orden_pedido_id: number | null
           p_cliente: string | null
           precio_unitario: number | null
-          seguimiento_id: string | null
           total: number | null
           updated_at: string | null
         }
@@ -520,12 +591,11 @@ export type Database = {
           codigo?: string | null
           created_at?: string | null
           descripcion?: string | null
-          id: number
+          id?: number
           medida?: string | null
-          orden_pedido_id?: string | null
+          orden_pedido_id?: number | null
           p_cliente?: string | null
           precio_unitario?: number | null
-          seguimiento_id?: string | null
           total?: number | null
           updated_at?: string | null
         }
@@ -537,25 +607,31 @@ export type Database = {
           descripcion?: string | null
           id?: number
           medida?: string | null
-          orden_pedido_id?: string | null
+          orden_pedido_id?: number | null
           p_cliente?: string | null
           precio_unitario?: number | null
-          seguimiento_id?: string | null
           total?: number | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "op_productos_orden_pedido_id_fkey"
+            columns: ["orden_pedido_id"]
+            isOneToOne: false
+            referencedRelation: "orden_pedidos"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       orden_pedidos: {
         Row: {
           cargo_oea: string | null
           codigo_op: string | null
-          contacto_proveedor: string | null
-          contacto_transporte: string | null
+          contacto_proveedor: number | null
+          contacto_transporte: number | null
           cot_transporte: string | null
           created_at: string | null
           embalaje: string | null
-          empresa_id: number | null
           estado_op: string | null
           etiquetado: string | null
           fecha_despacho: string | null
@@ -589,51 +665,11 @@ export type Database = {
         Insert: {
           cargo_oea?: string | null
           codigo_op?: string | null
-          contacto_proveedor?: string | null
-          contacto_transporte?: string | null
+          contacto_proveedor?: number | null
+          contacto_transporte?: number | null
           cot_transporte?: string | null
           created_at?: string | null
           embalaje?: string | null
-          empresa_id?: number | null
-          estado_op?: string | null
-          etiquetado?: string | null
-          fecha_despacho?: string | null
-          fecha_entrega?: string | null
-          fecha_orden_pedido?: string | null
-          fecha_programacion?: string | null
-          fecha_recepcion?: string | null
-          flete?: string | null
-          id: number
-          nota_op?: string | null
-          nota_pago?: string | null
-          nota_pedido?: string | null
-          observaciones?: string | null
-          proveedor_id?: number | null
-          retorno_mercaderia?: string | null
-          seguimiento_id?: number | null
-          t_departamento?: string | null
-          t_direccion?: string | null
-          t_distrito?: string | null
-          t_factura?: string | null
-          t_fecha_pago?: string | null
-          t_grt?: string | null
-          t_provincia?: string | null
-          tipo_envio?: string | null
-          tipo_pago?: string | null
-          total_proveedor?: number | null
-          transporte_id?: number | null
-          transporte_nota?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          cargo_oea?: string | null
-          codigo_op?: string | null
-          contacto_proveedor?: string | null
-          contacto_transporte?: string | null
-          cot_transporte?: string | null
-          created_at?: string | null
-          embalaje?: string | null
-          empresa_id?: number | null
           estado_op?: string | null
           etiquetado?: string | null
           fecha_despacho?: string | null
@@ -664,7 +700,81 @@ export type Database = {
           transporte_nota?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Update: {
+          cargo_oea?: string | null
+          codigo_op?: string | null
+          contacto_proveedor?: number | null
+          contacto_transporte?: number | null
+          cot_transporte?: string | null
+          created_at?: string | null
+          embalaje?: string | null
+          estado_op?: string | null
+          etiquetado?: string | null
+          fecha_despacho?: string | null
+          fecha_entrega?: string | null
+          fecha_orden_pedido?: string | null
+          fecha_programacion?: string | null
+          fecha_recepcion?: string | null
+          flete?: string | null
+          id?: number
+          nota_op?: string | null
+          nota_pago?: string | null
+          nota_pedido?: string | null
+          observaciones?: string | null
+          proveedor_id?: number | null
+          retorno_mercaderia?: string | null
+          seguimiento_id?: number | null
+          t_departamento?: string | null
+          t_direccion?: string | null
+          t_distrito?: string | null
+          t_factura?: string | null
+          t_fecha_pago?: string | null
+          t_grt?: string | null
+          t_provincia?: string | null
+          tipo_envio?: string | null
+          tipo_pago?: string | null
+          total_proveedor?: number | null
+          transporte_id?: number | null
+          transporte_nota?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orden_pedidos_contacto_proveedor_fkey"
+            columns: ["contacto_proveedor"]
+            isOneToOne: false
+            referencedRelation: "contacto_proveedores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orden_pedidos_contacto_transporte_fkey"
+            columns: ["contacto_transporte"]
+            isOneToOne: false
+            referencedRelation: "contacto_transportes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orden_pedidos_proveedor_id_fkey"
+            columns: ["proveedor_id"]
+            isOneToOne: false
+            referencedRelation: "proveedores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orden_pedidos_seguimiento_id_fkey"
+            columns: ["seguimiento_id"]
+            isOneToOne: false
+            referencedRelation: "seguimientos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orden_pedidos_transporte_id_fkey"
+            columns: ["transporte_id"]
+            isOneToOne: false
+            referencedRelation: "transportes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -713,7 +823,7 @@ export type Database = {
           direccion?: string | null
           distrito?: string | null
           estado?: boolean | null
-          id: number
+          id?: number
           monto?: number | null
           provincia?: string | null
           razon_social?: string | null
@@ -753,7 +863,7 @@ export type Database = {
           created_at?: string | null
           descripcion?: string | null
           fecha_pago?: string | null
-          id: number
+          id?: number
           monto?: number | null
           proveedor_id?: number | null
           tipo?: string | null
@@ -772,7 +882,15 @@ export type Database = {
           total?: number | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "saldo_proveedores_proveedor_id_fkey"
+            columns: ["proveedor_id"]
+            isOneToOne: false
+            referencedRelation: "proveedores"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       seguimientos: {
         Row: {
@@ -863,7 +981,7 @@ export type Database = {
           fin_cobranza?: string | null
           forma_envio?: string | null
           grr?: string | null
-          id: number
+          id?: number
           inicio_cobranza?: string | null
           monto_detraccion?: number | null
           monto_retencion?: number | null
@@ -943,7 +1061,22 @@ export type Database = {
           siaf?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_seguimientos_cliente"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_seguimientos_empresa"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tesoreria_registros: {
         Row: {
@@ -953,7 +1086,6 @@ export type Database = {
           fecha_pago: string | null
           id: number
           orden_pedido_id: number | null
-          seguimiento_id: number | null
           total: number | null
           updated_at: string | null
         }
@@ -962,9 +1094,8 @@ export type Database = {
           created_at?: string | null
           descripcion?: string | null
           fecha_pago?: string | null
-          id: number
+          id?: number
           orden_pedido_id?: number | null
-          seguimiento_id?: number | null
           total?: number | null
           updated_at?: string | null
         }
@@ -975,11 +1106,18 @@ export type Database = {
           fecha_pago?: string | null
           id?: number
           orden_pedido_id?: number | null
-          seguimiento_id?: number | null
           total?: number | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "tesoreria_registros_orden_pedido_id_fkey"
+            columns: ["orden_pedido_id"]
+            isOneToOne: false
+            referencedRelation: "orden_pedidos"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       transportes: {
         Row: {
@@ -1002,7 +1140,7 @@ export type Database = {
           direccion?: string | null
           distrito?: string | null
           estado?: boolean | null
-          id: number
+          id?: number
           provincia?: string | null
           razon_social?: string | null
           ruc?: string | null
