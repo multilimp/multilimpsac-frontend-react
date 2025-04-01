@@ -1,3 +1,4 @@
+
 import { createContext, useContext, ReactNode, useEffect, useState } from 'react';
 import { supabase, checkSupabaseConnection, checkTableAccess } from '@/integrations/supabase/client';
 import { useAuthStore, User } from '@/store/authStore';
@@ -6,6 +7,17 @@ import { useToast } from '@/hooks/use-toast';
 
 // Constante para habilitar/deshabilitar el modo demo
 const DEMO_MODE = true;
+
+// Interface for profile data from the database
+interface ProfileData {
+  id: string;
+  name: string;
+  role: string;
+  avatar?: string;
+  created_at: string;
+  updated_at: string;
+  permissions?: string[]; // Make this optional since it might not exist in the DB
+}
 
 // Usuario demo predefinido
 const DEMO_USER: User = {
@@ -139,14 +151,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 description: "Se cargó una sesión parcial. Algunas funciones pueden estar limitadas.",
               });
             } else if (profileData) {
+              // Cast profileData to the correct type to access properties safely
+              const typedProfile = profileData as ProfileData;
+              
               // Crear el objeto de usuario con los datos del perfil
               const fullUser: User = {
                 id: currentSession.user.id,
-                name: profileData.name || currentSession.user.user_metadata?.name || 'Usuario',
+                name: typedProfile.name || currentSession.user.user_metadata?.name || 'Usuario',
                 email: currentSession.user.email || '',
-                role: profileData.role || currentSession.user.user_metadata?.role || 'user',
-                permissions: profileData.permissions || [],
-                avatar: profileData.avatar_url
+                role: typedProfile.role || currentSession.user.user_metadata?.role || 'user',
+                permissions: typedProfile.permissions || [],
+                avatar: typedProfile.avatar
               };
               
               setUser(fullUser);
@@ -229,14 +244,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             setUser(basicUser);
             setAuthenticated(true);
           } else if (profileData) {
+            // Cast profileData to the correct type
+            const typedProfile = profileData as ProfileData;
+            
             // Crear el objeto de usuario con los datos del perfil
             const fullUser: User = {
               id: newSession.user.id,
-              name: profileData.name || newSession.user.user_metadata?.name || 'Usuario',
+              name: typedProfile.name || newSession.user.user_metadata?.name || 'Usuario',
               email: newSession.user.email || '',
-              role: profileData.role || newSession.user.user_metadata?.role || 'user',
-              permissions: profileData.permissions || [],
-              avatar: profileData.avatar_url
+              role: typedProfile.role || newSession.user.user_metadata?.role || 'user',
+              permissions: typedProfile.permissions || [],
+              avatar: typedProfile.avatar
             };
             
             setUser(fullUser);
