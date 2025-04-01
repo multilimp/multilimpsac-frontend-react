@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -10,9 +9,6 @@ import Logo from "@/components/layout/Logo";
 import { Eye, EyeOff, User, Lock, Info } from "lucide-react";
 import { useAuth, DEMO_MODE } from '@/features/auth';
 import { Alert, AlertDescription } from "@/components/ui/alert";
-
-// Constante para verificar si estamos en modo demo (debe coincidir con la del AuthContext)
-const DEMO_MODE = true;
 
 const LoginForm = () => {
   const [email, setEmail] = useState(DEMO_MODE ? "demo@multilimpsac.com" : "");
