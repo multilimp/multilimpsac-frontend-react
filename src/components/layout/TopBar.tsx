@@ -14,7 +14,7 @@ import { useAuthStore } from "@/store/authStore";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { ConnectionStatus } from "@/components/ui/ConnectionStatus";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from '@/features/auth';
 
 const TopBar = () => {
   const { user } = useAuthStore(state => ({
@@ -56,9 +56,7 @@ const TopBar = () => {
           </Button>
         </div>
         <div className="flex items-center space-x-3">
-          {/* Indicador de estado de conexión */}
           <ConnectionStatus showText={false} className="mr-2" />
-          
           <Button variant="ghost" size="icon" className="relative">
             <Bell className="h-5 w-5" />
             <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-multilimp-green text-[10px] text-white">

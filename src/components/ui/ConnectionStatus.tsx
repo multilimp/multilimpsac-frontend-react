@@ -1,10 +1,8 @@
 import React from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/features/auth';
 import { Wifi, WifiOff, AlertCircle, Laptop } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-// Constante para verificar si estamos en modo demo (debe coincidir con la del AuthContext)
-const DEMO_MODE = true;
+import { DEMO_MODE } from '@/features/auth';
 
 interface ConnectionStatusProps {
   className?: string;

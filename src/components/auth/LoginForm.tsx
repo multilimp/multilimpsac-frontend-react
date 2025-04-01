@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import Logo from "@/components/layout/Logo";
 import { Eye, EyeOff, User, Lock, Info } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, DEMO_MODE } from '@/features/auth';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 // Constante para verificar si estamos en modo demo (debe coincidir con la del AuthContext)
