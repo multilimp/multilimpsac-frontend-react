@@ -1,18 +1,15 @@
+
 import { lazy } from "react";
 import { CreditCard, FileText, ReceiptText } from "lucide-react";
 import { RouteDefinition } from "../types";
 
-// Componente modular para páginas en desarrollo
+// Lazy load pages
 const ModulePage = lazy(() => import("@/pages/ModulePage"));
 
 export const financeRoutes: RouteDefinition[] = [
   {
     path: "/tesoreria",
-    component: () => ModulePage({
-      title: "Tesorería",
-      description: "Gestione los movimientos de tesorería",
-      icon: <CreditCard className="h-8 w-8 text-multilimp-green" />
-    }),
+    component: lazy(() => import("@/pages/ModulePage")),
     title: "Tesorería",
     icon: <CreditCard className="h-5 w-5" />,
     requireAuth: true,
@@ -20,11 +17,7 @@ export const financeRoutes: RouteDefinition[] = [
   },
   {
     path: "/facturacion",
-    component: () => ModulePage({
-      title: "Facturación",
-      description: "Gestione las facturas de ventas",
-      icon: <FileText className="h-8 w-8 text-multilimp-green" />
-    }),
+    component: lazy(() => import("@/pages/ModulePage")),
     title: "Facturación",
     icon: <FileText className="h-5 w-5" />,
     requireAuth: true,
@@ -32,11 +25,7 @@ export const financeRoutes: RouteDefinition[] = [
   },
   {
     path: "/cobranzas",
-    component: () => ModulePage({
-      title: "Cobranzas",
-      description: "Gestione las cobranzas a clientes",
-      icon: <ReceiptText className="h-8 w-8 text-multilimp-green" />
-    }),
+    component: lazy(() => import("@/pages/ModulePage")),
     title: "Cobranzas",
     icon: <ReceiptText className="h-5 w-5" />,
     requireAuth: true,

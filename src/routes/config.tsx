@@ -1,3 +1,4 @@
+
 // src/routes/config.tsx
 import { lazy } from "react";
 import { RouteDefinition, RouteGroup } from "./types";
@@ -56,7 +57,13 @@ export const protectedRoutes: RouteDefinition[] = [
 export const routeGroups: RouteGroup[] = [
   {
     title: "Principal",
-    routes: [{ path: "/", title: "Dashboard" }],
+    routes: [
+      { 
+        path: "/", 
+        title: "Dashboard",
+        component: Dashboard // Añadido el componente requerido
+      }
+    ],
   },
   {
     title: "Directorio",

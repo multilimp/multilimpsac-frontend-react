@@ -1,19 +1,15 @@
-// src/routes/modules/operationsRoutes.tsx
+
 import { lazy } from "react";
 import { FileSearch, ShoppingCart, Package, ClipboardList } from "lucide-react";
 import { RouteDefinition } from "../types";
 
-// Componente modular para páginas en desarrollo
+// Lazy load pages
 const ModulePage = lazy(() => import("@/pages/ModulePage"));
 
 export const operationsRoutes: RouteDefinition[] = [
   {
     path: "/cotizaciones",
-    component: () => ModulePage({
-      title: "Cotizaciones",
-      description: "Gestione las cotizaciones para sus clientes",
-      icon: <FileSearch className="h-8 w-8 text-multilimp-green" />
-    }),
+    component: lazy(() => import("@/pages/ModulePage")),
     title: "Cotizaciones",
     icon: <FileSearch className="h-5 w-5" />,
     requireAuth: true,
@@ -21,11 +17,7 @@ export const operationsRoutes: RouteDefinition[] = [
   },
   {
     path: "/ventas",
-    component: () => ModulePage({
-      title: "Ventas",
-      description: "Gestione las ventas a sus clientes",
-      icon: <ShoppingCart className="h-8 w-8 text-multilimp-green" />
-    }),
+    component: lazy(() => import("@/pages/ModulePage")),
     title: "Ventas",
     icon: <ShoppingCart className="h-5 w-5" />,
     requireAuth: true,
@@ -33,11 +25,7 @@ export const operationsRoutes: RouteDefinition[] = [
   },
   {
     path: "/ordenes",
-    component: () => ModulePage({
-      title: "Órdenes de Proveedores",
-      description: "Gestione las órdenes a sus proveedores",
-      icon: <Package className="h-8 w-8 text-multilimp-green" />
-    }),
+    component: lazy(() => import("@/pages/ModulePage")),
     title: "Órdenes de Proveedores",
     icon: <Package className="h-5 w-5" />,
     requireAuth: true,
@@ -45,12 +33,8 @@ export const operationsRoutes: RouteDefinition[] = [
   },
   {
     path: "/seguimiento",
-    component: () => ModulePage({
-      title: "Seguimiento de Órdenes",
-      description: "Realice el seguimiento de las órdenes",
-      icon: <ClipboardList className="h-8 w-8 text-multilimp-green" />
-    }),
-    title: "Seguimiento",
+    component: lazy(() => import("@/pages/ModulePage")),
+    title: "Seguimiento de Órdenes",
     icon: <ClipboardList className="h-5 w-5" />,
     requireAuth: true,
     permission: "tracking:view",

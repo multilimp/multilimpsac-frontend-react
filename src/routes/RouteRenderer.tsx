@@ -1,6 +1,7 @@
+
 // src/routes/RouteRenderer.tsx
 import { Suspense, Fragment } from "react";
-import { Route, Routes } from "react-router-dom";
+import { Route } from "react-router-dom";
 import { RouteDefinition } from "./types";
 import { RequireAuth, RedirectIfAuthenticated } from "@/core/utils/guards";
 import { RequirePermission } from "@/core/utils/permissions";
@@ -33,6 +34,12 @@ const ErrorFallback = ({ error, resetErrorBoundary }: { error: Error; resetError
 // Función recursiva para renderizar rutas anidadas
 const renderRoutes = (routes: RouteDefinition[]) => {
   return routes.map(route => {
+    // Si no hay componente definido, saltar esta ruta
+    if (!route.component) {
+      console.warn(`Route ${route.path} has no component defined. Skipping.`);
+      return null;
+    }
+    
     // Componente con Suspense y ErrorBoundary
     const RouteComponent = (
       <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => window.location.reload()}>
@@ -79,7 +86,7 @@ const renderRoutes = (routes: RouteDefinition[]) => {
         element={wrappedComponent} 
       />
     );
-  });
+  }).filter(Boolean); // Filter out null routes (ones without components)
 };
 
 // Renderizador de rutas principal
