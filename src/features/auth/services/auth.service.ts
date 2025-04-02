@@ -1,3 +1,4 @@
+
 import { supabase, checkSupabaseConnection, checkTableAccess } from '@/integrations/supabase/client';
 import { DEMO_MODE, DEMO_USER, User, ProfileData } from '../types/auth.types';
 import { createUserFromProfile, createBasicUser } from '../utils/auth.utils';
@@ -120,6 +121,7 @@ export const registerService = async (email: string, password: string, name: str
       apellido: name.split(' ').slice(1).join(' '), // Extract last name
       email: email,
       rol: 'user',
+      password: '**********', // Add a placeholder password since it's required by the type
       created_at: new Date().toISOString()
     });
   
@@ -191,6 +193,7 @@ export const createUserService = async (
       apellido: name.split(' ').slice(1).join(' '), // Extract last name
       email,
       rol: role as 'admin' | 'user',
+      password: '**********', // Add a placeholder password since it's required by the type
       created_at: new Date().toISOString()
     });
   
