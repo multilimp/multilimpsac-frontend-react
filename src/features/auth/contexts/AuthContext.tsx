@@ -59,7 +59,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         
         // Verificar acceso a tablas críticas
         const tablesStatus = await Promise.all([
-          checkTableAccess('profiles'),
+          checkTableAccess('usuarios'),
           checkTableAccess('clientes'),
         ]);
         
@@ -68,7 +68,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (hasTableErrors) {
           const errorTables = tablesStatus
             .filter(status => !status.exists)
-            .map((_, index) => ['profiles', 'clientes'][index]);
+            .map((_, index) => ['usuarios', 'clientes'][index]);
           
           console.error(`Problemas accediendo a tablas: ${errorTables.join(', ')}`);
           
@@ -100,7 +100,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           try {
             // Obtener el perfil del usuario
             const { data: profileData, error: profileError } = await supabase
-              .from('profiles')
+              .from('usuarios')
               .select('*')
               .eq('id', currentSession.user.id)
               .single();
@@ -193,7 +193,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         try {
           // Obtener el perfil del usuario
           const { data: profileData, error: profileError } = await supabase
-            .from('profiles')
+            .from('usuarios')
             .select('*')
             .eq('id', newSession.user.id)
             .single();

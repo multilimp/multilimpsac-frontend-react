@@ -8,11 +8,11 @@ import { User, ProfileData } from '../types/auth.types';
 export const createUserFromProfile = (userId: string, email: string | undefined, profileData: ProfileData, userMetadata?: any): User => {
   return {
     id: userId,
-    name: profileData.name || userMetadata?.name || 'Usuario',
-    email: email || '',
-    role: profileData.role || userMetadata?.role || 'user',
-    permissions: profileData.permissions || [],
-    avatar: profileData.avatar
+    name: profileData.name || profileData.nombre || userMetadata?.name || 'Usuario',
+    email: email || profileData.email || '',
+    role: profileData.rol || userMetadata?.role || 'user',
+    permissions: profileData.tabla ? [profileData.tabla] : [], // Using tabla as permissions for now
+    avatar: profileData.foto
   };
 };
 
@@ -34,7 +34,7 @@ export const createBasicUser = (userId: string, email: string | undefined, userM
  */
 export const fetchUserProfile = async (userId: string) => {
   const { data, error } = await supabase
-    .from('profiles')
+    .from('usuarios')
     .select('*')
     .eq('id', userId)
     .single();

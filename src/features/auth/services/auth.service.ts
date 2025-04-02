@@ -22,10 +22,10 @@ export const loginService = async (email: string, password: string, isDemoMode: 
     throw new Error("No hay conexión con el servidor. Verifica tu conexión a internet.");
   }
   
-  // Verificar acceso a tabla de perfiles
-  const { exists: profilesTableExists, error: profilesError } = await checkTableAccess('profiles');
-  if (!profilesTableExists) {
-    console.error("Error accediendo a tabla profiles:", profilesError);
+  // Verificar acceso a tabla de usuarios
+  const { exists: usuariosTableExists, error: usuariosError } = await checkTableAccess('usuarios');
+  if (!usuariosTableExists) {
+    console.error("Error accediendo a tabla usuarios:", usuariosError);
     throw new Error("Error accediendo a datos de usuario. Contacta al administrador.");
   }
   
@@ -43,7 +43,7 @@ export const loginService = async (email: string, password: string, isDemoMode: 
   
   // Obtener el perfil del usuario
   const { data: profileData, error: profileError } = await supabase
-    .from('profiles')
+    .from('usuarios')
     .select('*')
     .eq('id', data.user.id)
     .single();
@@ -87,10 +87,10 @@ export const registerService = async (email: string, password: string, name: str
     throw new Error("No hay conexión con el servidor. Verifica tu conexión a internet.");
   }
   
-  // Verificar acceso a tabla de perfiles
-  const { exists: profilesTableExists, error: profilesError } = await checkTableAccess('profiles');
-  if (!profilesTableExists) {
-    console.error("Error accediendo a tabla profiles:", profilesError);
+  // Verificar acceso a tabla de usuarios
+  const { exists: usuariosTableExists, error: usuariosError } = await checkTableAccess('usuarios');
+  if (!usuariosTableExists) {
+    console.error("Error accediendo a tabla usuarios:", usuariosError);
     throw new Error("Error accediendo a datos de usuario. Contacta al administrador.");
   }
   
@@ -111,13 +111,16 @@ export const registerService = async (email: string, password: string, name: str
     throw new Error("No se pudo registrar al usuario");
   }
   
-  // Crear el perfil del usuario en la tabla profiles
+  // Crear el perfil del usuario en la tabla usuarios
   const { error: profileError } = await supabase
-    .from('profiles')
+    .from('usuarios')
     .insert({
       id: data.user.id,
       name,
-      role: 'user',
+      nombre: name.split(' ')[0], // Extract first name
+      apellido: name.split(' ').slice(1).join(' '), // Extract last name
+      email: email,
+      rol: 'user',
       created_at: new Date().toISOString()
     });
   
@@ -154,10 +157,10 @@ export const createUserService = async (
     throw new Error("No hay conexión con el servidor. Verifica tu conexión a internet.");
   }
   
-  // Verificar acceso a tabla de perfiles
-  const { exists: profilesTableExists, error: profilesError } = await checkTableAccess('profiles');
-  if (!profilesTableExists) {
-    console.error("Error accediendo a tabla profiles:", profilesError);
+  // Verificar acceso a tabla de usuarios
+  const { exists: usuariosTableExists, error: usuariosError } = await checkTableAccess('usuarios');
+  if (!usuariosTableExists) {
+    console.error("Error accediendo a tabla usuarios:", usuariosError);
     throw new Error("Error accediendo a datos de usuario. Contacta al administrador.");
   }
   
@@ -179,13 +182,16 @@ export const createUserService = async (
     throw new Error("No se pudo crear el usuario");
   }
   
-  // Crear el perfil en la tabla profiles
+  // Crear el perfil en la tabla usuarios
   const { error: profileError } = await supabase
-    .from('profiles')
+    .from('usuarios')
     .insert({
       id: authData.user.id,
       name,
-      role,
+      nombre: name.split(' ')[0], // Extract first name
+      apellido: name.split(' ').slice(1).join(' '), // Extract last name
+      email,
+      rol: role as 'admin' | 'user',
       created_at: new Date().toISOString()
     });
   

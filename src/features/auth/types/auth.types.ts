@@ -25,15 +25,21 @@ export const DEMO_USER: User = {
   roles: ['admin']
 };
 
-// Interface for profile data from the database
+// Interface for profile data from the database (usuarios table)
 export interface ProfileData {
-  id: string;
+  id: number;
   name: string;
-  role: string;
-  avatar?: string;
+  nombre: string;
+  apellido: string;
+  email: string;
+  rol: "admin" | "user";
+  foto?: string;
   created_at: string;
   updated_at: string;
-  permissions?: string[]; // Make this optional since it might not exist in the DB
+  tabla?: string;
+  email_verified_at?: string;
+  password?: string;
+  remember_token?: string;
 }
 
 export type ConnectionStatus = 'connected' | 'disconnected' | 'checking';
