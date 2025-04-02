@@ -1,4 +1,3 @@
-
 import { supabase, checkSupabaseConnection, checkTableAccess } from '@/integrations/supabase/client';
 import { DEMO_MODE, DEMO_USER, User, ProfileData } from '../types/auth.types';
 import { createUserFromProfile, createBasicUser } from '../utils/auth.utils';
@@ -45,7 +44,7 @@ export const loginService = async (email: string, password: string, isDemoMode: 
   const { data: profileData, error: profileError } = await supabase
     .from('usuarios')
     .select('*')
-    .eq('id', data.user.id)
+    .eq('id', parseInt(data.user.id, 10))
     .single();
   
   if (profileError) {
@@ -115,7 +114,7 @@ export const registerService = async (email: string, password: string, name: str
   const { error: profileError } = await supabase
     .from('usuarios')
     .insert({
-      id: data.user.id,
+      id: parseInt(data.user.id, 10),
       name,
       nombre: name.split(' ')[0], // Extract first name
       apellido: name.split(' ').slice(1).join(' '), // Extract last name
@@ -186,7 +185,7 @@ export const createUserService = async (
   const { error: profileError } = await supabase
     .from('usuarios')
     .insert({
-      id: authData.user.id,
+      id: parseInt(authData.user.id, 10),
       name,
       nombre: name.split(' ')[0], // Extract first name
       apellido: name.split(' ').slice(1).join(' '), // Extract last name

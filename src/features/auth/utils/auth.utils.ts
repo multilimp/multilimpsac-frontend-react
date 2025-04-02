@@ -33,15 +33,16 @@ export const createBasicUser = (userId: string, email: string | undefined, userM
  * Fetches user profile from database
  */
 export const fetchUserProfile = async (userId: string) => {
-  const { data, error } = await supabase
+  // Convert userId to number if needed, or use a direct equality check
+  const { data: userData, error } = await supabase
     .from('usuarios')
     .select('*')
-    .eq('id', userId)
+    .eq('id', parseInt(userId, 10))
     .single();
     
   if (error) {
     throw error;
   }
   
-  return data as ProfileData;
+  return userData as ProfileData;
 };
