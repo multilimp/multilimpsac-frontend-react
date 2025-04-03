@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { User, ProfileData } from '../types/auth.types';
+import { User, ProfileData } from '../models/auth.types';
 
 /**
  * Creates a user object from session and profile data

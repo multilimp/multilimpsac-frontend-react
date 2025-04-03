@@ -1,8 +1,8 @@
 
 import { Suspense } from "react";
-import { AppProviders } from "@/components/providers/AppProviders";
+import { AppProviders } from "@/app/core/providers/AppProviders";
 import { LoadingFallback } from "@/components/common/LoadingFallback";
-import { AppRoutes } from "./routes";
+import { AppRoutes } from "./app/routes";
 import { initializeAuthStore } from "./store/authStore";
 
 const App = () => {
