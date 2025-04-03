@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Sidebar as SidebarIcon } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -21,6 +21,8 @@ import Logo from "./Logo";
 import { useAuthStore } from "@/store/authStore";
 import { Button } from "@/components/ui/button";
 import { RequirePermission } from "@/core/utils/permissions";
+import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export interface Route {
   label: string;
@@ -65,6 +67,8 @@ const DynamicSidebar: React.FC<DynamicSidebarProps> = ({ groups, dynamicGroups =
     });
     return initial;
   });
+
+  const [showSecondarySidebar, setShowSecondarySidebar] = useState(false);
 
   const toggleGroup = (label: string) => {
     setOpenGroups(prev => ({
@@ -184,13 +188,28 @@ const DynamicSidebar: React.FC<DynamicSidebarProps> = ({ groups, dynamicGroups =
               </div> */}
             </div>
           )}
-          <Button 
-            variant="outline" 
-            onClick={logout} 
-            className="w-full flex items-center justify-center bg-multilimp-navy border-multilimp-navy hover:bg-red-600 hover:border-red-600 hover:text-white transition-colors duration-200"
-          >
-            {open ? <span>Cerrar Sesión</span> : <span>Salir</span>}
-          </Button>
+          <Sheet open={showSecondarySidebar} onOpenChange={setShowSecondarySidebar}>
+            <SheetTrigger asChild>
+              <Button 
+                variant="outline" 
+                onClick={() => setShowSecondarySidebar(true)} 
+                className="w-full flex items-center justify-center bg-multilimp-navy border-multilimp-navy hover:bg-multilimp-navy/80 hover:border-multilimp-navy/80 text-white transition-colors duration-200"
+              >
+                <SidebarIcon className="h-4 w-4 mr-2" />
+                {open && <span>Abrir Panel</span>}
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="bg-[#1B2B41] text-white border-none w-72">
+              <div className="h-full flex flex-col">
+                <div className="flex-1 p-4">
+                  <h2 className="text-xl font-semibold mb-4">Panel Secundario</h2>
+                  <div className="space-y-4">
+                    {/* Contenido del sidebar secundario */}
+                  </div>
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </SidebarFooter>
     </Sidebar>

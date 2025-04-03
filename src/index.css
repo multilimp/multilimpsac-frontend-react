@@ -43,6 +43,8 @@
     --sidebar-accent-foreground: 0 0% 98%;
     --sidebar-border: 152 32% 35%;
     --sidebar-ring: 152 40% 60%;
+
+    --multilimp-navy: 210 50% 18%; /* Color base azul #1B2B41 */
   }
 
   .dark {
