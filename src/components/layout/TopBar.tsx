@@ -1,5 +1,5 @@
 import React from "react";
-import { Bell, Search, User } from "lucide-react";
+import { Bell, Search, User, Sidebar as SidebarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { ConnectionStatus } from "@/components/ui/ConnectionStatus";
 import { useAuth } from '@/features/auth';
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const TopBar = () => {
   const { user } = useAuthStore(state => ({
@@ -46,6 +47,25 @@ const TopBar = () => {
     <div className="border-b bg-white p-4 shadow-sm">
       <div className="flex items-center justify-between">
         <div className="flex items-center rounded-md border w-full max-w-sm">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="mr-2 bg-multilimp-navy text-white hover:bg-multilimp-navy/80"
+              >
+                <SidebarIcon className="h-4 w-4" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="bg-[#1B2B41] text-white border-none w-72">
+              <div className="h-full flex flex-col">
+                <div className="flex-1 p-4">
+                  <h2 className="text-xl font-semibold mb-4">Panel Secundario</h2>
+                  {/* Contenido del sidebar secundario */}
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
           <Input
             type="text"
             placeholder="Buscar..."
