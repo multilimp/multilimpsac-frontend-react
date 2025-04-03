@@ -1,4 +1,3 @@
-
 import { createContext, ReactNode, useEffect, useState } from 'react';
 import { supabase, checkSupabaseConnection, checkTableAccess } from '@/integrations/supabase/client';
 import { Session } from '@supabase/supabase-js';
@@ -30,14 +29,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const { user, setUser, setAuthenticated } = useAuthStore();
   const { toast } = useToast();
 
-  // Verificar la conexión a Supabase
   useEffect(() => {
     const initSession = async () => {
       setLoading(true);
       setConnectionStatus('checking');
       
       try {
-        // Si estamos en modo demo, inicializamos con el usuario demo
         if (DEMO_MODE) {
           console.log('Modo demo activado, usando credenciales demo');
           setUser(DEMO_USER);
@@ -47,7 +44,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           return;
         }
         
-        // Primero verificamos la conexión básica a Supabase
         const isConnected = await checkSupabaseConnection();
         
         if (!isConnected) {
@@ -57,9 +53,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           return;
         }
         
-        // Verificar acceso a tablas críticas
         const tablesStatus = await Promise.all([
-          checkTableAccess('profiles'),
+          checkTableAccess('usuarios'),
           checkTableAccess('clientes'),
         ]);
         
@@ -68,12 +63,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (hasTableErrors) {
           const errorTables = tablesStatus
             .filter(status => !status.exists)
-            .map((_, index) => ['profiles', 'clientes'][index]);
+            .map((_, index) => ['usuarios', 'clientes'][index]);
           
           console.error(`Problemas accediendo a tablas: ${errorTables.join(', ')}`);
           
-          // Si hay problemas con las tablas pero la conexión básica funciona,
-          // seguimos intentando obtener la sesión pero marcamos como parcialmente conectado
           setConnectionStatus('connected');
           toast({
             variant: "default",
@@ -84,7 +77,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           setConnectionStatus('connected');
         }
         
-        // Obtener la sesión actual
         const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
@@ -98,18 +90,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           setSession(currentSession);
           
           try {
-            // Obtener el perfil del usuario
             const { data: profileData, error: profileError } = await supabase
-              .from('profiles')
+              .from('usuarios')
               .select('*')
-              .eq('id', currentSession.user.id)
+              .eq('id', parseInt(currentSession.user.id, 10))
               .single();
             
             if (profileError) {
               console.error('Error al obtener el perfil del usuario:', profileError);
               
-              // Si hay un error al obtener el perfil pero tenemos la sesión,
-              // creamos un usuario con información básica
               const basicUser = createBasicUser(
                 currentSession.user.id,
                 currentSession.user.email,
@@ -125,10 +114,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 description: "Se cargó una sesión parcial. Algunas funciones pueden estar limitadas.",
               });
             } else if (profileData) {
-              // Cast profileData to the correct type to access properties safely
               const typedProfile = profileData as ProfileData;
               
-              // Crear el objeto de usuario con los datos del perfil
               const fullUser = createUserFromProfile(
                 currentSession.user.id,
                 currentSession.user.email,
@@ -142,7 +129,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           } catch (error) {
             console.error('Error al procesar el perfil del usuario:', error);
             
-            // Crear usuario básico en caso de error
             const basicUser = createBasicUser(
               currentSession.user.id,
               currentSession.user.email,
@@ -178,12 +164,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     initSession();
   }, [toast, setUser, setAuthenticated]);
 
-  // Inicializar la sesión y configurar el listener de cambios de autenticación
   useEffect(() => {
-    // Si estamos en modo demo, no necesitamos configurar el listener
     if (DEMO_MODE) return;
     
-    // Configurar el listener de cambios de autenticación
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, newSession) => {
       console.log('Auth state change:', event);
       
@@ -191,18 +174,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setSession(newSession);
         
         try {
-          // Obtener el perfil del usuario
           const { data: profileData, error: profileError } = await supabase
-            .from('profiles')
+            .from('usuarios')
             .select('*')
-            .eq('id', newSession.user.id)
+            .eq('id', parseInt(newSession.user.id, 10))
             .single();
           
           if (profileError) {
             console.error('Error al obtener el perfil del usuario:', profileError);
             
-            // Si hay un error al obtener el perfil pero tenemos la sesión,
-            // creamos un usuario con información básica
             const basicUser = createBasicUser(
               newSession.user.id,
               newSession.user.email,
@@ -212,10 +192,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             setUser(basicUser);
             setAuthenticated(true);
           } else if (profileData) {
-            // Cast profileData to the correct type
             const typedProfile = profileData as ProfileData;
             
-            // Crear el objeto de usuario con los datos del perfil
             const fullUser = createUserFromProfile(
               newSession.user.id,
               newSession.user.email,
@@ -233,18 +211,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setUser(null);
         setAuthenticated(false);
       } else if (event === 'TOKEN_REFRESHED' && newSession) {
-        // La sesión se ha actualizado, pero no necesitamos recargar el perfil
         setSession(newSession);
       }
     });
     
-    // Limpiar la suscripción al desmontar el componente
     return () => {
       subscription.unsubscribe();
     };
   }, [setUser, setAuthenticated]);
   
-  // Implementación de los métodos de autenticación
   const login = async (email: string, password: string) => {
     setLoading(true);
     try {
@@ -265,7 +240,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     } catch (error: any) {
       let errorMessage = "Error al iniciar sesión";
       
-      // Mensajes de error más amigables
       if (error.message.includes("Invalid login credentials")) {
         errorMessage = "Credenciales inválidas. Verifica tu email y contraseña.";
       } else if (error.message.includes("Email not confirmed")) {
@@ -300,7 +274,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     } catch (error: any) {
       let errorMessage = "Error al registrar usuario";
       
-      // Mensajes de error más amigables
       if (error.message.includes("already registered")) {
         errorMessage = "Este correo ya está registrado.";
       } else if (error.message.includes("password")) {
@@ -335,7 +308,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     } catch (error: any) {
       let errorMessage = "Ha ocurrido un error al crear el usuario";
       
-      // Mensajes de error más amigables
       if (error.message.includes("already registered")) {
         errorMessage = "Este correo ya está registrado.";
       } else if (error.message.includes("permission")) {

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,7 +19,7 @@ const SupabaseConnectionTester: React.FC = () => {
   const [isChecking, setIsChecking] = useState(false);
   const [connectionOk, setConnectionOk] = useState<boolean | null>(null);
   const [authOk, setAuthOk] = useState<boolean | null>(null);
-  const [profilesOk, setProfilesOk] = useState<boolean | null>(null);
+  const [usuariosOk, setUsuariosOk] = useState<boolean | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { connectionStatus, refreshSession } = useAuth();
 
@@ -29,11 +30,11 @@ const SupabaseConnectionTester: React.FC = () => {
     try {
       // Si estamos en modo demo, simulamos algunos resultados
       if (DEMO_MODE) {
-        // Simulamos que la conexión básica funciona pero hay problemas con profiles
+        // Simulamos que la conexión básica funciona pero hay problemas con usuarios
         setConnectionOk(true);
         setAuthOk(true);
-        setProfilesOk(false);
-        setError('Error simulado en modo demo: Error al acceder a perfiles (500 Internal Server Error)');
+        setUsuariosOk(false);
+        setError('Error simulado en modo demo: Error al acceder a usuarios (500 Internal Server Error)');
         setIsChecking(false);
         return;
       }
@@ -54,15 +55,15 @@ const SupabaseConnectionTester: React.FC = () => {
         throw new Error(`Error de autenticación: ${authError.message}`);
       }
       
-      // Probar acceso a tabla profiles
-      const { error: profilesError } = await supabase
-        .from('profiles')
+      // Probar acceso a tabla usuarios
+      const { error: usuariosError } = await supabase
+        .from('usuarios')
         .select('count', { count: 'exact', head: true });
       
-      setProfilesOk(!profilesError);
+      setUsuariosOk(!usuariosError);
       
-      if (profilesError) {
-        throw new Error(`Error al acceder a perfiles: ${profilesError.message}`);
+      if (usuariosError) {
+        throw new Error(`Error al acceder a usuarios: ${usuariosError.message}`);
       }
     } catch (err: any) {
       console.error('Error en prueba de conexión:', err);
@@ -135,12 +136,12 @@ const SupabaseConnectionTester: React.FC = () => {
           </div>
           
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium">Acceso a perfiles:</span>
+            <span className="text-sm font-medium">Acceso a usuarios:</span>
             {isChecking ? (
               <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-            ) : profilesOk === null ? (
+            ) : usuariosOk === null ? (
               <span className="text-sm text-muted-foreground">No verificado</span>
-            ) : profilesOk ? (
+            ) : usuariosOk ? (
               <Check className="h-4 w-4 text-green-500" />
             ) : (
               <X className="h-4 w-4 text-red-500" />
