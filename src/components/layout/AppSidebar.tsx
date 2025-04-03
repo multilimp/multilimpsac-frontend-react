@@ -83,7 +83,7 @@ const SidebarToggleButton = () => {
       variant="ghost" 
       size="icon" 
       onClick={toggleSidebar}
-      className="absolute top-4 right-[-12px] z-50 h-6 w-6 rounded-full bg-sidebar-background text-white"
+      className="rounded-full bg-sidebar-background text-white"
     >
       {open ? (
         <PanelLeftClose className="h-3 w-3" />
@@ -101,7 +101,7 @@ const AppSidebar: React.FC = () => {
         groups={mainGroups} 
         dynamicGroups={dynamicGroups} 
       />
-      <SidebarToggleButton />
+      {/* <SidebarToggleButton /> */}
     </>
   );
 };
