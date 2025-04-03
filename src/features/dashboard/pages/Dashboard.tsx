@@ -1,11 +1,20 @@
 
 import React from 'react';
-import { PageHeader } from '@/components/common/PageHeader';
+import PageHeader from '@/components/common/PageHeader';
 import StatCard from '@/components/dashboard/StatCard';
 import DashboardChart from '@/components/dashboard/DashboardChart';
 import { Card, CardContent } from '@/components/ui/card';
 
 const Dashboard: React.FC = () => {
+  // Sample data for charts
+  const salesData = [
+    { name: "Ene", value: 40000 },
+    { name: "Feb", value: 35000 },
+    { name: "Mar", value: 50000 },
+    { name: "Abr", value: 45000 },
+    { name: "May", value: 60000 },
+  ];
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -17,25 +26,25 @@ const Dashboard: React.FC = () => {
         <StatCard 
           title="Cotizaciones" 
           value="24" 
-          trend="+12%" 
+          trend={12} 
           status="up" 
         />
         <StatCard 
           title="Ventas" 
           value="$14,832" 
-          trend="+8%" 
+          trend={8} 
           status="up" 
         />
         <StatCard 
           title="Órdenes" 
           value="18" 
-          trend="-3%" 
+          trend={-3} 
           status="down" 
         />
         <StatCard 
           title="Ingresos" 
           value="$23,558" 
-          trend="+10%" 
+          trend={10} 
           status="up" 
         />
       </div>
@@ -44,7 +53,10 @@ const Dashboard: React.FC = () => {
         <Card>
           <CardContent className="pt-6">
             <h3 className="text-lg font-medium mb-2">Ventas mensuales</h3>
-            <DashboardChart />
+            <DashboardChart 
+              title="Ventas mensuales" 
+              data={salesData} 
+            />
           </CardContent>
         </Card>
         

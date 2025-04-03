@@ -48,12 +48,16 @@ export const LoginForm: React.FC = () => {
       </CardHeader>
       <CardContent>
         <DemoModeAlert visible={isDemoMode} />
-        <ConnectionStatusAlert connectionStatus={connectionStatus} />
+        <ConnectionStatusAlert 
+          connectionStatus={
+            connectionStatus === 'checking' ? 'connecting' : connectionStatus
+          } 
+        />
         
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <EmailInput form={form} />
-            <PasswordInput form={form} />
+            <EmailInput form={form as any} />
+            <PasswordInput form={form as any} />
             
             <div className="pt-2">
               <SubmitButton isLoading={isLoading} />
@@ -66,3 +70,5 @@ export const LoginForm: React.FC = () => {
     </Card>
   );
 };
+
+export default LoginForm;

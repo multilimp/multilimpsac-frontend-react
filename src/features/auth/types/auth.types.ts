@@ -48,8 +48,11 @@ export interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  isLoading: boolean; // Added this property
   isAuthenticated: boolean;
   connectionStatus: ConnectionStatus;
+  isDemoMode: boolean; // Added this property
+  enableDemoMode: () => void; // Added this method
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   register: (email: string, password: string, name: string) => Promise<void>;

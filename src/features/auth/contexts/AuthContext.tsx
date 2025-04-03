@@ -26,8 +26,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('checking');
+  const [isDemoMode, setIsDemoMode] = useState<boolean>(DEMO_MODE);
   const { user, setUser, setAuthenticated } = useAuthStore();
   const { toast } = useToast();
+
+  const enableDemoMode = () => {
+    setIsDemoMode(true);
+    console.log("Demo mode activated");
+  };
 
   useEffect(() => {
     const initSession = async () => {
@@ -393,8 +399,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     user,
     session,
     loading,
+    isLoading: loading,
     isAuthenticated: useAuthStore(state => state.isAuthenticated),
     connectionStatus,
+    isDemoMode,
+    enableDemoMode,
     login,
     logout,
     register,
