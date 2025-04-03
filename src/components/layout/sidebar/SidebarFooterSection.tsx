@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { LogOut, User, Settings, ChevronRight } from "lucide-react";
 import { User as UserType } from "@/store/authStore";
 import { useNavigate } from "react-router-dom";
-import SecondaryNavWrapper from "@/features/shared/components/layout/SecondaryNavWrapper";
+import SecondaryNavWrapper from "@/components/layout/SecondaryNavWrapper";
 
 interface SidebarFooterSectionProps {
   user: UserType | null;
