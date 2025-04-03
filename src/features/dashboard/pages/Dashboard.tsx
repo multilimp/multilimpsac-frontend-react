@@ -4,6 +4,7 @@ import PageHeader from '@/components/common/PageHeader';
 import StatCard from '@/components/dashboard/StatCard';
 import DashboardChart from '@/components/dashboard/DashboardChart';
 import { Card, CardContent } from '@/components/ui/card';
+import { BarChart3, FileSearch, Package, DollarSign } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
   // Sample data for charts
@@ -19,33 +20,37 @@ const Dashboard: React.FC = () => {
     <div className="space-y-6">
       <PageHeader
         title="Panel de control"
-        description="Resumen de datos y análisis"
+        subtitle="Resumen de datos y análisis"
       />
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard 
           title="Cotizaciones" 
           value="24" 
-          trend={12} 
-          status="up" 
+          trend={12}
+          icon={<FileSearch />}
+          description="desde el mes pasado"
         />
         <StatCard 
           title="Ventas" 
           value="$14,832" 
-          trend={8} 
-          status="up" 
+          trend={8}
+          icon={<BarChart3 />} 
+          description="desde el mes pasado"
         />
         <StatCard 
           title="Órdenes" 
           value="18" 
           trend={-3} 
-          status="down" 
+          icon={<Package />}
+          description="desde el mes pasado" 
         />
         <StatCard 
           title="Ingresos" 
           value="$23,558" 
           trend={10} 
-          status="up" 
+          icon={<DollarSign />}
+          description="desde el mes pasado"
         />
       </div>
 
