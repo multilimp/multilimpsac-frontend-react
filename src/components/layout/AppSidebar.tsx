@@ -101,7 +101,7 @@ const AppSidebar: React.FC = () => {
         groups={mainGroups} 
         dynamicGroups={dynamicGroups} 
       />
-      {/* <SidebarToggleButton /> */}
+      <SidebarToggleButton />
     </>
   );
 };
