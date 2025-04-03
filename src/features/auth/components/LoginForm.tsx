@@ -1,79 +1,68 @@
 
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
-import Logo from "@/components/layout/Logo";
-import { useAuth, DEMO_MODE } from '@/features/auth';
-import { 
-  EmailInput, 
-  PasswordInput, 
-  SubmitButton, 
-  DemoFooter,
-  DemoModeAlert,
-  ConnectionStatusAlert
-} from "@/features/auth/components/login";
+import React from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { Form } from '@/components/ui/form';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '@/features/auth/hooks/useAuth';
+import { EmailInput } from './login/EmailInput';
+import { PasswordInput } from './login/PasswordInput';
+import { SubmitButton } from './login/SubmitButton';
+import { DemoFooter } from './login/DemoFooter';
+import { DemoModeAlert, ConnectionStatusAlert } from './login/AlertMessages';
 
-const LoginForm = () => {
-  const [email, setEmail] = useState(DEMO_MODE ? "demo@multilimpsac.com" : "");
-  const [password, setPassword] = useState(DEMO_MODE ? "demo123" : "");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { login, connectionStatus } = useAuth();
-  const { toast } = useToast();
-  const navigate = useNavigate();
+const formSchema = z.object({
+  email: z.string().email('Ingrese un correo electrónico válido'),
+  password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
+});
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+export const LoginForm: React.FC = () => {
+  const { login, isLoading, connectionStatus, isDemoMode, enableDemoMode } = useAuth();
 
-    try {
-      await login(email, password);
-      toast({
-        title: "Inicio de sesión exitoso",
-        description: "Bienvenido al sistema ERP de Multilimp",
-      });
-      navigate("/");
-    } catch (error) {
-      console.error("Error de login:", error);
-      // El mensaje de error ya se muestra en el contexto de autenticación
-    } finally {
-      setIsSubmitting(false);
-    }
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
+
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    await login(values.email, values.password);
+  };
+
+  const handleDemoMode = () => {
+    enableDemoMode();
+    form.setValue('email', 'demo@example.com');
+    form.setValue('password', 'password123');
   };
 
   return (
-    <Card className="w-full shadow-xl border-0 bg-white/90 backdrop-blur-sm">
-      <CardHeader className="space-y-1 flex flex-col items-center">
-        <div className="mb-6 mt-2">
-          <Logo />
-        </div>
-        <CardTitle className="text-2xl font-bold text-center text-multilimp-navy">Iniciar sesión</CardTitle>
-        <CardDescription className="text-center text-multilimp-navy/70">
-          Acceda al Sistema ERP de Multilimp
+    <Card className="w-full max-w-md shadow-md">
+      <CardHeader className="space-y-1">
+        <CardTitle className="text-2xl font-bold text-center">Bienvenido</CardTitle>
+        <CardDescription className="text-center">
+          Ingrese sus credenciales para acceder al sistema
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <DemoModeAlert isActive={DEMO_MODE} />
-        <ConnectionStatusAlert status={connectionStatus} />
+        <DemoModeAlert visible={isDemoMode} />
+        <ConnectionStatusAlert connectionStatus={connectionStatus} />
         
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <EmailInput 
-            email={email}
-            onChange={(e) => setEmail(e.target.value)} 
-          />
-          
-          <PasswordInput 
-            password={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          
-          <SubmitButton isSubmitting={isSubmitting} />
-        </form>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <EmailInput form={form} />
+            <PasswordInput form={form} />
+            
+            <div className="pt-2">
+              <SubmitButton isLoading={isLoading} />
+            </div>
+            
+            <DemoFooter onUseDemo={handleDemoMode} />
+          </form>
+        </Form>
       </CardContent>
-      
-      <DemoFooter isActive={DEMO_MODE} />
     </Card>
   );
 };
-
-export default LoginForm;
