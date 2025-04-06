@@ -556,6 +556,24 @@ export type Database = {
         }
         Relationships: []
       }
+      "Fechas Prueba": {
+        Row: {
+          created_at: string
+          fecha_prueba: string | null
+          id: number
+        }
+        Insert: {
+          created_at?: string
+          fecha_prueba?: string | null
+          id?: number
+        }
+        Update: {
+          created_at?: string
+          fecha_prueba?: string | null
+          id?: number
+        }
+        Relationships: []
+      }
       historial_gestiones: {
         Row: {
           created_at: string | null
