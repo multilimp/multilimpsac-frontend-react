@@ -1,9 +1,10 @@
+
 // src/components/navigation/Breadcrumbs.tsx
 import React, { useMemo } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { ChevronRight, Home } from "lucide-react";
-import { allRoutes } from "@/routes/config";
-import { RouteDefinition } from "@/routes/types";
+import { allRoutes } from "@/app/routes/config";
+import { RouteDefinition } from "@/app/routes/types";
 
 interface BreadcrumbItem {
   path: string;

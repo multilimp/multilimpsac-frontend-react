@@ -23,7 +23,7 @@ export const transportService = {
     const { data, error } = await supabase
       .from('transportes')
       .select('*')
-      .eq('id', parseInt(id)) // Convert string ID to number for database query
+      .eq('id', parseInt(id))
       .single();
     
     if (error) throw new Error(error.message);
@@ -55,7 +55,7 @@ export const transportService = {
     const { data, error } = await supabase
       .from('transportes')
       .update(mappedData)
-      .eq('id', parseInt(id)) // Convert string ID to number for database query
+      .eq('id', parseInt(id))
       .select()
       .single();
     
@@ -70,7 +70,7 @@ export const transportService = {
     const { error } = await supabase
       .from('transportes')
       .delete()
-      .eq('id', parseInt(id)); // Convert string ID to number for database query
+      .eq('id', parseInt(id));
     
     if (error) throw new Error(error.message);
   }

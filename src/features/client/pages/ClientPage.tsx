@@ -1,7 +1,7 @@
 
 import React from "react";
-import { Transport } from "../models/transport.model";
-import { useTransports } from "../services/transport.service";
+import { useClients } from "../services/client.service";
+import { Client } from "../models/client.model";
 import { 
   Table, 
   TableHeader, 
@@ -13,8 +13,8 @@ import {
 import { LoadingFallback } from "@/components/common/LoadingFallback";
 import PageHeader from "@/components/common/PageHeader";
 
-const TransportPage: React.FC = () => {
-  const { data: transports, isLoading, error } = useTransports();
+const ClientPage: React.FC = () => {
+  const { data: clients, isLoading, error } = useClients();
 
   if (isLoading) return <LoadingFallback />;
   
@@ -29,8 +29,8 @@ const TransportPage: React.FC = () => {
   return (
     <div className="container py-6">
       <PageHeader 
-        title="Transportes" 
-        description="Gestión de transportes y servicios logísticos"
+        title="Clientes" 
+        description="Gestión de clientes de la empresa"
       />
       
       <div className="bg-white rounded-md shadow-sm overflow-hidden">
@@ -40,25 +40,25 @@ const TransportPage: React.FC = () => {
               <TableHead>Nombre</TableHead>
               <TableHead>RUC</TableHead>
               <TableHead>Dirección</TableHead>
-              <TableHead>Cobertura</TableHead>
+              <TableHead>Teléfono</TableHead>
               <TableHead>Estado</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {transports && transports.length > 0 ? (
-              transports.map((transport: Transport) => (
-                <TableRow key={transport.id}>
-                  <TableCell className="font-medium">{transport.name}</TableCell>
-                  <TableCell>{transport.ruc}</TableCell>
-                  <TableCell>{transport.address}</TableCell>
-                  <TableCell>{transport.coverage}</TableCell>
+            {clients && clients.length > 0 ? (
+              clients.map((client: Client) => (
+                <TableRow key={client.id}>
+                  <TableCell className="font-medium">{client.name}</TableCell>
+                  <TableCell>{client.ruc}</TableCell>
+                  <TableCell>{client.address}</TableCell>
+                  <TableCell>{client.phone}</TableCell>
                   <TableCell>
                     <span className={`px-2 py-1 rounded text-xs ${
-                      transport.status === 'active' 
+                      client.status === 'active' 
                         ? 'bg-green-100 text-green-800' 
                         : 'bg-red-100 text-red-800'
                     }`}>
-                      {transport.status === 'active' ? 'Activo' : 'Inactivo'}
+                      {client.status === 'active' ? 'Activo' : 'Inactivo'}
                     </span>
                   </TableCell>
                 </TableRow>
@@ -66,7 +66,7 @@ const TransportPage: React.FC = () => {
             ) : (
               <TableRow>
                 <TableCell colSpan={5} className="text-center py-8 text-gray-500">
-                  No se encontraron transportes
+                  No se encontraron clientes
                 </TableCell>
               </TableRow>
             )}
@@ -77,4 +77,4 @@ const TransportPage: React.FC = () => {
   );
 };
 
-export default TransportPage;
+export default ClientPage;
