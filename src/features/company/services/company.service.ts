@@ -23,7 +23,7 @@ export const companyService = {
     const { data, error } = await supabase
       .from('empresas')
       .select('*')
-      .eq('id', id)
+      .eq('id', parseInt(id)) // Convert string ID to number for database query
       .single();
     
     if (error) throw new Error(error.message);
@@ -55,7 +55,7 @@ export const companyService = {
     const { data, error } = await supabase
       .from('empresas')
       .update(mappedData)
-      .eq('id', id)
+      .eq('id', parseInt(id)) // Convert string ID to number for database query
       .select()
       .single();
     
@@ -70,7 +70,7 @@ export const companyService = {
     const { error } = await supabase
       .from('empresas')
       .delete()
-      .eq('id', id);
+      .eq('id', parseInt(id)); // Convert string ID to number for database query
     
     if (error) throw new Error(error.message);
   }
