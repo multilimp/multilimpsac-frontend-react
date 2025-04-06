@@ -5,7 +5,7 @@ import { Users, Building2, Truck, UserCog } from "lucide-react";
 import { RouteDefinition } from "@/app/routes/types";
 
 // Lazy load pages - These are placeholders and will need to be updated with actual paths
-const ClientPage = lazy(() => import("@/features/client/pages/ClientPage"));
+const ClientPage = lazy(() => import("@/pages/ClientDetailPage"));
 const ClientDetailPage = lazy(() => import("@/pages/ClientDetailPage"));
 const ClientContactsPage = lazy(() => import("@/pages/ClientContactsPage"));
 const ClientOrdersPage = lazy(() => import("@/pages/ClientOrdersPage"));

@@ -1,79 +1,77 @@
 
-import React from "react";
-import { useClients } from "../services/client.service";
-import { Client } from "../models/client.model";
-import { 
-  Table, 
-  TableHeader, 
-  TableRow, 
-  TableHead, 
-  TableBody, 
-  TableCell 
-} from "@/components/ui/table";
-import { LoadingFallback } from "@/components/common/LoadingFallback";
+import React, { useState } from "react";
+import DashboardLayout from "@/components/layout/DashboardLayout";
 import PageHeader from "@/components/common/PageHeader";
+import { DataGrid, DataGridColumn } from "@/components/ui/data-grid";
+import { useToast } from "@/components/ui/use-toast";
+import BreadcrumbNav from "@/components/layout/BreadcrumbNav";
+import { useQuery } from "@tanstack/react-query";
+import { fetchClients } from "@/data/services/clientService";
+import { Client } from "@/data/models/client";
 
 const ClientPage: React.FC = () => {
-  const { data: clients, isLoading, error } = useClients();
+  const { toast } = useToast();
+  const { data: clients = [], isLoading, refetch } = useQuery({
+    queryKey: ["clients"],
+    queryFn: fetchClients,
+  });
 
-  if (isLoading) return <LoadingFallback />;
-  
-  if (error) return (
-    <div className="p-4">
-      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-        <p>Error: {error.message}</p>
-      </div>
-    </div>
-  );
+  const breadcrumbItems = [
+    {
+      label: "Clientes",
+      path: "/clientes",
+      isCurrentPage: true
+    }
+  ];
+
+  const columns: DataGridColumn[] = [
+    { key: 'id', name: 'ID', type: 'string', sortable: true, filterable: true },
+    { key: 'name', name: 'Cliente', type: 'string', sortable: true, filterable: true },
+    { key: 'ruc', name: 'RUC', type: 'string', sortable: true, filterable: true },
+    { key: 'address', name: 'Dirección', type: 'string', sortable: true, filterable: true },
+    { key: 'contact', name: 'Contacto', type: 'string', sortable: true, filterable: true },
+    { key: 'phone', name: 'Teléfono', type: 'string', sortable: true, filterable: true },
+    { key: 'email', name: 'Email', type: 'string', sortable: true, filterable: true },
+    { key: 'status', name: 'Estado', type: 'string', sortable: true, filterable: true },
+  ];
+
+  const handleReload = () => {
+    refetch();
+    toast({
+      title: "Datos actualizados",
+      description: "La lista de clientes ha sido actualizada"
+    });
+  };
+
+  const handleRowClick = (row: Client) => {
+    console.log('Cliente seleccionado:', row);
+    toast({
+      title: "Cliente seleccionado",
+      description: `${row.name}`,
+    });
+  };
 
   return (
-    <div className="container py-6">
-      <PageHeader 
-        title="Clientes" 
-        description="Gestión de clientes de la empresa"
+    <DashboardLayout>
+      <BreadcrumbNav items={breadcrumbItems} />
+      <PageHeader
+        title="Clientes"
+        subtitle="Gestione los clientes en el sistema"
+        showAddButton
+        addButtonText="Agregar Cliente"
       />
       
-      <div className="bg-white rounded-md shadow-sm overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nombre</TableHead>
-              <TableHead>RUC</TableHead>
-              <TableHead>Dirección</TableHead>
-              <TableHead>Teléfono</TableHead>
-              <TableHead>Estado</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {clients && clients.length > 0 ? (
-              clients.map((client: Client) => (
-                <TableRow key={client.id}>
-                  <TableCell className="font-medium">{client.name}</TableCell>
-                  <TableCell>{client.ruc}</TableCell>
-                  <TableCell>{client.address}</TableCell>
-                  <TableCell>{client.phone}</TableCell>
-                  <TableCell>
-                    <span className={`px-2 py-1 rounded text-xs ${
-                      client.status === 'active' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {client.status === 'active' ? 'Activo' : 'Inactivo'}
-                    </span>
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center py-8 text-gray-500">
-                  No se encontraron clientes
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+      <div className="mb-6">
+        <DataGrid 
+          data={clients}
+          columns={columns}
+          loading={isLoading}
+          pageSize={10}
+          onRowClick={handleRowClick}
+          onReload={handleReload}
+        />
       </div>
-    </div>
+    </DashboardLayout>
   );
 };
 

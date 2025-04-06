@@ -4,11 +4,11 @@ import { Building2, Users, Truck, User } from "lucide-react";
 import { RouteDefinition } from "../types";
 
 // Domain-specific pages (lazy loaded)
-const CompanyPage = lazy(() => import("@/features/company/pages/CompanyPage"));
+const CompanyPage = lazy(() => import("@/pages/CompanyPage"));
 const ClientPage = lazy(() => import("@/features/client/pages/ClientPage"));
 const SupplierPage = lazy(() => import("@/features/supplier/pages/SupplierPage"));
 const TransportPage = lazy(() => import("@/features/transport/pages/TransportPage"));
-const UserPage = lazy(() => import("@/features/user/pages/UserPage"));
+const UserPage = lazy(() => import("@/pages/UserPage"));
 
 // Domain-driven route definitions
 export const directoryRoutes: RouteDefinition[] = [
@@ -21,7 +21,8 @@ export const directoryRoutes: RouteDefinition[] = [
     permission: "companies:view",
     domain: "company",
     entityType: "empresa",
-    action: "list"
+    action: "list",
+    breadcrumb: "Empresas"
   },
   {
     path: "/clientes",
@@ -32,7 +33,8 @@ export const directoryRoutes: RouteDefinition[] = [
     permission: "clients:view",
     domain: "client",
     entityType: "cliente",
-    action: "list"
+    action: "list",
+    breadcrumb: "Clientes"
   },
   {
     path: "/proveedores",
@@ -43,7 +45,8 @@ export const directoryRoutes: RouteDefinition[] = [
     permission: "suppliers:view",
     domain: "supplier",
     entityType: "proveedor",
-    action: "list"
+    action: "list",
+    breadcrumb: "Proveedores"
   },
   {
     path: "/transportes",
@@ -54,7 +57,8 @@ export const directoryRoutes: RouteDefinition[] = [
     permission: "transports:view",
     domain: "transport",
     entityType: "transporte",
-    action: "list"
+    action: "list",
+    breadcrumb: "Transportes"
   },
   {
     path: "/usuarios",
@@ -65,6 +69,7 @@ export const directoryRoutes: RouteDefinition[] = [
     permission: "users:view",
     domain: "admin",
     entityType: "usuario",
-    action: "list"
+    action: "list",
+    breadcrumb: "Usuarios"
   }
 ];
