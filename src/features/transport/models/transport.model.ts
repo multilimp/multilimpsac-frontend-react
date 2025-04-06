@@ -10,10 +10,10 @@ export interface Transport {
   name: string;
   ruc: string;
   address: string;
-  phone?: string;
-  email?: string;
-  contact?: string;
-  coverage?: string;
+  coverage: string;
+  phone: string;
+  email: string;
+  contact: string;
   status: "active" | "inactive";
   department?: string;
   province?: string;
@@ -31,31 +31,6 @@ export interface TransportContact {
   email: string;
   phone: string;
   isPrimary: boolean;
-}
-
-export interface TransportVehicle {
-  id: string;
-  transportId: string;
-  type: string;
-  plate: string;
-  model: string;
-  capacity: string;
-  year: number;
-  status: "active" | "maintenance" | "inactive";
-}
-
-// Domain events
-export type TransportCreatedEvent = { transport: Transport };
-export type TransportUpdatedEvent = { transport: Transport, changes: Partial<Transport> };
-export type TransportDeletedEvent = { transportId: string };
-
-// Repository interfaces
-export interface TransportRepository {
-  findAll: () => Promise<Transport[]>;
-  findById: (id: string) => Promise<Transport | null>;
-  create: (transport: Omit<Transport, 'id'>) => Promise<Transport>;
-  update: (id: string, data: Partial<Transport>) => Promise<Transport>;
-  delete: (id: string) => Promise<void>;
 }
 
 // Database schema mapping for Supabase
@@ -80,6 +55,9 @@ export const mapTransportFromDB = (db: TransportDB): Transport => ({
   ruc: db.ruc,
   address: db.direccion,
   coverage: db.cobertura || '',
+  phone: '', // Not in DB schema, would need to be fetched separately
+  email: '', // Not in DB schema, would need to be fetched separately
+  contact: '', // Not in DB schema, would need to be fetched separately
   status: db.estado ? 'active' : 'inactive',
   department: db.departamento,
   province: db.provincia,

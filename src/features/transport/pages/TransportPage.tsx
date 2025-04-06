@@ -1,38 +1,15 @@
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import PageHeader from "@/components/common/PageHeader";
 import { DataGrid, DataGridColumn } from "@/components/ui/data-grid";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import BreadcrumbNav from "@/components/layout/BreadcrumbNav";
-import { Transport } from "@/features/transport/models/transport.model";
-import { fetchTransports } from "@/data/services/transportService";
+import { useTransports } from "@/features/transport/services/transport.service";
 
 const TransportPage: React.FC = () => {
-  const [transports, setTransports] = useState<Transport[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: transports = [], isLoading, refetch } = useTransports();
   const { toast } = useToast();
-
-  useEffect(() => {
-    loadTransports();
-  }, []);
-
-  const loadTransports = async () => {
-    setLoading(true);
-    try {
-      const data = await fetchTransports();
-      setTransports(data);
-      setLoading(false);
-    } catch (error) {
-      console.error("Error loading transports:", error);
-      toast({
-        title: "Error",
-        description: "No se pudieron cargar los transportes",
-        variant: "destructive",
-      });
-      setLoading(false);
-    }
-  };
 
   const breadcrumbItems = [
     {
@@ -52,10 +29,14 @@ const TransportPage: React.FC = () => {
   ];
 
   const handleReload = () => {
-    loadTransports();
+    refetch();
+    toast({
+      title: "Datos actualizados",
+      description: "La lista de transportes ha sido actualizada"
+    });
   };
 
-  const handleRowClick = (row: Transport) => {
+  const handleRowClick = (row: any) => {
     console.log('Transporte seleccionado:', row);
     toast({
       title: "Transporte seleccionado",
@@ -77,7 +58,7 @@ const TransportPage: React.FC = () => {
         <DataGrid 
           data={transports}
           columns={columns}
-          loading={loading}
+          loading={isLoading}
           pageSize={10}
           onRowClick={handleRowClick}
           onReload={handleReload}

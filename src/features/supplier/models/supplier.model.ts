@@ -42,20 +42,6 @@ export interface SupplierBankAccount {
   isDefault: boolean;
 }
 
-// Domain events
-export type SupplierCreatedEvent = { supplier: Supplier };
-export type SupplierUpdatedEvent = { supplier: Supplier, changes: Partial<Supplier> };
-export type SupplierDeletedEvent = { supplierId: string };
-
-// Repository interfaces
-export interface SupplierRepository {
-  findAll: () => Promise<Supplier[]>;
-  findById: (id: string) => Promise<Supplier | null>;
-  create: (supplier: Omit<Supplier, 'id'>) => Promise<Supplier>;
-  update: (id: string, data: Partial<Supplier>) => Promise<Supplier>;
-  delete: (id: string) => Promise<void>;
-}
-
 // Database schema mapping for Supabase
 export interface SupplierDB {
   id: number;

@@ -1,38 +1,15 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import PageHeader from "@/components/common/PageHeader";
 import { DataGrid, DataGridColumn } from "@/components/ui/data-grid";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import BreadcrumbNav from "@/components/layout/BreadcrumbNav";
-import { Supplier } from "@/features/supplier/models/supplier.model";
-import { fetchSuppliers } from "@/data/services/supplierService";
+import { useSuppliers } from "@/features/supplier/services/supplier.service";
 
 const SupplierPage: React.FC = () => {
-  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: suppliers = [], isLoading, refetch } = useSuppliers();
   const { toast } = useToast();
-
-  useEffect(() => {
-    loadSuppliers();
-  }, []);
-
-  const loadSuppliers = async () => {
-    setLoading(true);
-    try {
-      const data = await fetchSuppliers();
-      setSuppliers(data);
-      setLoading(false);
-    } catch (error) {
-      console.error("Error loading suppliers:", error);
-      toast({
-        title: "Error",
-        description: "No se pudieron cargar los proveedores",
-        variant: "destructive",
-      });
-      setLoading(false);
-    }
-  };
 
   const breadcrumbItems = [
     {
@@ -53,10 +30,14 @@ const SupplierPage: React.FC = () => {
   ];
 
   const handleReload = () => {
-    loadSuppliers();
+    refetch();
+    toast({
+      title: "Datos actualizados",
+      description: "La lista de proveedores ha sido actualizada"
+    });
   };
 
-  const handleRowClick = (row: Supplier) => {
+  const handleRowClick = (row: any) => {
     console.log('Proveedor seleccionado:', row);
     toast({
       title: "Proveedor seleccionado",
@@ -78,7 +59,7 @@ const SupplierPage: React.FC = () => {
         <DataGrid 
           data={suppliers}
           columns={columns}
-          loading={loading}
+          loading={isLoading}
           pageSize={10}
           onRowClick={handleRowClick}
           onReload={handleReload}

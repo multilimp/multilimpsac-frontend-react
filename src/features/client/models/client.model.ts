@@ -33,30 +33,6 @@ export interface ClientContact {
   isPrimary: boolean;
 }
 
-export interface ClientDocument {
-  id: string;
-  clientId: string;
-  name: string;
-  type: "contract" | "license" | "certificate" | "other";
-  filePath: string;
-  uploadedAt: string;
-  expiryDate?: string;
-}
-
-// Domain events
-export type ClientCreatedEvent = { client: Client };
-export type ClientUpdatedEvent = { client: Client, changes: Partial<Client> };
-export type ClientDeletedEvent = { clientId: string };
-
-// Repository interfaces
-export interface ClientRepository {
-  findAll: () => Promise<Client[]>;
-  findById: (id: string) => Promise<Client | null>;
-  create: (client: Omit<Client, 'id'>) => Promise<Client>;
-  update: (id: string, data: Partial<Client>) => Promise<Client>;
-  delete: (id: string) => Promise<void>;
-}
-
 // Database schema mapping for Supabase
 export interface ClientDB {
   id: number;
