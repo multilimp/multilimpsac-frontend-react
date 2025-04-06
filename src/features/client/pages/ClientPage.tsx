@@ -5,29 +5,29 @@ import PageHeader from "@/components/common/PageHeader";
 import { DataGrid, DataGridColumn } from "@/components/ui/data-grid";
 import { useToast } from "@/components/ui/use-toast";
 import BreadcrumbNav from "@/components/layout/BreadcrumbNav";
-import { Company } from "@/features/company/models/company.model";
-import { fetchCompanies } from "@/data/services/companyService";
+import { Client } from "@/features/client/models/client.model";
+import { fetchClients } from "@/data/services/clientService";
 
-const CompanyPage: React.FC = () => {
-  const [companies, setCompanies] = useState<Company[]>([]);
+const ClientPage: React.FC = () => {
+  const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
-    loadCompanies();
+    loadClients();
   }, []);
 
-  const loadCompanies = async () => {
+  const loadClients = async () => {
     setLoading(true);
     try {
-      const data = await fetchCompanies();
-      setCompanies(data);
+      const data = await fetchClients();
+      setClients(data);
       setLoading(false);
     } catch (error) {
-      console.error("Error loading companies:", error);
+      console.error("Error loading clients:", error);
       toast({
         title: "Error",
-        description: "No se pudieron cargar las empresas",
+        description: "No se pudieron cargar los clientes",
         variant: "destructive",
       });
       setLoading(false);
@@ -36,30 +36,30 @@ const CompanyPage: React.FC = () => {
 
   const breadcrumbItems = [
     {
-      label: "Empresas",
-      path: "/empresas",
+      label: "Clientes",
+      path: "/clientes",
       isCurrentPage: true
     }
   ];
 
   const columns: DataGridColumn[] = [
     { key: 'id', name: 'ID', type: 'string', sortable: true, filterable: true },
-    { key: 'name', name: 'Razón Social', type: 'string', sortable: true, filterable: true },
+    { key: 'name', name: 'Nombre', type: 'string', sortable: true, filterable: true },
     { key: 'ruc', name: 'RUC', type: 'string', sortable: true, filterable: true },
-    { key: 'address', name: 'Dirección', type: 'string', sortable: true, filterable: true },
+    { key: 'contact', name: 'Contacto', type: 'string', sortable: true, filterable: true },
     { key: 'phone', name: 'Teléfono', type: 'string', sortable: true, filterable: true },
     { key: 'email', name: 'Email', type: 'string', sortable: true, filterable: true },
     { key: 'status', name: 'Estado', type: 'string', sortable: true, filterable: true },
   ];
 
   const handleReload = () => {
-    loadCompanies();
+    loadClients();
   };
 
-  const handleRowClick = (row: Company) => {
-    console.log('Empresa seleccionada:', row);
+  const handleRowClick = (row: Client) => {
+    console.log('Cliente seleccionado:', row);
     toast({
-      title: "Empresa seleccionada",
+      title: "Cliente seleccionado",
       description: `${row.name}`,
     });
   };
@@ -68,15 +68,15 @@ const CompanyPage: React.FC = () => {
     <DashboardLayout>
       <BreadcrumbNav items={breadcrumbItems} />
       <PageHeader
-        title="Empresas"
-        subtitle="Gestione las empresas en el sistema"
+        title="Clientes"
+        subtitle="Gestione los clientes en el sistema"
         showAddButton
-        addButtonText="Agregar Empresa"
+        addButtonText="Agregar Cliente"
       />
-      
+
       <div className="mb-6">
         <DataGrid 
-          data={companies}
+          data={clients}
           columns={columns}
           loading={loading}
           pageSize={10}
@@ -88,4 +88,4 @@ const CompanyPage: React.FC = () => {
   );
 };
 
-export default CompanyPage;
+export default ClientPage;

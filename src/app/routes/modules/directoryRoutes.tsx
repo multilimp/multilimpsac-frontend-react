@@ -4,11 +4,11 @@ import { Building2, Users, Truck, User } from "lucide-react";
 import { RouteDefinition } from "../types";
 
 // Domain-specific pages (lazy loaded)
-const CompanyPage = lazy(() => import("@/features/company/pages/CompanyPage"));
-const ClientPage = lazy(() => import("@/features/client/pages/ClientPage"));
-const SupplierPage = lazy(() => import("@/features/supplier/pages/SupplierPage"));
-const TransportPage = lazy(() => import("@/features/transport/pages/TransportPage"));
-const UserPage = lazy(() => import("@/features/user/pages/UserPage"));
+const CompanyPage = lazy(() => import("@/pages/CompanyPage"));
+const ClientPage = lazy(() => import("@/pages/ClientPage"));
+const SupplierPage = lazy(() => import("@/pages/SupplierPage"));
+const TransportPage = lazy(() => import("@/pages/TransportPage"));
+const UserPage = lazy(() => import("@/pages/UserPage"));
 
 // Domain-driven route definitions
 export const directoryRoutes: RouteDefinition[] = [

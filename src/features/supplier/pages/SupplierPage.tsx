@@ -5,29 +5,29 @@ import PageHeader from "@/components/common/PageHeader";
 import { DataGrid, DataGridColumn } from "@/components/ui/data-grid";
 import { useToast } from "@/components/ui/use-toast";
 import BreadcrumbNav from "@/components/layout/BreadcrumbNav";
-import { Company } from "@/features/company/models/company.model";
-import { fetchCompanies } from "@/data/services/companyService";
+import { Supplier } from "@/features/supplier/models/supplier.model";
+import { fetchSuppliers } from "@/data/services/supplierService";
 
-const CompanyPage: React.FC = () => {
-  const [companies, setCompanies] = useState<Company[]>([]);
+const SupplierPage: React.FC = () => {
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
-    loadCompanies();
+    loadSuppliers();
   }, []);
 
-  const loadCompanies = async () => {
+  const loadSuppliers = async () => {
     setLoading(true);
     try {
-      const data = await fetchCompanies();
-      setCompanies(data);
+      const data = await fetchSuppliers();
+      setSuppliers(data);
       setLoading(false);
     } catch (error) {
-      console.error("Error loading companies:", error);
+      console.error("Error loading suppliers:", error);
       toast({
         title: "Error",
-        description: "No se pudieron cargar las empresas",
+        description: "No se pudieron cargar los proveedores",
         variant: "destructive",
       });
       setLoading(false);
@@ -36,30 +36,30 @@ const CompanyPage: React.FC = () => {
 
   const breadcrumbItems = [
     {
-      label: "Empresas",
-      path: "/empresas",
+      label: "Proveedores",
+      path: "/proveedores",
       isCurrentPage: true
     }
   ];
 
   const columns: DataGridColumn[] = [
     { key: 'id', name: 'ID', type: 'string', sortable: true, filterable: true },
-    { key: 'name', name: 'Razón Social', type: 'string', sortable: true, filterable: true },
+    { key: 'name', name: 'Proveedor', type: 'string', sortable: true, filterable: true },
     { key: 'ruc', name: 'RUC', type: 'string', sortable: true, filterable: true },
     { key: 'address', name: 'Dirección', type: 'string', sortable: true, filterable: true },
-    { key: 'phone', name: 'Teléfono', type: 'string', sortable: true, filterable: true },
+    { key: 'contact', name: 'Contacto', type: 'string', sortable: true, filterable: true },
     { key: 'email', name: 'Email', type: 'string', sortable: true, filterable: true },
     { key: 'status', name: 'Estado', type: 'string', sortable: true, filterable: true },
   ];
 
   const handleReload = () => {
-    loadCompanies();
+    loadSuppliers();
   };
 
-  const handleRowClick = (row: Company) => {
-    console.log('Empresa seleccionada:', row);
+  const handleRowClick = (row: Supplier) => {
+    console.log('Proveedor seleccionado:', row);
     toast({
-      title: "Empresa seleccionada",
+      title: "Proveedor seleccionado",
       description: `${row.name}`,
     });
   };
@@ -68,15 +68,15 @@ const CompanyPage: React.FC = () => {
     <DashboardLayout>
       <BreadcrumbNav items={breadcrumbItems} />
       <PageHeader
-        title="Empresas"
-        subtitle="Gestione las empresas en el sistema"
+        title="Proveedores"
+        subtitle="Gestione los proveedores en el sistema"
         showAddButton
-        addButtonText="Agregar Empresa"
+        addButtonText="Agregar Proveedor"
       />
       
       <div className="mb-6">
         <DataGrid 
-          data={companies}
+          data={suppliers}
           columns={columns}
           loading={loading}
           pageSize={10}
@@ -88,4 +88,4 @@ const CompanyPage: React.FC = () => {
   );
 };
 
-export default CompanyPage;
+export default SupplierPage;

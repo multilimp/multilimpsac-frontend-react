@@ -10,10 +10,10 @@ export interface Transport {
   name: string;
   ruc: string;
   address: string;
-  coverage: string;
-  phone: string;
-  email: string;
-  contact: string;
+  phone?: string;
+  email?: string;
+  contact?: string;
+  coverage?: string;
   status: "active" | "inactive";
   department?: string;
   province?: string;
@@ -33,17 +33,15 @@ export interface TransportContact {
   isPrimary: boolean;
 }
 
-export interface TransportAssignment {
+export interface TransportVehicle {
   id: string;
   transportId: string;
-  orderId: string;
-  destination: string;
-  amount: number;
-  status: "pending" | "in_transit" | "delivered" | "cancelled";
-  assignedAt: string;
-  estimatedDelivery: string;
-  actualDelivery?: string;
-  grtNumber?: string;
+  type: string;
+  plate: string;
+  model: string;
+  capacity: string;
+  year: number;
+  status: "active" | "maintenance" | "inactive";
 }
 
 // Domain events
@@ -82,9 +80,6 @@ export const mapTransportFromDB = (db: TransportDB): Transport => ({
   ruc: db.ruc,
   address: db.direccion,
   coverage: db.cobertura || '',
-  phone: '', // Not in DB schema, would need to be fetched separately
-  email: '', // Not in DB schema, would need to be fetched separately
-  contact: '', // Not in DB schema, would need to be fetched separately
   status: db.estado ? 'active' : 'inactive',
   department: db.departamento,
   province: db.provincia,
