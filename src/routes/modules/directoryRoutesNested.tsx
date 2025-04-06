@@ -1,17 +1,17 @@
 
 // src/routes/modules/directoryRoutesNested.tsx
 import { lazy } from "react";
-import { RouteDefinition } from "../types";
 import { Users, Building2, Truck, UserCog } from "lucide-react";
+import { RouteDefinition } from "@/app/routes/types";
 
-// Lazy load pages
-const ClientPage = lazy(() => import("@/pages/ClientPage"));
+// Lazy load pages - These are placeholders and will need to be updated with actual paths
+const ClientPage = lazy(() => import("@/features/client/pages/ClientPage"));
 const ClientDetailPage = lazy(() => import("@/pages/ClientDetailPage"));
 const ClientContactsPage = lazy(() => import("@/pages/ClientContactsPage"));
 const ClientOrdersPage = lazy(() => import("@/pages/ClientOrdersPage"));
 const ClientInvoicesPage = lazy(() => import("@/pages/ClientInvoicesPage"));
 
-// Rutas de clientes con subrutas anidadas
+// Client routes with nested subroutes
 export const clientNestedRoutes: RouteDefinition = {
   path: "/clientes",
   component: ClientPage,
@@ -59,12 +59,12 @@ export const clientNestedRoutes: RouteDefinition = {
   ]
 };
 
-// Ejemplo de estructura para otras rutas de directorio
+// Example structure for other directory routes
 export const directoryNestedRoutes: RouteDefinition[] = [
   clientNestedRoutes,
   {
     path: "/empresas",
-    component: lazy(() => import("@/pages/CompanyPage")),
+    component: lazy(() => import("@/features/company/pages/CompanyPage")),
     title: "Empresas",
     description: "Gestión de empresas del grupo",
     icon: <Building2 className="h-5 w-5" />,
@@ -74,7 +74,7 @@ export const directoryNestedRoutes: RouteDefinition[] = [
   },
   {
     path: "/transportes",
-    component: lazy(() => import("@/pages/TransportPage")),
+    component: lazy(() => import("@/features/transport/pages/TransportPage")),
     title: "Transportes",
     description: "Gestión de empresas de transporte",
     icon: <Truck className="h-5 w-5" />,
@@ -84,7 +84,7 @@ export const directoryNestedRoutes: RouteDefinition[] = [
   },
   {
     path: "/usuarios",
-    component: lazy(() => import("@/pages/UserPage")),
+    component: lazy(() => import("@/features/user/pages/UserPage")),
     title: "Usuarios",
     description: "Gestión de usuarios del sistema",
     icon: <UserCog className="h-5 w-5" />,

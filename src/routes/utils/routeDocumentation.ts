@@ -1,10 +1,12 @@
+
 // src/routes/utils/routeDocumentation.ts
-import { RouteDefinition, RouteDocumentation } from "../types";
+import { RouteDefinition } from "@/app/routes/types";
+import { RouteDocumentation } from "@/app/routes/types";
 
 /**
- * Genera documentación para una ruta específica
- * @param route Definición de la ruta
- * @returns Documentación de la ruta
+ * Generates documentation for a specific route
+ * @param route Route definition
+ * @returns Route documentation
  */
 export const generateRouteDoc = (route: RouteDefinition): RouteDocumentation => {
   return {
@@ -20,9 +22,9 @@ export const generateRouteDoc = (route: RouteDefinition): RouteDocumentation => 
 };
 
 /**
- * Extrae los parámetros de ruta de una ruta
- * @param path Ruta a analizar
- * @returns Lista de parámetros de ruta
+ * Extracts path parameters from a route
+ * @param path Route to analyze
+ * @returns List of path parameters
  */
 const extractPathParams = (path: string) => {
   const params: RouteDocumentation["params"] = [];
@@ -42,9 +44,9 @@ const extractPathParams = (path: string) => {
 };
 
 /**
- * Genera documentación para todas las rutas
- * @param routes Lista de definiciones de rutas
- * @returns Documentación de todas las rutas
+ * Generates documentation for all routes
+ * @param routes List of route definitions
+ * @returns Documentation for all routes
  */
 export const generateRoutesDocumentation = (
   routes: RouteDefinition[]
@@ -54,7 +56,7 @@ export const generateRoutesDocumentation = (
   const processRoute = (route: RouteDefinition) => {
     docs.push(generateRouteDoc(route));
 
-    // Procesar rutas hijas recursivamente
+    // Process child routes recursively
     if (route.children && route.children.length > 0) {
       route.children.forEach(processRoute);
     }
@@ -65,9 +67,9 @@ export const generateRoutesDocumentation = (
 };
 
 /**
- * Exporta la documentación de rutas a un archivo JSON
- * @param routes Lista de definiciones de rutas
- * @returns Cadena JSON con la documentación
+ * Exports route documentation to a JSON file
+ * @param routes List of route definitions
+ * @returns JSON string with documentation
  */
 export const exportRoutesDocumentation = (
   routes: RouteDefinition[]

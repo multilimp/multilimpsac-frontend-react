@@ -8,12 +8,14 @@ export interface RouteDefinition {
   path: string;
   component?: React.ComponentType<any>;
   title: string;
+  description?: string;
   icon?: ReactNode;
   requireAuth?: boolean;
   permission?: string;
   roles?: string[];
   redirectIfAuthenticated?: boolean;
   children?: RouteDefinition[];
+  breadcrumb?: string;
   
   // Domain-specific metadata
   domain?: 'company' | 'client' | 'supplier' | 'transport' | 'admin' | 'operation' | 'finance' | 'report';
@@ -45,4 +47,28 @@ export interface DomainRouteConfig {
     create?: RouteDefinition;
     edit?: RouteDefinition;
   };
+}
+
+/**
+ * Route documentation interface
+ */
+export interface RouteDocumentation {
+  path: string;
+  title: string;
+  description: string;
+  requiresAuth: boolean;
+  permissions: string[];
+  roles: string[];
+  params: {
+    name: string;
+    description: string;
+    required: boolean;
+    type: string;
+  }[];
+  queries: {
+    name: string;
+    description: string;
+    required: boolean;
+    type: string;
+  }[];
 }

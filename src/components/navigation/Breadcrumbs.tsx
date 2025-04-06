@@ -1,5 +1,4 @@
 
-// src/components/navigation/Breadcrumbs.tsx
 import React, { useMemo } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { ChevronRight, Home } from "lucide-react";
@@ -16,22 +15,22 @@ const Breadcrumbs: React.FC = () => {
   const location = useLocation();
   const params = useParams();
 
-  // Función para encontrar la definición de ruta que coincide con la ruta actual
+  // Find matching route function
   const findMatchingRoute = (
     routes: RouteDefinition[],
     pathname: string,
     parentPath = ""
   ): RouteDefinition | null => {
     for (const route of routes) {
-      // Construir la ruta completa (incluyendo la ruta padre)
+      // Construct the full path
       const fullPath = parentPath ? `${parentPath}${route.path}` : route.path;
       
-      // Reemplazar parámetros de ruta con sus valores reales
+      // Replace path params with real values
       const pathWithParams = replacePathParams(fullPath, params);
       
-      // Verificar si la ruta coincide con la ruta actual
+      // Check if route matches current path
       if (pathname === pathWithParams || pathname.startsWith(`${pathWithParams}/`)) {
-        // Si la ruta tiene hijos, buscar en ellos
+        // If route has children, search in them
         if (route.children && route.children.length > 0) {
           const childMatch = findMatchingRoute(route.children, pathname, pathWithParams);
           if (childMatch) return childMatch;
@@ -42,7 +41,7 @@ const Breadcrumbs: React.FC = () => {
     return null;
   };
 
-  // Función para reemplazar los parámetros de ruta con sus valores reales
+  // Replace path params with real values
   const replacePathParams = (path: string, params: Record<string, string>) => {
     let result = path;
     Object.entries(params).forEach(([key, value]) => {
@@ -51,7 +50,7 @@ const Breadcrumbs: React.FC = () => {
     return result;
   };
 
-  // Función para generar los elementos de breadcrumb
+  // Generate breadcrumb elements
   const generateBreadcrumbs = (pathname: string): BreadcrumbItem[] => {
     const breadcrumbs: BreadcrumbItem[] = [
       { path: "/", label: "Inicio", isActive: pathname === "/" },
@@ -59,15 +58,15 @@ const Breadcrumbs: React.FC = () => {
 
     if (pathname === "/") return breadcrumbs;
 
-    // Dividir la ruta en segmentos
+    // Split path into segments
     const segments = pathname.split("/").filter(Boolean);
     let currentPath = "";
 
-    // Generar breadcrumbs para cada segmento de la ruta
+    // Generate breadcrumbs for each path segment
     segments.forEach((segment, index) => {
       currentPath += `/${segment}`;
       
-      // Buscar la definición de ruta para este segmento
+      // Find route definition for this segment
       const matchingRoute = findMatchingRoute(allRoutes, currentPath);
       
       if (matchingRoute) {
@@ -77,7 +76,7 @@ const Breadcrumbs: React.FC = () => {
           isActive: currentPath === pathname,
         });
       } else {
-        // Si no hay una definición de ruta, usar el segmento como etiqueta
+        // If no route definition exists, use segment as label
         breadcrumbs.push({
           path: currentPath,
           label: segment.charAt(0).toUpperCase() + segment.slice(1),
@@ -89,13 +88,13 @@ const Breadcrumbs: React.FC = () => {
     return breadcrumbs;
   };
 
-  // Generar breadcrumbs basados en la ruta actual
+  // Generate breadcrumbs based on current path
   const breadcrumbs = useMemo(() => generateBreadcrumbs(location.pathname), [
     location.pathname,
     params,
   ]);
 
-  // No mostrar breadcrumbs en la página de inicio
+  // Don't show breadcrumbs on home page
   if (location.pathname === "/") return null;
 
   return (

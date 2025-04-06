@@ -6,6 +6,7 @@ import { Plus } from "lucide-react";
 interface PageHeaderProps {
   title: string;
   subtitle?: string;
+  description?: string;
   showAddButton?: boolean;
   addButtonText?: string;
   onAddClick?: () => void;
@@ -14,6 +15,7 @@ interface PageHeaderProps {
 const PageHeader: React.FC<PageHeaderProps> = ({
   title,
   subtitle,
+  description,
   showAddButton = false,
   addButtonText = "Agregar",
   onAddClick,
@@ -24,7 +26,10 @@ const PageHeader: React.FC<PageHeaderProps> = ({
         <h1 className="text-2xl font-bold text-multilimp-navy-dark tracking-tight">
           {title}
         </h1>
-        {subtitle && (
+        {description && (
+          <p className="text-sm text-muted-foreground mt-1">{description}</p>
+        )}
+        {subtitle && !description && (
           <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>
         )}
       </div>
