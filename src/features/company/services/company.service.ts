@@ -1,11 +1,8 @@
 
-import { createClient } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 import { Company, CompanyDB, mapCompanyFromDB, mapCompanyToDB } from '../models/company.model';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
-
-// Create a typed Supabase client
-const supabase = createClient();
 
 // Core service functions
 export const companyService = {
