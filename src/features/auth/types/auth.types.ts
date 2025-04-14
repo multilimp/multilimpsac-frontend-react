@@ -25,20 +25,20 @@ export const DEMO_USER: User = {
   roles: ['admin']
 };
 
-// Interface for profile data from the database (usuarios table)
+// Interface for profile data from the database (users table)
 export interface ProfileData {
   id: number;
-  name: string;
-  nombre: string;
-  apellido: string;
-  email: string;
-  rol: "admin" | "user";
-  foto?: string;
-  created_at: string;
-  updated_at: string;
+  nombre?: string;
+  apellido?: string;
+  email?: string;
+  rol: string;
   tabla?: string;
-  email_verified_at?: string;
+  foto?: string;
   password?: string;
+  username?: string;
+  created_at?: string;
+  updated_at?: string;
+  email_verified_at?: string;
   remember_token?: string;
 }
 
@@ -48,11 +48,11 @@ export interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  isLoading: boolean; // Added this property
+  isLoading: boolean;
   isAuthenticated: boolean;
   connectionStatus: ConnectionStatus;
-  isDemoMode: boolean; // Added this property
-  enableDemoMode: () => void; // Added this method
+  isDemoMode: boolean;
+  enableDemoMode: () => void;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   register: (email: string, password: string, name: string) => Promise<void>;

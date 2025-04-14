@@ -1,5 +1,5 @@
 import { createContext, ReactNode, useEffect, useState } from 'react';
-import { supabase, checkSupabaseConnection } from '@/integrations/supabase/client';
+import { supabase, checkSupabaseConnection, checkTableAccess } from '@/integrations/supabase/client';
 import { Session } from '@supabase/supabase-js';
 import { useToast } from '@/hooks/use-toast';
 import { useAuthStore } from '@/store/authStore';

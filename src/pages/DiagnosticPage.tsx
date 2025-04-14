@@ -1,17 +1,13 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, AlertTriangle, CheckCircle, RefreshCw } from 'lucide-react';
+import { Loader2, AlertTriangle, CheckCircle, RefreshCw, Info } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase, checkSupabaseConnection, checkTableAccess, SUPABASE_URL } from '@/integrations/supabase/client';
 import SupabaseConnectionTester from '@/components/dev/SupabaseConnectionTester';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-
-// Importar la URL de Supabase
-import { SUPABASE_URL } from '@/integrations/supabase/client';
 
 interface TableStatus {
   name: string;
@@ -39,10 +35,8 @@ const DiagnosticPage: React.FC = () => {
     setIsChecking(true);
     
     try {
-      // Verificar URL de Supabase
       setSupabaseUrl(SUPABASE_URL);
       
-      // Verificar conexión básica
       const isConnected = await checkSupabaseConnection();
       
       if (!isConnected) {
@@ -54,7 +48,6 @@ const DiagnosticPage: React.FC = () => {
         return;
       }
       
-      // Verificar autenticación
       const { data, error } = await supabase.auth.getSession();
       
       if (error) {
@@ -69,7 +62,6 @@ const DiagnosticPage: React.FC = () => {
         });
       }
       
-      // Verificar tablas
       const updatedTablesStatus = [...tablesStatus];
       
       for (let i = 0; i < updatedTablesStatus.length; i++) {

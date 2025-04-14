@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { User, ProfileData } from '../models/auth.types';
+import { User, ProfileData } from '../types/auth.types';
 
 /**
  * Creates a user object from session and profile data
@@ -8,13 +8,18 @@ import { User, ProfileData } from '../models/auth.types';
 export const createUserFromProfile = (userId: string, email: string | undefined, profileData: ProfileData, userMetadata?: any): User => {
   // Map role from 'rol' to admin/user only to match the type definition
   const role = mapRoleToAllowedType(profileData.rol || userMetadata?.role || 'user');
+  
+  // Build name from nombre and apellido if available
+  const name = profileData.nombre 
+    ? (profileData.apellido ? `${profileData.nombre} ${profileData.apellido}` : profileData.nombre)
+    : userMetadata?.name || 'Usuario';
 
   return {
     id: userId,
-    name: profileData.name || profileData.nombre || userMetadata?.name || 'Usuario',
+    name,
     email: email || profileData.email || '',
-    role, // Using mapped role
-    permissions: profileData.tabla ? [profileData.tabla] : [], // Using tabla as permissions for now
+    role, 
+    permissions: profileData.tabla ? [profileData.tabla] : [],
     avatar: profileData.foto
   };
 };

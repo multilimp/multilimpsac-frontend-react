@@ -8,7 +8,8 @@ import { supabase } from './client';
 export const getServerTime = async () => {
   try {
     // Try using a real RPC if it exists
-    const { data, error } = await supabase.rpc('get_server_time');
+    // Using 'any' type assertion to bypass TypeScript error
+    const { data, error } = await supabase.rpc('get_server_time' as any);
     
     if (!error) {
       return { data, error: null };
