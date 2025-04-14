@@ -47,8 +47,9 @@ export async function checkTableAccess(table: string): Promise<{exists: boolean,
     const actualTable = mapTableName(table);
     
     try {
-      // We'll use a dynamic approach that works with TypeScript
-      const query = supabase.from(actualTable);
+      // Use type assertion to allow dynamic table names
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const query = supabase.from(actualTable as any);
       const { error } = await query
         .select('count', { count: 'exact', head: true });
       

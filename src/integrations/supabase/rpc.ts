@@ -55,8 +55,9 @@ export const checkTableExists = async (tableName: string) => {
     // For special tables like 'usuarios' that map to 'users'
     const actualTableName = tableName === 'usuarios' ? 'users' : tableName;
     
-    // Use the table as a dynamic key to avoid TypeScript errors
-    const query = supabase.from(actualTableName);
+    // Use type assertion to properly handle dynamic table names
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const query = supabase.from(actualTableName as any);
     const { error } = await query
       .select('count', { count: 'exact', head: true });
     
