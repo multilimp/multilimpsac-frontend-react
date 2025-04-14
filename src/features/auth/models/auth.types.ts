@@ -11,6 +11,7 @@ export interface ProfileData {
   tabla?: string;
   foto?: string;
   password?: string;
+  username?: string;
 }
 
 export interface User {
@@ -50,4 +51,21 @@ export interface AuthContextType {
   register: (email: string, password: string, name: string) => Promise<void>;
   createUser: (email: string, password: string, name: string, role: string) => Promise<void>;
   refreshSession: () => Promise<void>;
+}
+
+// Definición de los campos en la tabla users de Supabase
+export interface UserTableFields {
+  id?: number;
+  nombre?: string;
+  apellido?: string;
+  email?: string;
+  password: string;
+  rol: string;
+  tabla?: string;
+  foto?: string;
+  username: string;
+  created_at?: string;
+  updated_at?: string;
+  email_verified_at?: string;
+  remember_token?: string;
 }

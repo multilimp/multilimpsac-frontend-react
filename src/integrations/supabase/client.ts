@@ -50,20 +50,22 @@ export async function checkTableAccess(table: string): Promise<{exists: boolean,
     if (table === 'usuarios' || table === 'users') {
       // For the 'users' table, use a custom approach
       try {
-        const { error } = await supabase.from('users').select('count', { count: 'exact', head: true });
+        const { error } = await supabase.from('users')
+          .select('count', { count: 'exact', head: true });
         return { exists: !error, error: error ? error.message : undefined };
       } catch (err: any) {
         console.error(`Error checking access for users table:`, err);
         return { exists: false, error: err?.message || 'Unknown error accessing users table' };
       }
     } else {
-      // For other tables, attempt a standard query using any
-      const result = await supabase.from(actualTable as any).select('count', { count: 'exact', head: true });
+      // For other tables, attempt a standard query using type assertion for safety
+      const { error } = await supabase.from(actualTable as any)
+        .select('count', { count: 'exact', head: true });
       
-      if (result?.error) {
+      if (error) {
         return {
           exists: false,
-          error: result.error.message || `Error accessing table: ${table}`
+          error: error.message || `Error accessing table: ${table}`
         };
       }
       

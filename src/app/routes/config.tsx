@@ -7,6 +7,7 @@ import { operationsRoutes } from "./modules/operationsRoutes";
 import { financeRoutes } from "./modules/financeRoutes";
 import { reportRoutes } from "./modules/reportRoutes";
 import { adminRoutes } from "./modules/adminRoutes";
+import { MainLayout } from "@/layouts";
 
 // Rutas públicas
 const LoginPage = lazy(() => import("@/features/auth/pages/LoginPage"));
@@ -31,27 +32,36 @@ const Dashboard = lazy(() => import("@/features/dashboard/pages/Dashboard"));
 const ProfilePage = lazy(() => import("@/pages/ProfilePage"));
 const SettingsPage = lazy(() => import("@/pages/SettingsPage"));
 
-export const protectedRoutes: RouteDefinition[] = [
-  {
-    path: "/",
-    component: Dashboard,
-    title: "Dashboard",
-    requireAuth: true,
-  },
-  {
-    path: "/perfil",
-    component: ProfilePage,
-    title: "Perfil",
-    requireAuth: true,
-  },
-  {
-    path: "/configuracion",
-    component: SettingsPage,
-    title: "Configuración",
-    requireAuth: true,
-  },
-  // ... otras rutas protegidas principales
-];
+// Ruta principal con layout
+const mainRoute: RouteDefinition = {
+  path: "/",
+  component: MainLayout,
+  requireAuth: true,
+  children: [
+    {
+      path: "",
+      component: Dashboard,
+      title: "Dashboard",
+    },
+    {
+      path: "perfil",
+      component: ProfilePage,
+      title: "Perfil",
+    },
+    {
+      path: "configuracion",
+      component: SettingsPage,
+      title: "Configuración",
+    },
+    ...directoryRoutes,
+    ...operationsRoutes,
+    ...financeRoutes,
+    ...reportRoutes,
+    ...adminRoutes,
+  ],
+};
+
+export const protectedRoutes: RouteDefinition[] = [mainRoute];
 
 // Agrupar todas las rutas para navegación
 export const routeGroups: RouteGroup[] = [
@@ -61,7 +71,7 @@ export const routeGroups: RouteGroup[] = [
       { 
         path: "/", 
         title: "Dashboard",
-        component: Dashboard // Añadido el componente requerido
+        component: Dashboard
       }
     ],
   },
@@ -91,9 +101,4 @@ export const routeGroups: RouteGroup[] = [
 export const allRoutes: RouteDefinition[] = [
   ...publicRoutes,
   ...protectedRoutes,
-  ...directoryRoutes,
-  ...operationsRoutes,
-  ...financeRoutes,
-  ...reportRoutes,
-  ...adminRoutes,
 ];
