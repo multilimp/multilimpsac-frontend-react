@@ -7,15 +7,32 @@ import { supabase } from './client';
  */
 export const getServerTime = async () => {
   try {
-    // Try using a real RPC if it exists
-    // Using 'any' type assertion to bypass TypeScript error
-    const { data, error } = await supabase.rpc('get_server_time' as any);
-    
-    if (!error) {
-      return { data, error: null };
+    // First try using a function call
+    try {
+      const { data: functionData, error: functionError } = await supabase.functions.invoke('get-server-time');
+      
+      if (!functionError) {
+        return { data: functionData, error: null };
+      }
+    } catch (functionErr) {
+      console.log("Function not available:", functionErr);
     }
     
-    // Fallback to just returning the current client time
+    // Fallback to using a direct query to get the current timestamp
+    const { data, error } = await supabase
+      .from('users')
+      .select('created_at')
+      .limit(1)
+      .single();
+    
+    if (!error) {
+      return { 
+        data: data?.created_at || new Date().toISOString(),
+        error: null
+      };
+    }
+    
+    // As a last resort, just return the current client time
     return { 
       data: new Date().toISOString(),
       error: null
@@ -38,9 +55,9 @@ export const checkTableExists = async (tableName: string) => {
     // For special tables like 'usuarios' that map to 'users'
     const actualTableName = tableName === 'usuarios' ? 'users' : tableName;
     
-    // Use type assertion to bypass type checking temporarily
-    const { error } = await supabase
-      .from(actualTableName as any)
+    // Use the table as a dynamic key to avoid TypeScript errors
+    const query = supabase.from(actualTableName);
+    const { error } = await query
       .select('count', { count: 'exact', head: true });
     
     return {

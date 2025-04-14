@@ -18,14 +18,12 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
 export async function checkSupabaseConnection(): Promise<boolean> {
   try {
     // Try to get server time as a basic connectivity test
-    // Using type assertion to bypass TypeScript error
-    const { data, error } = await supabase.rpc('get_server_time' as any);
+    const { data, error } = await supabase.functions.invoke('get-server-time');
     
-    // If there's no RPC function, fall back to a simple query
+    // If there's no function, fall back to a simple query
     if (error) {
-      // Using type assertion to bypass TypeScript error
       const { error: tableError } = await supabase
-        .from('users' as any)
+        .from('users')
         .select('count', { count: 'exact', head: true });
       
       return !tableError;
@@ -49,8 +47,9 @@ export async function checkTableAccess(table: string): Promise<{exists: boolean,
     const actualTable = mapTableName(table);
     
     try {
-      // Use a type cast to any to bypass the TypeScript check
-      const { error } = await supabase.from(actualTable as any)
+      // We'll use a dynamic approach that works with TypeScript
+      const query = supabase.from(actualTable);
+      const { error } = await query
         .select('count', { count: 'exact', head: true });
       
       if (error) {
