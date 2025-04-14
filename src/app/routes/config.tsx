@@ -36,6 +36,7 @@ const SettingsPage = lazy(() => import("@/pages/SettingsPage"));
 const mainRoute: RouteDefinition = {
   path: "/",
   component: MainLayout,
+  title: "Principal", // Added missing title property
   requireAuth: true,
   children: [
     {

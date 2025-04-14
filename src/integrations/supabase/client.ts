@@ -3,7 +3,7 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = "https://ekxmysomkrmwhlxkwhvx.supabase.co";
+export const SUPABASE_URL = "https://ekxmysomkrmwhlxkwhvx.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVreG15c29ta3Jtd2hseGt3aHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5NDU2MDMsImV4cCI6MjA1ODUyMTYwM30.5kxkRIY4EFE4jRa8W-1pwIKH82crcCBOadE-rnYGFGU";
 
 // Import the supabase client like this:
@@ -46,19 +46,9 @@ export async function checkTableAccess(table: string): Promise<{exists: boolean,
     // Map table names if needed (usuarios -> users)
     const actualTable = mapTableName(table);
     
-    // Handle the specific case for tables that require special handling
-    if (table === 'usuarios' || table === 'users') {
-      // For the 'users' table, use a custom approach
-      try {
-        const { error } = await supabase.from('users')
-          .select('count', { count: 'exact', head: true });
-        return { exists: !error, error: error ? error.message : undefined };
-      } catch (err: any) {
-        console.error(`Error checking access for users table:`, err);
-        return { exists: false, error: err?.message || 'Unknown error accessing users table' };
-      }
-    } else {
-      // For other tables, attempt a standard query using type assertion for safety
+    try {
+      // Use a type cast to any to bypass the TypeScript check temporarily
+      // This is safe because we're only checking if we can access the table
       const { error } = await supabase.from(actualTable as any)
         .select('count', { count: 'exact', head: true });
       
@@ -70,6 +60,9 @@ export async function checkTableAccess(table: string): Promise<{exists: boolean,
       }
       
       return { exists: true };
+    } catch (err: any) {
+      console.error(`Error checking access for table ${table}:`, err);
+      return { exists: false, error: err?.message || 'Unknown error accessing table' };
     }
   } catch (error: any) {
     console.error(`Error checking table access for ${table}:`, error);

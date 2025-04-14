@@ -37,7 +37,7 @@ export const checkTableExists = async (tableName: string) => {
     // For special tables like 'usuarios' that map to 'users'
     const actualTableName = tableName === 'usuarios' ? 'users' : tableName;
     
-    // Try a simple count query
+    // Use type assertion to bypass type checking temporarily
     const { error } = await supabase
       .from(actualTableName as any)
       .select('count', { count: 'exact', head: true });

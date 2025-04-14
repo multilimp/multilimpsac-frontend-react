@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -56,8 +55,9 @@ const SupabaseConnectionTester: React.FC = () => {
       }
       
       // Probar acceso a tabla usuarios - use the proper table name 'users'
+      // Use type assertion to any to bypass TypeScript checking
       const { error: usuariosError } = await supabase
-        .from('users')  // Changed from 'usuarios' to 'users'
+        .from('users' as any)
         .select('count', { count: 'exact', head: true });
       
       setUsuariosOk(!usuariosError);

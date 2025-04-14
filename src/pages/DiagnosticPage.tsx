@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -5,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Loader2, AlertTriangle, CheckCircle, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase, checkSupabaseConnection, checkTableAccess } from '@/integrations/supabase/client';
+import { supabase, checkSupabaseConnection, checkTableAccess, SUPABASE_URL } from '@/integrations/supabase/client';
 import SupabaseConnectionTester from '@/components/dev/SupabaseConnectionTester';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 

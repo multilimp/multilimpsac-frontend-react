@@ -1,6 +1,7 @@
+
 import { supabase, checkSupabaseConnection, checkTableAccess } from '@/integrations/supabase/client';
 import { DEMO_MODE, DEMO_USER, User, ProfileData } from '../models/auth.types';
-import { createUserFromProfile, createBasicUser } from '../utils/auth.utils';
+import { createUserFromProfile, createBasicUser, mapRoleToAllowedType } from '../utils/auth.utils';
 
 /**
  * Login with email and password
@@ -115,12 +116,12 @@ export const registerService = async (email: string, password: string, name: str
     .from('users')
     .insert({
       id: parseInt(data.user.id, 10),
-      name,
       nombre: name.split(' ')[0], // Extract first name
       apellido: name.split(' ').slice(1).join(' '), // Extract last name
       email: email,
       rol: 'user',
-      password: '**********', // Add a placeholder password since it's required by the type
+      username: email.split('@')[0], // Use part of email as username
+      password: '**********', // Placeholder for password
       created_at: new Date().toISOString()
     });
   
@@ -187,12 +188,12 @@ export const createUserService = async (
     .from('users')
     .insert({
       id: parseInt(authData.user.id, 10),
-      name,
       nombre: name.split(' ')[0], // Extract first name
       apellido: name.split(' ').slice(1).join(' '), // Extract last name
       email,
-      rol: role as 'admin' | 'user',
-      password: '**********', // Add a placeholder password since it's required by the type
+      rol: role,
+      username: email.split('@')[0], // Use part of email as username
+      password: '**********', // Placeholder for password
       created_at: new Date().toISOString()
     });
   

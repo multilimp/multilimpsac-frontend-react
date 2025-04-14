@@ -1,5 +1,5 @@
 import { createContext, ReactNode, useEffect, useState } from 'react';
-import { supabase, checkSupabaseConnection, checkTableAccess } from '@/integrations/supabase/client';
+import { supabase, checkSupabaseConnection } from '@/integrations/supabase/client';
 import { Session } from '@supabase/supabase-js';
 import { useToast } from '@/hooks/use-toast';
 import { useAuthStore } from '@/store/authStore';
@@ -11,7 +11,7 @@ import {
   AuthContextType,
   ProfileData
 } from '../types/auth.types';
-import { createUserFromProfile, createBasicUser } from '../utils/auth.utils';
+import { createUserFromProfile, createBasicUser, mapRoleToAllowedType } from '../utils/auth.utils';
 import { 
   loginService, 
   registerService, 
@@ -60,7 +60,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
         
         const tablesStatus = await Promise.all([
-          checkTableAccess('usuarios'),
+          checkTableAccess('users'),
           checkTableAccess('clientes'),
         ]);
         
@@ -69,7 +69,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (hasTableErrors) {
           const errorTables = tablesStatus
             .filter(status => !status.exists)
-            .map((_, index) => ['usuarios', 'clientes'][index]);
+            .map((_, index) => ['users', 'clientes'][index]);
           
           console.error(`Problemas accediendo a tablas: ${errorTables.join(', ')}`);
           
@@ -97,7 +97,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           
           try {
             const { data: profileData, error: profileError } = await supabase
-              .from('usuarios')
+              .from('users')
               .select('*')
               .eq('id', parseInt(currentSession.user.id, 10))
               .single();
@@ -181,7 +181,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         
         try {
           const { data: profileData, error: profileError } = await supabase
-            .from('usuarios')
+            .from('users')
             .select('*')
             .eq('id', parseInt(newSession.user.id, 10))
             .single();

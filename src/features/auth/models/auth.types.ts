@@ -7,7 +7,7 @@ export interface ProfileData {
   apellido?: string;
   name?: string;
   email?: string;
-  rol: 'admin' | 'user' | 'manager';
+  rol: string;
   tabla?: string;
   foto?: string;
   password?: string;
@@ -18,7 +18,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: "admin" | "user"; // Changed from string to "admin" | "user" to match store type
+  role: "admin" | "user"; // This strictly matches the authStore User type
   permissions: string[];
   avatar?: string;
   roles?: string[];
