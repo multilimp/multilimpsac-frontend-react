@@ -17,7 +17,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: string;
+  role: "admin" | "user"; // Changed from string to "admin" | "user" to match store type
   permissions: string[];
   avatar?: string;
   roles?: string[];

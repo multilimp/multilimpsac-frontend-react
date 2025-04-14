@@ -43,33 +43,32 @@ export async function checkSupabaseConnection(): Promise<boolean> {
  */
 export async function checkTableAccess(table: string): Promise<{exists: boolean, error?: string}> {
   try {
-    // Try to query the table
-    let result;
+    // Map table names if needed (usuarios -> users)
+    const actualTable = mapTableName(table);
     
-    // Handle the specific case for 'usuarios' table since it's not in the Database type
-    if (table === 'usuarios') {
-      // For the 'usuarios' table (custom name), use a raw query to check
-      const { data, error } = await supabase.rpc('check_table_access', { table_name: 'users' });
-      
-      if (error) {
-        // Fall back to a simple count query
-        result = await supabase.from('users').select('count', { count: 'exact', head: true });
-      } else {
-        return { exists: !!data, error: data ? undefined : 'Table not accessible' };
+    // Handle the specific case for tables that require special handling
+    if (table === 'usuarios' || table === 'users') {
+      // For the 'users' table, use a custom approach
+      try {
+        const { error } = await supabase.from('users').select('count', { count: 'exact', head: true });
+        return { exists: !error, error: error ? error.message : undefined };
+      } catch (err: any) {
+        console.error(`Error checking access for users table:`, err);
+        return { exists: false, error: err?.message || 'Unknown error accessing users table' };
       }
     } else {
-      // For other tables, attempt a standard query
-      result = await supabase.from(table as any).select('count', { count: 'exact', head: true });
+      // For other tables, attempt a standard query using any
+      const result = await supabase.from(actualTable as any).select('count', { count: 'exact', head: true });
+      
+      if (result?.error) {
+        return {
+          exists: false,
+          error: result.error.message || `Error accessing table: ${table}`
+        };
+      }
+      
+      return { exists: true };
     }
-    
-    if (result?.error) {
-      return {
-        exists: false,
-        error: result.error.message || `Error accessing table: ${table}`
-      };
-    }
-    
-    return { exists: true };
   } catch (error: any) {
     console.error(`Error checking table access for ${table}:`, error);
     return {
@@ -77,4 +76,17 @@ export async function checkTableAccess(table: string): Promise<{exists: boolean,
       error: error?.message || `Unknown error accessing table: ${table}`
     };
   }
+}
+
+/**
+ * Maps alternate table names to their actual names in the database
+ * @param tableName The name to map
+ * @returns The actual table name in the database
+ */
+export function mapTableName(tableName: string): string {
+  const tableMap: Record<string, string> = {
+    'usuarios': 'users',
+  };
+  
+  return tableMap[tableName] || tableName;
 }

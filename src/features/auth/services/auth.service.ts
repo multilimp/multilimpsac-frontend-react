@@ -1,6 +1,5 @@
-
 import { supabase, checkSupabaseConnection, checkTableAccess } from '@/integrations/supabase/client';
-import { DEMO_MODE, DEMO_USER, User, ProfileData } from '../types/auth.types';
+import { DEMO_MODE, DEMO_USER, User, ProfileData } from '../models/auth.types';
 import { createUserFromProfile, createBasicUser } from '../utils/auth.utils';
 
 /**
@@ -23,7 +22,7 @@ export const loginService = async (email: string, password: string, isDemoMode: 
   }
   
   // Verificar acceso a tabla de usuarios
-  const { exists: usuariosTableExists, error: usuariosError } = await checkTableAccess('usuarios');
+  const { exists: usuariosTableExists, error: usuariosError } = await checkTableAccess('users');
   if (!usuariosTableExists) {
     console.error("Error accediendo a tabla usuarios:", usuariosError);
     throw new Error("Error accediendo a datos de usuario. Contacta al administrador.");
@@ -43,7 +42,7 @@ export const loginService = async (email: string, password: string, isDemoMode: 
   
   // Obtener el perfil del usuario
   const { data: profileData, error: profileError } = await supabase
-    .from('usuarios')
+    .from('users')
     .select('*')
     .eq('id', parseInt(data.user.id, 10))
     .single();
@@ -88,7 +87,7 @@ export const registerService = async (email: string, password: string, name: str
   }
   
   // Verificar acceso a tabla de usuarios
-  const { exists: usuariosTableExists, error: usuariosError } = await checkTableAccess('usuarios');
+  const { exists: usuariosTableExists, error: usuariosError } = await checkTableAccess('users');
   if (!usuariosTableExists) {
     console.error("Error accediendo a tabla usuarios:", usuariosError);
     throw new Error("Error accediendo a datos de usuario. Contacta al administrador.");
@@ -113,7 +112,7 @@ export const registerService = async (email: string, password: string, name: str
   
   // Crear el perfil del usuario en la tabla usuarios
   const { error: profileError } = await supabase
-    .from('usuarios')
+    .from('users')
     .insert({
       id: parseInt(data.user.id, 10),
       name,
@@ -159,7 +158,7 @@ export const createUserService = async (
   }
   
   // Verificar acceso a tabla de usuarios
-  const { exists: usuariosTableExists, error: usuariosError } = await checkTableAccess('usuarios');
+  const { exists: usuariosTableExists, error: usuariosError } = await checkTableAccess('users');
   if (!usuariosTableExists) {
     console.error("Error accediendo a tabla usuarios:", usuariosError);
     throw new Error("Error accediendo a datos de usuario. Contacta al administrador.");
@@ -185,7 +184,7 @@ export const createUserService = async (
   
   // Crear el perfil en la tabla usuarios
   const { error: profileError } = await supabase
-    .from('usuarios')
+    .from('users')
     .insert({
       id: parseInt(authData.user.id, 10),
       name,

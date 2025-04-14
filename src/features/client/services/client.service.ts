@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Client, ClientDB, mapClientFromDB, mapClientToDB } from '../models/client.model';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';

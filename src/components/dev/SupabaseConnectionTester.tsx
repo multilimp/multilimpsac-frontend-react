@@ -55,9 +55,9 @@ const SupabaseConnectionTester: React.FC = () => {
         throw new Error(`Error de autenticación: ${authError.message}`);
       }
       
-      // Probar acceso a tabla usuarios
+      // Probar acceso a tabla usuarios - use the proper table name 'users'
       const { error: usuariosError } = await supabase
-        .from('usuarios')
+        .from('users')  // Changed from 'usuarios' to 'users'
         .select('count', { count: 'exact', head: true });
       
       setUsuariosOk(!usuariosError);
