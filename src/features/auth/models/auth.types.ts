@@ -1,55 +1,50 @@
 
-import { Session } from '@supabase/supabase-js';
+export type ConnectionStatus = 'connected' | 'disconnected' | 'checking';
 
-// DEMO Mode configuration
-export const DEMO_MODE = true;
+export interface ProfileData {
+  id: number;
+  nombre?: string;
+  apellido?: string;
+  name?: string;
+  email?: string;
+  rol: 'admin' | 'user' | 'manager';
+  tabla?: string;
+  foto?: string;
+  password?: string;
+}
 
-// Interface for user data
 export interface User {
   id: string;
   name: string;
   email: string;
-  role: "admin" | "user";
-  avatar?: string;
+  role: string;
   permissions: string[];
-  roles?: string[]; 
+  avatar?: string;
+  roles?: string[];
 }
 
-// Demo user for testing
+// Demo mode setting
+export const DEMO_MODE = true;
+
+// Demo user for development
 export const DEMO_USER: User = {
-  id: 'demo-user-id',
+  id: 'demo-user-123',
   name: 'Usuario Demo',
   email: 'demo@multilimpsac.com',
   role: 'admin',
   permissions: ['*'],
-  roles: ['admin']
+  avatar: 'https://ui-avatars.com/api/?name=Demo+User&background=0D8ABC&color=fff',
 };
-
-// Interface for profile data from the database (usuarios table)
-export interface ProfileData {
-  id: number;
-  name: string;
-  nombre: string;
-  apellido: string;
-  email: string;
-  rol: "admin" | "user";
-  foto?: string;
-  created_at: string;
-  updated_at: string;
-  tabla?: string;
-  email_verified_at?: string;
-  password?: string;
-  remember_token?: string;
-}
-
-export type ConnectionStatus = 'connected' | 'disconnected' | 'checking';
 
 export interface AuthContextType {
   user: User | null;
-  session: Session | null;
+  session: any | null;
   loading: boolean;
+  isLoading: boolean;
   isAuthenticated: boolean;
   connectionStatus: ConnectionStatus;
+  isDemoMode: boolean;
+  enableDemoMode: () => void;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   register: (email: string, password: string, name: string) => Promise<void>;
