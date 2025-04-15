@@ -1,19 +1,17 @@
 
 import React, { useState } from "react";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import PageHeader from "@/components/common/PageHeader";
 import { DataGrid, DataGridColumn } from "@/components/ui/data-grid";
 import { useToast } from "@/components/ui/use-toast";
 import BreadcrumbNav from "@/components/layout/BreadcrumbNav";
 import { useQuery } from "@tanstack/react-query";
-import { fetchClients } from "@/data/services/clientService";
-import { Client } from "@/data/models/client";
+import ClientService from "../services/client.service";
 
 const ClientPage: React.FC = () => {
   const { toast } = useToast();
   const { data: clients = [], isLoading, refetch } = useQuery({
     queryKey: ["clients"],
-    queryFn: fetchClients,
+    queryFn: ClientService.getAll,
   });
 
   const breadcrumbItems = [
@@ -43,7 +41,7 @@ const ClientPage: React.FC = () => {
     });
   };
 
-  const handleRowClick = (row: Client) => {
+  const handleRowClick = (row: any) => {
     console.log('Cliente seleccionado:', row);
     toast({
       title: "Cliente seleccionado",
@@ -52,7 +50,7 @@ const ClientPage: React.FC = () => {
   };
 
   return (
-    <DashboardLayout>
+    <div>
       <BreadcrumbNav items={breadcrumbItems} />
       <PageHeader
         title="Clientes"
@@ -71,7 +69,7 @@ const ClientPage: React.FC = () => {
           onReload={handleReload}
         />
       </div>
-    </DashboardLayout>
+    </div>
   );
 };
 

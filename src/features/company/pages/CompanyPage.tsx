@@ -1,12 +1,11 @@
 
 import React, { useState, useEffect } from "react";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import PageHeader from "@/components/common/PageHeader";
 import { DataGrid, DataGridColumn } from "@/components/ui/data-grid";
 import { useToast } from "@/components/ui/use-toast";
 import BreadcrumbNav from "@/components/layout/BreadcrumbNav";
 import { Company } from "@/features/company/models/company.model";
-import { fetchCompanies } from "@/data/services/companyService";
+import { companyService } from "../services/company.service";
 
 const CompanyPage: React.FC = () => {
   const [companies, setCompanies] = useState<Company[]>([]);
@@ -20,7 +19,7 @@ const CompanyPage: React.FC = () => {
   const loadCompanies = async () => {
     setLoading(true);
     try {
-      const data = await fetchCompanies();
+      const data = await companyService.fetchCompanies();
       setCompanies(data);
       setLoading(false);
     } catch (error) {
@@ -65,7 +64,7 @@ const CompanyPage: React.FC = () => {
   };
 
   return (
-    <DashboardLayout>
+    <div>
       <BreadcrumbNav items={breadcrumbItems} />
       <PageHeader
         title="Empresas"
@@ -84,7 +83,8 @@ const CompanyPage: React.FC = () => {
           onReload={handleReload}
         />
       </div>
-    </DashboardLayout>
+    </div>
+    
   );
 };
 

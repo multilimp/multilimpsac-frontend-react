@@ -1,6 +1,5 @@
 
 import React, { useState } from "react";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import PageHeader from "@/components/common/PageHeader";
 import { DataGrid, DataGridColumn } from "@/components/ui/data-grid";
 import { useToast } from "@/hooks/use-toast";
@@ -46,7 +45,7 @@ const SupplierPage: React.FC = () => {
   };
 
   return (
-    <DashboardLayout>
+    <div>
       <BreadcrumbNav items={breadcrumbItems} />
       <PageHeader
         title="Proveedores"
@@ -65,7 +64,7 @@ const SupplierPage: React.FC = () => {
           onReload={handleReload}
         />
       </div>
-    </DashboardLayout>
+    </div>
   );
 };
 

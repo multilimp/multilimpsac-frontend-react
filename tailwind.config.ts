@@ -30,12 +30,12 @@ export default {
 				foreground: 'hsl(var(--foreground))',
 				multilimp: {
 					green: {
-						DEFAULT: '#47A882',
+						DEFAULT: '#00A867',
 						light: '#5EBD99',
 						dark: '#2D8C69',
 					},
 					navy: {
-						DEFAULT: '#1C2D41',
+						DEFAULT: '#0B1826',
 						light: '#2E3F53',
 						dark: '#162333',
 					}

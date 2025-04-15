@@ -17,13 +17,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import BreadcrumbNav from "@/components/layout/BreadcrumbNav";
-import { 
-  fetchCompanies, 
-  createCompany, 
-  updateCompany, 
-  deleteCompany 
-} from "@/data/services/companyService";
-import { Company } from "@/data/models/company";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,6 +28,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Switch } from "@/components/ui/switch";
+import { Company } from "@/features/company/models/company.model";
+import { companyService } from "@/features/company/services/company.service";
 
 const CompanyPage = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -59,12 +54,12 @@ const CompanyPage = () => {
   // Fetch companies data
   const { data: companies = [], isLoading, refetch } = useQuery({
     queryKey: ["companies"],
-    queryFn: fetchCompanies,
+    queryFn: companyService.fetchCompanies,
   });
 
   // Create company mutation
   const createMutation = useMutation({
-    mutationFn: createCompany,
+    mutationFn: companyService.createCompany,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["companies"] });
       toast({
@@ -86,7 +81,7 @@ const CompanyPage = () => {
   // Update company mutation
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<Company> }) => 
-      updateCompany(id, data),
+      companyService.updateCompany(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["companies"] });
       toast({
@@ -107,7 +102,7 @@ const CompanyPage = () => {
 
   // Delete company mutation
   const deleteMutation = useMutation({
-    mutationFn: deleteCompany,
+    mutationFn: companyService.deleteCompany,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["companies"] });
       toast({
@@ -183,7 +178,7 @@ const CompanyPage = () => {
       return;
     }
 
-    createMutation.mutate(formData);
+    createMutation.mutate(formData as Omit<Company, "id">);
   };
 
   const handleUpdateCompany = () => {

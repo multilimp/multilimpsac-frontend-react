@@ -36,7 +36,7 @@ const SalesReportPage = () => {
   const [viewType, setViewType] = useState("monthly");
 
   return (
-    <DashboardLayout>
+    <div>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Reporte de Ventas</h1>
@@ -232,7 +232,7 @@ const SalesReportPage = () => {
           </CardContent>
         </Card>
       </div>
-    </DashboardLayout>
+    </div>
   );
 };
 
