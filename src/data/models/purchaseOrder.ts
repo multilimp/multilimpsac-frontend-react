@@ -1,7 +1,7 @@
 
 import { EntityBase } from "@/features/shared/models";
 
-export interface PurchaseOrder extends EntityBase {
+export interface PurchaseOrder extends Omit<EntityBase, 'status'> {
   orderNumber: string;
   clientId: string;
   clientName: string;
@@ -28,7 +28,7 @@ export interface PurchaseOrderItem {
 }
 
 // Órdenes de Proveedores (OP)
-export interface SupplierOrder extends EntityBase {
+export interface SupplierOrder extends Omit<EntityBase, 'status'> {
   orderNumber: string;
   purchaseOrderId: string; // Referencia a la OC
   supplierId: string;

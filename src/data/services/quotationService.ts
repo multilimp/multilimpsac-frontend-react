@@ -35,8 +35,7 @@ const mockQuotations: Quotation[] = [
     ],
     createdBy: "user-1",
     createdAt: "2023-09-01T10:00:00Z",
-    updatedAt: "2023-09-01T10:00:00Z",
-    status: "active"
+    updatedAt: "2023-09-01T10:00:00Z"
   },
   {
     id: "2",
@@ -69,8 +68,7 @@ const mockQuotations: Quotation[] = [
     ],
     createdBy: "user-1",
     createdAt: "2023-09-15T10:00:00Z",
-    updatedAt: "2023-09-15T10:00:00Z",
-    status: "active"
+    updatedAt: "2023-09-15T10:00:00Z"
   }
 ];
 

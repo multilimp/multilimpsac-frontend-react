@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -36,9 +35,9 @@ import { Client } from "@/data/models";
 
 // Mock clients for the dropdown
 const mockClients: Client[] = [
-  { id: "1", name: "Empresa ABC", ruc: "12345678901", address: "Av. Principal 123", phone: "123456789", email: "contacto@abc.com", contactPerson: "Juan Pérez", active: true, createdAt: "2023-01-01" },
-  { id: "2", name: "Empresa XYZ", ruc: "23456789012", address: "Calle Secundaria 456", phone: "987654321", email: "contacto@xyz.com", contactPerson: "María García", active: true, createdAt: "2023-02-15" },
-  { id: "3", name: "Corporación DEF", ruc: "34567890123", address: "Jr. Comercial 789", phone: "567891234", email: "contacto@def.com", contactPerson: "Carlos López", active: true, createdAt: "2023-03-20" }
+  { id: "1", name: "Empresa ABC", ruc: "12345678901", address: "Av. Principal 123", email: "contacto@abc.com", contactPerson: "Juan Pérez", active: true, createdAt: "2023-01-01" },
+  { id: "2", name: "Empresa XYZ", ruc: "23456789012", address: "Calle Secundaria 456", email: "contacto@xyz.com", contactPerson: "María García", active: true, createdAt: "2023-02-15" },
+  { id: "3", name: "Corporación DEF", ruc: "34567890123", address: "Jr. Comercial 789", email: "contacto@def.com", contactPerson: "Carlos López", active: true, createdAt: "2023-03-20" }
 ];
 
 // Form validation schema

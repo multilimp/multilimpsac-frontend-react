@@ -1,7 +1,7 @@
 
 import { EntityBase } from "@/features/shared/models";
 
-export interface Quotation extends EntityBase {
+export interface Quotation extends Omit<EntityBase, 'status'> {
   number: string;
   clientId: string;
   clientName: string;

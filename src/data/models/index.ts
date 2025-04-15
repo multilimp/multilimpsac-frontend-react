@@ -4,3 +4,5 @@ export type { Client } from "@/features/client/models/client.model";
 export type { Company } from "@/features/company/models/company.model";
 export type { Supplier } from "@/features/supplier/models/supplier.model";
 export type { Transport } from "@/features/transport/models/transport.model";
+export type { Quotation, QuotationItem } from "@/data/models/quotation";
+export type { PurchaseOrder, PurchaseOrderItem, SupplierOrder, SupplierOrderItem, Payment } from "@/data/models/purchaseOrder";
