@@ -8,71 +8,96 @@ import { useToast } from '@/hooks/use-toast';
 export const supplierService = {
   // Fetch all suppliers
   fetchSuppliers: async (): Promise<Supplier[]> => {
-    const { data, error } = await supabase
-      .from('proveedores')
-      .select('*')
-      .order('razon_social', { ascending: true });
-    
-    if (error) throw new Error(error.message);
-    
-    return (data as SupplierDB[]).map(mapSupplierFromDB);
+    try {
+      const { data, error } = await supabase
+        .from('proveedores')
+        .select('*')
+        .order('razon_social', { ascending: true });
+      
+      if (error) throw new Error(error.message);
+      
+      return (data as SupplierDB[]).map(mapSupplierFromDB);
+    } catch (error) {
+      console.error('Error fetching suppliers:', error);
+      throw error;
+    }
   },
   
   // Fetch a single supplier by ID
   fetchSupplierById: async (id: string): Promise<Supplier> => {
-    const { data, error } = await supabase
-      .from('proveedores')
-      .select('*')
-      .eq('id', parseInt(id)) // Convert string ID to number for database query
-      .single();
-    
-    if (error) throw new Error(error.message);
-    if (!data) throw new Error('Supplier not found');
-    
-    return mapSupplierFromDB(data as SupplierDB);
+    try {
+      const { data, error } = await supabase
+        .from('proveedores')
+        .select('*')
+        .eq('id', parseInt(id))
+        .single();
+      
+      if (error) throw new Error(error.message);
+      if (!data) throw new Error('Supplier not found');
+      
+      return mapSupplierFromDB(data as SupplierDB);
+    } catch (error) {
+      console.error(`Error fetching supplier with ID ${id}:`, error);
+      throw error;
+    }
   },
   
   // Create a new supplier
   createSupplier: async (supplier: Omit<Supplier, 'id'>): Promise<Supplier> => {
-    const mappedData = mapSupplierToDB(supplier);
-    
-    const { data, error } = await supabase
-      .from('proveedores')
-      .insert(mappedData)
-      .select()
-      .single();
-    
-    if (error) throw new Error(error.message);
-    if (!data) throw new Error('Failed to create supplier');
-    
-    return mapSupplierFromDB(data as SupplierDB);
+    try {
+      const mappedData = mapSupplierToDB(supplier);
+      
+      const { data, error } = await supabase
+        .from('proveedores')
+        .insert(mappedData)
+        .select()
+        .single();
+      
+      if (error) throw new Error(error.message);
+      if (!data) throw new Error('Failed to create supplier');
+      
+      return mapSupplierFromDB(data as SupplierDB);
+    } catch (error) {
+      console.error('Error creating supplier:', error);
+      throw error;
+    }
   },
   
   // Update an existing supplier
   updateSupplier: async (id: string, supplier: Partial<Supplier>): Promise<Supplier> => {
-    const mappedData = mapSupplierToDB(supplier);
-    
-    const { data, error } = await supabase
-      .from('proveedores')
-      .update(mappedData)
-      .eq('id', parseInt(id)) // Convert string ID to number for database query
-      .select()
-      .single();
-    
-    if (error) throw new Error(error.message);
-    if (!data) throw new Error('Supplier not found');
-    
-    return mapSupplierFromDB(data as SupplierDB);
+    try {
+      const mappedData = mapSupplierToDB(supplier);
+      
+      const { data, error } = await supabase
+        .from('proveedores')
+        .update(mappedData)
+        .eq('id', parseInt(id))
+        .select()
+        .single();
+      
+      if (error) throw new Error(error.message);
+      if (!data) throw new Error('Supplier not found');
+      
+      return mapSupplierFromDB(data as SupplierDB);
+    } catch (error) {
+      console.error(`Error updating supplier with ID ${id}:`, error);
+      throw error;
+    }
   },
   
   // Delete a supplier
   deleteSupplier: async (id: string): Promise<void> => {
-    const { error } = await supabase
-      .from('proveedores')
-      .delete()
-      .eq('id', parseInt(id)); // Convert string ID to number for database query
-    
-    if (error) throw new Error(error.message);
+    try {
+      const { error } = await supabase
+        .from('proveedores')
+        .delete()
+        .eq('id', parseInt(id));
+      
+      if (error) throw new Error(error.message);
+    } catch (error) {
+      console.error(`Error deleting supplier with ID ${id}:`, error);
+      throw error;
+    }
   }
 };
 
