@@ -16,12 +16,12 @@ const Logo: React.FC<LogoProps> = ({ variant = "full" }) => {
           className="w-10 h-10 object-contain text-multilimp-green dark:text-multilimp-green-dark" 
         />
       </div>
-      {/* {variant === "full" && (
+      {variant === "full" && (
 
         <span className="text-xl font-bold ml-2 text-multilimp-navy-dark">
           MULTILIMP<span className="text-green-700 text-xl">SAC</span>
         </span>
-      )} */}
+      )}
     </Link>
   );
 };
