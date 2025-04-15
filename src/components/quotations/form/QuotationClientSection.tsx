@@ -3,7 +3,7 @@ import React from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Client } from "@/data/models";
+import { Client } from "@/features/client/models/client.model";
 import { UseFormReturn } from "react-hook-form";
 import { QuotationFormValues } from "./QuotationFormTypes";
 

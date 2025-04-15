@@ -23,9 +23,9 @@ export const quotationFormSchema = z.object({
 
 export type QuotationFormValues = z.infer<typeof quotationFormSchema>;
 
-// Mock clients for the dropdown
+// Mock clients for the dropdown - ensuring status is 'active' or 'inactive' to match Client type
 export const mockClients = [
-  { id: "1", name: "Empresa ABC", ruc: "12345678901", unitCode: "ABC001", status: "active", address: "Av. Principal 123", email: "contacto@abc.com", contactPerson: "Juan Pérez", active: true, createdAt: "2023-01-01" },
-  { id: "2", name: "Empresa XYZ", ruc: "23456789012", unitCode: "XYZ002", status: "active", address: "Calle Secundaria 456", email: "contacto@xyz.com", contactPerson: "María García", active: true, createdAt: "2023-02-15" },
-  { id: "3", name: "Corporación DEF", ruc: "34567890123", unitCode: "DEF003", status: "active", address: "Jr. Comercial 789", email: "contacto@def.com", contactPerson: "Carlos López", active: true, createdAt: "2023-03-20" }
+  { id: "1", name: "Empresa ABC", ruc: "12345678901", unitCode: "ABC001", status: "active" as const, address: "Av. Principal 123", email: "contacto@abc.com", contactPerson: "Juan Pérez", active: true, createdAt: "2023-01-01" },
+  { id: "2", name: "Empresa XYZ", ruc: "23456789012", unitCode: "XYZ002", status: "active" as const, address: "Calle Secundaria 456", email: "contacto@xyz.com", contactPerson: "María García", active: true, createdAt: "2023-02-15" },
+  { id: "3", name: "Corporación DEF", ruc: "34567890123", unitCode: "DEF003", status: "active" as const, address: "Jr. Comercial 789", email: "contacto@def.com", contactPerson: "Carlos López", active: true, createdAt: "2023-03-20" }
 ];
