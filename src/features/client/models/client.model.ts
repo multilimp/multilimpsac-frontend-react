@@ -1,4 +1,3 @@
-
 /**
  * Client domain model
  * Core entity model for client domain
@@ -11,6 +10,10 @@ export interface Client extends EntityBase, Address {
   name: string;
   ruc: string;
   unitCode: string;
+  email?: string;  // Add optional email
+  contactPerson?: string;  // Add optional contactPerson
+  active?: boolean;  // Add optional active status
+  createdAt?: string;  // Add optional createdAt
 }
 
 // Database schema mapping for Supabase
