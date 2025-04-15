@@ -38,7 +38,7 @@ const ProfilePage = () => {
   if (!user) return null;
 
   return (
-    <DashboardLayout>
+    <div>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Perfil de Usuario</h1>
@@ -142,7 +142,7 @@ const ProfilePage = () => {
           </Card>
         </div>
       </div>
-    </DashboardLayout>
+    </div>
   );
 };
 

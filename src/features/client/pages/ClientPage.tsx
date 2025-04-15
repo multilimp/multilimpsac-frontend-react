@@ -6,6 +6,7 @@ import { useToast } from "@/components/ui/use-toast";
 import BreadcrumbNav from "@/components/layout/BreadcrumbNav";
 import { useQuery } from "@tanstack/react-query";
 import ClientService from "../services/client.service";
+import { ClientDB } from "../models/client.model";
 
 const ClientPage: React.FC = () => {
   const { toast } = useToast();
@@ -24,12 +25,13 @@ const ClientPage: React.FC = () => {
 
   const columns: DataGridColumn[] = [
     { key: 'id', name: 'ID', type: 'string', sortable: true, filterable: true },
-    { key: 'name', name: 'Cliente', type: 'string', sortable: true, filterable: true },
+    { key: 'razon_social', name: 'Razón Social', type: 'string', sortable: true, filterable: true },
+    { key: 'cod_unidad', name: 'Código Unidad', type: 'string', sortable: true, filterable: true },
     { key: 'ruc', name: 'RUC', type: 'string', sortable: true, filterable: true },
-    { key: 'address', name: 'Dirección', type: 'string', sortable: true, filterable: true },
-    { key: 'contact', name: 'Contacto', type: 'string', sortable: true, filterable: true },
-    { key: 'phone', name: 'Teléfono', type: 'string', sortable: true, filterable: true },
-    { key: 'email', name: 'Email', type: 'string', sortable: true, filterable: true },
+    { key: 'distrito', name: 'Distrito', type: 'string', sortable: true, filterable: true },
+    { key: 'provincia', name: 'Provincia', type: 'string', sortable: true, filterable: true },
+    { key: 'departamento', name: 'Departamento', type: 'string', sortable: true, filterable: true },
+    { key: 'direccion', name: 'Dirección', type: 'string', sortable: true, filterable: true },
     { key: 'status', name: 'Estado', type: 'string', sortable: true, filterable: true },
   ];
 
@@ -41,11 +43,11 @@ const ClientPage: React.FC = () => {
     });
   };
 
-  const handleRowClick = (row: any) => {
+  const handleRowClick = (row: ClientDB) => {
     console.log('Cliente seleccionado:', row);
     toast({
       title: "Cliente seleccionado",
-      description: `${row.name}`,
+      description: `${row.razon_social} ha sido seleccionado`,
     });
   };
 

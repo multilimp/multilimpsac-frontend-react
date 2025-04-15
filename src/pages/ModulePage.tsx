@@ -13,7 +13,7 @@ interface ModulePageProps {
 
 const ModulePage: React.FC<ModulePageProps> = ({ title, description, icon }) => {
   return (
-    <DashboardLayout>
+    <div>
       <PageHeader
         title={title}
         subtitle={description}
@@ -38,7 +38,7 @@ const ModulePage: React.FC<ModulePageProps> = ({ title, description, icon }) => 
           </CardContent>
         </Card>
       </div>
-    </DashboardLayout>
+    </div>
   );
 };
 

@@ -27,7 +27,7 @@ export function DataGrid<T extends { id: string | number }>({
   );
   
   // State for filters
-  const [filters, setFilters] = useState<Record<string, any>>({});
+  const [filters, setFilters] = useState<Record<string, T>>({});
   
   // State for global search
   const [searchTerm, setSearchTerm] = useState("");
@@ -180,7 +180,7 @@ export function DataGrid<T extends { id: string | number }>({
   const totalPages = Math.ceil(filteredData.length / pageSize);
   
   // Import getValueByPath function from utils
-  function getValueByPath(obj: any, path: string) {
+  function getValueByPath(obj: T, path: string) {
     return path.split('.').reduce((prev, curr) => (prev ? prev[curr] : null), obj);
   }
 

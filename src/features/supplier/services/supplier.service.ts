@@ -1,13 +1,33 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Supplier, SupplierDB, mapSupplierFromDB, mapSupplierToDB } from '../models/supplier.model';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 
-// Core service functions
-export const supplierService = {
-  // Fetch all suppliers
-  fetchSuppliers: async (): Promise<Supplier[]> => {
+// Clase de servicio para proveedores
+export default class SupplierService {
+  // Crear un nuevo proveedor
+  static async create(data: Omit<Supplier, 'id'>): Promise<Supplier> {
+    try {
+      const mappedData = mapSupplierToDB(data);
+      
+      const { data: newSupplier, error } = await supabase
+        .from('proveedores')
+        .insert(mappedData)
+        .select()
+        .single();
+      
+      if (error) throw new Error(error.message);
+      if (!newSupplier) throw new Error('Failed to create supplier');
+      
+      return mapSupplierFromDB(newSupplier as SupplierDB);
+    } catch (error) {
+      console.error('Error creating supplier:', error);
+      throw error;
+    }
+  }
+  
+  // Obtener todos los proveedores
+  static async getAll(): Promise<Supplier[]> {
     try {
       const { data, error } = await supabase
         .from('proveedores')
@@ -21,10 +41,10 @@ export const supplierService = {
       console.error('Error fetching suppliers:', error);
       throw error;
     }
-  },
+  }
   
-  // Fetch a single supplier by ID
-  fetchSupplierById: async (id: string): Promise<Supplier> => {
+  // Obtener un proveedor por ID
+  static async getById(id: string): Promise<Supplier> {
     try {
       const { data, error } = await supabase
         .from('proveedores')
@@ -40,33 +60,12 @@ export const supplierService = {
       console.error(`Error fetching supplier with ID ${id}:`, error);
       throw error;
     }
-  },
+  }
   
-  // Create a new supplier
-  createSupplier: async (supplier: Omit<Supplier, 'id'>): Promise<Supplier> => {
+  // Actualizar un proveedor existente
+  static async update(id: string, updates: Partial<Supplier>): Promise<Supplier> {
     try {
-      const mappedData = mapSupplierToDB(supplier);
-      
-      const { data, error } = await supabase
-        .from('proveedores')
-        .insert(mappedData)
-        .select()
-        .single();
-      
-      if (error) throw new Error(error.message);
-      if (!data) throw new Error('Failed to create supplier');
-      
-      return mapSupplierFromDB(data as SupplierDB);
-    } catch (error) {
-      console.error('Error creating supplier:', error);
-      throw error;
-    }
-  },
-  
-  // Update an existing supplier
-  updateSupplier: async (id: string, supplier: Partial<Supplier>): Promise<Supplier> => {
-    try {
-      const mappedData = mapSupplierToDB(supplier);
+      const mappedData = mapSupplierToDB(updates);
       
       const { data, error } = await supabase
         .from('proveedores')
@@ -83,10 +82,10 @@ export const supplierService = {
       console.error(`Error updating supplier with ID ${id}:`, error);
       throw error;
     }
-  },
+  }
   
-  // Delete a supplier
-  deleteSupplier: async (id: string): Promise<void> => {
+  // Eliminar un proveedor
+  static async delete(id: string): Promise<void> {
     try {
       const { error } = await supabase
         .from('proveedores')
@@ -99,20 +98,20 @@ export const supplierService = {
       throw error;
     }
   }
-};
+}
 
-// React hooks for the supplier domain
+// React hooks para el dominio de proveedores
 export const useSuppliers = () => {
   return useQuery({
     queryKey: ['suppliers'],
-    queryFn: supplierService.fetchSuppliers
+    queryFn: SupplierService.getAll
   });
 };
 
 export const useSupplier = (id: string) => {
   return useQuery({
     queryKey: ['suppliers', id],
-    queryFn: () => supplierService.fetchSupplierById(id),
+    queryFn: () => SupplierService.getById(id),
     enabled: !!id
   });
 };
@@ -122,7 +121,7 @@ export const useCreateSupplier = () => {
   const { toast } = useToast();
   
   return useMutation({
-    mutationFn: supplierService.createSupplier,
+    mutationFn: SupplierService.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['suppliers'] });
       toast({
@@ -146,7 +145,7 @@ export const useUpdateSupplier = () => {
   
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<Supplier> }) =>
-      supplierService.updateSupplier(id, data),
+      SupplierService.update(id, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['suppliers'] });
       queryClient.invalidateQueries({ queryKey: ['suppliers', variables.id] });
@@ -170,7 +169,7 @@ export const useDeleteSupplier = () => {
   const { toast } = useToast();
   
   return useMutation({
-    mutationFn: supplierService.deleteSupplier,
+    mutationFn: SupplierService.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['suppliers'] });
       toast({

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import PageHeader from "@/components/common/PageHeader";
 import { DataGrid, DataGridColumn } from "@/components/ui/data-grid";
@@ -18,54 +17,88 @@ const SupplierPage: React.FC = () => {
     {
       label: "Proveedores",
       path: "/proveedores",
-      isCurrentPage: true
-    }
+      isCurrentPage: true,
+    },
   ];
 
   const columns: DataGridColumn[] = [
-    { key: 'id', name: 'ID', type: 'string', sortable: true, filterable: true },
-    { key: 'name', name: 'Proveedor', type: 'string', sortable: true, filterable: true },
-    { key: 'ruc', name: 'RUC', type: 'string', sortable: true, filterable: true },
-    { key: 'address', name: 'Dirección', type: 'string', sortable: true, filterable: true },
-    { key: 'contact', name: 'Contacto', type: 'string', sortable: true, filterable: true },
-    { key: 'email', name: 'Email', type: 'string', sortable: true, filterable: true },
-    { key: 'status', name: 'Estado', type: 'string', sortable: true, filterable: true },
+    { key: "id", name: "ID", type: "string", sortable: true, filterable: true },
+    {
+      key: "name",
+      name: "Razón Social",
+      type: "string",
+      sortable: true,
+      filterable: true,
+    },
+    {
+      key: "ruc",
+      name: "RUC",
+      type: "string",
+      sortable: true,
+      filterable: true,
+    },
+    {
+      key: "address",
+      name: "Dirección",
+      type: "string",
+      sortable: true,
+      filterable: true,
+    },
+    {
+      key: "department",
+      name: "Departamento",
+      type: "string",
+      sortable: true,
+      filterable: true,
+    },
+    {
+      key: "province",
+      name: "Provincia",
+      type: "string",
+      sortable: true,
+      filterable: true,
+    },
+    {
+      key: "district",
+      name: "Distrito",
+      type: "string",
+      sortable: true,
+      filterable: true,
+    },
+    {
+      key: "amount",
+      name: "Monto",
+      type: "string",
+      sortable: true,
+      filterable: true,
+    },
+    {
+      key: "status",
+      name: "Estado",
+      type: "string",
+      sortable: true,
+      filterable: true,
+    },
   ];
 
   const handleReload = () => {
     refetch();
     toast({
       title: "Datos actualizados",
-      description: "La lista de proveedores ha sido actualizada"
+      description: "La lista de proveedores ha sido actualizada",
     });
   };
 
-  const handleRowClick = (row: any) => {
-    console.log('Proveedor seleccionado:', row);
+  const handleRowClick = (row: Supplier) => {
+    console.log("Proveedor seleccionado:", row);
     toast({
       title: "Proveedor seleccionado",
       description: `${row.name}`,
     });
   };
 
-  if (isError) {
-    return (
-      <DashboardLayout>
-        <div className="text-center py-10">
-          <div className="text-red-500 text-xl mb-4">Error al cargar proveedores</div>
-          <button 
-            onClick={() => refetch()} 
-            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-          >
-            Reintentar
-          </button>
-        </div>
-      </DashboardLayout>
-    );
-  }
-
   return (
-    <DashboardLayout>
+    <div>
       <BreadcrumbNav items={breadcrumbItems} />
       <PageHeader
         title="Proveedores"
@@ -74,27 +107,17 @@ const SupplierPage: React.FC = () => {
         addButtonText="Agregar Proveedor"
       />
       
-      {isLoading ? (
-        <div className="flex justify-center items-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      ) : (
-        <div className="mb-6">
-          <DataGrid 
-            data={suppliers}
-            columns={columns}
-            loading={isLoading}
-            pageSize={10}
-            onRowClick={handleRowClick}
-            onReload={handleReload}
-          />
-          
-          <div className="mt-4 text-sm text-gray-500">
-            Total: {suppliers.length} proveedores
-          </div>
-        </div>
-      )}
-    </DashboardLayout>
+      <div className="mb-6">
+        <DataGrid 
+          data={suppliers}
+          columns={columns}
+          loading={isLoading}
+          pageSize={10}
+          onRowClick={handleRowClick}
+          onReload={handleReload}
+        />
+      </div>
+    </div>
   );
 };
 

@@ -13,6 +13,10 @@ export default class ClientService {
       cod_unidad: data.cod_unidad || 'DEFAULT',
       razon_social: data.razon_social || 'Nueva razón social',
       ruc: data.ruc || '00000000000',
+      direccion: data.direccion || 'Nueva dirección',
+      provincia: data.provincia || 'Nueva provincia',
+      distrito: data.distrito || 'Nuevo distrito',
+      departamento: data.departamento || 'Nuevo departamento',
       estado: data.estado !== undefined ? data.estado : true
     };
 
@@ -33,9 +37,11 @@ export default class ClientService {
   static async getAll(): Promise<ClientDB[]> {
     const { data, error } = await supabase
       .from('clientes')
-      .select('*');
+      .select('*')
+      .order('razon_social', { ascending: true });
 
     if (error) {
+      
       console.error('Error getting clients:', error);
       throw error;
     }

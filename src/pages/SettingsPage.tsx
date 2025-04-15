@@ -20,7 +20,7 @@ const SettingsPage = () => {
   };
 
   return (
-    <DashboardLayout>
+    <div>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Configuración</h1>
@@ -177,7 +177,7 @@ const SettingsPage = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </DashboardLayout>
+    </div>
   );
 };
 
