@@ -5,6 +5,7 @@ import { RouteDefinition } from "../types";
 
 // Domain-specific pages (lazy loaded)
 const CompanyPage = lazy(() => import("@/features/company/pages/CompanyPage"));
+const CompanyCatalogsPage = lazy(() => import("@/features/company/pages/CompanyCatalogsPage"));
 const ClientPage = lazy(() => import("@/features/client/pages/ClientPage"));
 const SupplierPage = lazy(() => import("@/features/supplier/pages/SupplierPage"));
 const TransportPage = lazy(() => import("@/features/transport/pages/TransportPage"));
@@ -23,6 +24,19 @@ export const directoryRoutes: RouteDefinition[] = [
     entityType: "empresa",
     action: "list",
     breadcrumb: "Empresas"
+  },
+  {
+    path: "/empresas/:companyId/catalogos",
+    component: CompanyCatalogsPage,
+    title: "Catálogos de Empresa",
+    icon: <Building2 className="h-5 w-5" />,
+    requireAuth: true,
+    permission: "companies:view",
+    domain: "company",
+    entityType: "catalogo",
+    action: "list",
+    breadcrumb: "Catálogos",
+    hideInMenu: true
   },
   {
     path: "/clientes",
