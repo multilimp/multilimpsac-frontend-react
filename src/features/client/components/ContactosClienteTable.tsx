@@ -13,11 +13,20 @@ import TableActions from "@/components/common/TableActions";
 import TableEmptyState from "@/components/common/TableEmptyState";
 import { ContactoCliente } from "../models/client.model";
 
-interface ContactosClienteTableProps {
+interface ContactoTableAction<T> {
+  handler: (item: T) => void;
+  label?: string;
+}
+
+export interface ContactosClienteTableProps {
   contactos: ContactoCliente[];
   isLoading?: boolean;
-  onEdit?: (contacto: ContactoCliente) => void;
-  onDelete?: (id: string) => void;
+  onEdit?: ContactoTableAction<ContactoCliente>;
+  onDelete?: ContactoTableAction<ContactoCliente>;
+  emptyStateProps?: {
+    title?: string;
+    description?: string;
+  };
 }
 
 export const ContactosClienteTable: React.FC<ContactosClienteTableProps> = ({
@@ -25,6 +34,10 @@ export const ContactosClienteTable: React.FC<ContactosClienteTableProps> = ({
   isLoading = false,
   onEdit,
   onDelete,
+  emptyStateProps = {
+    title: "No se encontraron contactos",
+    description: "Este cliente no tiene contactos registrados."
+  }
 }) => {
   if (isLoading) {
     return (
@@ -37,19 +50,19 @@ export const ContactosClienteTable: React.FC<ContactosClienteTableProps> = ({
   if (!contactos || contactos.length === 0) {
     return (
       <TableEmptyState 
-        title="No se encontraron contactos" 
-        description="Este cliente no tiene contactos registrados."
+        title={emptyStateProps.title} 
+        description={emptyStateProps.description}
         className="h-40"
       />
     );
   }
 
   const handleEdit = (contacto: ContactoCliente) => {
-    if (onEdit) onEdit(contacto);
+    if (onEdit) onEdit.handler(contacto);
   };
 
   const handleDelete = (contacto: ContactoCliente) => {
-    if (onDelete) onDelete(contacto.id);
+    if (onDelete) onDelete.handler(contacto);
   };
 
   return (
@@ -81,8 +94,8 @@ export const ContactosClienteTable: React.FC<ContactosClienteTableProps> = ({
                 <TableActions
                   row={contacto}
                   onView={false}
-                  onEdit={onEdit ? handleEdit : false}
-                  onDelete={onDelete ? handleDelete : false}
+                  onEdit={onEdit ? () => handleEdit(contacto) : false}
+                  onDelete={onDelete ? () => handleDelete(contacto) : false}
                 />
               </TableCell>
             </TableRow>

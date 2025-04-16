@@ -34,8 +34,8 @@ const ContactosClienteTab: React.FC<ContactosClienteTabProps> = ({
       <ContactosClienteTable 
         contactos={contactos}
         isLoading={isLoading}
-        onEdit={onEditContacto}
-        onDelete={onDeleteContacto}
+        onEdit={{ handler: onEditContacto }}
+        onDelete={{ handler: onDeleteContacto }}
       />
     </TabsContent>
   );
