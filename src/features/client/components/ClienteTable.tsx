@@ -11,19 +11,6 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Pencil, 
-  Trash, 
-  Eye, 
-  Check, 
-  X
-} from "lucide-react";
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import TableActions from "@/components/common/TableActions";
 import TableEmptyState from "@/components/common/TableEmptyState";
 import { Cliente } from "../models/client.model";
@@ -63,12 +50,16 @@ export const ClienteTable: React.FC<ClienteTableProps> = ({
     );
   }
 
-  const handleView = (id: string) => {
-    navigate(`/clientes/${id}`);
+  const handleView = (cliente: Cliente) => {
+    navigate(`/clientes/${cliente.id}`);
   };
 
-  const handleEdit = (id: string) => {
-    navigate(`/clientes/${id}/editar`);
+  const handleEdit = (cliente: Cliente) => {
+    navigate(`/clientes/${cliente.id}/editar`);
+  };
+
+  const handleDeleteAction = (cliente: Cliente) => {
+    if (onDelete) onDelete(cliente.id);
   };
 
   return (
@@ -98,9 +89,10 @@ export const ClienteTable: React.FC<ClienteTableProps> = ({
               </TableCell>
               <TableCell className="text-right">
                 <TableActions
-                  onView={() => handleView(cliente.id)}
-                  onEdit={() => handleEdit(cliente.id)}
-                  onDelete={onDelete ? () => onDelete(cliente.id) : undefined}
+                  row={cliente}
+                  onView={handleView}
+                  onEdit={handleEdit}
+                  onDelete={handleDeleteAction}
                 />
               </TableCell>
             </TableRow>

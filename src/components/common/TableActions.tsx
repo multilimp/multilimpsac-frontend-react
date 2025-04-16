@@ -11,11 +11,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, Eye, Edit, Trash } from "lucide-react";
 
-interface TableActionsProps<T> {
-  row: T;
-  onView?: (item: T) => void;
-  onEdit?: (item: T) => void;
-  onDelete?: (item: T) => void;
+interface TableActionsProps<T = unknown> {
+  row?: T;
+  onView?: ((item?: T) => void) | boolean;
+  onEdit?: ((item?: T) => void) | boolean;
+  onDelete?: ((item?: T) => void) | boolean;
 }
 
 function TableActions<T>({
@@ -35,22 +35,22 @@ function TableActions<T>({
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Acciones</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {onView && (
-          <DropdownMenuItem onClick={() => onView(row)}>
+        {onView && onView !== false && (
+          <DropdownMenuItem onClick={() => typeof onView === 'function' && onView(row)}>
             <Eye className="mr-2 h-4 w-4" />
             Ver detalles
           </DropdownMenuItem>
         )}
-        {onEdit && (
-          <DropdownMenuItem onClick={() => onEdit(row)}>
+        {onEdit && onEdit !== false && (
+          <DropdownMenuItem onClick={() => typeof onEdit === 'function' && onEdit(row)}>
             <Edit className="mr-2 h-4 w-4" />
             Editar
           </DropdownMenuItem>
         )}
-        {onDelete && (
+        {onDelete && onDelete !== false && (
           <DropdownMenuItem
             className="text-red-600"
-            onClick={() => onDelete(row)}
+            onClick={() => typeof onDelete === 'function' && onDelete(row)}
           >
             <Trash className="mr-2 h-4 w-4" />
             Eliminar

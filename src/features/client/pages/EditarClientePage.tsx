@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "@/components/common/PageHeader";
@@ -15,30 +16,28 @@ export const EditarClientePage: React.FC = () => {
   const { toast } = useToast();
   
   const { data: cliente, isLoading, error } = useCliente(id as string);
-  const { mutate: updateCliente, isPending: isSubmitting } = useUpdateCliente();
+  const { mutateAsync: updateCliente, isPending: isSubmitting } = useUpdateCliente();
   
   const handleSubmit = async (data: Partial<Cliente>) => {
     if (!id) return;
     
-    updateCliente(
-      { id, data },
-      {
-        onSuccess: () => {
-          toast({
-            title: "Cliente actualizado",
-            description: "Los datos del cliente han sido actualizados exitosamente.",
-          });
-          navigate(`/clientes/${id}`);
-        },
-        onError: (error) => {
-          toast({
-            variant: "destructive",
-            title: "Error al actualizar",
-            description: error.message || "No se pudo actualizar el cliente. Intente nuevamente.",
-          });
-        },
-      }
-    );
+    try {
+      await updateCliente(
+        { id, data }
+      );
+      
+      toast({
+        title: "Cliente actualizado",
+        description: "Los datos del cliente han sido actualizados exitosamente.",
+      });
+      navigate(`/clientes/${id}`);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error al actualizar",
+        description: error.message || "No se pudo actualizar el cliente. Intente nuevamente.",
+      });
+    }
   };
 
   if (isLoading) {

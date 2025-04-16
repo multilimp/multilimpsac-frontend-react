@@ -44,6 +44,14 @@ export const ContactosClienteTable: React.FC<ContactosClienteTableProps> = ({
     );
   }
 
+  const handleEdit = (contacto: ContactoCliente) => {
+    if (onEdit) onEdit(contacto);
+  };
+
+  const handleDelete = (contacto: ContactoCliente) => {
+    if (onDelete) onDelete(contacto.id);
+  };
+
   return (
     <div className="rounded-md border">
       <Table>
@@ -71,9 +79,10 @@ export const ContactosClienteTable: React.FC<ContactosClienteTableProps> = ({
               </TableCell>
               <TableCell className="text-right">
                 <TableActions
+                  row={contacto}
                   onView={false}
-                  onEdit={onEdit ? () => onEdit(contacto) : undefined}
-                  onDelete={onDelete ? () => onDelete(contacto.id) : undefined}
+                  onEdit={onEdit ? handleEdit : false}
+                  onDelete={onDelete ? handleDelete : false}
                 />
               </TableCell>
             </TableRow>

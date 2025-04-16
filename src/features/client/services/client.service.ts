@@ -3,8 +3,9 @@
 // Making sure we provide the required fields when inserting data
 
 import { supabase } from '@/integrations/supabase/client';
-import { ClienteDB, ClienteCreateDTO, ClienteUpdateDTO } from '../models/client.model';
+import { ClienteDB } from '../models/client.model';
 
+// Remove the imports for ClienteCreateDTO and ClienteUpdateDTO since they don't exist
 export default class ClientService {
   // Added default values for required fields
   static async create(data: Partial<ClienteDB>): Promise<ClienteDB> {

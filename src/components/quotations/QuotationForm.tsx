@@ -50,6 +50,20 @@ const QuotationForm: React.FC<QuotationFormProps> = ({ onSuccess }) => {
     return items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
   };
   
+  // Map mockClients to match the Cliente structure
+  const mappedClients: Cliente[] = mockClients.map(client => ({
+    id: client.id,
+    razonSocial: client.name,
+    ruc: client.ruc,
+    codUnidad: client.unitCode,
+    departamento: "",
+    provincia: "",
+    distrito: "",
+    direccion: client.address,
+    estado: client.active,
+    createdAt: client.createdAt
+  }));
+  
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -59,7 +73,7 @@ const QuotationForm: React.FC<QuotationFormProps> = ({ onSuccess }) => {
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Client and Dates Section */}
-            <QuotationClientSection form={form} clients={mockClients as Cliente[]} />
+            <QuotationClientSection form={form} clients={mappedClients} />
             
             {/* Items Section */}
             <QuotationItemsSection form={form} />

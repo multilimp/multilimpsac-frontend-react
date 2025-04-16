@@ -13,25 +13,24 @@ export const NuevoClientePage: React.FC = () => {
   const { toast } = useToast();
   
   // Mutación para crear cliente
-  const { mutate: createCliente, isPending: isSubmitting } = useCreateCliente();
+  const { mutateAsync: createCliente, isPending: isSubmitting } = useCreateCliente();
   
   const handleSubmit = async (data: Partial<Cliente>) => {
-    createCliente(data, {
-      onSuccess: () => {
-        toast({
-          title: "Cliente creado",
-          description: "El cliente ha sido creado exitosamente.",
-        });
-        navigate("/clientes");
-      },
-      onError: (error) => {
-        toast({
-          variant: "destructive",
-          title: "Error al crear",
-          description: error.message || "No se pudo crear el cliente. Intente nuevamente.",
-        });
-      },
-    });
+    try {
+      await createCliente(data);
+      
+      toast({
+        title: "Cliente creado",
+        description: "El cliente ha sido creado exitosamente.",
+      });
+      navigate("/clientes");
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error al crear",
+        description: error.message || "No se pudo crear el cliente. Intente nuevamente.",
+      });
+    }
   };
 
   return (

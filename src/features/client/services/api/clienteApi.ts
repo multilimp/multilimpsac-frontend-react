@@ -56,9 +56,17 @@ export const clienteApi = {
   createCliente: async (clienteData: Partial<Cliente>): Promise<Cliente> => {
     const clienteDB = mapClienteToDB(clienteData);
     
+    // Ensure required fields are provided with default values if missing
+    const completeClienteData = {
+      ...clienteDB,
+      cod_unidad: clienteDB.cod_unidad || 'DEFAULT',
+      razon_social: clienteDB.razon_social || 'Nueva razón social',
+      ruc: clienteDB.ruc || '00000000000'
+    };
+    
     const { data, error } = await supabase
       .from('clientes')
-      .insert([clienteDB])
+      .insert(completeClienteData)
       .select()
       .single();
 
@@ -133,7 +141,7 @@ export const clienteApi = {
     
     const { data, error } = await supabase
       .from('contacto_clientes')
-      .insert([contactoDB])
+      .insert(contactoDB)
       .select()
       .single();
 
