@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { DataGridColumn } from "@/components/ui/data-grid/types";
 import { EntityDataTable } from "@/features/shared/components/entity-data-table";
@@ -32,7 +33,7 @@ const CompanyDataTable: React.FC<CompanyDataTableProps> = ({
     { key: 'status', name: 'Estado', type: 'string', sortable: true, filterable: true },
   ];
 
-  // Definir EntityDataTable tipado con Company antes del JSX
+  // Define TypedEntityDataTable which is a properly typed version of EntityDataTable
   const TypedEntityDataTable = EntityDataTable as React.ComponentType<any>;
 
   return (
