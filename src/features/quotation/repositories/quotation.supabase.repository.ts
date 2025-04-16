@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Quotation, QuotationItem } from "../models/quotation";
 import { QuotationFormValues } from "../models/quotationForm.model";
 import { QuotationRepository } from "./quotation.repository";
+import { numberToStringId, stringToNumberId } from "../utils/id-conversions";
 
 export class SupabaseQuotationRepository implements QuotationRepository {
   async getAll(): Promise<Quotation[]> {
@@ -27,9 +28,9 @@ export class SupabaseQuotationRepository implements QuotationRepository {
       
       // Transform the data to match the Quotation interface
       return data.map(item => ({
-        id: item.id,
+        id: numberToStringId(item.id),
         number: item.codigo_cotizacion,
-        clientId: item.cliente_id,
+        clientId: numberToStringId(item.cliente_id),
         clientName: item.clientes?.razon_social || "Cliente sin nombre",
         date: item.fecha_cotizacion,
         expiryDate: item.fecha_entrega,
@@ -71,7 +72,7 @@ export class SupabaseQuotationRepository implements QuotationRepository {
           created_at,
           updated_at
         `)
-        .eq('id', id)
+        .eq('id', stringToNumberId(id))
         .single();
       
       if (quotationError) throw new Error(quotationError.message);
@@ -80,26 +81,27 @@ export class SupabaseQuotationRepository implements QuotationRepository {
       const { data: items, error: itemsError } = await supabase
         .from('cotizacion_productos')
         .select('*')
-        .eq('cotizacion_id', id);
+        .eq('cotizacion_id', stringToNumberId(id));
       
       if (itemsError) throw new Error(itemsError.message);
       
       // Map the items
       const quotationItems: QuotationItem[] = items.map(item => ({
-        id: item.id,
+        id: numberToStringId(item.id),
         productId: item.id.toString(),
         productName: item.codigo || "",
         description: item.descripcion || "",
         quantity: item.cantidad || 0,
         unitPrice: item.precio_unitario || 0,
-        total: item.total || 0
+        total: item.total || 0,
+        unitMeasure: item.unidad_medida
       }));
       
       // Construct the full quotation
       return {
-        id: quotation.id,
+        id: numberToStringId(quotation.id),
         number: quotation.codigo_cotizacion,
-        clientId: quotation.cliente_id,
+        clientId: numberToStringId(quotation.cliente_id),
         clientName: quotation.clientes?.razon_social || "Cliente sin nombre",
         date: quotation.fecha_cotizacion,
         expiryDate: quotation.fecha_entrega,
@@ -107,6 +109,13 @@ export class SupabaseQuotationRepository implements QuotationRepository {
         status: this.mapStatus(quotation.estado),
         items: quotationItems,
         notes: quotation.nota_pedido,
+        paymentNote: quotation.nota_pago,
+        paymentType: quotation.tipo_pago,
+        deliveryAddress: quotation.direccion_entrega,
+        deliveryDistrict: quotation.distrito_entrega,
+        deliveryProvince: quotation.provincia_entrega,
+        deliveryDepartment: quotation.departamento_entrega,
+        deliveryReference: quotation.referencia_entrega,
         createdBy: "system",
         createdAt: quotation.created_at,
         updatedAt: quotation.updated_at
@@ -133,8 +142,8 @@ export class SupabaseQuotationRepository implements QuotationRepository {
         .from('cotizaciones')
         .insert({
           codigo_cotizacion: quotationCode,
-          cliente_id: data.clientId,
-          contacto_cliente_id: data.contactId,
+          cliente_id: stringToNumberId(data.clientId),
+          contacto_cliente_id: data.contactId ? stringToNumberId(data.contactId) : null,
           fecha_cotizacion: data.date,
           fecha_entrega: data.expiryDate,
           monto_total: total,
@@ -172,7 +181,7 @@ export class SupabaseQuotationRepository implements QuotationRepository {
       
       // Return the created quotation
       return {
-        id: quotation.id,
+        id: numberToStringId(quotation.id),
         number: quotationCode,
         clientId: data.clientId,
         clientName: "", // Will be populated when retrieving
@@ -181,15 +190,23 @@ export class SupabaseQuotationRepository implements QuotationRepository {
         total: total,
         status: data.status as Quotation['status'],
         items: data.items.map(item => ({
-          id: "",
+          id: item.id || "",
           productId: item.id || "",
           productName: item.productName,
           description: item.description || "",
           quantity: item.quantity,
           unitPrice: item.unitPrice,
-          total: item.quantity * item.unitPrice
+          total: item.quantity * item.unitPrice,
+          unitMeasure: item.unitMeasure
         })),
         notes: data.orderNote,
+        paymentNote: data.paymentNote,
+        paymentType: data.paymentType,
+        deliveryAddress: data.deliveryAddress,
+        deliveryDistrict: data.deliveryDistrict,
+        deliveryProvince: data.deliveryProvince,
+        deliveryDepartment: data.deliveryDepartment,
+        deliveryReference: data.deliveryReference,
         createdBy: "system",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
@@ -212,8 +229,8 @@ export class SupabaseQuotationRepository implements QuotationRepository {
       const { error: quotationError } = await supabase
         .from('cotizaciones')
         .update({
-          cliente_id: data.clientId,
-          contacto_cliente_id: data.contactId,
+          cliente_id: stringToNumberId(data.clientId),
+          contacto_cliente_id: data.contactId ? stringToNumberId(data.contactId) : null,
           fecha_cotizacion: data.date,
           fecha_entrega: data.expiryDate,
           monto_total: total,
@@ -227,7 +244,7 @@ export class SupabaseQuotationRepository implements QuotationRepository {
           departamento_entrega: data.deliveryDepartment,
           referencia_entrega: data.deliveryReference
         })
-        .eq('id', id);
+        .eq('id', stringToNumberId(id));
       
       if (quotationError) throw new Error(quotationError.message);
       
@@ -235,13 +252,14 @@ export class SupabaseQuotationRepository implements QuotationRepository {
       const { error: deleteError } = await supabase
         .from('cotizacion_productos')
         .delete()
-        .eq('cotizacion_id', id);
+        .eq('cotizacion_id', stringToNumberId(id));
       
       if (deleteError) throw new Error(deleteError.message);
       
       // Insert new items
+      const numericId = stringToNumberId(id);
       const itemsToInsert = data.items.map(item => ({
-        cotizacion_id: id,
+        cotizacion_id: numericId,
         codigo: item.code,
         descripcion: item.description,
         unidad_medida: item.unitMeasure,
@@ -272,7 +290,7 @@ export class SupabaseQuotationRepository implements QuotationRepository {
           estado: this.mapStatusToDb(status),
           updated_at: new Date().toISOString()
         })
-        .eq('id', id);
+        .eq('id', stringToNumberId(id));
       
       if (error) throw new Error(error.message);
       
@@ -289,7 +307,7 @@ export class SupabaseQuotationRepository implements QuotationRepository {
       const { error: itemsError } = await supabase
         .from('cotizacion_productos')
         .delete()
-        .eq('cotizacion_id', id);
+        .eq('cotizacion_id', stringToNumberId(id));
       
       if (itemsError) throw new Error(itemsError.message);
       
@@ -297,7 +315,7 @@ export class SupabaseQuotationRepository implements QuotationRepository {
       const { error: quotationError } = await supabase
         .from('cotizaciones')
         .delete()
-        .eq('id', id);
+        .eq('id', stringToNumberId(id));
       
       if (quotationError) throw new Error(quotationError.message);
     } catch (error) {

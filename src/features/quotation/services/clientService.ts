@@ -1,5 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { numberToStringId, stringToNumberId } from "../utils/id-conversions";
 
 export interface Client {
   id: string;
@@ -28,7 +29,7 @@ export const clientService = {
       if (error) throw error;
       
       return data.map(client => ({
-        id: client.id,
+        id: numberToStringId(client.id),
         razonSocial: client.razon_social,
         ruc: client.ruc
       }));
@@ -43,15 +44,15 @@ export const clientService = {
       const { data, error } = await supabase
         .from('contacto_clientes')
         .select('id, cliente_id, nombre, cargo, correo, telefono')
-        .eq('cliente_id', clientId)
+        .eq('cliente_id', stringToNumberId(clientId))
         .eq('estado', true)
         .order('nombre');
       
       if (error) throw error;
       
       return data.map(contact => ({
-        id: contact.id,
-        clientId: contact.cliente_id,
+        id: numberToStringId(contact.id),
+        clientId: numberToStringId(contact.cliente_id),
         nombre: contact.nombre,
         cargo: contact.cargo,
         correo: contact.correo,

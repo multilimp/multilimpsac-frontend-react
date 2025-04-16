@@ -11,6 +11,7 @@ import PageHeader from '@/components/common/PageHeader';
 import BreadcrumbNav from '@/components/layout/BreadcrumbNav';
 import QuotationFormComponent from '@/features/quotation/components/QuotationFormComponent';
 import { quotationService } from '@/features/quotation/services/quotationFormService';
+import { Quotation } from '@/features/quotation/models/quotation';
 
 const QuotationsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>("list");
