@@ -6,12 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import QuotationList from '@/features/quotation/components/QuotationList';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import PageHeader from '@/components/common/PageHeader';
 import BreadcrumbNav from '@/components/layout/BreadcrumbNav';
 import QuotationFormComponent from '@/features/quotation/components/QuotationFormComponent';
 import { quotationService } from '@/features/quotation/services/quotationFormService';
-import { Quotation } from '@/features/quotation/models/quotation';
 
 const QuotationsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>("list");

@@ -2,10 +2,11 @@
 import React from 'react';
 import { DataGrid, DataGridColumn } from '@/components/ui/data-grid';
 import { Card, CardContent } from '@/components/ui/card';
-import { Quotation } from '@/data/models/quotation';
+import { Quotation } from '@/features/quotation/models/quotation';
 import DeleteQuotationDialog from './DeleteQuotationDialog';
 import { useQuotationActions } from '../hooks/useQuotationActions';
 import { formatQuotationData } from '../utils/formatQuotationData';
+import { useToast } from '@/hooks/use-toast';
 
 interface QuotationListProps {
   quotations: Quotation[];
@@ -20,6 +21,7 @@ const QuotationList: React.FC<QuotationListProps> = ({
   onRefresh,
   onEdit
 }) => {
+  const { toast } = useToast();
   const {
     selectedQuotation,
     deleteDialogOpen,

@@ -1,16 +1,15 @@
 
 import React from 'react';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Quotation } from '@/data/models/quotation';
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Quotation } from '@/features/quotation/models/quotation';
 
 interface DeleteQuotationDialogProps {
   isOpen: boolean;
@@ -26,23 +25,31 @@ const DeleteQuotationDialog: React.FC<DeleteQuotationDialogProps> = ({
   onConfirmDelete,
 }) => {
   return (
-    <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>¿Está seguro?</AlertDialogTitle>
-          <AlertDialogDescription>
-            Esta acción no se puede deshacer. Esto eliminará permanentemente la cotización
-            {quotation && ` ${quotation.number}`} y todos sus datos asociados.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancelar</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirmDelete} className="bg-red-600 hover:bg-red-700">
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Confirmar Eliminación</DialogTitle>
+          <DialogDescription>
+            ¿Está seguro que desea eliminar la cotización {quotation?.number}?
+            Esta acción no se puede deshacer.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+          >
+            Cancelar
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={onConfirmDelete}
+          >
             Eliminar
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
 
