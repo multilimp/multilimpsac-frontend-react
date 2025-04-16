@@ -16,12 +16,14 @@ interface QuotationListProps {
   quotations: Quotation[];
   isLoading: boolean;
   onRefresh: () => void;
+  onEdit: (id: string) => void;
 }
 
 const QuotationList: React.FC<QuotationListProps> = ({
   quotations,
   isLoading,
-  onRefresh
+  onRefresh,
+  onEdit
 }) => {
   const { toast } = useToast();
   const [selectedQuotation, setSelectedQuotation] = useState<Quotation | null>(null);
@@ -82,11 +84,7 @@ const QuotationList: React.FC<QuotationListProps> = ({
 
   // Handle edit quotation
   const handleEdit = (quotation: Quotation) => {
-    toast({
-      title: "Editar cotización",
-      description: `Editando cotización ${quotation.number}`,
-    });
-    // You would typically navigate to an edit page or open a modal here
+    onEdit(quotation.id);
   };
 
   // Handle view quotation details
@@ -162,7 +160,7 @@ const QuotationList: React.FC<QuotationListProps> = ({
       ...quotation,
       formattedDate: format(new Date(quotation.date), 'dd/MM/yyyy'),
       formattedExpiryDate: format(new Date(quotation.expiryDate), 'dd/MM/yyyy'),
-      formattedTotal: `$${quotation.total.toLocaleString('es-ES', { minimumFractionDigits: 2 })}`,
+      formattedTotal: `S/ ${quotation.total.toLocaleString('es-PE', { minimumFractionDigits: 2 })}`,
       statusBadge: <QuotationStatusBadge status={quotation.status} />,
       actions: <QuotationActionMenu 
                 quotation={quotation} 
@@ -181,20 +179,6 @@ const QuotationList: React.FC<QuotationListProps> = ({
     }
   };
 
-  const handleEditAction = (row: any) => {
-    const originalQuotation = quotations.find(q => q.id === row.id);
-    if (originalQuotation) {
-      handleEdit(originalQuotation);
-    }
-  };
-
-  const handleDeleteAction = (row: any) => {
-    const originalQuotation = quotations.find(q => q.id === row.id);
-    if (originalQuotation) {
-      handleDelete(originalQuotation);
-    }
-  };
-
   return (
     <Card className="bg-transparent shadow-none border-none">
       <CardContent className="p-0">
@@ -204,8 +188,6 @@ const QuotationList: React.FC<QuotationListProps> = ({
           loading={isLoading}
           pageSize={10}
           onRowClick={handleRowClick}
-          onEdit={handleEditAction}
-          onDelete={handleDeleteAction}
           onReload={onRefresh}
         />
         

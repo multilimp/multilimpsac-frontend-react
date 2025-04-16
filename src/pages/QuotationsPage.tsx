@@ -1,24 +1,20 @@
 
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { 
-  Card, 
-  CardHeader, 
-  CardContent 
-} from '@/components/ui/card';
+import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Quotation } from '@/data/models/quotation';
 import QuotationList from '@/features/quotation/components/QuotationList';
-import QuotationForm from '@/features/quotation/components/QuotationForm';
 import { useToast } from '@/components/ui/use-toast';
-import { fetchQuotations } from '@/features/quotation/services/quotationService';
 import PageHeader from '@/components/common/PageHeader';
 import BreadcrumbNav from '@/components/layout/BreadcrumbNav';
+import QuotationFormComponent from '@/features/quotation/components/QuotationFormComponent';
+import { quotationService } from '@/features/quotation/services/quotationFormService';
 
 const QuotationsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>("list");
+  const [selectedQuotationId, setSelectedQuotationId] = useState<string | undefined>(undefined);
   const { toast } = useToast();
 
   const {
@@ -27,7 +23,7 @@ const QuotationsPage: React.FC = () => {
     refetch
   } = useQuery({
     queryKey: ['quotations'],
-    queryFn: fetchQuotations
+    queryFn: () => quotationService.getAllQuotations()
   });
 
   const breadcrumbItems = [
@@ -40,11 +36,17 @@ const QuotationsPage: React.FC = () => {
 
   const handleCreateSuccess = () => {
     toast({
-      title: "Cotización creada",
-      description: "La cotización se ha creado correctamente",
+      title: "Operación exitosa",
+      description: "La cotización se ha procesado correctamente",
     });
     setActiveTab("list");
+    setSelectedQuotationId(undefined);
     refetch();
+  };
+
+  const handleEdit = (id: string) => {
+    setSelectedQuotationId(id);
+    setActiveTab("edit");
   };
 
   return (
@@ -68,6 +70,7 @@ const QuotationsPage: React.FC = () => {
               <TabsList>
                 <TabsTrigger value="list">Listado</TabsTrigger>
                 <TabsTrigger value="new">Nueva Cotización</TabsTrigger>
+                {selectedQuotationId && <TabsTrigger value="edit">Editar Cotización</TabsTrigger>}
               </TabsList>
               {activeTab === "list" && (
                 <Button onClick={() => setActiveTab("new")}>
@@ -83,11 +86,27 @@ const QuotationsPage: React.FC = () => {
                   quotations={quotations}
                   isLoading={isLoading}
                   onRefresh={refetch}
+                  onEdit={handleEdit}
                 />
               </TabsContent>
               <TabsContent value="new" className="m-0">
-                <QuotationForm onSuccess={handleCreateSuccess} />
+                <QuotationFormComponent 
+                  onSuccess={handleCreateSuccess} 
+                  onCancel={() => setActiveTab("list")}
+                />
               </TabsContent>
+              {selectedQuotationId && (
+                <TabsContent value="edit" className="m-0">
+                  <QuotationFormComponent 
+                    quotationId={selectedQuotationId}
+                    onSuccess={handleCreateSuccess} 
+                    onCancel={() => {
+                      setActiveTab("list");
+                      setSelectedQuotationId(undefined);
+                    }}
+                  />
+                </TabsContent>
+              )}
             </div>
           </Tabs>
         </CardHeader>
