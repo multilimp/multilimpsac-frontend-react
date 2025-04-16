@@ -16,6 +16,7 @@ export const quotationFormSchema = z.object({
   items: z.array(
     z.object({
       id: z.string().optional(),
+      productId: z.string().optional(),
       code: z.string().optional(),
       productName: z.string().min(1, "Nombre del producto es requerido"),
       description: z.string().optional(),

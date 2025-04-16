@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Quotation, QuotationItem } from "../models/quotation";
 import { QuotationFormValues } from "../models/quotationForm.model";
