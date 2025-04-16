@@ -6,7 +6,7 @@ import * as z from "zod";
 import { Plus, Search, Filter, FileDown } from "lucide-react";
 import { format } from "date-fns";
 
-import { Client } from "@/data/models";
+import { Cliente } from "@/features/client/models/client.model";
 import { Quotation } from "@/data/models/quotation";
 import DataTable from "@/components/common/DataTable";
 import { Button } from "@/components/ui/button";

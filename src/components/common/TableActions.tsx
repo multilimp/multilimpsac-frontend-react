@@ -35,19 +35,19 @@ function TableActions<T>({
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Acciones</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {onView && onView !== false && (
+        {onView && (
           <DropdownMenuItem onClick={() => typeof onView === 'function' && onView(row)}>
             <Eye className="mr-2 h-4 w-4" />
             Ver detalles
           </DropdownMenuItem>
         )}
-        {onEdit && onEdit !== false && (
+        {onEdit && (
           <DropdownMenuItem onClick={() => typeof onEdit === 'function' && onEdit(row)}>
             <Edit className="mr-2 h-4 w-4" />
             Editar
           </DropdownMenuItem>
         )}
-        {onDelete && onDelete !== false && (
+        {onDelete && (
           <DropdownMenuItem
             className="text-red-600"
             onClick={() => typeof onDelete === 'function' && onDelete(row)}

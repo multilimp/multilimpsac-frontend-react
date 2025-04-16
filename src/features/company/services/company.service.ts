@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { 
   Company, 
@@ -11,6 +10,7 @@ import {
   mapCompanyCatalogToDB
 } from "../models/company.model";
 import { supabase } from "@/integrations/supabase/client";
+import { stringIdToNumber } from "@/utils/id-conversions";
 
 /**
  * Servicio para gestionar operaciones relacionadas con empresas
@@ -40,7 +40,7 @@ export const companyService = {
     const { data, error } = await supabase
       .from("empresas")
       .select("*")
-      .eq("id", id)
+      .eq("id", stringIdToNumber(id))
       .single();
 
     if (error) {
@@ -80,7 +80,7 @@ export const companyService = {
     const { data, error } = await supabase
       .from("empresas")
       .update(companyDB)
-      .eq("id", id)
+      .eq("id", stringIdToNumber(id))
       .select()
       .single();
 
@@ -99,7 +99,7 @@ export const companyService = {
     const { error } = await supabase
       .from("empresas")
       .delete()
-      .eq("id", id);
+      .eq("id", stringIdToNumber(id));
 
     if (error) {
       console.error(`Error al eliminar la empresa con ID ${id}:`, error);
@@ -114,7 +114,7 @@ export const companyService = {
     const { data, error } = await supabase
       .from("catalogo_empresas")
       .select("*")
-      .eq("empresa_id", companyId)
+      .eq("empresa_id", stringIdToNumber(companyId))
       .order("id", { ascending: true });
 
     if (error) {
@@ -154,7 +154,7 @@ export const companyService = {
     const { data, error } = await supabase
       .from("catalogo_empresas")
       .update(catalogDB)
-      .eq("id", id)
+      .eq("id", stringIdToNumber(id))
       .select()
       .single();
 
@@ -173,7 +173,7 @@ export const companyService = {
     const { error } = await supabase
       .from("catalogo_empresas")
       .delete()
-      .eq("id", id);
+      .eq("id", stringIdToNumber(id));
 
     if (error) {
       console.error(`Error al eliminar el catálogo con ID ${id}:`, error);

@@ -1,12 +1,11 @@
-
 import React from 'react';
 import { Outlet, useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PageHeader from '@/components/common/PageHeader';
 import { useCliente, useDeleteContactoCliente, useContactosCliente, useCreateContactoCliente, useUpdateContactoCliente } from '../services/cliente.service';
-import { ContactoClienteTable } from '../components/ContactosClienteTable';
 import { Button } from '@/components/ui/button';
+import { ContactosClienteTable } from '../components/ContactosClienteTable';
 import { Plus } from 'lucide-react';
 import { 
   Dialog, 
@@ -21,9 +20,7 @@ import { AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ContactoCliente } from '../models/client.model';
 
-// Create a simple ContactoClienteForm component
 const ContactoClienteForm = ({ onSubmit, initialData = {}, isSubmitting }) => {
-  // This is a placeholder for the actual form
   return (
     <div>
       <h3>Form placeholder</h3>
@@ -44,7 +41,6 @@ const ClienteDetailPage = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   const [selectedContacto, setSelectedContacto] = React.useState<ContactoCliente | null>(null);
   
-  // Fetch cliente data
   const { 
     data: cliente, 
     isLoading: isLoadingCliente, 
@@ -52,19 +48,16 @@ const ClienteDetailPage = () => {
     refetch: refetchCliente
   } = useCliente(id);
   
-  // Fetch contactos data
   const {
     data: contactos = [],
     isLoading: isLoadingContactos,
     refetch: refetchContactos
   } = useContactosCliente(id);
   
-  // Mutations for contactos
   const { mutateAsync: createContacto, isPending: isCreatingContacto } = useCreateContactoCliente();
   const { mutateAsync: updateContacto, isPending: isUpdatingContacto } = useUpdateContactoCliente();
   const { mutateAsync: deleteContacto, isPending: isDeletingContacto } = useDeleteContactoCliente(id);
   
-  // Handle tab changes to navigate to the appropriate route
   const handleTabChange = (value: string) => {
     setActiveTab(value);
     if (value === 'details') {
@@ -114,11 +107,9 @@ const ClienteDetailPage = () => {
     );
   }
   
-  // Handle form submission for contactos
   const handleContactoSubmit = async (data: Partial<ContactoCliente>) => {
     try {
       if (selectedContacto) {
-        // Update existing contacto
         await updateContacto({
           id: selectedContacto.id,
           data: {
@@ -132,7 +123,6 @@ const ClienteDetailPage = () => {
           variant: "default"
         });
       } else {
-        // Create new contacto
         await createContacto({
           ...data,
           clienteId: id
@@ -156,7 +146,6 @@ const ClienteDetailPage = () => {
     }
   };
   
-  // Handle contacto deletion
   const handleDeleteContacto = async () => {
     if (!selectedContacto) return;
     
@@ -215,7 +204,7 @@ const ClienteDetailPage = () => {
             </div>
             <div>
               <p className="text-sm font-medium text-gray-500">Dirección</p>
-              <p>{cliente.direccion || '—'}</p>
+              <p>{cliente.direccion || '��'}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-gray-500">Ubicación</p>
@@ -303,7 +292,6 @@ const ClienteDetailPage = () => {
         </TabsContent>
       </Tabs>
       
-      {/* Dialog para crear/editar contactos */}
       <Dialog open={isContactoDialogOpen} onOpenChange={setIsContactoDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -324,7 +312,6 @@ const ClienteDetailPage = () => {
         </DialogContent>
       </Dialog>
       
-      {/* Dialog para confirmar eliminación de contacto */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>

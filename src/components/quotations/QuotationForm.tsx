@@ -50,7 +50,7 @@ const QuotationForm: React.FC<QuotationFormProps> = ({ onSuccess }) => {
     return items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
   };
   
-  // Map mockClients to match the Cliente structure
+  // Map mockClients to match the Cliente structure with proper type casting
   const mappedClients: Cliente[] = mockClients.map(client => ({
     id: client.id,
     razonSocial: client.name,
