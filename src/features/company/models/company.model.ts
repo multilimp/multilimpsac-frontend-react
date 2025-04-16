@@ -1,4 +1,3 @@
-
 /**
  * Company domain model
  * Core entity model for company domain
@@ -30,6 +29,7 @@ export interface CompanyCatalog {
   id: string;
   codigo: string;
   empresa_id: number;
+  name: string; // Added name property for EntityDataTable compatibility
   created_at?: string;
   updated_at?: string;
 }
@@ -137,6 +137,7 @@ export const mapCompanyCatalogFromDB = (db: CompanyCatalogDB): CompanyCatalog =>
   id: db.id.toString(),
   codigo: db.codigo,
   empresa_id: db.empresa_id,
+  name: db.codigo, // Use codigo as name for display in EntityDataTable
   created_at: db.created_at,
   updated_at: db.updated_at
 });

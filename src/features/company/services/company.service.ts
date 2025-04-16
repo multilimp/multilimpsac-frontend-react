@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { 
   Company, 
@@ -133,6 +132,11 @@ export const companyService = {
   createCompanyCatalog: async (catalog: Partial<CompanyCatalog>): Promise<CompanyCatalog> => {
     const mappedData = mapCompanyCatalogToDB(catalog);
     
+    // Ensure empresa_id is set correctly - it's required by Supabase
+    if (!mappedData.empresa_id) {
+      throw new Error('Company ID is required');
+    }
+
     const { data, error } = await supabase
       .from('catalogo_empresas')
       .insert(mappedData)

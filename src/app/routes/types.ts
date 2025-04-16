@@ -16,6 +16,7 @@ export interface RouteDefinition {
   redirectIfAuthenticated?: boolean;
   children?: RouteDefinition[];
   breadcrumb?: string;
+  hideInMenu?: boolean;
   
   // Domain-specific metadata
   domain?: 'company' | 'client' | 'supplier' | 'transport' | 'admin' | 'operation' | 'finance' | 'report';

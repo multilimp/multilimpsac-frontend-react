@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -14,6 +13,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DataGridColumn } from "@/components/ui/data-grid/types";
 
 const catalogSchema = z.object({
   codigo: z.string().min(1, { message: "El código es requerido" }),
@@ -50,7 +50,7 @@ const CompanyCatalogsPage: React.FC = () => {
     }
   ];
 
-  const columns = [
+  const columns: DataGridColumn[] = [
     { key: 'id', name: 'ID', type: 'string', sortable: true, filterable: true },
     { key: 'codigo', name: 'Código', type: 'string', sortable: true, filterable: true },
     { key: 'created_at', name: 'Fecha de Creación', type: 'date', sortable: true, filterable: true },
@@ -91,10 +91,10 @@ const CompanyCatalogsPage: React.FC = () => {
     );
   };
 
-  const handleSaveCatalog = async (formData: Partial<CompanyCatalog>) => {
+  const handleSaveCatalog = async (formData: Partial<CompanyCatalog>): Promise<void> => {
     if (!companyId) return;
     
-    return companyService.saveCompanyCatalog({
+    await companyService.saveCompanyCatalog({
       ...formData,
       empresa_id: parseInt(companyId)
     });

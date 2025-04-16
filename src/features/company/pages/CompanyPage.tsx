@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import PageHeader from "@/components/common/PageHeader";
@@ -23,6 +22,7 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { DataGridColumn } from "@/components/ui/data-grid/types";
 
 const companySchema = z.object({
   name: z.string().min(1, { message: "El nombre de la empresa es requerido" }),
@@ -57,7 +57,7 @@ const CompanyPage: React.FC = () => {
     }
   ];
 
-  const columns = [
+  const columns: DataGridColumn[] = [
     { key: 'id', name: 'ID', type: 'string', sortable: true, filterable: true },
     { key: 'name', name: 'Empresa', type: 'string', sortable: true, filterable: true },
     { key: 'ruc', name: 'RUC', type: 'string', sortable: true, filterable: true },
@@ -69,6 +69,10 @@ const CompanyPage: React.FC = () => {
 
   const handleViewCatalogs = (company: Company) => {
     navigate(`/empresas/${company.id}/catalogos`);
+  };
+
+  const handleSaveCompany = async (data: Partial<Company>): Promise<void> => {
+    await companyService.saveCompany(data);
   };
 
   const renderDetailPanel = (company: Company) => {
@@ -417,7 +421,7 @@ const CompanyPage: React.FC = () => {
         onReload={refetch}
         renderDetailPanel={renderDetailPanel}
         renderFormContent={renderFormContent}
-        onSave={companyService.saveCompany}
+        onSave={handleSaveCompany}
         onDelete={companyService.deleteCompany}
         addButtonText="Agregar Empresa"
         domain="company"
