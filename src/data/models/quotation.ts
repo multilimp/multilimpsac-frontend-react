@@ -16,7 +16,7 @@ export interface Quotation extends Omit<EntityBase, 'status'> {
 
 export interface QuotationItem {
   id: string;
-  productId: string;
+  productId?: string;
   productName: string;
   description: string;
   quantity: number;

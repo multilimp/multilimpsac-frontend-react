@@ -88,7 +88,7 @@ export class SupabaseQuotationRepository implements QuotationRepository {
       // Map the items
       const quotationItems: QuotationItem[] = items.map(item => ({
         id: numberToStringId(item.id),
-        productId: item.id.toString(),
+        productId: item.id ? numberToStringId(item.id) : undefined,
         productName: item.codigo || "",
         description: item.descripcion || "",
         quantity: item.cantidad || 0,
@@ -155,7 +155,8 @@ export class SupabaseQuotationRepository implements QuotationRepository {
           distrito_entrega: data.deliveryDistrict,
           provincia_entrega: data.deliveryProvince,
           departamento_entrega: data.deliveryDepartment,
-          referencia_entrega: data.deliveryReference
+          referencia_entrega: data.deliveryReference,
+          empresa_id: 1 // Default empresa_id as required by the database schema
         })
         .select()
         .single();
@@ -191,7 +192,7 @@ export class SupabaseQuotationRepository implements QuotationRepository {
         status: data.status as Quotation['status'],
         items: data.items.map(item => ({
           id: item.id || "",
-          productId: item.id || "",
+          productId: item.productId,
           productName: item.productName,
           description: item.description || "",
           quantity: item.quantity,
