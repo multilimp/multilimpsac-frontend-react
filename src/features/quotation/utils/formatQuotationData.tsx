@@ -1,3 +1,4 @@
+import React from 'react';
 import { format } from 'date-fns';
 import { Quotation } from '@/data/models/quotation';
 import QuotationStatusBadge from '../components/QuotationStatusBadge';
