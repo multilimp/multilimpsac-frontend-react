@@ -3,13 +3,14 @@ import { lazy } from "react";
 import { FileSearch, ShoppingCart, Package, ClipboardList } from "lucide-react";
 import { RouteDefinition } from "../types";
 
-// Lazy load pages
+// Lazy load components
+const QuotationsPage = lazy(() => import("@/pages/QuotationsPage"));
 const ModulePage = lazy(() => import("@/pages/ModulePage"));
 
 export const operationsRoutes: RouteDefinition[] = [
   {
     path: "/cotizaciones",
-    component: lazy(() => import("@/pages/ModulePage")),
+    component: QuotationsPage,
     title: "Cotizaciones",
     icon: <FileSearch className="h-5 w-5" />,
     requireAuth: true,
