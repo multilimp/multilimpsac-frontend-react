@@ -5,7 +5,7 @@ import { RouteDefinition } from "../types";
 
 // Lazy load components
 const QuotationsPage = lazy(() => import("@/pages/QuotationsPage"));
-const ModulePage = lazy(() => import("@/pages/ModulePage"));
+const SalesPage = lazy(() => import("@/pages/SalesPage"));
 
 export const operationsRoutes: RouteDefinition[] = [
   {
@@ -18,7 +18,7 @@ export const operationsRoutes: RouteDefinition[] = [
   },
   {
     path: "/ventas",
-    component: lazy(() => import("@/pages/ModulePage")),
+    component: SalesPage,
     title: "Ventas",
     icon: <ShoppingCart className="h-5 w-5" />,
     requireAuth: true,
