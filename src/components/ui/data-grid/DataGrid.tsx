@@ -5,7 +5,9 @@ import { DataGridPagination } from "./DataGridPagination";
 import { DataGridTableHead } from "./DataGridTableHead";
 import { DataGridHeader } from "./DataGridHeader";
 import { DataGridBody } from "./DataGridBody";
-import { generateCSV, downloadCSV } from "./utils";
+import { useDataGridState } from "./hooks/useDataGridState";
+import { useDataGridFilters } from "./hooks/useDataGridFilters";
+import { usePagination } from "./hooks/usePagination";
 import { ColumnType, DataGridColumn, DataGridProps } from "./types";
 
 export type { ColumnType, DataGridColumn, DataGridProps };
@@ -21,177 +23,76 @@ export function DataGrid<T extends { id: string | number }>({
   onDownload,
   onReload,
 }: DataGridProps<T>) {
-  // State for visible columns
-  const [visibleColumns, setVisibleColumns] = useState<string[]>(
-    columns.map((col) => col.key)
-  );
+  // Use our extracted hooks for state management
+  const {
+    visibleColumns,
+    sortConfig,
+    searchTerm,
+    showFilters,
+    handleColumnToggle,
+    handleSort,
+    handleSearch,
+    handleToggleFilters
+  } = useDataGridState(columns);
   
-  // State for filters
-  const [filters, setFilters] = useState<Record<string, any>>({});
+  // Filters hook
+  const {
+    filters,
+    filteredData,
+    handleFilterChange
+  } = useDataGridFilters(data, columns, visibleColumns, searchTerm, sortConfig);
   
-  // State for global search
-  const [searchTerm, setSearchTerm] = useState("");
+  // Pagination hook
+  const {
+    currentPage,
+    paginatedData,
+    totalPages,
+    setCurrentPage
+  } = usePagination(filteredData, pageSize);
   
-  // State for sorting
-  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
-  
-  // State for pagination
-  const [currentPage, setCurrentPage] = useState(1);
-  
-  // State for showing/hiding filters
-  const [showFilters, setShowFilters] = useState(true);
-  
-  // Handle column visibility toggle
-  const handleColumnToggle = (column: string) => {
-    const updatedColumns = visibleColumns.includes(column)
-      ? visibleColumns.filter(col => col !== column)
-      : [...visibleColumns, column];
-    
-    setVisibleColumns(updatedColumns);
-    
-    if (onColumnToggle) {
-      onColumnToggle(updatedColumns);
-    }
-  };
-  
-  // Handle column sort
-  const handleSort = (key: string) => {
-    let direction: 'asc' | 'desc' = 'asc';
-    
-    if (sortConfig && sortConfig.key === key) {
-      direction = sortConfig.direction === 'asc' ? 'desc' : 'asc';
-    }
-    
-    setSortConfig({ key, direction });
-  };
-  
-  // Handle filter changes
-  const handleFilterChange = (columnKey: string, value: any) => {
-    const newFilters = { ...filters, [columnKey]: value };
-    
-    if (!value) {
-      delete newFilters[columnKey];
-    }
-    
-    setFilters(newFilters);
-    
+  // Custom handlers that call the props
+  const handleExternalFilterChange = (filters: Record<string, any>) => {
     if (onFilterChange) {
-      onFilterChange(newFilters);
+      onFilterChange(filters);
     }
   };
   
-  // Handle global search
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-    setCurrentPage(1); // Reset to first page when searching
+  const handleExternalColumnToggle = (columns: string[]) => {
+    if (onColumnToggle) {
+      onColumnToggle(columns);
+    }
   };
   
-  // Handle CSV download
+  // Handle download
   const handleDownload = () => {
     if (onDownload) {
       onDownload();
       return;
     }
     
-    // Default download implementation
-    const csvContent = generateCSV(filteredData, visibleColumns, columns);
-    downloadCSV(csvContent);
+    // Default download implementation is now in utils.ts
+    import("./utils").then(({ generateCSV, downloadCSV }) => {
+      const csvContent = generateCSV(filteredData, visibleColumns, columns);
+      downloadCSV(csvContent);
+    });
   };
   
-  // Handle table reload
+  // Handle reload
   const handleReload = () => {
     if (onReload) {
       onReload();
     }
-    setSearchTerm("");
-    setFilters({});
-    setSortConfig(null);
     setCurrentPage(1);
   };
   
-  // Toggle filters visibility
-  const handleToggleFilters = () => {
-    setShowFilters(prev => !prev);
-  };
+  // Call external callbacks when internal state changes
+  useEffect(() => {
+    handleExternalFilterChange(filters);
+  }, [filters]);
   
-  // Filter and sort data
-  const filteredData = useMemo(() => {
-    let result = [...data];
-    
-    // Apply column filters
-    Object.entries(filters).forEach(([key, value]) => {
-      if (!value) return;
-      
-      const column = columns.find(col => col.key === key);
-      if (!column) return;
-      
-      result = result.filter(row => {
-        const cellValue = getValueByPath(row, key);
-        
-        if (column.type === 'number' && typeof value === 'object') {
-          const numValue = value as { min?: number; max?: number };
-          if (numValue.min !== undefined && numValue.max !== undefined) {
-            return cellValue >= numValue.min && cellValue <= numValue.max;
-          }
-          if (numValue.min !== undefined) {
-            return cellValue >= numValue.min;
-          }
-          if (numValue.max !== undefined) {
-            return cellValue <= numValue.max;
-          }
-          return true;
-        }
-        
-        if (typeof value === 'string' && value) {
-          const stringCellValue = String(cellValue || '');
-          return stringCellValue.toLowerCase().includes(value.toLowerCase());
-        }
-        
-        return true;
-      });
-    });
-    
-    // Apply global search
-    if (searchTerm) {
-      const normalizedSearchTerm = searchTerm.toLowerCase();
-      result = result.filter(row => {
-        return visibleColumns.some(key => {
-          const cellValue = getValueByPath(row, key);
-          return cellValue !== null && 
-                 String(cellValue || '').toLowerCase().includes(normalizedSearchTerm);
-        });
-      });
-    }
-    
-    // Apply sorting
-    if (sortConfig) {
-      result.sort((a, b) => {
-        const aValue = getValueByPath(a, sortConfig.key);
-        const bValue = getValueByPath(b, sortConfig.key);
-        
-        if (aValue === bValue) return 0;
-        
-        const compareResult = aValue < bValue ? -1 : 1;
-        return sortConfig.direction === 'asc' ? compareResult : -compareResult;
-      });
-    }
-    
-    return result;
-  }, [data, filters, searchTerm, sortConfig, visibleColumns, columns]);
-  
-  // Paginate data
-  const paginatedData = useMemo(() => {
-    const startIndex = (currentPage - 1) * pageSize;
-    return filteredData.slice(startIndex, startIndex + pageSize);
-  }, [filteredData, currentPage, pageSize]);
-  
-  // Total pages
-  const totalPages = Math.ceil(filteredData.length / pageSize);
-  
-  // Import getValueByPath function from utils
-  function getValueByPath(obj: T, path: string) {
-    return path.split('.').reduce((prev, curr) => (prev ? prev[curr] : null), obj as any);
-  }
+  useEffect(() => {
+    handleExternalColumnToggle(visibleColumns);
+  }, [visibleColumns]);
 
   return (
     <div className="space-y-4">

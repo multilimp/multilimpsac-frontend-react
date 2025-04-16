@@ -1,5 +1,5 @@
 
-import { ColumnType } from './types';
+import { ColumnType, DataGridColumn } from './types';
 import { formatDate } from '@/lib/utils';
 
 export function getValueByPath(obj: any, path: string) {
@@ -22,7 +22,7 @@ export function formatCellValue(value: any, type: ColumnType): string {
 export function generateCSV(
   data: any[], 
   columns: string[], 
-  columnDefinitions: { key: string; name: string; type: ColumnType }[]
+  columnDefinitions: DataGridColumn[]
 ): string {
   const visibleData = data.map(row => {
     const rowData: Record<string, any> = {};
