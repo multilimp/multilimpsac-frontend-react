@@ -1,4 +1,3 @@
-
 import React from "react";
 import {
   BarChart3,
@@ -75,34 +74,12 @@ const dynamicGroups = {
   },
 };
 
-const SidebarToggleButton = () => {
-  const { open, toggleSidebar } = useSidebar();
-  
-  return (
-    <Button 
-      variant="ghost" 
-      size="icon" 
-      onClick={toggleSidebar}
-      className="rounded-full bg-sidebar-background text-white"
-    >
-      {open ? (
-        <PanelLeftClose className="h-3 w-3" />
-      ) : (
-        <PanelLeftOpen className="h-3 w-3" />
-      )}
-    </Button>
-  );
-};
-
 const AppSidebar: React.FC = () => {
   return (
-    <>
-      <DynamicSidebar 
-        groups={mainGroups} 
-        dynamicGroups={dynamicGroups} 
-      />
-      <SidebarToggleButton />
-    </>
+    <DynamicSidebar 
+      groups={mainGroups} 
+      dynamicGroups={dynamicGroups} 
+    />
   );
 };
 

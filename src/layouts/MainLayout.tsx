@@ -17,12 +17,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, secondaryNav }) => {
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="min-h-screen flex w-full">
+      <div className="min-h-screen flex w-full bg-background">
         <AppSidebar />
-        <SidebarInset className="flex-1 flex flex-col overflow-hidden bg-background">
+        <SidebarInset className="flex-1 flex flex-col overflow-hidden">
           <TopBar />
           
-          {/* Estado de conexión flotante */}
+          {/* Floating connection status */}
           <div className="fixed bottom-4 right-4 z-50">
             <ConnectionStatus showText={true} className="shadow-lg" />
           </div>

@@ -47,42 +47,6 @@ export type Database = {
           },
         ]
       }
-      cache: {
-        Row: {
-          expiration: number
-          key: string
-          value: string
-        }
-        Insert: {
-          expiration: number
-          key: string
-          value: string
-        }
-        Update: {
-          expiration?: number
-          key?: string
-          value?: string
-        }
-        Relationships: []
-      }
-      cache_locks: {
-        Row: {
-          expiration: number
-          key: string
-          owner: string
-        }
-        Insert: {
-          expiration: number
-          key: string
-          owner: string
-        }
-        Update: {
-          expiration?: number
-          key?: string
-          owner?: string
-        }
-        Relationships: []
-      }
       catalogo_empresas: {
         Row: {
           codigo: string | null
@@ -334,7 +298,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "contacto_transportes_transporte_id_foreign"
+            foreignKeyName: "contacto_transportes_transporte_id_fkey"
             columns: ["transporte_id"]
             isOneToOne: false
             referencedRelation: "transportes"
@@ -352,6 +316,7 @@ export type Database = {
           created_at: string | null
           descripcion: string | null
           id: number
+          p_cliente: number | null
           precio_unitario: number | null
           total: number | null
           unidad_medida: string | null
@@ -366,6 +331,7 @@ export type Database = {
           created_at?: string | null
           descripcion?: string | null
           id?: number
+          p_cliente?: number | null
           precio_unitario?: number | null
           total?: number | null
           unidad_medida?: string | null
@@ -380,6 +346,7 @@ export type Database = {
           created_at?: string | null
           descripcion?: string | null
           id?: number
+          p_cliente?: number | null
           precio_unitario?: number | null
           total?: number | null
           unidad_medida?: string | null
@@ -406,8 +373,8 @@ export type Database = {
           distrito_entrega: string | null
           empresa_id: number
           estado: string | null
-          fecha_cotizacion: string
-          fecha_entrega: string
+          fecha_cotizacion: string | null
+          fecha_entrega: string | null
           id: number
           monto_total: number | null
           nota_pago: string | null
@@ -427,8 +394,8 @@ export type Database = {
           distrito_entrega?: string | null
           empresa_id: number
           estado?: string | null
-          fecha_cotizacion: string
-          fecha_entrega: string
+          fecha_cotizacion?: string | null
+          fecha_entrega?: string | null
           id?: number
           monto_total?: number | null
           nota_pago?: string | null
@@ -448,8 +415,8 @@ export type Database = {
           distrito_entrega?: string | null
           empresa_id?: number
           estado?: string | null
-          fecha_cotizacion?: string
-          fecha_entrega?: string
+          fecha_cotizacion?: string | null
+          fecha_entrega?: string | null
           id?: number
           monto_total?: number | null
           nota_pago?: string | null
@@ -714,24 +681,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      migrations: {
-        Row: {
-          batch: number
-          id: number
-          migration: string
-        }
-        Insert: {
-          batch: number
-          id?: number
-          migration: string
-        }
-        Update: {
-          batch?: number
-          id?: number
-          migration?: string
-        }
-        Relationships: []
       }
       ordenes_compra: {
         Row: {
