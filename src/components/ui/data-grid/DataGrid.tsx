@@ -27,7 +27,7 @@ export function DataGrid<T extends { id: string | number }>({
   );
   
   // State for filters
-  const [filters, setFilters] = useState<Record<string, T>>({});
+  const [filters, setFilters] = useState<Record<string, any>>({});
   
   // State for global search
   const [searchTerm, setSearchTerm] = useState("");
@@ -129,21 +129,22 @@ export function DataGrid<T extends { id: string | number }>({
         const cellValue = getValueByPath(row, key);
         
         if (column.type === 'number' && typeof value === 'object') {
-          const { min, max } = value;
-          if (min !== undefined && max !== undefined) {
-            return cellValue >= min && cellValue <= max;
+          const numValue = value as { min?: number; max?: number };
+          if (numValue.min !== undefined && numValue.max !== undefined) {
+            return cellValue >= numValue.min && cellValue <= numValue.max;
           }
-          if (min !== undefined) {
-            return cellValue >= min;
+          if (numValue.min !== undefined) {
+            return cellValue >= numValue.min;
           }
-          if (max !== undefined) {
-            return cellValue <= max;
+          if (numValue.max !== undefined) {
+            return cellValue <= numValue.max;
           }
           return true;
         }
         
         if (typeof value === 'string' && value) {
-          return String(cellValue).toLowerCase().includes(value.toLowerCase());
+          const stringCellValue = String(cellValue || '');
+          return stringCellValue.toLowerCase().includes(value.toLowerCase());
         }
         
         return true;
@@ -157,7 +158,7 @@ export function DataGrid<T extends { id: string | number }>({
         return visibleColumns.some(key => {
           const cellValue = getValueByPath(row, key);
           return cellValue !== null && 
-                 String(cellValue).toLowerCase().includes(normalizedSearchTerm);
+                 String(cellValue || '').toLowerCase().includes(normalizedSearchTerm);
         });
       });
     }
@@ -189,7 +190,7 @@ export function DataGrid<T extends { id: string | number }>({
   
   // Import getValueByPath function from utils
   function getValueByPath(obj: T, path: string) {
-    return path.split('.').reduce((prev, curr) => (prev ? prev[curr] : null), obj);
+    return path.split('.').reduce((prev, curr) => (prev ? prev[curr] : null), obj as any);
   }
 
   return (

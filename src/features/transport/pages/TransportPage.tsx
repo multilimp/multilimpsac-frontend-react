@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useTransports } from "../services/transport.service";
 import { Transport, TransportDB } from "../models/transport.model";
@@ -46,11 +47,11 @@ const TransportPage: React.FC = () => {
     });
   };
 
-  const handleRowClick = (row: TransportDB) => {
+  const handleRowClick = (row: Transport) => {
     console.log('Transporte seleccionado:', row);
     toast({
       title: "Transporte seleccionado",
-      description: `${row.name}`,
+      description: row.name,
     });
   };
 
