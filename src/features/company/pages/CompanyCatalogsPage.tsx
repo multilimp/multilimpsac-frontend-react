@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -94,6 +95,7 @@ const CompanyCatalogsPage: React.FC = () => {
   const handleSaveCatalog = async (formData: Partial<CompanyCatalog>): Promise<void> => {
     if (!companyId) return;
     
+    // Ensure empresa_id is properly set as a number before saving
     await companyService.saveCompanyCatalog({
       ...formData,
       empresa_id: parseInt(companyId)

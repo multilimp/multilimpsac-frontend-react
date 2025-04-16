@@ -1,3 +1,4 @@
+
 /**
  * Company domain model
  * Core entity model for company domain
@@ -92,7 +93,7 @@ export interface CompanyDB {
 export interface CompanyCatalogDB {
   id: number;
   codigo: string;
-  empresa_id: number;
+  empresa_id: number; // This is required in the database
   created_at?: string;
   updated_at?: string;
 }
@@ -142,8 +143,15 @@ export const mapCompanyCatalogFromDB = (db: CompanyCatalogDB): CompanyCatalog =>
   updated_at: db.updated_at
 });
 
-export const mapCompanyCatalogToDB = (domain: Partial<CompanyCatalog>): Partial<CompanyCatalogDB> => ({
-  ...(domain.id ? { id: parseInt(domain.id) } : {}),
-  ...(domain.codigo ? { codigo: domain.codigo } : {}),
-  ...(domain.empresa_id ? { empresa_id: domain.empresa_id } : {})
-});
+export const mapCompanyCatalogToDB = (domain: Partial<CompanyCatalog>): Partial<CompanyCatalogDB> & { empresa_id: number } => {
+  // Ensure empresa_id is always included and is a number
+  if (!domain.empresa_id) {
+    throw new Error('Company ID (empresa_id) is required for catalog operations');
+  }
+
+  return {
+    ...(domain.id ? { id: parseInt(domain.id) } : {}),
+    ...(domain.codigo ? { codigo: domain.codigo } : {}),
+    empresa_id: domain.empresa_id // Always include empresa_id
+  };
+};

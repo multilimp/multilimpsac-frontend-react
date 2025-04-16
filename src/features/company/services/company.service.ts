@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { 
   Company, 
@@ -130,40 +131,50 @@ export const companyService = {
 
   // Create a new company catalog
   createCompanyCatalog: async (catalog: Partial<CompanyCatalog>): Promise<CompanyCatalog> => {
-    const mappedData = mapCompanyCatalogToDB(catalog);
-    
-    // Ensure empresa_id is set correctly - it's required by Supabase
-    if (!mappedData.empresa_id) {
-      throw new Error('Company ID is required');
+    try {
+      // This will throw an error if empresa_id is missing
+      const mappedData = mapCompanyCatalogToDB(catalog);
+      
+      const { data, error } = await supabase
+        .from('catalogo_empresas')
+        .insert(mappedData)
+        .select()
+        .single();
+      
+      if (error) throw new Error(error.message);
+      if (!data) throw new Error('Failed to create catalog');
+      
+      return mapCompanyCatalogFromDB(data as CompanyCatalogDB);
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('An unexpected error occurred');
     }
-
-    const { data, error } = await supabase
-      .from('catalogo_empresas')
-      .insert(mappedData)
-      .select()
-      .single();
-    
-    if (error) throw new Error(error.message);
-    if (!data) throw new Error('Failed to create catalog');
-    
-    return mapCompanyCatalogFromDB(data as CompanyCatalogDB);
   },
 
   // Update an existing company catalog
   updateCompanyCatalog: async (id: string, catalog: Partial<CompanyCatalog>): Promise<CompanyCatalog> => {
-    const mappedData = mapCompanyCatalogToDB(catalog);
-    
-    const { data, error } = await supabase
-      .from('catalogo_empresas')
-      .update(mappedData)
-      .eq('id', parseInt(id))
-      .select()
-      .single();
-    
-    if (error) throw new Error(error.message);
-    if (!data) throw new Error('Catalog not found');
-    
-    return mapCompanyCatalogFromDB(data as CompanyCatalogDB);
+    try {
+      const mappedData = mapCompanyCatalogToDB(catalog);
+      
+      const { data, error } = await supabase
+        .from('catalogo_empresas')
+        .update(mappedData)
+        .eq('id', parseInt(id))
+        .select()
+        .single();
+      
+      if (error) throw new Error(error.message);
+      if (!data) throw new Error('Catalog not found');
+      
+      return mapCompanyCatalogFromDB(data as CompanyCatalogDB);
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('An unexpected error occurred');
+    }
   },
 
   // Delete a company catalog
