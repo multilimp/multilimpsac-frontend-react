@@ -18,6 +18,8 @@ export interface DataGridProps<T> {
   onFilterChange?: (filters: Record<string, any>) => void;
   onColumnToggle?: (columns: string[]) => void;
   onRowClick?: (row: T) => void;
+  onEdit?: (row: T) => void;
+  onDelete?: (row: T) => void;
   onDownload?: () => void;
   onReload?: () => void;
 }

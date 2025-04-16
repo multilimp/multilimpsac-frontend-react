@@ -1,10 +1,10 @@
-
 import React from "react";
 import { TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { DataGridColumn } from "./types";
 import { formatCellValue, getValueByPath } from "./utils";
+import { RowActions } from "./RowActions";
 
 interface DataGridBodyProps<T> {
   data: T[];
@@ -13,6 +13,8 @@ interface DataGridBodyProps<T> {
   loading: boolean;
   pageSize: number;
   onRowClick?: (row: T) => void;
+  onEdit?: (row: T) => void;
+  onDelete?: (row: T) => void;
 }
 
 export function DataGridBody<T extends { id: string | number }>({
@@ -22,6 +24,8 @@ export function DataGridBody<T extends { id: string | number }>({
   loading,
   pageSize,
   onRowClick,
+  onEdit,
+  onDelete,
 }: DataGridBodyProps<T>) {
   if (loading) {
     return (
@@ -47,7 +51,7 @@ export function DataGridBody<T extends { id: string | number }>({
             colSpan={visibleColumns.length} 
             className="h-24 text-center"
           >
-            No results found.
+            No se encontraron resultados.
           </TableCell>
         </TableRow>
       </TableBody>
@@ -65,6 +69,19 @@ export function DataGridBody<T extends { id: string | number }>({
           {visibleColumns.map(colKey => {
             const column = columns.find(col => col.key === colKey);
             if (!column) return null;
+            
+            // Si es la columna de acciones, renderizar el componente RowActions
+            if (column.key === 'actions') {
+              return (
+                <TableCell key={`${row.id}-${colKey}`}>
+                  <RowActions 
+                    row={row} 
+                    onEdit={onEdit} 
+                    onDelete={onDelete}
+                  />
+                </TableCell>
+              );
+            }
             
             const value = getValueByPath(row, colKey);
             return (

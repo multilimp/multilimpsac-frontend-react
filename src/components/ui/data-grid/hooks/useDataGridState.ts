@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { DataGridColumn, SortConfig } from "../types";
 
@@ -14,8 +13,8 @@ export function useDataGridState(columns: DataGridColumn[]) {
   // State for global search
   const [searchTerm, setSearchTerm] = useState("");
   
-  // State for showing/hiding filters
-  const [showFilters, setShowFilters] = useState(true);
+  // State for showing/hiding filters - cambiado a false por defecto
+  const [showFilters, setShowFilters] = useState(false);
 
   // Handle column visibility toggle
   const handleColumnToggle = (column: string) => {

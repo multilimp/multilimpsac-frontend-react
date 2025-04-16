@@ -1,82 +1,124 @@
 /**
- * Client domain model
- * Core entity model for client domain
+ * Cliente domain model
+ * Core entity model for cliente domain
  */
 
 import { EntityBase, Address, mapEntityStatus, mapStatusToBoolean, formatDateString, mapId } from '@/features/shared/models';
 
-// Core client domain entity
-export interface Client extends EntityBase, Address {
-  name: string;
+// Core cliente domain entity
+export interface Cliente {
+  id: string;
+  razonSocial: string;
   ruc: string;
-  unitCode: string;
-  email?: string;  // Add optional email
-  contactPerson?: string;  // Add optional contactPerson
-  active?: boolean;  // Add optional active status
-  createdAt?: string;  // Add optional createdAt
+  codUnidad: string;
+  departamento?: string;
+  provincia?: string;
+  distrito?: string;
+  direccion?: string;
+  estado: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  contactos?: ContactoCliente[];
+}
+
+// Contacto cliente entity
+export interface ContactoCliente {
+  id: string;
+  clienteId: string;
+  nombre: string;
+  telefono?: string;
+  correo?: string;
+  cargo?: string;
+  estado: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// Repository interfaces
+export interface ClienteRepository {
+  findAll: () => Promise<Cliente[]>;
+  findById: (id: string) => Promise<Cliente>;
+  create: (cliente: Partial<Cliente>) => Promise<Cliente>;
+  update: (id: string, cliente: Partial<Cliente>) => Promise<Cliente>;
+  delete: (id: string) => Promise<void>;
+  findContactos: (clienteId: string) => Promise<ContactoCliente[]>;
+  createContacto: (contacto: Partial<ContactoCliente>) => Promise<ContactoCliente>;
+  updateContacto: (id: string, contacto: Partial<ContactoCliente>) => Promise<ContactoCliente>;
+  deleteContacto: (id: string) => Promise<void>;
 }
 
 // Database schema mapping for Supabase
-export interface ClientDB {
+export interface ClienteDB {
   id: number;
-  cod_unidad: string;
-  razon_social: string;
   ruc: string;
+  razon_social: string;
+  cod_unidad: string;
+  departamento: string | null;
+  provincia: string | null;
+  distrito: string | null;
+  direccion: string | null;
   estado: boolean;
-  direccion?: string;
-  distrito?: string;
-  provincia?: string;
-  departamento?: string;
   created_at?: string;
   updated_at?: string;
 }
 
-// DTO types for client service
-export interface ClientCreateDTO {
-  cod_unidad?: string;
-  razon_social?: string;
-  ruc?: string;
-  estado?: boolean;
-  direccion?: string;
-  distrito?: string;
-  provincia?: string;
-  departamento?: string;
-}
-
-export interface ClientUpdateDTO {
-  cod_unidad?: string;
-  razon_social?: string;
-  ruc?: string;
-  estado?: boolean;
-  direccion?: string;
-  distrito?: string;
-  provincia?: string;
-  departamento?: string;
+export interface ContactoClienteDB {
+  id: number;
+  nombre: string;
+  telefono: string | null;
+  correo: string | null;
+  cargo: string | null;
+  cliente_id: number;
+  estado: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 // Domain mappers
-export const mapClientFromDB = (db: ClientDB): Client => ({
-  id: mapId(db.id),
-  name: db.razon_social,
+export const mapClienteFromDB = (db: ClienteDB): Cliente => ({
+  id: db.id.toString(),
+  razonSocial: db.razon_social,
   ruc: db.ruc,
-  unitCode: db.cod_unidad,
-  address: db.direccion || '',
-  district: db.distrito,
-  province: db.provincia,
-  department: db.departamento,
-  status: mapEntityStatus(db.estado),
-  createdAt: formatDateString(db.created_at),
-  updatedAt: formatDateString(db.updated_at)
+  codUnidad: db.cod_unidad,
+  departamento: db.departamento || undefined,
+  provincia: db.provincia || undefined,
+  distrito: db.distrito || undefined,
+  direccion: db.direccion || undefined,
+  estado: db.estado,
+  createdAt: db.created_at,
+  updatedAt: db.updated_at,
 });
 
-export const mapClientToDB = (domain: Partial<Client>): Partial<ClientDB> => ({
+export const mapClienteToDB = (domain: Partial<Cliente>): Partial<ClienteDB> => ({
   ...(domain.id ? { id: parseInt(domain.id) } : {}),
-  ...(domain.name ? { razon_social: domain.name } : {}),
+  ...(domain.razonSocial ? { razon_social: domain.razonSocial } : {}),
   ...(domain.ruc ? { ruc: domain.ruc } : {}),
-  ...(domain.unitCode ? { cod_unidad: domain.unitCode } : {}),
-  ...(domain.address ? { direccion: domain.address } : {}),
-  ...(domain.district ? { distrito: domain.district } : {}),
-  ...(domain.province ? { provincia: domain.province } : {}),
-  ...(domain.department ? { departamento: domain.department } : {}),
-  ...(domain.status !== undefined ? { estado: mapStatusToBoolean(domain.status) } : {})
+  ...(domain.codUnidad ? { cod_unidad: domain.codUnidad } : {}),
+  ...(domain.departamento ? { departamento: domain.departamento } : {}),
+  ...(domain.provincia ? { provincia: domain.provincia } : {}),
+  ...(domain.distrito ? { distrito: domain.distrito } : {}),
+  ...(domain.direccion ? { direccion: domain.direccion } : {}),
+  ...(domain.estado !== undefined ? { estado: domain.estado } : {}),
+});
+
+export const mapContactoClienteFromDB = (db: ContactoClienteDB): ContactoCliente => ({
+  id: db.id.toString(),
+  clienteId: db.cliente_id.toString(),
+  nombre: db.nombre,
+  telefono: db.telefono || undefined,
+  correo: db.correo || undefined,
+  cargo: db.cargo || undefined,
+  estado: db.estado,
+  createdAt: db.created_at,
+  updatedAt: db.updated_at,
+});
+
+export const mapContactoClienteToDB = (domain: Partial<ContactoCliente>): Partial<ContactoClienteDB> => ({
+  ...(domain.id ? { id: parseInt(domain.id) } : {}),
+  ...(domain.clienteId ? { cliente_id: parseInt(domain.clienteId) } : {}),
+  ...(domain.nombre ? { nombre: domain.nombre } : {}),
+  ...(domain.telefono ? { telefono: domain.telefono } : {}),
+  ...(domain.correo ? { correo: domain.correo } : {}),
+  ...(domain.cargo ? { cargo: domain.cargo } : {}),
+  ...(domain.estado !== undefined ? { estado: domain.estado } : {}),
 });

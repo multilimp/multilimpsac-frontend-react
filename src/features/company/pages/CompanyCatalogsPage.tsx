@@ -1,30 +1,46 @@
-
-import React, { useState } from "react";
+import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { EntityDataTable } from "@/features/shared/components/entity-data-table";
-import { companyService } from "../services/company.service";
-import { CompanyCatalog } from "../models/company.model";
-import BreadcrumbNav from "@/components/layout/BreadcrumbNav";
-import PageHeader from "@/components/common/PageHeader";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { companyService } from "../services";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { DataGrid } from "@/components/ui/data-grid";
 import { DataGridColumn } from "@/components/ui/data-grid/types";
-
-const catalogSchema = z.object({
-  codigo: z.string().min(1, { message: "El código es requerido" }),
-});
-
-type CatalogFormData = z.infer<typeof catalogSchema>;
+import BreadcrumbNav from "@/components/layout/BreadcrumbNav";
+import { ArrowLeft, Plus } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+import { CompanyCatalog } from "../models/company.model";
+import PageHeader from "@/components/common/PageHeader";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogDescription,
+  DialogFooter,
+  DialogClose
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger
+} from "@/components/ui/alert-dialog";
+import { CatalogForm } from "../components/CatalogForm";
 
 const CompanyCatalogsPage: React.FC = () => {
   const { companyId } = useParams<{ companyId: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
+  const [selectedCatalog, setSelectedCatalog] = React.useState<CompanyCatalog | null>(null);
   
   const { data: company } = useQuery({
     queryKey: ["company", companyId],
@@ -38,6 +54,86 @@ const CompanyCatalogsPage: React.FC = () => {
     enabled: !!companyId,
   });
 
+  const saveCatalogMutation = useMutation({
+    mutationFn: (data: Partial<CompanyCatalog>) => {
+      if (data.id) {
+        return companyService.updateCompanyCatalog(data.id, data);
+      } else {
+        return companyService.createCompanyCatalog({
+          ...data,
+          empresa_id: Number(companyId),
+        });
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["companyCatalogs", companyId] });
+      toast({
+        title: selectedCatalog ? "Catálogo actualizado" : "Catálogo creado",
+        description: selectedCatalog 
+          ? "El catálogo ha sido actualizado exitosamente" 
+          : "El catálogo ha sido creado exitosamente",
+      });
+      setIsAddDialogOpen(false);
+      setIsEditDialogOpen(false);
+      setSelectedCatalog(null);
+    },
+    onError: (error) => {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: `No se pudo ${selectedCatalog ? "actualizar" : "crear"} el catálogo: ${error instanceof Error ? error.message : "Error desconocido"}`,
+      });
+    },
+  });
+
+  const deleteCatalogMutation = useMutation({
+    mutationFn: (id: string) => companyService.deleteCompanyCatalog(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["companyCatalogs", companyId] });
+      toast({
+        title: "Catálogo eliminado",
+        description: "El catálogo ha sido eliminado exitosamente",
+      });
+      setIsDeleteDialogOpen(false);
+      setSelectedCatalog(null);
+    },
+    onError: (error) => {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: `No se pudo eliminar el catálogo: ${error instanceof Error ? error.message : "Error desconocido"}`,
+      });
+    },
+  });
+
+  const handleAddCatalog = () => {
+    setSelectedCatalog(null);
+    setIsAddDialogOpen(true);
+  };
+
+  const handleEditCatalog = (catalog: CompanyCatalog) => {
+    setSelectedCatalog(catalog);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleDeleteCatalog = (catalog: CompanyCatalog) => {
+    setSelectedCatalog(catalog);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleSaveCatalog = async (data: Partial<CompanyCatalog>) => {
+    saveCatalogMutation.mutate({
+      ...selectedCatalog,
+      ...data
+    });
+  };
+
+  const handleConfirmDelete = () => {
+    if (selectedCatalog) {
+      deleteCatalogMutation.mutate(selectedCatalog.id);
+    }
+  };
+
   const breadcrumbItems = [
     {
       label: "Empresas",
@@ -46,6 +142,11 @@ const CompanyCatalogsPage: React.FC = () => {
     },
     {
       label: company?.name || "Empresa",
+      path: `/empresas/${companyId}`,
+      isCurrentPage: false
+    },
+    {
+      label: "Catálogos",
       path: `/empresas/${companyId}/catalogos`,
       isCurrentPage: true
     }
@@ -55,84 +156,107 @@ const CompanyCatalogsPage: React.FC = () => {
     { key: 'id', name: 'ID', type: 'string', sortable: true, filterable: true },
     { key: 'codigo', name: 'Código', type: 'string', sortable: true, filterable: true },
     { key: 'created_at', name: 'Fecha de Creación', type: 'date', sortable: true, filterable: true },
+    { key: 'actions', name: 'Acciones', type: 'string', sortable: false, filterable: false },
   ];
 
-  const renderFormContent = (data: Partial<CompanyCatalog>, onChange: (field: string, value: any) => void) => {
-    const form = useForm<CatalogFormData>({
-      resolver: zodResolver(catalogSchema),
-      defaultValues: {
-        codigo: data.codigo || '',
-      }
-    });
-
-    return (
-      <Form {...form}>
-        <form className="space-y-4 py-4">
-          <FormField
-            control={form.control}
-            name="codigo"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Código*</FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    onChange={(e) => {
-                      field.onChange(e);
-                      onChange('codigo', e.target.value);
-                    }}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </form>
-      </Form>
-    );
-  };
-
-  const handleSaveCatalog = async (formData: Partial<CompanyCatalog>): Promise<void> => {
-    if (!companyId) return;
-    
-    // Ensure empresa_id is properly set as a number before saving
-    await companyService.saveCompanyCatalog({
-      ...formData,
-      empresa_id: parseInt(companyId)
-    });
-  };
-
   return (
-    <div>
+    <div className="space-y-6">
       <BreadcrumbNav items={breadcrumbItems} />
-      <div className="flex items-center gap-4 mb-6">
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={() => navigate('/empresas')}
-        >
+      
+      <div className="flex items-center justify-between">
+        <Button variant="outline" size="sm" onClick={() => navigate(`/empresas/${companyId}`)}>
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Volver a Empresas
+          Volver a la Empresa
         </Button>
       </div>
-      <PageHeader
-        title={`Catálogos de ${company?.name || 'Empresa'}`}
-        subtitle="Gestione los catálogos de la empresa"
-      />
-      <EntityDataTable<CompanyCatalog>
-        title="Catálogos"
-        description="Gestione los catálogos de la empresa"
-        data={catalogs}
-        isLoading={isLoading}
-        columns={columns}
-        onReload={refetch}
-        renderFormContent={renderFormContent}
-        onSave={handleSaveCatalog}
-        onDelete={companyService.deleteCompanyCatalog}
-        addButtonText="Agregar Catálogo"
-        domain="company"
-        permissionScope="companyCatalogs"
-      />
+      
+      <div className="flex justify-between items-center">
+        <PageHeader
+          title={`Catálogos de ${company?.name || 'la Empresa'}`}
+          subtitle="Gestione los catálogos asociados a esta empresa"
+        />
+        <Button onClick={handleAddCatalog}>
+          <Plus className="mr-2 h-4 w-4" />
+          Agregar Catálogo
+        </Button>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Catálogos</CardTitle>
+          <CardDescription>
+            Lista de catálogos registrados para esta empresa
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <DataGrid
+            data={catalogs}
+            columns={columns}
+            loading={isLoading}
+            pageSize={10}
+            onReload={refetch}
+            onEdit={handleEditCatalog}
+            onDelete={handleDeleteCatalog}
+          />
+        </CardContent>
+      </Card>
+
+      {/* Diálogo para agregar catálogo */}
+      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Agregar Catálogo</DialogTitle>
+            <DialogDescription>
+              Complete los campos para agregar un nuevo catálogo a {company?.name}
+            </DialogDescription>
+          </DialogHeader>
+          <CatalogForm
+            onSubmit={handleSaveCatalog}
+            isSubmitting={saveCatalogMutation.isPending}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Diálogo para editar catálogo */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Catálogo</DialogTitle>
+            <DialogDescription>
+              Modifique los campos para actualizar el catálogo
+            </DialogDescription>
+          </DialogHeader>
+          {selectedCatalog && (
+            <CatalogForm
+              initialData={selectedCatalog}
+              onSubmit={handleSaveCatalog}
+              isSubmitting={saveCatalogMutation.isPending}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Diálogo de confirmación para eliminar */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Está seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. Se eliminará permanentemente el catálogo 
+              {selectedCatalog?.codigo ? ` "${selectedCatalog.codigo}"` : ''}.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConfirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteCatalogMutation.isPending ? "Eliminando..." : "Eliminar"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -21,68 +20,60 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Company } from "../models/company.model";
+import { Cliente } from "../models/client.model";
 
 // Esquema de validación con Zod
-const companySchema = z.object({
-  name: z.string().min(3, { message: "El nombre debe tener al menos 3 caracteres" }),
+const clienteSchema = z.object({
+  razonSocial: z.string().min(3, { message: "La razón social debe tener al menos 3 caracteres" }),
   ruc: z.string().length(11, { message: "El RUC debe tener 11 dígitos" }).regex(/^\d+$/, { message: "El RUC debe contener solo números" }),
-  address: z.string().min(5, { message: "La dirección es requerida" }),
-  phone: z.string().min(5, { message: "El teléfono es requerido" }),
-  email: z.string().optional(), // Eliminada la validación de formato de email
-  status: z.enum(["active", "inactive"]),
-  web: z.string().optional(),
-  direcciones: z.string().optional(),
-  cod_unidad: z.string().optional(),
+  codUnidad: z.string().min(1, { message: "El código de unidad es requerido" }),
   departamento: z.string().optional(),
   provincia: z.string().optional(),
   distrito: z.string().optional(),
+  direccion: z.string().optional(),
+  estado: z.boolean().default(true),
 });
 
-type CompanyFormData = z.infer<typeof companySchema>;
+type ClienteFormData = z.infer<typeof clienteSchema>;
 
-interface CompanyFormProps {
-  initialData: Partial<Company>;
-  onSubmit: (data: Partial<Company>) => Promise<void>;
+interface ClienteFormProps {
+  initialData?: Partial<Cliente>;
+  onSubmit: (data: Partial<Cliente>) => Promise<void>;
   isSubmitting?: boolean;
-  isNewCompany?: boolean;
+  isNewCliente?: boolean;
 }
 
-export const CompanyForm: React.FC<CompanyFormProps> = ({
-  initialData,
+export const ClienteForm: React.FC<ClienteFormProps> = ({
+  initialData = {},
   onSubmit,
   isSubmitting = false,
-  isNewCompany = false,
+  isNewCliente = false,
 }) => {
-  const form = useForm<CompanyFormData>({
-    resolver: zodResolver(companySchema),
+  const form = useForm<ClienteFormData>({
+    resolver: zodResolver(clienteSchema),
     defaultValues: {
-      name: initialData.name || "",
+      razonSocial: initialData.razonSocial || "",
       ruc: initialData.ruc || "",
-      address: initialData.address || "",
-      phone: initialData.phone || "",
-      email: initialData.email || "",
-      web: initialData.web || "",
-      direcciones: initialData.direcciones || "",
-      cod_unidad: initialData.cod_unidad || "",
+      codUnidad: initialData.codUnidad || "",
       departamento: initialData.departamento || "",
       provincia: initialData.provincia || "",
       distrito: initialData.distrito || "",
-      status: initialData.status || "active",
+      direccion: initialData.direccion || "",
+      estado: initialData.estado !== undefined ? initialData.estado : true,
     },
   });
 
-  async function handleSubmit(values: CompanyFormData) {
+  async function handleSubmit(values: ClienteFormData) {
     try {
       await onSubmit({
         ...initialData,
         ...values
       });
-      if (isNewCompany) {
+      if (isNewCliente) {
         form.reset();
       }
     } catch (error) {
-      console.error("Error al guardar empresa:", error);
+      console.error("Error al guardar cliente:", error);
     }
   }
 
@@ -92,7 +83,7 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
             control={form.control}
-            name="name"
+            name="razonSocial"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Razón Social*</FormLabel>
@@ -120,10 +111,10 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({
 
           <FormField
             control={form.control}
-            name="address"
+            name="codUnidad"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Dirección*</FormLabel>
+                <FormLabel>Código de Unidad*</FormLabel>
                 <FormControl>
                   <Input {...field} />
                 </FormControl>
@@ -134,68 +125,12 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({
 
           <FormField
             control={form.control}
-            name="cod_unidad"
+            name="direccion"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Código de Unidad</FormLabel>
+                <FormLabel>Dirección</FormLabel>
                 <FormControl>
                   <Input {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="phone"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Teléfono*</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="web"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Sitio Web</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="direcciones"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Direcciones Adicionales</FormLabel>
-                <FormControl>
-                  <Textarea {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -246,13 +181,13 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({
 
           <FormField
             control={form.control}
-            name="status"
+            name="estado"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Estado</FormLabel>
                 <Select 
-                  onValueChange={field.onChange} 
-                  defaultValue={field.value}
+                  onValueChange={(value) => field.onChange(value === "true")} 
+                  defaultValue={field.value ? "true" : "false"}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -260,8 +195,8 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="active">Activo</SelectItem>
-                    <SelectItem value="inactive">Inactivo</SelectItem>
+                    <SelectItem value="true">Activo</SelectItem>
+                    <SelectItem value="false">Inactivo</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -275,7 +210,7 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({
             type="submit" 
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Guardando...' : isNewCompany ? 'Crear Empresa' : 'Actualizar Empresa'}
+            {isSubmitting ? 'Guardando...' : isNewCliente ? 'Crear Cliente' : 'Actualizar Cliente'}
           </Button>
         </div>
       </form>

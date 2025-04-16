@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from "react";
 import { Table } from "@/components/ui/table";
 import { DataGridPagination } from "./DataGridPagination";
@@ -20,6 +19,8 @@ export function DataGrid<T extends { id: string | number }>({
   onFilterChange,
   onColumnToggle,
   onRowClick,
+  onEdit,
+  onDelete,
   onDownload,
   onReload,
 }: DataGridProps<T>) {
@@ -127,6 +128,8 @@ export function DataGrid<T extends { id: string | number }>({
             loading={loading}
             pageSize={pageSize}
             onRowClick={onRowClick}
+            onEdit={onEdit}
+            onDelete={onDelete}
           />
         </Table>
       </div>

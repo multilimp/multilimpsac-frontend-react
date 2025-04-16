@@ -1,21 +1,12 @@
-
 import { lazy } from "react";
 import { Building2, Users, Truck, User } from "lucide-react";
 import { RouteDefinition } from "../types";
-
-// Domain-specific pages (lazy loaded)
-const CompanyPage = lazy(() => import("@/features/company/pages/CompanyPage"));
-const CompanyCatalogsPage = lazy(() => import("@/features/company/pages/CompanyCatalogsPage"));
-const ClientPage = lazy(() => import("@/features/client/pages/ClientPage"));
-const SupplierPage = lazy(() => import("@/features/supplier/pages/SupplierPage"));
-const TransportPage = lazy(() => import("@/features/transport/pages/TransportPage"));
-const UserPage = lazy(() => import("@/features/user/pages/UserPage"));
 
 // Domain-driven route definitions
 export const directoryRoutes: RouteDefinition[] = [
   {
     path: "/empresas",
-    component: CompanyPage,
+    component: lazy(() => import("@/features/company/pages/CompanyPage")),
     title: "Empresas",
     icon: <Building2 className="h-5 w-5" />,
     requireAuth: true,
@@ -26,8 +17,34 @@ export const directoryRoutes: RouteDefinition[] = [
     breadcrumb: "Empresas"
   },
   {
+    path: "/empresas/new",
+    component: lazy(() => import("@/features/company/pages/CompanyDetailsPage")),
+    title: "Nueva Empresa",
+    icon: <Building2 className="h-5 w-5" />,
+    requireAuth: true,
+    permission: "companies:create",
+    domain: "company",
+    entityType: "empresa",
+    action: "create",
+    breadcrumb: "Nueva Empresa",
+    hideInMenu: true
+  },
+  {
+    path: "/empresas/:id",
+    component: lazy(() => import("@/features/company/pages/CompanyDetailsPage")),
+    title: "Detalles de Empresa",
+    icon: <Building2 className="h-5 w-5" />,
+    requireAuth: true,
+    permission: "companies:view",
+    domain: "company",
+    entityType: "empresa",
+    action: "detail",
+    breadcrumb: "Detalles",
+    hideInMenu: true
+  },
+  {
     path: "/empresas/:companyId/catalogos",
-    component: CompanyCatalogsPage,
+    component: lazy(() => import("@/features/company/pages/CompanyCatalogsPage")),
     title: "Catálogos de Empresa",
     icon: <Building2 className="h-5 w-5" />,
     requireAuth: true,
@@ -40,7 +57,7 @@ export const directoryRoutes: RouteDefinition[] = [
   },
   {
     path: "/clientes",
-    component: ClientPage,
+    component: lazy(() => import("@/features/client/pages/ClientPage")),
     title: "Clientes",
     icon: <Users className="h-5 w-5" />,
     requireAuth: true,
@@ -52,7 +69,7 @@ export const directoryRoutes: RouteDefinition[] = [
   },
   {
     path: "/proveedores",
-    component: SupplierPage,
+    component: lazy(() => import("@/features/supplier/pages/SupplierPage")),
     title: "Proveedores",
     icon: <Building2 className="h-5 w-5" />,
     requireAuth: true,
@@ -64,7 +81,7 @@ export const directoryRoutes: RouteDefinition[] = [
   },
   {
     path: "/transportes",
-    component: TransportPage,
+    component: lazy(() => import("@/features/transport/pages/TransportPage")),
     title: "Transportes",
     icon: <Truck className="h-5 w-5" />,
     requireAuth: true,
@@ -76,7 +93,7 @@ export const directoryRoutes: RouteDefinition[] = [
   },
   {
     path: "/usuarios",
-    component: UserPage,
+    component: lazy(() => import("@/features/user/pages/UserPage")),
     title: "Usuarios",
     icon: <User className="h-5 w-5" />,
     requireAuth: true,
