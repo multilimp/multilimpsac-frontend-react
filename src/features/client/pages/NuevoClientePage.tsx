@@ -1,6 +1,7 @@
+
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { PageHeader } from "@/components/common/PageHeader";
+import PageHeader from "@/components/common/PageHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ClienteForm } from "../components/ClienteForm";
 import { useCreateCliente } from "../services/cliente.service";

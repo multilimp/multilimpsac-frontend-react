@@ -1,8 +1,9 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { PageHeader } from "@/components/common/PageHeader";
-import { SearchBar } from "@/components/common/SearchBar";
+import PageHeader from "@/components/common/PageHeader";
+import SearchBar from "@/components/common/SearchBar";
 import { ClienteTable } from "../components/ClienteTable";
 import { useClientes, useDeleteCliente } from "../services/cliente.service";
 import { useToast } from "@/hooks/use-toast";

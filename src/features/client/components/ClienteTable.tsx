@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -23,8 +24,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { TableActions } from "@/components/common/TableActions";
-import { TableEmptyState } from "@/components/common/TableEmptyState";
+import TableActions from "@/components/common/TableActions";
+import TableEmptyState from "@/components/common/TableEmptyState";
 import { Cliente } from "../models/client.model";
 
 interface ClienteTableProps {
@@ -91,7 +92,7 @@ export const ClienteTable: React.FC<ClienteTableProps> = ({
               <TableCell>{cliente.codUnidad}</TableCell>
               <TableCell>{cliente.direccion || '—'}</TableCell>
               <TableCell>
-                <Badge variant={cliente.estado ? "success" : "destructive"}>
+                <Badge variant={cliente.estado ? "default" : "destructive"}>
                   {cliente.estado ? "Activo" : "Inactivo"}
                 </Badge>
               </TableCell>

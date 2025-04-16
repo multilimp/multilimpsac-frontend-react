@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -25,10 +26,17 @@ const CompanyDetailsPage: React.FC = () => {
 
   const updateCompanyMutation = useMutation({
     mutationFn: (data: Partial<Company>) => {
+      // Ensure required fields are present for new companies
+      const companyData = isNewCompany ? {
+        ...data,
+        address: data.address || 'Default Address', // Ensure address is provided
+        status: data.status || 'active',
+      } : data;
+      
       if (isNewCompany) {
-        return companyService.createCompany(data);
+        return companyService.createCompany(companyData as Omit<Company, "id">);
       } else {
-        return companyService.updateCompany(id!, data);
+        return companyService.updateCompany(id!, companyData);
       }
     },
     onSuccess: () => {

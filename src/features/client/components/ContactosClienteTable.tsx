@@ -1,3 +1,4 @@
+
 import React from "react";
 import {
   Table,
@@ -8,8 +9,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { TableActions } from "@/components/common/TableActions";
-import { TableEmptyState } from "@/components/common/TableEmptyState";
+import TableActions from "@/components/common/TableActions";
+import TableEmptyState from "@/components/common/TableEmptyState";
 import { ContactoCliente } from "../models/client.model";
 
 interface ContactosClienteTableProps {
@@ -64,7 +65,7 @@ export const ContactosClienteTable: React.FC<ContactosClienteTableProps> = ({
               <TableCell>{contacto.telefono || '—'}</TableCell>
               <TableCell>{contacto.correo || '—'}</TableCell>
               <TableCell>
-                <Badge variant={contacto.estado ? "success" : "destructive"}>
+                <Badge variant={contacto.estado ? "default" : "destructive"}>
                   {contacto.estado ? "Activo" : "Inactivo"}
                 </Badge>
               </TableCell>

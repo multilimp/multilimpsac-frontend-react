@@ -16,7 +16,7 @@ import QuotationClientSection from "./form/QuotationClientSection";
 import QuotationItemsSection from "./form/QuotationItemsSection";
 import QuotationSummarySection from "./form/QuotationSummarySection";
 import QuotationFooter from "./form/QuotationFooter";
-import { Client } from "@/features/client/models/client.model";
+import { Cliente } from "@/features/client/models/client.model";
 
 interface QuotationFormProps {
   onSuccess: () => void;
@@ -59,7 +59,7 @@ const QuotationForm: React.FC<QuotationFormProps> = ({ onSuccess }) => {
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Client and Dates Section */}
-            <QuotationClientSection form={form} clients={mockClients as Client[]} />
+            <QuotationClientSection form={form} clients={mockClients as Cliente[]} />
             
             {/* Items Section */}
             <QuotationItemsSection form={form} />

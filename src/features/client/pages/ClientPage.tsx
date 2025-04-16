@@ -1,12 +1,11 @@
-
 import React, { useState } from "react";
 import PageHeader from "@/components/common/PageHeader";
 import { DataGrid, DataGridColumn } from "@/components/ui/data-grid";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import BreadcrumbNav from "@/components/layout/BreadcrumbNav";
 import { useQuery } from "@tanstack/react-query";
 import ClientService from "../services/client.service";
-import { ClientDB } from "../models/client.model";
+import { ClienteDB } from "../models/client.model";
 
 const ClientPage: React.FC = () => {
   const { toast } = useToast();
@@ -43,7 +42,7 @@ const ClientPage: React.FC = () => {
     });
   };
 
-  const handleRowClick = (row: ClientDB) => {
+  const handleRowClick = (row: ClienteDB) => {
     console.log('Cliente seleccionado:', row);
     toast({
       title: "Cliente seleccionado",

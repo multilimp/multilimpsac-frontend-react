@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { 
   Cliente, 
@@ -8,7 +9,7 @@ import {
   mapClienteToDB,
   mapContactoClienteFromDB,
   mapContactoClienteToDB
-} from '../models/client.model';
+} from '../../models/client.model';
 
 /**
  * Servicios de API para clientes
@@ -38,7 +39,7 @@ export const clienteApi = {
     const { data, error } = await supabase
       .from('clientes')
       .select('*')
-      .eq('id', id)
+      .eq('id', parseInt(id, 10))
       .single();
 
     if (error) {
@@ -78,7 +79,7 @@ export const clienteApi = {
     const { data, error } = await supabase
       .from('clientes')
       .update(clienteDB)
-      .eq('id', id)
+      .eq('id', parseInt(id, 10))
       .select()
       .single();
 
@@ -97,7 +98,7 @@ export const clienteApi = {
     const { error } = await supabase
       .from('clientes')
       .update({ estado: false })
-      .eq('id', id);
+      .eq('id', parseInt(id, 10));
 
     if (error) {
       console.error(`Error al eliminar el cliente con ID ${id}:`, error);
@@ -112,7 +113,7 @@ export const clienteApi = {
     const { data, error } = await supabase
       .from('contacto_clientes')
       .select('*')
-      .eq('cliente_id', clienteId)
+      .eq('cliente_id', parseInt(clienteId, 10))
       .eq('estado', true)
       .order('created_at', { ascending: false });
 
@@ -153,7 +154,7 @@ export const clienteApi = {
     const { data, error } = await supabase
       .from('contacto_clientes')
       .update(contactoDB)
-      .eq('id', id)
+      .eq('id', parseInt(id, 10))
       .select()
       .single();
 
@@ -172,7 +173,7 @@ export const clienteApi = {
     const { error } = await supabase
       .from('contacto_clientes')
       .update({ estado: false })
-      .eq('id', id);
+      .eq('id', parseInt(id, 10));
 
     if (error) {
       console.error(`Error al eliminar el contacto con ID ${id}:`, error);

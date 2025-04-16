@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { PageHeader } from "@/components/common/PageHeader";
+import PageHeader from "@/components/common/PageHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
@@ -14,17 +14,14 @@ export const EditarClientePage: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  // Obtener datos del cliente
   const { data: cliente, isLoading, error } = useCliente(id as string);
-  
-  // Mutación para actualizar cliente
   const { mutate: updateCliente, isPending: isSubmitting } = useUpdateCliente();
   
   const handleSubmit = async (data: Partial<Cliente>) => {
     if (!id) return;
     
     updateCliente(
-      { id, ...data },
+      { id, data },
       {
         onSuccess: () => {
           toast({

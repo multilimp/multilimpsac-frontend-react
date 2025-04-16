@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { PageHeader } from "@/components/common/PageHeader";
+import PageHeader from "@/components/common/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,16 +32,13 @@ export const ClienteDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  // Estados para gestionar diálogos
   const [isContactDialogOpen, setIsContactDialogOpen] = useState(false);
   const [contactoToEdit, setContactoToEdit] = useState<ContactoCliente | null>(null);
   const [contactoToDelete, setContactoToDelete] = useState<string | null>(null);
   
-  // Consultas React Query
   const { data: cliente, isLoading: isLoadingCliente, error: clienteError } = useCliente(id as string);
   const { data: contactos = [], isLoading: isLoadingContactos } = useContactosCliente(id as string);
   
-  // Mutaciones para contactos
   const { mutate: createContacto, isPending: isCreatingContacto } = useCreateContactoCliente();
   const { mutate: updateContacto, isPending: isUpdatingContacto } = useUpdateContactoCliente();
   const { mutate: deleteContacto, isPending: isDeletingContacto } = useDeleteContactoCliente();
@@ -72,7 +69,7 @@ export const ClienteDetailPage: React.FC = () => {
     if (!data.id) return;
     
     updateContacto(
-      { ...data },
+      { id: data.id, data },
       {
         onSuccess: () => {
           toast({
@@ -186,7 +183,7 @@ export const ClienteDetailPage: React.FC = () => {
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <span>Datos del Cliente</span>
-                  <Badge variant={cliente.estado ? "success" : "destructive"}>
+                  <Badge variant={cliente.estado ? "default" : "destructive"}>
                     {cliente.estado ? "Activo" : "Inactivo"}
                   </Badge>
                 </CardTitle>
@@ -241,7 +238,6 @@ export const ClienteDetailPage: React.FC = () => {
         </Tabs>
       </div>
       
-      {/* Diálogo para crear/editar contacto */}
       <Dialog 
         open={isContactDialogOpen || !!contactoToEdit} 
         onOpenChange={(open) => {
@@ -276,7 +272,6 @@ export const ClienteDetailPage: React.FC = () => {
         </DialogContent>
       </Dialog>
       
-      {/* Diálogo para confirmar eliminación de contacto */}
       <Dialog 
         open={!!contactoToDelete} 
         onOpenChange={(open) => !open && setContactoToDelete(null)}

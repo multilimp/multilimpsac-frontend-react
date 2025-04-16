@@ -3,13 +3,13 @@ import React from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Client } from "@/features/client/models/client.model";
+import { Cliente } from "@/features/client/models/client.model";
 import { UseFormReturn } from "react-hook-form";
 import { QuotationFormValues } from "./QuotationFormTypes";
 
 interface QuotationClientSectionProps {
   form: UseFormReturn<QuotationFormValues>;
-  clients: Client[];
+  clients: Cliente[];
 }
 
 const QuotationClientSection: React.FC<QuotationClientSectionProps> = ({ form, clients }) => {
@@ -30,7 +30,7 @@ const QuotationClientSection: React.FC<QuotationClientSectionProps> = ({ form, c
               <SelectContent>
                 {clients.map((client) => (
                   <SelectItem key={client.id} value={client.id}>
-                    {client.name}
+                    {client.razonSocial}
                   </SelectItem>
                 ))}
               </SelectContent>

@@ -1,12 +1,13 @@
+
 // This fixes the client service error
 // Making sure we provide the required fields when inserting data
 
 import { supabase } from '@/integrations/supabase/client';
-import { ClientDB, ClientCreateDTO, ClientUpdateDTO } from '../models/client.model';
+import { ClienteDB, ClienteCreateDTO, ClienteUpdateDTO } from '../models/client.model';
 
 export default class ClientService {
   // Added default values for required fields
-  static async create(data: ClientCreateDTO): Promise<ClientDB> {
+  static async create(data: Partial<ClienteDB>): Promise<ClienteDB> {
     // Ensure required fields are provided, with defaults if not
     const clientData = {
       ...data,
@@ -31,29 +32,28 @@ export default class ClientService {
       throw error;
     }
 
-    return newClient as ClientDB;
+    return newClient as ClienteDB;
   }
 
-  static async getAll(): Promise<ClientDB[]> {
+  static async getAll(): Promise<ClienteDB[]> {
     const { data, error } = await supabase
       .from('clientes')
       .select('*')
       .order('razon_social', { ascending: true });
 
     if (error) {
-      
       console.error('Error getting clients:', error);
       throw error;
     }
 
-    return data as ClientDB[];
+    return data as ClienteDB[];
   }
 
-  static async getById(id: number): Promise<ClientDB | null> {
+  static async getById(id: number | string): Promise<ClienteDB | null> {
     const { data, error } = await supabase
       .from('clientes')
       .select('*')
-      .eq('id', id)
+      .eq('id', typeof id === 'string' ? parseInt(id, 10) : id)
       .single();
 
     if (error) {
@@ -61,14 +61,14 @@ export default class ClientService {
       throw error;
     }
 
-    return data as ClientDB | null;
+    return data as ClienteDB | null;
   }
 
-  static async update(id: number, updates: ClientUpdateDTO): Promise<ClientDB | null> {
+  static async update(id: number | string, updates: Partial<ClienteDB>): Promise<ClienteDB | null> {
     const { data, error } = await supabase
       .from('clientes')
       .update(updates)
-      .eq('id', id)
+      .eq('id', typeof id === 'string' ? parseInt(id, 10) : id)
       .select()
       .single();
 
@@ -77,14 +77,14 @@ export default class ClientService {
       throw error;
     }
 
-    return data as ClientDB | null;
+    return data as ClienteDB | null;
   }
 
-  static async delete(id: number): Promise<void> {
+  static async delete(id: number | string): Promise<void> {
     const { error } = await supabase
       .from('clientes')
       .delete()
-      .eq('id', id);
+      .eq('id', typeof id === 'string' ? parseInt(id, 10) : id);
 
     if (error) {
       console.error('Error deleting client:', error);
