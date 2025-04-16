@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Outlet, useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,17 +20,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ContactoCliente } from '../models/client.model';
-
-const ContactoClienteForm = ({ onSubmit, initialData = {}, isSubmitting }) => {
-  return (
-    <div>
-      <h3>Form placeholder</h3>
-      <Button onClick={() => onSubmit(initialData)} disabled={isSubmitting}>
-        {isSubmitting ? 'Guardando...' : 'Guardar'}
-      </Button>
-    </div>
-  );
-};
+import { ContactoClienteForm } from '../components/ContactoClienteForm';
 
 const ClienteDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -204,7 +195,7 @@ const ClienteDetailPage = () => {
             </div>
             <div>
               <p className="text-sm font-medium text-gray-500">Dirección</p>
-              <p>{cliente.direccion || '��'}</p>
+              <p>{cliente.direccion || '—'}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-gray-500">Ubicación</p>
@@ -305,7 +296,8 @@ const ClienteDetailPage = () => {
             </DialogDescription>
           </DialogHeader>
           <ContactoClienteForm 
-            initialData={selectedContacto || { clienteId: id }}
+            clienteId={id || ''}
+            initialData={selectedContacto || undefined}
             onSubmit={handleContactoSubmit}
             isSubmitting={isCreatingContacto || isUpdatingContacto}
           />
