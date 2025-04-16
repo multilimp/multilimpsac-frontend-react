@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
   DataGrid,
@@ -157,20 +156,44 @@ const QuotationList: React.FC<QuotationListProps> = ({
   };
 
   // Format data for the grid
-  const formattedData = quotations.map(quotation => ({
-    ...quotation,
-    date: format(new Date(quotation.date), 'dd/MM/yyyy'),
-    expiryDate: format(new Date(quotation.expiryDate), 'dd/MM/yyyy'),
-    total: `$${quotation.total.toLocaleString('es-ES', { minimumFractionDigits: 2 })}`,
-    status: <QuotationStatusBadge status={quotation.status} />,
-    actions: <QuotationActionMenu 
-              quotation={quotation} 
-              onView={() => handleView(quotation)}
-              onEdit={() => handleEdit(quotation)}
-              onDelete={() => handleDelete(quotation)}
-              onStatusChange={(status) => handleStatusChange(quotation, status)}
-            />
-  }));
+  const formattedData = quotations.map(quotation => {
+    // Create a copy of the quotation with formatted fields but keeping the original object structure
+    return {
+      ...quotation,
+      formattedDate: format(new Date(quotation.date), 'dd/MM/yyyy'),
+      formattedExpiryDate: format(new Date(quotation.expiryDate), 'dd/MM/yyyy'),
+      formattedTotal: `$${quotation.total.toLocaleString('es-ES', { minimumFractionDigits: 2 })}`,
+      statusBadge: <QuotationStatusBadge status={quotation.status} />,
+      actions: <QuotationActionMenu 
+                quotation={quotation} 
+                onView={() => handleView(quotation)}
+                onEdit={() => handleEdit(quotation)}
+                onDelete={() => handleDelete(quotation)}
+                onStatusChange={(status) => handleStatusChange(quotation, status)}
+              />
+    };
+  });
+
+  const handleRowClick = (row: any) => {
+    const originalQuotation = quotations.find(q => q.id === row.id);
+    if (originalQuotation) {
+      handleView(originalQuotation);
+    }
+  };
+
+  const handleEditAction = (row: any) => {
+    const originalQuotation = quotations.find(q => q.id === row.id);
+    if (originalQuotation) {
+      handleEdit(originalQuotation);
+    }
+  };
+
+  const handleDeleteAction = (row: any) => {
+    const originalQuotation = quotations.find(q => q.id === row.id);
+    if (originalQuotation) {
+      handleDelete(originalQuotation);
+    }
+  };
 
   return (
     <Card className="bg-transparent shadow-none border-none">
@@ -180,9 +203,9 @@ const QuotationList: React.FC<QuotationListProps> = ({
           columns={columns}
           loading={isLoading}
           pageSize={10}
-          onRowClick={handleView}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
+          onRowClick={handleRowClick}
+          onEdit={handleEditAction}
+          onDelete={handleDeleteAction}
           onReload={onRefresh}
         />
         

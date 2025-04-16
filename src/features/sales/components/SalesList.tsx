@@ -128,52 +128,73 @@ const SalesList: React.FC<SalesListProps> = ({
     }
   };
 
-  // Format data for DataGrid
-  const formattedData = sales.map(sale => ({
-    id: sale.id,
-    orderNumber: sale.orderNumber,
-    clientId: sale.clientId,
-    clientName: sale.clientName,
-    date: sale.date,
-    type: sale.type === 'public' ? 'Pública' : 'Privada',
-    total: formatCurrency(sale.total),
-    status: <SalesStatusBadge status={sale.status} />,
-    actions: (
-      <div className="flex space-x-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleViewSale(sale);
-          }}
-        >
-          <Eye className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleEditSale(sale);
-          }}
-        >
-          <Edit className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-destructive"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleDeleteSale(sale);
-          }}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </div>
-    ),
-  }));
+  // Format data for DataGrid with complete objects
+  const formattedData = sales.map(sale => {
+    // Create a formatted version but preserve all original properties
+    return {
+      ...sale, // Keep all original properties
+      // Add formatted versions of properties
+      formattedType: sale.type === 'public' ? 'Pública' : 'Privada',
+      formattedTotal: formatCurrency(sale.total),
+      statusBadge: <SalesStatusBadge status={sale.status} />,
+      actionButtons: (
+        <div className="flex space-x-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleViewSale(sale);
+            }}
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleEditSale(sale);
+            }}
+          >
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-destructive"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDeleteSale(sale);
+            }}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      ),
+    };
+  });
+
+  const handleRowClick = (row: any) => {
+    const originalSale = sales.find(s => s.id === row.id);
+    if (originalSale) {
+      handleViewSale(originalSale);
+    }
+  };
+
+  const handleEditAction = (row: any) => {
+    const originalSale = sales.find(s => s.id === row.id);
+    if (originalSale) {
+      handleEditSale(originalSale);
+    }
+  };
+
+  const handleDeleteAction = (row: any) => {
+    const originalSale = sales.find(s => s.id === row.id);
+    if (originalSale) {
+      handleDeleteSale(originalSale);
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -199,7 +220,9 @@ const SalesList: React.FC<SalesListProps> = ({
         data={formattedData}
         columns={columns}
         loading={isLoading}
-        onRowClick={handleViewSale}
+        onRowClick={handleRowClick}
+        onEdit={handleEditAction}
+        onDelete={handleDeleteAction}
       />
       
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

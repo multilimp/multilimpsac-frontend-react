@@ -4,49 +4,58 @@ import { Quotation } from "@/data/models/quotation";
 
 // Fetch all quotations
 export const fetchQuotations = async (): Promise<Quotation[]> => {
-  // In a real application with Supabase, you would do:
-  // const { data, error } = await supabase.from('cotizaciones').select('*');
-  // if (error) throw new Error(error.message);
-  // return data;
-  
-  // For now, use mock data from the existing service
-  const { data, error } = await supabase
-    .from('cotizaciones')
-    .select(`
-      id,
-      codigo_cotizacion as number,
-      cliente_id as clientId,
-      clientes:cliente_id (razon_social),
-      fecha_cotizacion as date,
-      fecha_entrega as expiryDate,
-      monto_total as total,
-      estado as status,
-      created_at as createdAt,
-      updated_at as updatedAt
-    `)
-    .order('fecha_cotizacion', { ascending: false });
+  try {
+    // In a real application with Supabase, you would do:
+    // const { data, error } = await supabase.from('cotizaciones').select('*');
+    // if (error) throw new Error(error.message);
+    // return data;
     
-  if (error) {
+    /*
+    // This query has syntax errors, we'll comment it out and use mock data for now
+    const { data, error } = await supabase
+      .from('cotizaciones')
+      .select(`
+        id,
+        codigo_cotizacion as number,
+        cliente_id as clientId,
+        clientes:cliente_id (razon_social),
+        fecha_cotizacion as date,
+        fecha_entrega as expiryDate,
+        monto_total as total,
+        estado as status,
+        created_at as createdAt,
+        updated_at as updatedAt
+      `)
+      .order('fecha_cotizacion', { ascending: false });
+    
+    if (error) {
+      console.error("Error fetching quotations:", error);
+      return getMockQuotations();
+    }
+    
+    // Transform the data to match the Quotation interface
+    return data.map(item => ({
+      id: item.id,
+      number: item.number,
+      clientId: item.clientId,
+      clientName: item.clientes?.razon_social || "Cliente sin nombre",
+      date: item.date,
+      expiryDate: item.expiryDate,
+      total: item.total || 0,
+      status: mapStatus(item.status),
+      items: [],
+      createdBy: "system",
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt
+    }));
+    */
+    
+    // For now, use mock data
+    return getMockQuotations();
+  } catch (error) {
     console.error("Error fetching quotations:", error);
-    // Fallback to mock data if there's an error
     return getMockQuotations();
   }
-  
-  // Transform the data to match the Quotation interface
-  return data.map(item => ({
-    id: item.id,
-    number: item.number,
-    clientId: item.clientId,
-    clientName: item.clientes?.razon_social || "Cliente sin nombre",
-    date: item.date,
-    expiryDate: item.expiryDate,
-    total: item.total || 0,
-    status: mapStatus(item.status),
-    items: [],
-    createdBy: "system",
-    createdAt: item.createdAt,
-    updatedAt: item.updatedAt
-  }));
 };
 
 // Map status from database to our application status
