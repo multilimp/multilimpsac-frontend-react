@@ -1,4 +1,3 @@
-
 export type ColumnType = 'string' | 'number' | 'date' | 'boolean';
 
 // Column definition interface
@@ -37,4 +36,27 @@ export interface DataGridContextProps {
   handleSort: (key: string) => void;
   handleFilterChange: (columnKey: string, value: any) => void;
   handleColumnToggle: (column: string) => void;
+}
+
+export interface DataGridTableHeadProps {
+  columns: DataGridColumn[];
+  visibleColumns: string[];
+  filters: Record<string, any>;
+  sortConfig: SortConfig | null; 
+  onSort: (key: string) => void;
+  onFilterChange: (columnKey: string, value: any) => void;
+  showFilters?: boolean;
+}
+
+export interface DataGridHeaderProps {
+  columns: DataGridColumn[];
+  visibleColumns: string[];
+  loading: boolean;
+  searchTerm: string;
+  onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onColumnToggle: (column: string) => void;
+  onDownload: () => void;
+  onReload: () => void;
+  showFilters?: boolean;
+  onToggleFilters?: () => void;
 }

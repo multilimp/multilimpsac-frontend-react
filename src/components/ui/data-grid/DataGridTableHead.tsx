@@ -13,6 +13,7 @@ interface DataGridTableHeadProps {
   sortConfig: SortConfig | null;
   onSort: (key: string) => void;
   onFilterChange: (columnKey: string, value: any) => void;
+  showFilters?: boolean;
 }
 
 export const DataGridTableHead: React.FC<DataGridTableHeadProps> = ({
@@ -22,6 +23,7 @@ export const DataGridTableHead: React.FC<DataGridTableHeadProps> = ({
   sortConfig,
   onSort,
   onFilterChange,
+  showFilters = true,
 }) => {
   return (
     <TableHeader>
@@ -48,23 +50,25 @@ export const DataGridTableHead: React.FC<DataGridTableHeadProps> = ({
             </TableHead>
           ))}
       </TableRow>
-      <TableRow>
-        {columns
-          .filter(column => visibleColumns.includes(column.key))
-          .map(column => (
-            <TableHead key={`filter-${column.key}`} className="p-0">
-              {column.filterable && (
-                <div className="p-2">
-                  <DataGridFilter 
-                    column={column}
-                    value={filters[column.key]}
-                    onChange={(value) => onFilterChange(column.key, value)}
-                  />
-                </div>
-              )}
-            </TableHead>
-          ))}
-      </TableRow>
+      {showFilters && (
+        <TableRow>
+          {columns
+            .filter(column => visibleColumns.includes(column.key))
+            .map(column => (
+              <TableHead key={`filter-${column.key}`} className="p-0">
+                {column.filterable && (
+                  <div className="p-2">
+                    <DataGridFilter 
+                      column={column}
+                      value={filters[column.key]}
+                      onChange={(value) => onFilterChange(column.key, value)}
+                    />
+                  </div>
+                )}
+              </TableHead>
+            ))}
+        </TableRow>
+      )}
     </TableHeader>
   );
 };

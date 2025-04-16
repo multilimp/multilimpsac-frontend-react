@@ -38,6 +38,9 @@ export function DataGrid<T extends { id: string | number }>({
   // State for pagination
   const [currentPage, setCurrentPage] = useState(1);
   
+  // State for showing/hiding filters
+  const [showFilters, setShowFilters] = useState(true);
+  
   // Handle column visibility toggle
   const handleColumnToggle = (column: string) => {
     const updatedColumns = visibleColumns.includes(column)
@@ -104,6 +107,11 @@ export function DataGrid<T extends { id: string | number }>({
     setFilters({});
     setSortConfig(null);
     setCurrentPage(1);
+  };
+  
+  // Toggle filters visibility
+  const handleToggleFilters = () => {
+    setShowFilters(prev => !prev);
   };
   
   // Filter and sort data
@@ -195,6 +203,8 @@ export function DataGrid<T extends { id: string | number }>({
         onColumnToggle={handleColumnToggle}
         onDownload={handleDownload}
         onReload={handleReload}
+        showFilters={showFilters}
+        onToggleFilters={handleToggleFilters}
       />
       
       <div className="rounded-md border">
@@ -206,6 +216,7 @@ export function DataGrid<T extends { id: string | number }>({
             sortConfig={sortConfig}
             onSort={handleSort}
             onFilterChange={handleFilterChange}
+            showFilters={showFilters}
           />
           <DataGridBody
             data={paginatedData}

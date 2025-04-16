@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Columns3, FileDown, Loader } from "lucide-react";
+import { Columns3, FileDown, Filter, Loader } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DataGridColumn } from "./types";
+import { Toggle } from "@/components/ui/toggle";
 
 interface DataGridHeaderProps {
   columns: DataGridColumn[];
@@ -20,6 +21,8 @@ interface DataGridHeaderProps {
   onColumnToggle: (column: string) => void;
   onDownload: () => void;
   onReload: () => void;
+  showFilters?: boolean;
+  onToggleFilters?: () => void;
 }
 
 export const DataGridHeader: React.FC<DataGridHeaderProps> = ({
@@ -31,6 +34,8 @@ export const DataGridHeader: React.FC<DataGridHeaderProps> = ({
   onColumnToggle,
   onDownload,
   onReload,
+  showFilters = true,
+  onToggleFilters,
 }) => {
   return (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -44,6 +49,16 @@ export const DataGridHeader: React.FC<DataGridHeaderProps> = ({
       </div>
       
       <div className="flex items-center gap-2 w-full sm:w-auto">
+        <Toggle
+          pressed={showFilters}
+          onPressedChange={onToggleFilters}
+          aria-label={showFilters ? "Ocultar filtros" : "Mostrar filtros"}
+          title={showFilters ? "Ocultar filtros" : "Mostrar filtros"}
+        >
+          <Filter className="h-4 w-4 mr-2" />
+          {showFilters ? "Ocultar filtros" : "Mostrar filtros"}
+        </Toggle>
+        
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm">

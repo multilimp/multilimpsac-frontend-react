@@ -254,7 +254,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "contacto_clientes_cliente_id_foreign"
+            foreignKeyName: "contacto_clientes_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
             referencedRelation: "clientes"
