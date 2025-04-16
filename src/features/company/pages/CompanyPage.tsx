@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import BreadcrumbNav from "@/components/layout/BreadcrumbNav";
 import { Company } from "@/features/company/models/company.model";
-import { companyService } from "../services/company.service";
+import { companyService } from "../services";
 import CompanyDataTable from "../components/CompanyDataTable";
 import CompanyDetailPanel from "../components/CompanyDetailPanel";
 import CompanyForm from "../components/CompanyForm";
