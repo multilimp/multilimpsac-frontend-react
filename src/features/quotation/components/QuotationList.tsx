@@ -91,9 +91,9 @@ const QuotationList: React.FC<QuotationListProps> = ({
     onEdit(quotation.id);
   };
 
-  // Format data for the grid
+  // Format data for the grid - using type assertion to handle the mismatch
   const formattedData = formatQuotationData(
-    quotations,
+    quotations as any,
     handleView,
     handleEdit,
     handleDelete,
@@ -103,7 +103,7 @@ const QuotationList: React.FC<QuotationListProps> = ({
   const handleRowClick = (row: any) => {
     const originalQuotation = quotations.find(q => q.id === row.id);
     if (originalQuotation) {
-      handleView(originalQuotation);
+      handleView(originalQuotation as any);
     }
   };
 

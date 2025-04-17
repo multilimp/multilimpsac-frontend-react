@@ -23,11 +23,11 @@ export const formatQuotationData = (
       status: <QuotationStatusBadge status={quotation.status} />,
       actions: (
         <QuotationActionMenu
-          quotation={quotation}
-          onView={() => onView(quotation)}
-          onEdit={() => onEdit(quotation)}
-          onDelete={() => onDelete(quotation)}
-          onStatusChange={(status) => onStatusChange(quotation, status)}
+          quotation={quotation as any}
+          onView={() => onView(quotation as any)}
+          onEdit={() => onEdit(quotation as any)}
+          onDelete={() => onDelete(quotation as any)}
+          onStatusChange={(status) => onStatusChange(quotation as any, status)}
         />
       )
     };
