@@ -1,20 +1,25 @@
 
-import React from 'react';
+import React from "react";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Quotation } from '@/features/quotation/models/quotation';
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Quotation as FeatureQuotation } from '@/features/quotation/models/quotation';
+import { Quotation as DataQuotation } from '@/data/models/quotation';
+
+// Define a type that works with either quotation model
+type AnyQuotation = FeatureQuotation | DataQuotation;
 
 interface DeleteQuotationDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  quotation: Quotation | null;
+  quotation: AnyQuotation | null;
   onConfirmDelete: () => void;
 }
 
@@ -25,31 +30,23 @@ const DeleteQuotationDialog: React.FC<DeleteQuotationDialogProps> = ({
   onConfirmDelete,
 }) => {
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Confirmar Eliminación</DialogTitle>
-          <DialogDescription>
-            ¿Está seguro que desea eliminar la cotización {quotation?.number}?
-            Esta acción no se puede deshacer.
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-          >
-            Cancelar
-          </Button>
-          <Button
-            variant="destructive"
-            onClick={onConfirmDelete}
-          >
+    <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>¿Está seguro?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Esta acción no se puede deshacer. Esto eliminará permanentemente la cotización
+            {quotation && ` ${quotation.number}`} y todos sus datos asociados.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirmDelete} className="bg-red-600">
             Eliminar
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 };
 

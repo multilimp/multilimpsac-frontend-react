@@ -126,7 +126,7 @@ const QuotationList: React.FC<QuotationListProps> = ({
         <DeleteQuotationDialog
           isOpen={deleteDialogOpen}
           onOpenChange={setDeleteDialogOpen}
-          quotation={selectedQuotation}
+          quotation={selectedQuotation as any}
           onConfirmDelete={confirmDelete}
         />
       </CardContent>

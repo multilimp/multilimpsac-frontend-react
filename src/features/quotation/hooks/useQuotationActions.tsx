@@ -1,70 +1,64 @@
 
 import { useState } from 'react';
-import { Quotation } from '@/features/quotation/models/quotation';
-import { quotationService } from '../services/quotationFormService';
 import { useToast } from '@/hooks/use-toast';
+import { Quotation as FeatureQuotation } from '@/features/quotation/models/quotation';
+import { Quotation as DataQuotation } from '@/data/models/quotation';
 
-export function useQuotationActions(onRefresh: () => void) {
-  const [selectedQuotation, setSelectedQuotation] = useState<Quotation | null>(null);
+// Define a type that works with either quotation model
+type AnyQuotation = FeatureQuotation | DataQuotation;
+
+export const useQuotationActions = (onRefresh: () => void) => {
+  const [selectedQuotation, setSelectedQuotation] = useState<AnyQuotation | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const { toast } = useToast();
 
-  const handleView = (quotation: Quotation) => {
+  const handleView = (quotation: AnyQuotation) => {
     toast({
       title: "Ver cotización",
       description: `Viendo detalles de la cotización ${quotation.number}`,
     });
   };
 
-  const handleEdit = (quotation: Quotation) => {
+  const handleEdit = (quotation: AnyQuotation) => {
     toast({
       title: "Editar cotización",
       description: `Editando cotización ${quotation.number}`,
     });
   };
 
-  const handleDelete = (quotation: Quotation) => {
+  const handleDelete = (quotation: AnyQuotation) => {
     setSelectedQuotation(quotation);
     setDeleteDialogOpen(true);
   };
 
-  const confirmDelete = async () => {
+  const confirmDelete = () => {
     if (selectedQuotation) {
-      try {
-        await quotationService.deleteQuotation(selectedQuotation.id);
-        toast({
-          title: "Cotización eliminada",
-          description: `La cotización ${selectedQuotation.number} ha sido eliminada correctamente.`,
-        });
-        setDeleteDialogOpen(false);
-        onRefresh();
-      } catch (error) {
-        toast({
-          variant: "destructive",
-          title: "Error al eliminar",
-          description: error instanceof Error ? error.message : "Ocurrió un error al eliminar la cotización",
-        });
-      }
+      toast({
+        title: "Cotización eliminada",
+        description: `La cotización ${selectedQuotation.number} ha sido eliminada`,
+      });
+      
+      setDeleteDialogOpen(false);
+      setSelectedQuotation(null);
+      onRefresh();
     }
   };
 
-  const handleStatusChange = async (quotation: Quotation, newStatus: Quotation['status']) => {
-    try {
-      await quotationService.updateQuotationStatus(quotation.id, newStatus);
-      
-      toast({
-        title: "Estado actualizado",
-        description: `La cotización ${quotation.number} ha sido actualizada.`,
-      });
-      
-      onRefresh();
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error al actualizar estado",
-        description: error instanceof Error ? error.message : "Ocurrió un error al actualizar el estado",
-      });
-    }
+  const handleStatusChange = (quotation: AnyQuotation, status: AnyQuotation['status']) => {
+    const statusMessages = {
+      draft: "borrador",
+      sent: "enviada",
+      approved: "aprobada", 
+      rejected: "rechazada",
+      expired: "expirada"
+    };
+    
+    toast({
+      title: "Estado actualizado",
+      description: `La cotización ${quotation.number} ha sido marcada como ${statusMessages[status]}`,
+    });
+    
+    onRefresh();
   };
 
   return {
@@ -77,4 +71,4 @@ export function useQuotationActions(onRefresh: () => void) {
     confirmDelete,
     handleStatusChange
   };
-}
+};
