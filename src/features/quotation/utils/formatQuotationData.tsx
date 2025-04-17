@@ -1,16 +1,20 @@
 
 import React from 'react';
-import { Quotation } from '../models/quotation';
+import { Quotation as FeatureQuotation } from '../models/quotation';
+import { Quotation as DataQuotation } from '@/data/models/quotation';
 import QuotationStatusBadge from '../components/QuotationStatusBadge';
 import QuotationActionMenu from '../components/QuotationActionMenu';
 import { format } from 'date-fns';
 
+// Define a type that accepts either Quotation model
+type AnyQuotation = FeatureQuotation | DataQuotation;
+
 export const formatQuotationData = (
-  quotations: Quotation[],
-  onView: (quotation: Quotation) => void,
-  onEdit: (quotation: Quotation) => void,
-  onDelete: (quotation: Quotation) => void,
-  onStatusChange: (quotation: Quotation, status: Quotation['status']) => void
+  quotations: AnyQuotation[],
+  onView: (quotation: AnyQuotation) => void,
+  onEdit: (quotation: AnyQuotation) => void,
+  onDelete: (quotation: AnyQuotation) => void,
+  onStatusChange: (quotation: AnyQuotation, status: AnyQuotation['status']) => void
 ) => {
   return quotations.map(quotation => {
     return {
@@ -23,11 +27,11 @@ export const formatQuotationData = (
       status: <QuotationStatusBadge status={quotation.status} />,
       actions: (
         <QuotationActionMenu
-          quotation={quotation as any}
-          onView={() => onView(quotation as any)}
-          onEdit={() => onEdit(quotation as any)}
-          onDelete={() => onDelete(quotation as any)}
-          onStatusChange={(status) => onStatusChange(quotation as any, status)}
+          quotation={quotation}
+          onView={() => onView(quotation)}
+          onEdit={() => onEdit(quotation)}
+          onDelete={() => onDelete(quotation)}
+          onStatusChange={(status) => onStatusChange(quotation, status)}
         />
       )
     };

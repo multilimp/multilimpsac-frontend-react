@@ -2,14 +2,18 @@
 import React from 'react';
 import { DataGrid, DataGridColumn } from '@/components/ui/data-grid';
 import { Card, CardContent } from '@/components/ui/card';
-import { Quotation } from '@/features/quotation/models/quotation';
+import { Quotation as FeatureQuotation } from '@/features/quotation/models/quotation';
+import { Quotation as DataQuotation } from '@/data/models/quotation';
 import DeleteQuotationDialog from './DeleteQuotationDialog';
 import { useQuotationActions } from '../hooks/useQuotationActions';
 import { formatQuotationData } from '../utils/formatQuotationData';
 import { useToast } from '@/hooks/use-toast';
 
+// Define a type that works with either quotation model
+type AnyQuotation = FeatureQuotation | DataQuotation;
+
 interface QuotationListProps {
-  quotations: Quotation[];
+  quotations: AnyQuotation[];
   isLoading: boolean;
   onRefresh: () => void;
   onEdit: (id: string) => void;
@@ -87,13 +91,13 @@ const QuotationList: React.FC<QuotationListProps> = ({
   ];
 
   // Handler for editing quotations that uses the prop
-  const handleEdit = (quotation: Quotation) => {
+  const handleEdit = (quotation: AnyQuotation) => {
     onEdit(quotation.id);
   };
 
-  // Format data for the grid - using type assertion to handle the mismatch
+  // Format data for the grid
   const formattedData = formatQuotationData(
-    quotations as any,
+    quotations,
     handleView,
     handleEdit,
     handleDelete,
@@ -103,7 +107,7 @@ const QuotationList: React.FC<QuotationListProps> = ({
   const handleRowClick = (row: any) => {
     const originalQuotation = quotations.find(q => q.id === row.id);
     if (originalQuotation) {
-      handleView(originalQuotation as any);
+      handleView(originalQuotation);
     }
   };
 

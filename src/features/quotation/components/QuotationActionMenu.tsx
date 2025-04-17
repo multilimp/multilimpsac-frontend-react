@@ -10,14 +10,18 @@ import {
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, Eye, Edit, Trash, Send, Ban, Check } from "lucide-react";
 
-import { Quotation } from '@/features/quotation/models/quotation';
+import { Quotation as FeatureQuotation } from '@/features/quotation/models/quotation';
+import { Quotation as DataQuotation } from '@/data/models/quotation';
+
+// Accept either quotation type
+type AnyQuotation = FeatureQuotation | DataQuotation;
 
 interface QuotationActionMenuProps {
-  quotation: Quotation;
+  quotation: AnyQuotation;
   onView: () => void;
   onEdit: () => void;
   onDelete: () => void;
-  onStatusChange: (status: Quotation['status']) => void;
+  onStatusChange: (status: AnyQuotation['status']) => void;
 }
 
 const QuotationActionMenu: React.FC<QuotationActionMenuProps> = ({
