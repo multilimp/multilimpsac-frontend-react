@@ -1,9 +1,9 @@
 
 import React from 'react';
 import { Quotation } from '@/domain/quotation/models/quotation.model';
+import { format } from 'date-fns';
 import QuotationStatusBadge from '../components/QuotationStatusBadge';
 import QuotationActionMenu from '../components/QuotationActionMenu';
-import { format } from 'date-fns';
 
 export const formatQuotationData = (
   quotations: Quotation[],

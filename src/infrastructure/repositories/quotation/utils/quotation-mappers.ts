@@ -1,76 +1,53 @@
 
 import { Quotation, QuotationItem } from "@/domain/quotation/models/quotation.model";
-import { numberToStringId, stringToNumberId } from "@/core/utils/id-conversions";
+import { numberToStringId } from "@/core/utils/id-conversions";
 
 /**
- * Maps database quotation status to domain model status
+ * Maps a database quotation to the domain model
  */
-export const mapDbStatusToDomain = (status: string | null): Quotation['status'] => {
-  switch (status) {
-    case 'aprobada': return 'approved';
-    case 'rechazada': return 'rejected';
-    case 'enviada': return 'sent';
-    case 'vencida': return 'expired';
-    default: return 'draft';
-  }
-};
-
-/**
- * Maps domain model status to database status
- */
-export const mapDomainStatusToDb = (status: string): string => {
-  switch (status) {
-    case 'approved': return 'aprobada';
-    case 'rejected': return 'rechazada';
-    case 'sent': return 'enviada';
-    case 'expired': return 'vencida';
-    default: return 'borrador';
-  }
-};
-
-/**
- * Maps database quotation data to domain Quotation model
- */
-export const mapDbQuotationToDomain = (
-  dbQuotation: any, 
-  items: QuotationItem[] = []
-): Quotation => {
+export function mapDbQuotationToDomain(
+  dbQuotation: any,
+  items: QuotationItem[]
+): Quotation {
   return {
     id: numberToStringId(dbQuotation.id),
     number: dbQuotation.codigo_cotizacion,
     clientId: numberToStringId(dbQuotation.cliente_id),
-    clientName: dbQuotation.clientes?.razon_social || "Cliente sin nombre",
+    clientName: dbQuotation.clientes?.razon_social || "",
     date: dbQuotation.fecha_cotizacion,
     expiryDate: dbQuotation.fecha_entrega,
     total: dbQuotation.monto_total || 0,
-    status: mapDbStatusToDomain(dbQuotation.estado),
+    status: dbQuotation.estado as Quotation['status'],
     items: items,
     notes: dbQuotation.nota_pedido,
     paymentNote: dbQuotation.nota_pago,
     paymentType: dbQuotation.tipo_pago,
+    orderNote: dbQuotation.nota_pedido,
     deliveryAddress: dbQuotation.direccion_entrega,
     deliveryDistrict: dbQuotation.distrito_entrega,
     deliveryProvince: dbQuotation.provincia_entrega,
     deliveryDepartment: dbQuotation.departamento_entrega,
     deliveryReference: dbQuotation.referencia_entrega,
-    createdBy: "system",
+    createdBy: "",
     createdAt: dbQuotation.created_at,
     updatedAt: dbQuotation.updated_at
   };
-};
+}
 
 /**
- * Maps database quotation item data to domain QuotationItem model
+ * Maps a database quotation item to the domain model
  */
-export const mapDbQuotationItemToDomain = (dbItem: any): QuotationItem => {
+export function mapDbQuotationItemToDomain(dbItem: any): QuotationItem {
   return {
     id: numberToStringId(dbItem.id),
-    productId: dbItem.id ? numberToStringId(dbItem.id) : undefined,
-    productName: dbItem.codigo || "",
+    productId: dbItem.producto_id ? numberToStringId(dbItem.producto_id) : undefined,
+    code: dbItem.codigo,
+    productName: dbItem.descripcion || "",
     description: dbItem.descripcion || "",
-    quantity: dbItem.cantidad || 0,
-    unitPrice: dbItem.precio_unitario || 0,
-    total: dbItem.total || 0,
+    quantity: dbItem.cantidad,
+    unitPrice: dbItem.precio_unitario,
+    total: dbItem.total,
+    taxRate: dbItem.tasa_impuesto,
     unitMeasure: dbItem.unidad_medida
   };
-};
+}

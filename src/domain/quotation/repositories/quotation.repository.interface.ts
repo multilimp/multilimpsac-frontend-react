@@ -6,7 +6,7 @@ import { QuotationFormInput } from "../models/quotation.model";
 /**
  * Repository interface specific to the quotation domain
  */
-export interface IQuotationRepository extends IRepository<Quotation, string> {
+export interface IQuotationRepository extends Omit<IRepository<Quotation, string>, 'update' | 'create'> {
   getAll(): Promise<Quotation[]>;
   getById(id: string): Promise<Quotation>;
   create(data: QuotationFormInput): Promise<Quotation>;

@@ -1,5 +1,5 @@
 
-import React from "react";
+import React from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,7 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Quotation } from "@/domain/quotation/models/quotation.model";
+import { Quotation } from '@/domain/quotation/models/quotation.model';
 
 interface DeleteQuotationDialogProps {
   isOpen: boolean;
