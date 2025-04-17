@@ -104,7 +104,7 @@ const QuotationFormComponent: React.FC<QuotationFormComponentProps> = ({
           quantity: item.quantity,
           unitPrice: item.unitPrice
         })),
-        status: data.status || "draft",
+        status: (data.status as "draft" | "sent" | "approved" | "rejected" | "expired") || "draft",
         paymentType: data.paymentType,
         paymentNote: data.paymentNote,
         orderNote: data.orderNote,
