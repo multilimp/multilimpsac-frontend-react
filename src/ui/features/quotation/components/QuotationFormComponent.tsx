@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,6 +15,7 @@ import QuotationItemsSection from "@/features/quotation/components/form/Quotatio
 import QuotationDeliverySection from "@/features/quotation/components/form/QuotationDeliverySection";
 import QuotationPaymentSection from "@/features/quotation/components/form/QuotationPaymentSection";
 import QuotationSummarySection from "@/features/quotation/components/form/QuotationSummarySection";
+import { QuotationFormInput } from "@/domain/quotation/models/quotation.model";
 
 interface QuotationFormComponentProps {
   quotationId?: string;
@@ -55,6 +57,8 @@ const QuotationFormComponent: React.FC<QuotationFormComponentProps> = ({
             description: item.description,
             quantity: item.quantity,
             unitPrice: item.unitPrice,
+            code: item.code,
+            unitMeasure: item.unitMeasure
           })),
           status: quotation.status,
           orderNote: quotation.notes,
@@ -65,7 +69,6 @@ const QuotationFormComponent: React.FC<QuotationFormComponentProps> = ({
           deliveryReference: quotation.deliveryReference,
           paymentNote: quotation.paymentNote,
           paymentType: quotation.paymentType
-          // Other fields would be loaded from the DB
         };
         
         form.reset(formValues);
@@ -86,14 +89,40 @@ const QuotationFormComponent: React.FC<QuotationFormComponentProps> = ({
     setIsSubmitting(true);
     
     try {
+      // Ensure we have a valid quotation input by enforcing the required fields
+      const quotationInput: QuotationFormInput = {
+        clientId: data.clientId,
+        contactId: data.contactId,
+        date: data.date,
+        expiryDate: data.expiryDate,
+        items: data.items.map(item => ({
+          id: item.id,
+          code: item.code,
+          productName: item.productName,
+          description: item.description,
+          unitMeasure: item.unitMeasure,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice
+        })),
+        status: data.status || "draft",
+        paymentType: data.paymentType,
+        paymentNote: data.paymentNote,
+        orderNote: data.orderNote,
+        deliveryAddress: data.deliveryAddress,
+        deliveryDistrict: data.deliveryDistrict,
+        deliveryProvince: data.deliveryProvince,
+        deliveryDepartment: data.deliveryDepartment,
+        deliveryReference: data.deliveryReference
+      };
+      
       if (quotationId) {
-        await quotationService.updateQuotation(quotationId, data);
+        await quotationService.updateQuotation(quotationId, quotationInput);
         toast({
           title: "Cotización actualizada",
           description: "La cotización se ha actualizado correctamente.",
         });
       } else {
-        await quotationService.createQuotation(data);
+        await quotationService.createQuotation(quotationInput);
         toast({
           title: "Cotización creada",
           description: "La cotización se ha creado correctamente.",

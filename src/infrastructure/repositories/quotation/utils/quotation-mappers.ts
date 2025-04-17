@@ -17,7 +17,7 @@ export function mapDbQuotationToDomain(
     date: dbQuotation.fecha_cotizacion,
     expiryDate: dbQuotation.fecha_entrega,
     total: dbQuotation.monto_total || 0,
-    status: dbQuotation.estado as Quotation['status'],
+    status: mapDbStatusToDomain(dbQuotation.estado),
     items: items,
     notes: dbQuotation.nota_pedido,
     paymentNote: dbQuotation.nota_pago,
@@ -50,4 +50,26 @@ export function mapDbQuotationItemToDomain(dbItem: any): QuotationItem {
     taxRate: dbItem.tasa_impuesto,
     unitMeasure: dbItem.unidad_medida
   };
+}
+
+/**
+ * Maps a domain status to a database status string
+ */
+export function mapDomainStatusToDb(status: Quotation['status']): string {
+  return status; // Currently the same values, but having a mapping function allows for future differences
+}
+
+/**
+ * Maps a database status string to a domain status
+ */
+export function mapDbStatusToDomain(dbStatus: string): Quotation['status'] {
+  // Validate that the status is one of the allowed values
+  const validStatuses: Quotation['status'][] = ['draft', 'sent', 'approved', 'rejected', 'expired'];
+  
+  if (validStatuses.includes(dbStatus as Quotation['status'])) {
+    return dbStatus as Quotation['status'];
+  }
+  
+  // Default to draft if invalid
+  return 'draft';
 }
