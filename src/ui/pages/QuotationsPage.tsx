@@ -18,13 +18,16 @@ const QuotationsPage: React.FC = () => {
   const { toast } = useToast();
 
   const {
-    data: quotations = [],
+    data: quotationsData,
     isLoading,
     refetch
   } = useQuery({
     queryKey: ['quotations'],
-    queryFn: () => quotationService.getQuotations() // Fixed method name from getAllQuotations to getQuotations
+    queryFn: () => quotationService.getQuotations() // Using getQuotations method
   });
+
+  // Extract the quotations array from the response
+  const quotations = quotationsData?.data || [];
 
   const breadcrumbItems = [
     {
