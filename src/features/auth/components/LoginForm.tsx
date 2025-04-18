@@ -9,8 +9,7 @@ import { useAuth } from '@/features/auth/hooks/useAuth';
 import { EmailInput } from './login/EmailInput';
 import { PasswordInput } from './login/PasswordInput';
 import { SubmitButton } from './login/SubmitButton';
-import { DemoFooter } from './login/DemoFooter';
-import { DemoModeAlert, ConnectionStatusAlert } from './login/AlertMessages';
+import Logo from '@/components/layout/Logo';
 
 const formSchema = z.object({
   email: z.string().email('Ingrese un correo electrónico válido'),
@@ -32,14 +31,12 @@ export const LoginForm: React.FC = () => {
     await login(values.email, values.password);
   };
 
-  const handleDemoMode = () => {
-    enableDemoMode();
-    form.setValue('email', 'demo@example.com');
-    form.setValue('password', 'password123');
-  };
-
   return (
     <Card className="w-full max-w-md shadow-md">
+      {/* <div className="bg-multilimp-green p-6 rounded-lg mx-auto flex flex-col items-center justify-center 
+                     shadow-lg ring-1 ring-black/5">
+        <Logo />
+      </div> */}
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl font-bold text-center">Bienvenido</CardTitle>
         <CardDescription className="text-center">
@@ -47,13 +44,6 @@ export const LoginForm: React.FC = () => {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <DemoModeAlert visible={isDemoMode} />
-        <ConnectionStatusAlert 
-          connectionStatus={
-            connectionStatus === 'checking' ? 'connecting' : connectionStatus
-          } 
-        />
-        
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <EmailInput form={form as any} />
@@ -62,8 +52,6 @@ export const LoginForm: React.FC = () => {
             <div className="pt-2">
               <SubmitButton isLoading={isLoading} />
             </div>
-            
-            <DemoFooter onUseDemo={handleDemoMode} />
           </form>
         </Form>
       </CardContent>

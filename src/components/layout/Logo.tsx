@@ -18,8 +18,8 @@ const Logo: React.FC<LogoProps> = ({ variant = "full" }) => {
       </div>
       {variant === "full" && (
 
-        <span className="text-xl font-bold ml-2 text-multilimp-navy-dark">
-          MULTILIMP<span className="text-green-700 text-xl">SAC</span>
+        <span className="text-xl font-bold ml-2 text-gray-200">
+          MULTILIMP<span className="text-xl">SAC</span>
         </span>
       )}
     </Link>
