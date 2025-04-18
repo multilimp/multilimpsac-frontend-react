@@ -1,8 +1,8 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Quotation, QuotationFormInput, QuotationItem } from "@/domain/quotation/models/quotation.model";
-import { stringToNumberId, numberToStringId } from "@/core/utils/id-conversions";
-import { mapDbQuotationToDomain, mapDbQuotationItemToDomain, mapDomainStatusToDb } from "./utils/quotation-mappers";
+import { Quotation, QuotationFormInput } from "@/domain/quotation/models/quotation.model";
+import { stringToNumberId } from "@/core/utils/id-conversions";
+import { mapDbQuotationToDomain, mapDomainStatusToDb } from "./utils/quotation-mappers";
 import { generateQuotationCode } from "./utils/quotation-code-generator";
 import { QuotationReadRepository } from "./quotation.read.repository";
 
@@ -57,22 +57,27 @@ export class QuotationWriteRepository {
       if (quotationError) throw new Error(quotationError.message);
       
       // Insert items
-      const itemsToInsert = data.items.map(item => ({
-        cotizacion_id: quotation.id,
-        codigo: item.code,
-        descripcion: item.description || item.productName,
-        unidad_medida: item.unitMeasure,
-        cantidad: item.quantity,
-        precio_unitario: item.unitPrice,
-        total: item.quantity * item.unitPrice
-      }));
-      
-      for (const item of itemsToInsert) {
-        const { error: itemError } = await supabase
+      const itemsPromises = data.items.map(item => {
+        return supabase
           .from('cotizacion_productos')
-          .insert(item);
-        
-        if (itemError) throw new Error(itemError.message);
+          .insert({
+            cotizacion_id: quotation.id,
+            codigo: item.code,
+            descripcion: item.description || item.productName,
+            unidad_medida: item.unitMeasure,
+            cantidad: item.quantity,
+            precio_unitario: item.unitPrice,
+            total: item.quantity * item.unitPrice
+          });
+      });
+      
+      // Wait for all items to be inserted
+      const itemResults = await Promise.all(itemsPromises);
+      
+      // Check for errors in item insertions
+      const itemErrors = itemResults.filter(result => result.error);
+      if (itemErrors.length > 0) {
+        throw new Error(`Error inserting items: ${itemErrors[0].error?.message}`);
       }
       
       // Return the created quotation
@@ -128,8 +133,8 @@ export class QuotationWriteRepository {
       if (deleteError) throw new Error(deleteError.message);
       
       // Insert new items
-      for (const item of data.items) {
-        const { error: itemError } = await supabase
+      const itemsPromises = data.items.map(item => {
+        return supabase
           .from('cotizacion_productos')
           .insert({
             cotizacion_id: numericId,
@@ -140,8 +145,15 @@ export class QuotationWriteRepository {
             precio_unitario: item.unitPrice,
             total: item.quantity * item.unitPrice
           });
-        
-        if (itemError) throw new Error(itemError.message);
+      });
+      
+      // Wait for all items to be inserted
+      const itemResults = await Promise.all(itemsPromises);
+      
+      // Check for errors in item insertions
+      const itemErrors = itemResults.filter(result => result.error);
+      if (itemErrors.length > 0) {
+        throw new Error(`Error inserting items: ${itemErrors[0].error?.message}`);
       }
       
       // Return the updated quotation

@@ -1,30 +1,19 @@
 
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import QuotationList from '@/features/quotation/components/QuotationList';
 import { useToast } from '@/hooks/use-toast';
 import PageHeader from '@/components/common/PageHeader';
 import BreadcrumbNav from '@/components/layout/BreadcrumbNav';
-import QuotationFormComponent from '@/features/quotation/components/QuotationFormComponent';
-import { quotationService } from '@/features/quotation/services/quotationFormService';
+import QuotationFormComponent from '@/ui/features/quotation/components/QuotationFormComponent';
+import QuotationListWithFilters from '@/ui/features/quotation/components/QuotationListWithFilters';
 
 const QuotationsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>("list");
   const [selectedQuotationId, setSelectedQuotationId] = useState<string | undefined>(undefined);
   const { toast } = useToast();
-
-  const {
-    data: quotations = [],
-    isLoading,
-    refetch
-  } = useQuery({
-    queryKey: ['quotations'],
-    queryFn: () => quotationService.getAllQuotations()
-  });
 
   const breadcrumbItems = [
     {
@@ -41,7 +30,6 @@ const QuotationsPage: React.FC = () => {
     });
     setActiveTab("list");
     setSelectedQuotationId(undefined);
-    refetch();
   };
 
   const handleEdit = (id: string) => {
@@ -82,12 +70,7 @@ const QuotationsPage: React.FC = () => {
 
             <div className="mt-2">
               <TabsContent value="list" className="m-0">
-                <QuotationList 
-                  quotations={quotations}
-                  isLoading={isLoading}
-                  onRefresh={refetch}
-                  onEdit={handleEdit}
-                />
+                <QuotationListWithFilters onEdit={handleEdit} />
               </TabsContent>
               <TabsContent value="new" className="m-0">
                 <QuotationFormComponent 

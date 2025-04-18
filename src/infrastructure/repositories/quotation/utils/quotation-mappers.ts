@@ -3,6 +3,34 @@ import { Quotation, QuotationItem } from "@/domain/quotation/models/quotation.mo
 import { numberToStringId } from "@/core/utils/id-conversions";
 
 /**
+ * Maps a database status string to a domain status
+ */
+export function mapDbStatusToDomain(dbStatus: string): Quotation['status'] {
+  switch (dbStatus) {
+    case 'borrador': return 'draft';
+    case 'enviada': return 'sent';
+    case 'aprobada': return 'approved';
+    case 'rechazada': return 'rejected';
+    case 'vencida': return 'expired';
+    default: return 'draft';
+  }
+}
+
+/**
+ * Maps a domain status to a database status string
+ */
+export function mapDomainStatusToDb(status: Quotation['status']): string {
+  switch (status) {
+    case 'draft': return 'borrador';
+    case 'sent': return 'enviada';
+    case 'approved': return 'aprobada';
+    case 'rejected': return 'rechazada';
+    case 'expired': return 'vencida';
+    default: return 'borrador';
+  }
+}
+
+/**
  * Maps a database quotation to the domain model
  */
 export function mapDbQuotationToDomain(
@@ -50,26 +78,4 @@ export function mapDbQuotationItemToDomain(dbItem: any): QuotationItem {
     taxRate: dbItem.tasa_impuesto,
     unitMeasure: dbItem.unidad_medida
   };
-}
-
-/**
- * Maps a domain status to a database status string
- */
-export function mapDomainStatusToDb(status: Quotation['status']): string {
-  return status; // Currently the same values, but having a mapping function allows for future differences
-}
-
-/**
- * Maps a database status string to a domain status
- */
-export function mapDbStatusToDomain(dbStatus: string): Quotation['status'] {
-  // Validate that the status is one of the allowed values
-  const validStatuses: Quotation['status'][] = ['draft', 'sent', 'approved', 'rejected', 'expired'];
-  
-  if (validStatuses.includes(dbStatus as Quotation['status'])) {
-    return dbStatus as Quotation['status'];
-  }
-  
-  // Default to draft if invalid
-  return 'draft';
 }

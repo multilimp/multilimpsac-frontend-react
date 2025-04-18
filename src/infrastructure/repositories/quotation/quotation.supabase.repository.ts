@@ -1,6 +1,6 @@
 
 import { Quotation, QuotationFormInput } from "@/domain/quotation/models/quotation.model";
-import { IQuotationRepository } from "@/domain/quotation/repositories/quotation.repository.interface";
+import { IQuotationRepository, QuotationFilter } from "@/domain/quotation/repositories/quotation.repository.interface";
 import { QuotationReadRepository } from "./quotation.read.repository";
 import { QuotationWriteRepository } from "./quotation.write.repository";
 
@@ -16,8 +16,13 @@ export class SupabaseQuotationRepository implements IQuotationRepository {
     this.writeRepository = new QuotationWriteRepository();
   }
 
-  async getAll(): Promise<Quotation[]> {
-    return this.readRepository.getAll();
+  async getAll(filter?: QuotationFilter): Promise<{ data: Quotation[], count: number }> {
+    const { page, pageSize, ...otherFilters } = filter || {};
+    
+    return this.readRepository.getAll(
+      otherFilters, 
+      page && pageSize ? { page, pageSize } : undefined
+    );
   }
 
   async getById(id: string): Promise<Quotation> {
