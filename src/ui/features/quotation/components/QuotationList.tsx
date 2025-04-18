@@ -27,10 +27,8 @@ const QuotationList: React.FC<QuotationListProps> = ({
     deleteDialogOpen,
     setDeleteDialogOpen,
     handleView,
-    handleEdit: handleEditAction,
     handleDelete,
     confirmDelete,
-    handleStatusChange
   } = useQuotationActions(onRefresh);
 
   // Define columns for DataGrid
@@ -76,36 +74,14 @@ const QuotationList: React.FC<QuotationListProps> = ({
       type: 'string',
       sortable: true,
       filterable: true
-    },
-    {
-      key: 'actions',
-      name: 'Acciones',
-      type: 'string',
-      sortable: false,
-      filterable: false
     }
   ];
-
-  // Handler for editing quotations that uses the prop
-  const handleEdit = (quotation: Quotation) => {
-    onEdit(quotation.id);
-  };
 
   // Format data for the grid
   const formattedData = formatQuotationData(
     quotations,
-    handleView,
-    handleEdit,
-    handleDelete,
-    handleStatusChange
+    handleView
   );
-
-  const handleRowClick = (row: any) => {
-    const originalQuotation = quotations.find(q => q.id === row.id);
-    if (originalQuotation) {
-      handleView(originalQuotation);
-    }
-  };
 
   return (
     <Card className="bg-transparent shadow-none border-none">
@@ -115,7 +91,6 @@ const QuotationList: React.FC<QuotationListProps> = ({
           columns={columns}
           loading={isLoading}
           pageSize={10}
-          onRowClick={handleRowClick}
           onReload={onRefresh}
         />
         
