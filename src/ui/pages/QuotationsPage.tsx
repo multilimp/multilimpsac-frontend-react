@@ -23,7 +23,7 @@ const QuotationsPage: React.FC = () => {
     refetch
   } = useQuery({
     queryKey: ['quotations'],
-    queryFn: () => quotationService.getAllQuotations()
+    queryFn: () => quotationService.getQuotations() // Fixed method name from getAllQuotations to getQuotations
   });
 
   const breadcrumbItems = [
