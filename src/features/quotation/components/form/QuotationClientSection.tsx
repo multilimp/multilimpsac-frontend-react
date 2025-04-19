@@ -1,51 +1,21 @@
-
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Search } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 import { QuotationFormValues } from "../../models/quotationForm.model";
-import { Client, ClientContact, clientService } from "../../services/clientService";
+import { Cliente } from "@/features/client/models/client.model";
+import { ClientSelectionModal } from "./ClientSelectionModal";
 
 interface QuotationClientSectionProps {
   form: UseFormReturn<QuotationFormValues>;
+  clients: Cliente[];
 }
 
-const QuotationClientSection: React.FC<QuotationClientSectionProps> = ({ form }) => {
-  const [clients, setClients] = useState<Client[]>([]);
-  const [contacts, setContacts] = useState<ClientContact[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-
-  const selectedClientId = form.watch("clientId");
-
-  // Load clients
-  useEffect(() => {
-    const loadClients = async () => {
-      setLoading(true);
-      const data = await clientService.getClients();
-      setClients(data);
-      setLoading(false);
-    };
-    
-    loadClients();
-  }, []);
-
-  // Load contacts when client changes
-  useEffect(() => {
-    if (!selectedClientId) {
-      setContacts([]);
-      return;
-    }
-    
-    const loadContacts = async () => {
-      setLoading(true);
-      const data = await clientService.getClientContacts(selectedClientId);
-      setContacts(data);
-      setLoading(false);
-    };
-    
-    loadContacts();
-  }, [selectedClientId]);
+const QuotationClientSection: React.FC<QuotationClientSectionProps> = ({ form, clients }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const selectedClient = clients.find(c => c.id === form.watch("clientId"));
 
   return (
     <div className="space-y-6">
@@ -58,24 +28,23 @@ const QuotationClientSection: React.FC<QuotationClientSectionProps> = ({ form })
           render={({ field }) => (
             <FormItem>
               <FormLabel>Cliente</FormLabel>
-              <Select 
-                onValueChange={field.onChange} 
-                value={field.value}
-                disabled={loading}
-              >
+              <div className="flex gap-2">
                 <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar cliente" />
-                  </SelectTrigger>
+                  <Input
+                    value={selectedClient ? `${selectedClient.razonSocial} - ${selectedClient.ruc}` : ''}
+                    readOnly
+                    placeholder="Seleccionar cliente"
+                    className="bg-muted"
+                  />
                 </FormControl>
-                <SelectContent>
-                  {clients.map((client) => (
-                    <SelectItem key={client.id} value={client.id}>
-                      {client.razonSocial} - {client.ruc}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                <Button 
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsModalOpen(true)}
+                >
+                  <Search className="h-4 w-4" />
+                </Button>
+              </div>
               <FormMessage />
             </FormItem>
           )}
@@ -90,7 +59,7 @@ const QuotationClientSection: React.FC<QuotationClientSectionProps> = ({ form })
               <Select 
                 onValueChange={field.onChange} 
                 value={field.value || ""} 
-                disabled={!selectedClientId || loading}
+                disabled={!selectedClient || loading}
               >
                 <FormControl>
                   <SelectTrigger>
@@ -138,6 +107,16 @@ const QuotationClientSection: React.FC<QuotationClientSectionProps> = ({ form })
           )}
         />
       </div>
+
+      <ClientSelectionModal
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+        onSelect={(client) => {
+          form.setValue("clientId", client.id);
+          form.setValue("contactId", ""); // Reset contact when client changes
+        }}
+        clients={clients}
+      />
     </div>
   );
 };
