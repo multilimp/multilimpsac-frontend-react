@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -10,20 +10,40 @@ import { Cliente } from "@/features/client/models/client.model";
 import { ClientSelectionModal } from "./ClientSelectionModal";
 import { clientService } from "@/features/quotation/services/clientService";
 import { useQuery } from "@tanstack/react-query";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface QuotationClientSectionProps {
   form: UseFormReturn<QuotationFormValues>;
 }
 
-const QuotationClientSection: React.FC<QuotationClientSectionProps> = ({ form }) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  
+const ClientDataLoader: React.FC<{
+  clientId: string;
+  className?: string;
+}> = ({ clientId, className }) => {
   const { data: clients = [] } = useQuery({
     queryKey: ['clients'],
     queryFn: () => clientService.getClients()
   });
   
-  const selectedClient = clients.find(c => c.id === form.watch("clientId"));
+  const selectedClient = clients.find(c => c.id === clientId);
+  return (
+    <Input
+      value={selectedClient ? `${selectedClient.razonSocial} - ${selectedClient.ruc}` : ''}
+      readOnly
+      placeholder="Seleccionar cliente"
+      className={`bg-muted ${className}`}
+    />
+  );
+};
+
+const QuotationClientSection: React.FC<QuotationClientSectionProps> = ({ form }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  const { data: clients = [], isLoading } = useQuery({
+    queryKey: ['clients'],
+    queryFn: () => clientService.getClients(),
+    suspense: true
+  });
 
   return (
     <div className="space-y-6">
@@ -38,17 +58,23 @@ const QuotationClientSection: React.FC<QuotationClientSectionProps> = ({ form })
               <FormLabel>Cliente</FormLabel>
               <div className="flex gap-2">
                 <FormControl>
-                  <Input
-                    value={selectedClient ? `${selectedClient.razonSocial} - ${selectedClient.ruc}` : ''}
-                    readOnly
-                    placeholder="Seleccionar cliente"
-                    className="bg-muted"
-                  />
+                  <Suspense fallback={<Skeleton className="h-10 w-full" />}>
+                    {field.value ? (
+                      <ClientDataLoader clientId={field.value} />
+                    ) : (
+                      <Input
+                        readOnly
+                        placeholder="Seleccionar cliente"
+                        className="bg-muted"
+                      />
+                    )}
+                  </Suspense>
                 </FormControl>
                 <Button 
                   type="button"
                   variant="outline"
                   onClick={() => setIsModalOpen(true)}
+                  disabled={isLoading}
                 >
                   <Search className="h-4 w-4" />
                 </Button>
