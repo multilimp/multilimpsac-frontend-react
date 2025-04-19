@@ -4,7 +4,7 @@ import { Quotation, QuotationFormInput } from '../models/quotation.model';
 import { EntityId, Status } from '@/core/domain/types/value-objects';
 
 export interface QuotationFilter {
-  status?: string;
+  status?: Status;
   clientId?: string;
   fromDate?: string;
   toDate?: string;

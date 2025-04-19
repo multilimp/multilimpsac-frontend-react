@@ -1,8 +1,8 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { EntityId, Status } from '@/core/domain/types/value-objects';
-import { Quotation, QuotationFormInput, QuotationFilter } from '../models/quotation.model';
-import { IQuotationRepository } from '../repositories/quotation.repository.interface';
+import { EntityId, Status, createEntityId, createStatus } from '@/core/domain/types/value-objects';
+import { Quotation, QuotationFormInput } from '../models/quotation.model';
+import { IQuotationRepository, QuotationFilter } from '../repositories/quotation.repository.interface';
 import { QuotationMapper } from '../mappers/quotation.mapper';
 
 export class QuotationService implements IQuotationRepository {
@@ -150,7 +150,7 @@ export class QuotationService implements IQuotationRepository {
         if (itemsError) throw new Error(itemsError.message);
       }
 
-      return this.getById({ value: String(quotation.id), isValid: () => true });
+      return this.getById(createEntityId(String(quotation.id)));
     } catch (error) {
       console.error('Error creating quotation:', error);
       throw error;

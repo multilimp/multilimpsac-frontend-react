@@ -2,10 +2,11 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Quotation, QuotationItem } from "@/domain/quotation/models/quotation.model";
 import { stringToNumberId } from "@/core/utils/id-conversions";
-import { mapDbQuotationToDomain, mapDbQuotationItemToDomain } from "./utils/quotation-mappers";
+import { mapDbQuotationToDomain, mapDbQuotationItemToDomain, mapDomainStatusToDb } from "./utils/quotation-mappers";
+import { createEntityId } from "@/core/domain/types/value-objects";
 
 export interface QuotationFilter {
-  status?: Quotation['status'];
+  status?: { value: string };
   clientId?: string;
   fromDate?: string;
   toDate?: string;
@@ -47,7 +48,7 @@ export class QuotationReadRepository {
       // Apply filters
       if (filter) {
         if (filter.status) {
-          const dbStatus = this.mapStatusToDb(filter.status);
+          const dbStatus = mapDomainStatusToDb(filter.status.value);
           query = query.eq('estado', dbStatus);
         }
         
@@ -143,20 +144,6 @@ export class QuotationReadRepository {
     } catch (error) {
       console.error("Error fetching quotation details:", error);
       throw error;
-    }
-  }
-
-  /**
-   * Maps domain status to DB status
-   */
-  private mapStatusToDb(status: Quotation['status']): string {
-    switch (status) {
-      case 'draft': return 'borrador';
-      case 'sent': return 'enviada';
-      case 'approved': return 'aprobada';
-      case 'rejected': return 'rechazada';
-      case 'expired': return 'vencida';
-      default: return 'borrador';
     }
   }
 }

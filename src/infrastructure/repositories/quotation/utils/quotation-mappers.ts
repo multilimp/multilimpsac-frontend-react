@@ -1,11 +1,12 @@
 
 import { Quotation, QuotationItem } from "@/domain/quotation/models/quotation.model";
 import { numberToStringId } from "@/core/utils/id-conversions";
+import { createStatus } from "@/core/domain/types/value-objects";
 
 /**
  * Maps a database status string to a domain status
  */
-export function mapDbStatusToDomain(dbStatus: string): Quotation['status'] {
+export function mapDbStatusToDomain(dbStatus: string): string {
   switch (dbStatus) {
     case 'borrador': return 'draft';
     case 'enviada': return 'sent';
@@ -19,8 +20,10 @@ export function mapDbStatusToDomain(dbStatus: string): Quotation['status'] {
 /**
  * Maps a domain status to a database status string
  */
-export function mapDomainStatusToDb(status: Quotation['status']): string {
-  switch (status) {
+export function mapDomainStatusToDb(status: string | { value: string }): string {
+  const statusValue = typeof status === 'object' ? status.value : status;
+  
+  switch (statusValue) {
     case 'draft': return 'borrador';
     case 'sent': return 'enviada';
     case 'approved': return 'aprobada';
@@ -38,14 +41,14 @@ export function mapDbQuotationToDomain(
   items: QuotationItem[]
 ): Quotation {
   return {
-    id: numberToStringId(dbQuotation.id),
+    id: createEntityId(String(dbQuotation.id)),
     number: dbQuotation.codigo_cotizacion,
-    clientId: numberToStringId(dbQuotation.cliente_id),
+    clientId: createEntityId(String(dbQuotation.cliente_id)),
     clientName: dbQuotation.clientes?.razon_social || "",
-    date: dbQuotation.fecha_cotizacion,
-    expiryDate: dbQuotation.fecha_entrega,
-    total: dbQuotation.monto_total || 0,
-    status: mapDbStatusToDomain(dbQuotation.estado),
+    date: createDateVO(dbQuotation.fecha_cotizacion),
+    expiryDate: createDateVO(dbQuotation.fecha_entrega),
+    total: createMoney(Number(dbQuotation.monto_total) || 0),
+    status: createStatus(mapDbStatusToDomain(dbQuotation.estado)),
     items: items,
     notes: dbQuotation.nota_pedido,
     paymentNote: dbQuotation.nota_pago,
@@ -56,9 +59,9 @@ export function mapDbQuotationToDomain(
     deliveryProvince: dbQuotation.provincia_entrega,
     deliveryDepartment: dbQuotation.departamento_entrega,
     deliveryReference: dbQuotation.referencia_entrega,
-    createdBy: "",
-    createdAt: dbQuotation.created_at,
-    updatedAt: dbQuotation.updated_at
+    createdBy: createEntityId(String(dbQuotation.created_by || '0')),
+    createdAt: createDateVO(dbQuotation.created_at),
+    updatedAt: createDateVO(dbQuotation.updated_at)
   };
 }
 
@@ -67,15 +70,18 @@ export function mapDbQuotationToDomain(
  */
 export function mapDbQuotationItemToDomain(dbItem: any): QuotationItem {
   return {
-    id: numberToStringId(dbItem.id),
-    productId: dbItem.producto_id ? numberToStringId(dbItem.producto_id) : undefined,
-    code: dbItem.codigo,
+    id: createEntityId(String(dbItem.id)),
+    productId: dbItem.producto_id ? createEntityId(String(dbItem.producto_id)) : undefined,
     productName: dbItem.descripcion || "",
     description: dbItem.descripcion || "",
     quantity: dbItem.cantidad,
-    unitPrice: dbItem.precio_unitario,
-    total: dbItem.total,
+    unitPrice: createMoney(Number(dbItem.precio_unitario)),
+    total: createMoney(Number(dbItem.total)),
     taxRate: dbItem.tasa_impuesto,
-    unitMeasure: dbItem.unidad_medida
+    unitMeasure: dbItem.unidad_medida,
+    code: dbItem.codigo
   };
 }
+
+// Import these at the top to avoid circular dependencies
+import { createEntityId, createDateVO, createMoney } from "@/core/domain/types/value-objects";

@@ -1,10 +1,11 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Quotation, QuotationFormInput } from "@/domain/quotation/models/quotation.model";
+import { QuotationFormInput } from "@/domain/quotation/models/quotation.model";
 import { stringToNumberId } from "@/core/utils/id-conversions";
-import { mapDbQuotationToDomain, mapDomainStatusToDb } from "./utils/quotation-mappers";
+import { mapDomainStatusToDb } from "./utils/quotation-mappers";
 import { generateQuotationCode } from "./utils/quotation-code-generator";
 import { QuotationReadRepository } from "./quotation.read.repository";
+import { createStatus } from "@/core/domain/types/value-objects";
 
 /**
  * Repository class for write operations on quotations
@@ -19,7 +20,7 @@ export class QuotationWriteRepository {
   /**
    * Creates a new quotation
    */
-  async create(data: QuotationFormInput): Promise<Quotation> {
+  async create(data: QuotationFormInput): Promise<any> {
     try {
       // Generate a new quotation code
       const quotationCode = await generateQuotationCode();
@@ -40,7 +41,7 @@ export class QuotationWriteRepository {
           fecha_cotizacion: data.date,
           fecha_entrega: data.expiryDate,
           monto_total: total,
-          estado: mapDomainStatusToDb(data.status),
+          estado: mapDomainStatusToDb(createStatus(data.status)),
           tipo_pago: data.paymentType,
           nota_pago: data.paymentNote,
           nota_pedido: data.orderNote,
@@ -57,27 +58,22 @@ export class QuotationWriteRepository {
       if (quotationError) throw new Error(quotationError.message);
       
       // Insert items
-      const itemsPromises = data.items.map(item => {
-        return supabase
+      if (data.items && data.items.length > 0) {
+        const itemsToInsert = data.items.map(item => ({
+          cotizacion_id: quotation.id,
+          codigo: item.code,
+          descripcion: item.description || item.productName,
+          unidad_medida: item.unitMeasure,
+          cantidad: item.quantity,
+          precio_unitario: item.unitPrice,
+          total: item.quantity * item.unitPrice
+        }));
+        
+        const { error: itemsError } = await supabase
           .from('cotizacion_productos')
-          .insert({
-            cotizacion_id: quotation.id,
-            codigo: item.code,
-            descripcion: item.description || item.productName,
-            unidad_medida: item.unitMeasure,
-            cantidad: item.quantity,
-            precio_unitario: item.unitPrice,
-            total: item.quantity * item.unitPrice
-          });
-      });
-      
-      // Wait for all items to be inserted
-      const itemResults = await Promise.all(itemsPromises);
-      
-      // Check for errors in item insertions
-      const itemErrors = itemResults.filter(result => result.error);
-      if (itemErrors.length > 0) {
-        throw new Error(`Error inserting items: ${itemErrors[0].error?.message}`);
+          .insert(itemsToInsert);
+        
+        if (itemsError) throw new Error(itemsError.message);
       }
       
       // Return the created quotation
@@ -91,7 +87,7 @@ export class QuotationWriteRepository {
   /**
    * Updates an existing quotation
    */
-  async update(id: string, data: QuotationFormInput): Promise<Quotation> {
+  async update(id: string, data: QuotationFormInput): Promise<any> {
     try {
       // Calculate total
       const total = data.items.reduce(
@@ -110,7 +106,7 @@ export class QuotationWriteRepository {
           fecha_cotizacion: data.date,
           fecha_entrega: data.expiryDate,
           monto_total: total,
-          estado: mapDomainStatusToDb(data.status),
+          estado: mapDomainStatusToDb(createStatus(data.status)),
           tipo_pago: data.paymentType,
           nota_pago: data.paymentNote,
           nota_pedido: data.orderNote,
@@ -133,27 +129,22 @@ export class QuotationWriteRepository {
       if (deleteError) throw new Error(deleteError.message);
       
       // Insert new items
-      const itemsPromises = data.items.map(item => {
-        return supabase
+      if (data.items && data.items.length > 0) {
+        const itemsToInsert = data.items.map(item => ({
+          cotizacion_id: numericId,
+          codigo: item.code,
+          descripcion: item.description || item.productName,
+          unidad_medida: item.unitMeasure,
+          cantidad: item.quantity,
+          precio_unitario: item.unitPrice,
+          total: item.quantity * item.unitPrice
+        }));
+        
+        const { error: itemsError } = await supabase
           .from('cotizacion_productos')
-          .insert({
-            cotizacion_id: numericId,
-            codigo: item.code,
-            descripcion: item.description || item.productName,
-            unidad_medida: item.unitMeasure,
-            cantidad: item.quantity,
-            precio_unitario: item.unitPrice,
-            total: item.quantity * item.unitPrice
-          });
-      });
-      
-      // Wait for all items to be inserted
-      const itemResults = await Promise.all(itemsPromises);
-      
-      // Check for errors in item insertions
-      const itemErrors = itemResults.filter(result => result.error);
-      if (itemErrors.length > 0) {
-        throw new Error(`Error inserting items: ${itemErrors[0].error?.message}`);
+          .insert(itemsToInsert);
+        
+        if (itemsError) throw new Error(itemsError.message);
       }
       
       // Return the updated quotation
@@ -167,7 +158,7 @@ export class QuotationWriteRepository {
   /**
    * Updates the status of a quotation
    */
-  async updateStatus(id: string, status: Quotation['status']): Promise<Quotation> {
+  async updateStatus(id: string, status: string): Promise<any> {
     try {
       const { error } = await supabase
         .from('cotizaciones')

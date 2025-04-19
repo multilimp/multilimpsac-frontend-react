@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Sale, SaleFormInput } from '../models/sale.model';
 import { ISaleRepository, SaleFilter } from '../repositories/sale.repository.interface';
 import { SaleMapper } from '../mappers/sale.mapper';
-import { createEntityId } from '@/core/domain/types/value-objects';
+import { createEntityId, EntityId, Status } from '@/core/domain/types/value-objects';
 
 export class SaleService implements ISaleRepository {
   private readonly TABLE_NAME = 'ordenes_compra';
@@ -14,10 +14,10 @@ export class SaleService implements ISaleRepository {
       .select('*', { count: 'exact' });
 
     if (filters?.status) {
-      query = query.eq('etapa_actual', filters.status);
+      query = query.eq('etapa_actual', filters.status.value);
     }
     if (filters?.clientId) {
-      query = query.eq('cliente_id', filters.clientId);
+      query = query.eq('cliente_id', Number(filters.clientId));
     }
     if (filters?.fromDate) {
       query = query.gte('fecha_form', filters.fromDate);
@@ -26,7 +26,7 @@ export class SaleService implements ISaleRepository {
       query = query.lte('fecha_form', filters.toDate);
     }
     if (filters?.searchTerm) {
-      query = query.or(`codigo_venta.ilike.%${filters.searchTerm}%,cliente_id.ilike.%${filters.searchTerm}%`);
+      query = query.or(`codigo_venta.ilike.%${filters.searchTerm}%,cliente_id.eq.${Number(filters.searchTerm)}`);
     }
 
     const { data, error, count } = await query;
@@ -43,7 +43,7 @@ export class SaleService implements ISaleRepository {
     const { data, error } = await supabase
       .from(this.TABLE_NAME)
       .select('*')
-      .eq('id', id)
+      .eq('id', Number(id))
       .maybeSingle();
 
     if (error) throw error;
@@ -73,7 +73,7 @@ export class SaleService implements ISaleRepository {
     const { data, error } = await supabase
       .from(this.TABLE_NAME)
       .update(dbData)
-      .eq('id', id)
+      .eq('id', Number(id))
       .select()
       .single();
 
@@ -81,14 +81,14 @@ export class SaleService implements ISaleRepository {
     return SaleMapper.toDomain(data);
   }
 
-  async updateStatus(id: string, status: Sale['status']['value']): Promise<Sale> {
+  async updateStatus(id: string, status: Status): Promise<Sale> {
     const { data, error } = await supabase
       .from(this.TABLE_NAME)
       .update({
-        etapa_actual: status,
+        etapa_actual: status.value,
         updated_at: new Date().toISOString()
       })
-      .eq('id', id)
+      .eq('id', Number(id))
       .select()
       .single();
 
@@ -100,7 +100,7 @@ export class SaleService implements ISaleRepository {
     const { error } = await supabase
       .from(this.TABLE_NAME)
       .delete()
-      .eq('id', id);
+      .eq('id', Number(id));
 
     if (error) throw error;
   }

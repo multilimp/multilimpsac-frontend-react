@@ -1,7 +1,9 @@
+
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { SaleService } from '../services/sale.service';
 import type { Sale, SaleFormInput } from '../models/sale.model';
 import type { SaleFilter } from '../repositories/sale.repository.interface';
+import { createStatus } from '@/core/domain/types/value-objects';
 
 const saleService = new SaleService();
 const SALES_QUERY_KEY = 'sales';
@@ -48,7 +50,7 @@ export const useUpdateSaleStatus = (id: string) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (status: Sale['status']) => saleService.updateStatus(id, status),
+    mutationFn: (statusValue: string) => saleService.updateStatus(id, createStatus(statusValue)),
     onSuccess: (updatedSale) => {
       queryClient.invalidateQueries({ queryKey: [SALES_QUERY_KEY] });
       queryClient.setQueryData([SALES_QUERY_KEY, id], updatedSale);

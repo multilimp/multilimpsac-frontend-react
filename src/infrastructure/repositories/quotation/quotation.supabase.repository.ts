@@ -3,6 +3,7 @@ import { Quotation, QuotationFormInput } from "@/domain/quotation/models/quotati
 import { IQuotationRepository, QuotationFilter } from "@/domain/quotation/repositories/quotation.repository.interface";
 import { QuotationReadRepository } from "./quotation.read.repository";
 import { QuotationWriteRepository } from "./quotation.write.repository";
+import { createEntityId, createStatus, EntityId, Status } from "@/core/domain/types/value-objects";
 
 /**
  * Supabase implementation of the quotation repository
@@ -20,28 +21,28 @@ export class SupabaseQuotationRepository implements IQuotationRepository {
     const { page, pageSize, ...otherFilters } = filter || {};
     
     return this.readRepository.getAll(
-      otherFilters, 
+      otherFilters as any, 
       page && pageSize ? { page, pageSize } : undefined
     );
   }
 
-  async getById(id: string): Promise<Quotation> {
-    return this.readRepository.getById(id);
+  async getById(id: EntityId): Promise<Quotation> {
+    return this.readRepository.getById(id.value);
   }
 
   async create(data: QuotationFormInput): Promise<Quotation> {
     return this.writeRepository.create(data);
   }
 
-  async update(id: string, data: QuotationFormInput): Promise<Quotation> {
-    return this.writeRepository.update(id, data);
+  async update(id: EntityId, data: Partial<QuotationFormInput>): Promise<Quotation> {
+    return this.writeRepository.update(id.value, data as QuotationFormInput);
   }
 
-  async updateStatus(id: string, status: Quotation['status']): Promise<Quotation> {
-    return this.writeRepository.updateStatus(id, status);
+  async updateStatus(id: EntityId, status: Status): Promise<Quotation> {
+    return this.writeRepository.updateStatus(id.value, status.value);
   }
 
-  async delete(id: string): Promise<void> {
-    return this.writeRepository.delete(id);
+  async delete(id: EntityId): Promise<void> {
+    return this.writeRepository.delete(id.value);
   }
 }

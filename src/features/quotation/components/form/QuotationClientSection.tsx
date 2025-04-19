@@ -15,6 +15,14 @@ interface QuotationClientSectionProps {
   form: UseFormReturn<QuotationFormValues>;
 }
 
+interface Client {
+  id: string;
+  razonSocial: string;
+  ruc: string;
+  codUnidad: string;
+  estado: boolean;
+}
+
 const ClientDataLoader: React.FC<{
   clientId: string;
   className?: string;
@@ -119,7 +127,7 @@ const QuotationClientSection: React.FC<QuotationClientSectionProps> = ({ form })
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
         onSelect={handleSelectClient}
-        clients={clients}
+        clients={clients as unknown as Cliente[]}
       />
     </div>
   );
