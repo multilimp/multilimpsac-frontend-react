@@ -1,10 +1,10 @@
 
-import { IRepository } from "@/core/domain/repository.interface";
-import { Quotation } from "../models/quotation.model";
-import { QuotationFormInput } from "../models/quotation.model";
+import { IBaseRepository } from '@/core/domain/repository/base.repository.interface';
+import { Quotation, QuotationFormInput } from '../models/quotation.model';
+import { EntityId, Status } from '@/core/domain/types/value-objects';
 
 export interface QuotationFilter {
-  status?: Quotation['status'];
+  status?: string;
   clientId?: string;
   fromDate?: string;
   toDate?: string;
@@ -13,14 +13,9 @@ export interface QuotationFilter {
   pageSize?: number;
 }
 
-/**
- * Repository interface specific to the quotation domain
- */
-export interface IQuotationRepository extends Omit<IRepository<Quotation, string>, 'update' | 'create' | 'getAll'> {
+export interface IQuotationRepository extends Omit<IBaseRepository<Quotation, EntityId>, 'create' | 'update'> {
   getAll(filter?: QuotationFilter): Promise<{ data: Quotation[], count: number }>;
-  getById(id: string): Promise<Quotation>;
   create(data: QuotationFormInput): Promise<Quotation>;
-  update(id: string, data: QuotationFormInput): Promise<Quotation>;
-  updateStatus(id: string, status: Quotation['status']): Promise<Quotation>;
-  delete(id: string): Promise<void>;
+  update(id: EntityId, data: Partial<QuotationFormInput>): Promise<Quotation>;
+  updateStatus(id: EntityId, status: Status): Promise<Quotation>;
 }

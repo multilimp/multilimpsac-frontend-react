@@ -26,6 +26,13 @@ export interface DataGridProps<T = any> {
   onSort?: (config: SortConfig) => void;
   onFilter?: (filters: Record<string, any>) => void;
   defaultSort?: SortConfig;
+  pageSize?: number;
+  onFilterChange?: (filters: Record<string, any>) => void;
+  onColumnToggle?: (column: DataGridColumn) => void;
+  onEdit?: (row: T) => void;
+  onDelete?: (row: T) => void;
+  onDownload?: () => void;
+  onReload?: () => void;
 }
 
 export type ColumnType = 'string' | 'number' | 'date' | 'boolean';
