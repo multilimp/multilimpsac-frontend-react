@@ -15,7 +15,7 @@ export class SupplierOrderService implements ISupplierOrderRepository {
       query = query.eq('estado_op', filters.status);
     }
     if (filters?.supplierId) {
-      query = query.eq('proveedor_id', filters.supplierId);
+      query = query.eq('proveedor_id', Number(filters.supplierId));
     }
     if (filters?.fromDate) {
       query = query.gte('fecha_entrega', filters.fromDate);
@@ -89,7 +89,7 @@ export class SupplierOrderService implements ISupplierOrderRepository {
     if (formData.supplierId) updateData.proveedor_id = Number(formData.supplierId);
     if (formData.date) updateData.fecha_entrega = formData.date;
     if (formData.notes) updateData.nota_pedido = formData.notes;
-    if (formData.total) updateData.total_proveedor = formData.total;
+    if (formData.total !== undefined) updateData.total_proveedor = formData.total;
 
     const { data, error } = await supabase
       .from(this.TABLE_NAME)
@@ -134,13 +134,14 @@ export class SupplierOrderService implements ISupplierOrderRepository {
       supplierId: row.proveedor_id?.toString() || '',
       supplierName: '', // Would need to be fetched from supplier table
       date: row.fecha_entrega || new Date().toISOString(),
+      deliveryDate: row.fecha_programada || null,
       total: Number(row.total_proveedor) || 0,
       status: row.estado_op || 'draft',
       items: [], // Would need to fetch these separately
       paymentStatus: 'pending',
-      paymentType: row.tipo_pago || '',
+      paymentTerms: row.tipo_pago || '',
       notes: row.nota_pedido || '',
-      deliveryDate: row.fecha_programada || null,
+      deliveryAddress: '',
       createdAt: row.created_at || new Date().toISOString(),
       updatedAt: row.updated_at || new Date().toISOString()
     };

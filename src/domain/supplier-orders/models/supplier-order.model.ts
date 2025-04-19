@@ -1,18 +1,18 @@
+
 export interface SupplierOrder {
   id: string;
   number: string;
   supplierId: string;
   supplierName: string;
   date: string;
-  deliveryDate: string;
+  deliveryDate: string | null;
   total: number;
   status: "draft" | "sent" | "confirmed" | "received" | "cancelled";
   items: SupplierOrderItem[];
   paymentStatus: "pending" | "partial" | "completed";
-  paymentTerms: string;
+  paymentTerms?: string;
   notes?: string;
-  deliveryAddress: string;
-  createdBy: string;
+  deliveryAddress?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -32,9 +32,10 @@ export interface SupplierOrderItem {
 export interface SupplierOrderFormInput {
   supplierId: string;
   date: string;
-  deliveryDate: string;
-  items: Omit<SupplierOrderItem, "id" | "total">[];
-  paymentTerms: string;
+  deliveryDate?: string;
+  items?: Omit<SupplierOrderItem, "id" | "total">[];
+  paymentTerms?: string;
   notes?: string;
-  deliveryAddress: string;
+  deliveryAddress?: string;
+  total?: number;
 }
