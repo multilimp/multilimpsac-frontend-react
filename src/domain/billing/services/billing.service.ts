@@ -12,19 +12,19 @@ export class BillingService implements IBillingRepository {
       .select('*', { count: 'exact' });
 
     if (filters?.status) {
-      query = query.eq('status', filters.status);
+      query = query.eq('estado', this.mapStatusToDbValue(filters.status));
     }
     if (filters?.clientId) {
-      query = query.eq('clientId', filters.clientId);
+      query = query.eq('orden_compra_id', parseInt(filters.clientId));
     }
     if (filters?.fromDate) {
-      query = query.gte('date', filters.fromDate);
+      query = query.gte('fecha_factura', filters.fromDate);
     }
     if (filters?.toDate) {
-      query = query.lte('date', filters.toDate);
+      query = query.lte('fecha_factura', filters.toDate);
     }
     if (filters?.searchTerm) {
-      query = query.or(`number.ilike.%${filters.searchTerm}%,clientName.ilike.%${filters.searchTerm}%`);
+      query = query.or(`factura.ilike.%${filters.searchTerm}%`);
     }
 
     // Paginación
@@ -49,7 +49,7 @@ export class BillingService implements IBillingRepository {
     const { data, error } = await supabase
       .from(this.TABLE_NAME)
       .select('*')
-      .eq('id', id)
+      .eq('id', parseInt(id))
       .single();
 
     if (error) throw error;
@@ -59,21 +59,18 @@ export class BillingService implements IBillingRepository {
   }
 
   async create(formData: InvoiceFormInput): Promise<Invoice> {
+    // Map from form input to database structure
+    const dbData: any = {
+      orden_compra_id: parseInt(formData.clientId),
+      fecha_factura: formData.date,
+      estado: this.mapStatusToDbValue('draft'),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
     const { data, error } = await supabase
       .from(this.TABLE_NAME)
-      .insert({
-        type: formData.type,
-        clientId: formData.clientId,
-        date: formData.date,
-        dueDate: formData.dueDate,
-        currency: formData.currency,
-        items: JSON.stringify(formData.items),
-        saleId: formData.saleId,
-        status: 'draft',
-        paymentStatus: 'pending',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      })
+      .insert(dbData)
       .select()
       .single();
 
@@ -83,18 +80,16 @@ export class BillingService implements IBillingRepository {
 
   async update(id: string, formData: Partial<InvoiceFormInput>): Promise<Invoice> {
     const updateData: any = {
-      ...formData,
       updated_at: new Date().toISOString()
     };
     
-    if (formData.items) {
-      updateData.items = JSON.stringify(formData.items);
-    }
+    if (formData.date) updateData.fecha_factura = formData.date;
+    if (formData.clientId) updateData.orden_compra_id = parseInt(formData.clientId);
 
     const { data, error } = await supabase
       .from(this.TABLE_NAME)
       .update(updateData)
-      .eq('id', id)
+      .eq('id', parseInt(id))
       .select()
       .single();
 
@@ -109,7 +104,7 @@ export class BillingService implements IBillingRepository {
         estado: this.mapStatusToDbValue(status),
         updated_at: new Date().toISOString()
       })
-      .eq('id', id)
+      .eq('id', parseInt(id))
       .select()
       .single();
 
@@ -124,7 +119,7 @@ export class BillingService implements IBillingRepository {
         paymentStatus: status,
         updated_at: new Date().toISOString()
       })
-      .eq('id', id)
+      .eq('id', parseInt(id))
       .select()
       .single();
 
@@ -139,7 +134,7 @@ export class BillingService implements IBillingRepository {
         estado: this.mapStatusToDbValue('void'),
         updated_at: new Date().toISOString()
       })
-      .eq('id', id)
+      .eq('id', parseInt(id))
       .select()
       .single();
 
@@ -154,7 +149,7 @@ export class BillingService implements IBillingRepository {
         electronicBillingStatus: 'sent',
         updated_at: new Date().toISOString()
       })
-      .eq('id', id)
+      .eq('id', parseInt(id))
       .select()
       .single();
 
@@ -166,7 +161,7 @@ export class BillingService implements IBillingRepository {
     const { error } = await supabase
       .from(this.TABLE_NAME)
       .delete()
-      .eq('id', id);
+      .eq('id', parseInt(id));
 
     if (error) throw error;
   }
@@ -193,7 +188,7 @@ export class BillingService implements IBillingRepository {
   }
 
   private mapDbRowToInvoice(row: any): Invoice {
-    let items: InvoiceItem[] = [];
+    let items = [];
     try {
       items = typeof row.items === 'string' ? JSON.parse(row.items) : (row.items || []);
     } catch (e) {
@@ -201,17 +196,17 @@ export class BillingService implements IBillingRepository {
     }
 
     return {
-      id: row.id,
+      id: row.id.toString(),
       number: row.factura || '',
       series: row.serie || '',
-      type: row.type || 'factura',
+      type: 'factura',
       clientId: row.orden_compra_id?.toString() || '',
       clientName: row.clientName || '',
       clientDocument: row.clientDocument || '',
-      clientDocumentType: row.clientDocumentType || 'ruc',
+      clientDocumentType: 'ruc',
       date: row.fecha_factura || new Date().toISOString(),
       dueDate: row.dueDate || new Date().toISOString(),
-      currency: row.currency || 'PEN',
+      currency: 'PEN',
       subtotal: Number(row.subtotal) || 0,
       tax: Number(row.tax) || 0,
       total: Number(row.total) || 0,
