@@ -1,12 +1,9 @@
-
 import { useState } from "react";
 import { DataGridColumn, SortConfig } from "../types";
 
 export function useDataGridState(columns: DataGridColumn[]) {
   // State for visible columns
-  const [visibleColumns, setVisibleColumns] = useState<string[]>(
-    columns.map((col) => col.key)
-  );
+  const [visibleColumns, setVisibleColumns] = useState<DataGridColumn[]>(columns);
   
   // State for sorting
   const [sortConfig, setSortConfig] = useState<SortConfig | null>(null);
@@ -18,23 +15,25 @@ export function useDataGridState(columns: DataGridColumn[]) {
   const [showFilters, setShowFilters] = useState(false);
 
   // Handle column visibility toggle
-  const handleColumnToggle = (column: string) => {
-    const updatedColumns = visibleColumns.includes(column)
-      ? visibleColumns.filter(col => col !== column)
-      : [...visibleColumns, column];
-    
-    setVisibleColumns(updatedColumns);
+  const handleColumnToggle = (columnKey: string) => {
+    setVisibleColumns(current => 
+      current.map(col => 
+        col.key === columnKey 
+          ? { ...col, hidden: !col.hidden }
+          : col
+      )
+    );
   };
   
   // Handle column sort
-  const handleSort = (key: string) => {
+  const handleSort = (column: string) => {
     let direction: 'asc' | 'desc' = 'asc';
     
-    if (sortConfig && sortConfig.column === key) {
+    if (sortConfig && sortConfig.column === column) {
       direction = sortConfig.direction === 'asc' ? 'desc' : 'asc';
     }
     
-    setSortConfig({ column: key, direction });
+    setSortConfig({ column, direction });
   };
   
   // Handle global search

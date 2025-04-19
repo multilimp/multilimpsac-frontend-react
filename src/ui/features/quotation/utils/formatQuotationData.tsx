@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Quotation } from '@/domain/quotation/models/quotation.model';
 import { format } from 'date-fns';
+import { Quotation } from '@/domain/quotation/models/quotation.model';
 import QuotationStatusBadge from '../components/QuotationStatusBadge';
 import { Button } from '@/components/ui/button';
 import { Eye } from 'lucide-react';
@@ -12,7 +12,7 @@ export const formatQuotationData = (
 ) => {
   return quotations.map(quotation => {
     return {
-      id: quotation.id,
+      id: quotation.id.value,
       number: (
         <Button
           variant="link"
@@ -27,9 +27,12 @@ export const formatQuotationData = (
         </Button>
       ),
       clientName: quotation.clientName,
-      date: format(new Date(quotation.date), 'dd/MM/yyyy'),
-      expiryDate: format(new Date(quotation.expiryDate), 'dd/MM/yyyy'),
-      total: new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN' }).format(quotation.total),
+      date: format(new Date(quotation.date.value), 'dd/MM/yyyy'),
+      expiryDate: format(new Date(quotation.expiryDate.value), 'dd/MM/yyyy'),
+      total: new Intl.NumberFormat('es-PE', { 
+        style: 'currency', 
+        currency: 'PEN' 
+      }).format(quotation.total.amount),
       status: <QuotationStatusBadge status={quotation.status} />
     };
   });

@@ -1,22 +1,10 @@
 
-import { EntityId, Money, DateVO, Status } from '@/core/domain/types/value-objects';
+import { EntityBase } from "@/features/shared/models";
+import { EntityId, Status, DateVO, Money } from "@/core/domain/types/value-objects";
 
-export type QuotationStatus = "draft" | "sent" | "approved" | "rejected" | "expired";
+export type QuotationStatus = 'draft' | 'sent' | 'approved' | 'rejected' | 'expired';
 
-export interface QuotationItem {
-  id: EntityId;
-  productId?: EntityId;
-  productName: string;
-  description: string;
-  quantity: number;
-  unitPrice: Money;
-  total: Money;
-  taxRate?: number;
-  unitMeasure?: string;
-  code?: string;
-}
-
-export interface Quotation {
+export interface Quotation extends Omit<EntityBase, 'status'> {
   id: EntityId;
   number: string;
   clientId: EntityId;
@@ -24,24 +12,25 @@ export interface Quotation {
   date: DateVO;
   expiryDate: DateVO;
   total: Money;
-  status: Status;
+  status: QuotationStatus;
   items: QuotationItem[];
   notes?: string;
-  paymentNote?: string;
-  paymentType?: string;
-  orderNote?: string;
-  deliveryAddress?: string;
-  deliveryDistrict?: string;
-  deliveryProvince?: string;
-  deliveryDepartment?: string;
-  deliveryReference?: string;
-  createdBy: EntityId;
-  createdAt: DateVO;
-  updatedAt: DateVO;
+  createdBy: string;
+}
+
+export interface QuotationItem {
+  id: string;
+  productId?: string;
+  productName: string;
+  description: string;
+  quantity: number;
+  unitPrice: Money;
+  total: Money;
+  taxRate?: number;
 }
 
 export interface QuotationFilter {
-  status?: Status;
+  status?: QuotationStatus;
   clientId?: string;
   fromDate?: string;
   toDate?: string;
@@ -52,26 +41,15 @@ export interface QuotationFilter {
 
 export interface QuotationFormInput {
   clientId: string;
-  contactId?: string;
   date: string;
   expiryDate: string;
-  items: Array<{
+  items: {
     productId?: string;
-    code?: string;
     productName: string;
-    description?: string;
-    unitMeasure?: string;
+    description: string;
     quantity: number;
     unitPrice: number;
-    taxRate?: number;
-  }>;
+  }[];
+  notes?: string;
   status: QuotationStatus;
-  paymentType?: string;
-  paymentNote?: string;
-  orderNote?: string;
-  deliveryAddress?: string;
-  deliveryDistrict?: string;
-  deliveryProvince?: string;
-  deliveryDepartment?: string;
-  deliveryReference?: string;
 }
