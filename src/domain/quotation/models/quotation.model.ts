@@ -40,6 +40,16 @@ export interface Quotation {
   updatedAt: DateVO;
 }
 
+export interface QuotationFilter {
+  status?: Status;
+  clientId?: string;
+  fromDate?: string;
+  toDate?: string;
+  searchTerm?: string;
+  page?: number;
+  pageSize?: number;
+}
+
 export interface QuotationFormInput {
   clientId: string;
   contactId?: string;

@@ -30,10 +30,10 @@ export const useCreateQuotation = () => {
     mutationFn: (data: QuotationFormInput) => quotationService.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUOTATIONS_QUERY_KEY] });
-      toast.success('Quotation created successfully');
+      toast.success('Cotización creada correctamente');
     },
     onError: (error: Error) => {
-      toast.error('Error creating quotation: ' + error.message);
+      toast.error('Error al crear la cotización: ' + error.message);
     }
   });
 };
@@ -47,10 +47,10 @@ export const useUpdateQuotation = (id: string) => {
     onSuccess: (updatedQuotation) => {
       queryClient.invalidateQueries({ queryKey: [QUOTATIONS_QUERY_KEY] });
       queryClient.setQueryData([QUOTATIONS_QUERY_KEY, id], updatedQuotation);
-      toast.success('Quotation updated successfully');
+      toast.success('Cotización actualizada correctamente');
     },
     onError: (error: Error) => {
-      toast.error('Error updating quotation: ' + error.message);
+      toast.error('Error al actualizar la cotización: ' + error.message);
     }
   });
 };
@@ -63,10 +63,10 @@ export const useUpdateQuotationStatus = () => {
       quotationService.updateStatus(createEntityId(id), createStatus(status)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUOTATIONS_QUERY_KEY] });
-      toast.success('Quotation status updated successfully');
+      toast.success('Estado de cotización actualizado correctamente');
     },
     onError: (error: Error) => {
-      toast.error('Error updating quotation status: ' + error.message);
+      toast.error('Error al actualizar el estado: ' + error.message);
     }
   });
 };
@@ -78,10 +78,10 @@ export const useDeleteQuotation = () => {
     mutationFn: (id: string) => quotationService.delete(createEntityId(id)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUOTATIONS_QUERY_KEY] });
-      toast.success('Quotation deleted successfully');
+      toast.success('Cotización eliminada correctamente');
     },
     onError: (error: Error) => {
-      toast.error('Error deleting quotation: ' + error.message);
+      toast.error('Error al eliminar la cotización: ' + error.message);
     }
   });
 };
