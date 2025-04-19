@@ -5,7 +5,7 @@ import { ICollectionRepository, CollectionFilter } from '../repositories/collect
 
 export class CollectionService implements ICollectionRepository {
   private readonly TABLE_NAME = 'cobranzas';
-
+  
   async getAll(filters?: CollectionFilter): Promise<{ data: Collection[]; count: number }> {
     let query = supabase
       .from(this.TABLE_NAME)
@@ -117,7 +117,6 @@ export class CollectionService implements ICollectionRepository {
   async addPayment(collectionId: string, payment: Omit<Payment, 'id' | 'collectionId' | 'createdAt' | 'createdBy'>): Promise<Payment> {
     // Since we don't have a payments table in the current schema, we would implement 
     // this by updating the collection's pending amount and storing payment details in metadata
-    // This is a simplified implementation
     const { data: collection, error: fetchError } = await supabase
       .from(this.TABLE_NAME)
       .select('*')

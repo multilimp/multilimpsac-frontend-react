@@ -1,3 +1,4 @@
+
 export interface Collection {
   id: string;
   invoiceId: string;
@@ -32,8 +33,9 @@ export interface Payment {
 
 export interface CollectionFormInput {
   invoiceId: string;
+  clientId?: string;
   amount: number;
-  date: string;
+  date?: string;
   dueDate: string;
   currency: string;
   notes?: string;
