@@ -1,32 +1,38 @@
 
+import { Money, EntityId, DateVO, Status } from '@/core/domain/types/value-objects';
+
+export interface SupplierOrderId extends EntityId {
+  value: string;
+}
+
 export interface SupplierOrder {
-  id: string;
+  id: SupplierOrderId;
   number: string;
-  supplierId: string;
+  supplierId: EntityId;
   supplierName: string;
-  date: string;
-  deliveryDate: string | null;
-  total: number;
-  status: "draft" | "sent" | "confirmed" | "received" | "cancelled";
+  date: DateVO;
+  deliveryDate: DateVO | null;
+  total: Money;
+  status: Status;
   items: SupplierOrderItem[];
-  paymentStatus: "pending" | "partial" | "completed";
+  paymentStatus: Status;
   paymentTerms: string;
   notes?: string;
   deliveryAddress?: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: DateVO;
+  updatedAt: DateVO;
 }
 
 export interface SupplierOrderItem {
-  id: string;
-  productId: string;
+  id: EntityId;
+  productId: EntityId;
   productName: string;
   description: string;
   quantity: number;
-  unitPrice: number;
-  total: number;
+  unitPrice: Money;
+  total: Money;
   unitMeasure: string;
-  expectedDeliveryDate: string;
+  expectedDeliveryDate: DateVO;
 }
 
 export interface SupplierOrderFormInput {

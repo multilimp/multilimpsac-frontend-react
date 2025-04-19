@@ -1,7 +1,9 @@
-import { SupplierOrder, SupplierOrderFormInput } from '../models/supplier-order.model';
+
+import { IBaseRepository } from '@/core/domain/repository/base.repository.interface';
+import { SupplierOrder, SupplierOrderId } from '../models/supplier-order.model';
 
 export interface SupplierOrderFilter {
-  status?: SupplierOrder['status'];
+  status?: string;
   supplierId?: string;
   fromDate?: string;
   toDate?: string;
@@ -10,11 +12,7 @@ export interface SupplierOrderFilter {
   pageSize?: number;
 }
 
-export interface ISupplierOrderRepository {
-  getAll(filters?: SupplierOrderFilter): Promise<{ data: SupplierOrder[], count: number }>;
-  getById(id: string): Promise<SupplierOrder>;
-  create(data: SupplierOrderFormInput): Promise<SupplierOrder>;
-  update(id: string, data: Partial<SupplierOrderFormInput>): Promise<SupplierOrder>;
-  updateStatus(id: string, status: SupplierOrder['status']): Promise<SupplierOrder>;
-  delete(id: string): Promise<void>;
+export interface ISupplierOrderRepository extends IBaseRepository<SupplierOrder, SupplierOrderId> {
+  getAll(filters?: SupplierOrderFilter): Promise<{ data: SupplierOrder[]; count: number }>;
+  updateStatus(id: SupplierOrderId, status: string): Promise<SupplierOrder>;
 }

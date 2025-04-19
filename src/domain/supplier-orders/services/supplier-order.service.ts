@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { SupplierOrder, SupplierOrderFormInput } from '../models/supplier-order.model';
 import { ISupplierOrderRepository, SupplierOrderFilter } from '../repositories/supplier-order.repository.interface';
+import { SupplierOrderMapper } from '../mappers/supplier-order.mapper';
 
 export class SupplierOrderService implements ISupplierOrderRepository {
   private readonly TABLE_NAME = 'ordenes_proveedor';
@@ -26,7 +27,6 @@ export class SupplierOrderService implements ISupplierOrderRepository {
       query = query.or(`codigo_op.ilike.%${filters.searchTerm}%`);
     }
 
-    // Pagination
     const from = filters?.page ? (filters.page - 1) * (filters.pageSize || 10) : 0;
     const to = from + (filters.pageSize || 10) - 1;
     query = query.range(from, to);
@@ -36,22 +36,22 @@ export class SupplierOrderService implements ISupplierOrderRepository {
     if (error) throw error;
     
     return {
-      data: (data || []).map(item => this.mapDbRowToSupplierOrder(item)) as SupplierOrder[],
+      data: (data || []).map(item => SupplierOrderMapper.toDomain(item)),
       count: count || 0
     };
   }
 
-  async getById(id: string): Promise<SupplierOrder> {
+  async getById(id: { value: string }): Promise<SupplierOrder> {
     const { data, error } = await supabase
       .from(this.TABLE_NAME)
       .select('*')
-      .eq('id', Number(id))
+      .eq('id', Number(id.value))
       .single();
 
     if (error) throw error;
     if (!data) throw new Error('Supplier order not found');
 
-    return this.mapDbRowToSupplierOrder(data) as SupplierOrder;
+    return SupplierOrderMapper.toDomain(data);
   }
 
   async create(formData: SupplierOrderFormInput): Promise<SupplierOrder> {
@@ -77,10 +77,10 @@ export class SupplierOrderService implements ISupplierOrderRepository {
       .single();
 
     if (error) throw error;
-    return this.mapDbRowToSupplierOrder(data) as SupplierOrder;
+    return SupplierOrderMapper.toDomain(data);
   }
 
-  async update(id: string, formData: Partial<SupplierOrderFormInput>): Promise<SupplierOrder> {
+  async update(id: { value: string }, formData: Partial<SupplierOrderFormInput>): Promise<SupplierOrder> {
     const updateData: any = {
       updated_at: new Date().toISOString()
     };
@@ -93,55 +93,50 @@ export class SupplierOrderService implements ISupplierOrderRepository {
     const { data, error } = await supabase
       .from(this.TABLE_NAME)
       .update(updateData)
-      .eq('id', Number(id))
+      .eq('id', Number(id.value))
       .select()
       .single();
 
     if (error) throw error;
-    return this.mapDbRowToSupplierOrder(data) as SupplierOrder;
+    return SupplierOrderMapper.toDomain(data);
   }
 
-  async updateStatus(id: string, status: SupplierOrder['status']): Promise<SupplierOrder> {
+  async delete(id: { value: string }): Promise<void> {
+    const { error } = await supabase
+      .from(this.TABLE_NAME)
+      .delete()
+      .eq('id', Number(id.value));
+
+    if (error) throw error;
+  }
+
+  async updateStatus(id: { value: string }, status: string): Promise<SupplierOrder> {
     const { data, error } = await supabase
       .from(this.TABLE_NAME)
       .update({
         estado_op: status,
         updated_at: new Date().toISOString()
       })
-      .eq('id', Number(id))
+      .eq('id', Number(id.value))
       .select()
       .single();
 
     if (error) throw error;
-    return this.mapDbRowToSupplierOrder(data) as SupplierOrder;
+    return SupplierOrderMapper.toDomain(data);
   }
 
-  async delete(id: string): Promise<void> {
-    const { error } = await supabase
-      .from(this.TABLE_NAME)
-      .delete()
-      .eq('id', Number(id));
-
-    if (error) throw error;
-  }
-
-  private mapDbRowToSupplierOrder(row: any): SupplierOrder {
+  private async mapAndValidateBeforeSave(formData: SupplierOrderFormInput): any {
     return {
-      id: row.id.toString(),
-      number: row.codigo_op || '',
-      supplierId: row.proveedor_id?.toString() || '',
-      supplierName: '', // Would need to be fetched from supplier table
-      date: row.fecha_entrega || new Date().toISOString(),
-      deliveryDate: row.fecha_programada || null,
-      total: Number(row.total_proveedor) || 0,
-      status: row.estado_op || 'draft',
-      items: [], // Would need to fetch these separately
-      paymentStatus: 'pending',
-      paymentTerms: row.tipo_pago || '',
-      notes: row.nota_pedido || '',
-      deliveryAddress: '',
-      createdAt: row.created_at || new Date().toISOString(),
-      updatedAt: row.updated_at || new Date().toISOString()
+      proveedor_id: Number(formData.supplierId),
+      fecha_entrega: formData.date,
+      fecha_programada: formData.deliveryDate,
+      nota_pedido: formData.notes,
+      total_proveedor: formData.total,
+      estado_op: 'draft',
+      tipo_pago: formData.paymentTerms,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      activo: true
     };
   }
 }
