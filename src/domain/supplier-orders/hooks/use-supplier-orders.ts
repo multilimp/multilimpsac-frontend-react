@@ -105,9 +105,12 @@ export const useUpdateSupplierOrder = () => {
           throw new Error('Orden no encontrada');
         }
         
-        // Update the order with new data
-        const updatedData = { ...existingOrder, ...data };
-        return await supplierOrderService.update(orderId, updatedData);
+        // Convert the form input data to domain model
+        // We need to handle the mixed types correctly
+        const updatedDomainData = SupplierOrderMapper.updateFromFormInput(existingOrder, data);
+        
+        // Update with the properly typed domain model
+        return await supplierOrderService.update(orderId, updatedDomainData);
       } catch (error) {
         throw error;
       }

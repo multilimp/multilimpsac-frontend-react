@@ -108,4 +108,45 @@ export class SupplierOrderMapper {
       updatedAt: createDateVO(new Date().toISOString())
     };
   }
+
+  // Add a method to handle updates properly - merging an existing domain object with form input
+  public static updateFromFormInput(existingOrder: SupplierOrder, input: Partial<SupplierOrderFormInput>): SupplierOrder {
+    // Start with a copy of the existing order
+    const updated: SupplierOrder = { ...existingOrder };
+    
+    // Update fields that might have changed
+    if (input.supplierId) updated.supplierId = createEntityId(input.supplierId);
+    if (input.date) updated.date = createDateVO(input.date);
+    if (input.deliveryDate) updated.deliveryDate = createDateVO(input.deliveryDate);
+    if (input.paymentTerms) updated.paymentTerms = input.paymentTerms;
+    if (input.notes) updated.notes = input.notes;
+    if (input.deliveryAddress) updated.deliveryAddress = input.deliveryAddress;
+    if (input.total !== undefined) updated.total = createMoney(input.total);
+    
+    // Update items if provided
+    if (input.items) {
+      updated.items = input.items.map(item => ({
+        id: item.id ? createEntityId(typeof item.id === 'string' ? item.id : item.id.value) : createEntityId(uuidv4()),
+        productId: createEntityId(typeof item.productId === 'string' ? item.productId : item.productId.value),
+        productName: item.productName,
+        description: item.description,
+        quantity: item.quantity,
+        unitPrice: createMoney(typeof item.unitPrice === 'number' ? item.unitPrice : item.unitPrice.amount),
+        total: createMoney(item.quantity * (typeof item.unitPrice === 'number' ? item.unitPrice : item.unitPrice.amount)),
+        unitMeasure: item.unitMeasure,
+        expectedDeliveryDate: createDateVO(
+          item.expectedDeliveryDate 
+            ? typeof item.expectedDeliveryDate === 'string'
+              ? item.expectedDeliveryDate
+              : item.expectedDeliveryDate.value
+            : new Date().toISOString()
+        )
+      }));
+    }
+    
+    // Always update updatedAt timestamp
+    updated.updatedAt = createDateVO(new Date().toISOString());
+    
+    return updated;
+  }
 }
