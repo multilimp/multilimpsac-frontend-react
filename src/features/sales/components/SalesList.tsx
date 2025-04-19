@@ -1,20 +1,21 @@
 
 import React, { useState } from 'react';
-import { DataGrid, ColumnType } from '@/components/ui/data-grid';
+import { DataGrid } from '@/components/ui/data-grid';
 import { Button } from '@/components/ui/button';
-import { Download, RefreshCcw, Eye, Edit, Trash2 } from 'lucide-react';
+import { Download, RefreshCcw, Eye, FileText } from 'lucide-react';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { 
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+  Dialog, 
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { PurchaseOrder } from '@/features/purchaseOrder/models/purchaseOrder';
-import SalesStatusBadge from './SalesStatusBadge';
 import { useToast } from '@/components/ui/use-toast';
 import { formatCurrency } from '@/lib/utils';
 
@@ -30,171 +31,164 @@ const SalesList: React.FC<SalesListProps> = ({
   onRefresh
 }) => {
   const { toast } = useToast();
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedSale, setSelectedSale] = useState<PurchaseOrder | null>(null);
+  const [selectedContact, setSelectedContact] = useState<any>(null);
+  const [isContactViewOpen, setIsContactViewOpen] = useState(false);
+
+  const handleViewContact = (contact: any) => {
+    setSelectedContact(contact);
+    setIsContactViewOpen(true);
+  };
+
+  const openDocument = (url: string | undefined) => {
+    if (url) {
+      window.open(url, '_blank');
+    } else {
+      toast({
+        title: "Documento no disponible",
+        description: "No se ha cargado el documento aún",
+        variant: "destructive",
+      });
+    }
+  };
 
   // Define columns for DataGrid
   const columns = [
     {
-      key: 'orderNumber',
-      name: 'Nº Venta',
-      type: 'string' as ColumnType,
+      key: 'codigo_venta',
+      name: 'Código Venta',
+      type: 'string' as const,
       sortable: true,
       filterable: true,
     },
     {
       key: 'clientName',
       name: 'Cliente',
-      type: 'string' as ColumnType,
+      type: 'string' as const,
       sortable: true,
       filterable: true,
     },
     {
-      key: 'date',
-      name: 'Fecha',
-      type: 'date' as ColumnType,
+      key: 'clientRuc',
+      name: 'RUC Cliente',
+      type: 'string' as const,
       sortable: true,
       filterable: true,
     },
     {
-      key: 'type',
-      name: 'Tipo',
-      type: 'string' as ColumnType,
+      key: 'enterpriseRuc',
+      name: 'RUC Empresa',
+      type: 'string' as const,
       sortable: true,
       filterable: true,
     },
     {
-      key: 'total',
-      name: 'Total',
-      type: 'number' as ColumnType,
+      key: 'enterpriseName',
+      name: 'Razón Social Empresa',
+      type: 'string' as const,
       sortable: true,
       filterable: true,
     },
     {
-      key: 'status',
-      name: 'Estado',
-      type: 'string' as ColumnType,
-      sortable: true,
-      filterable: true,
-    },
-    {
-      key: 'actions',
-      name: 'Acciones',
-      type: 'string' as ColumnType,
+      key: 'contact',
+      name: 'Contacto',
+      type: 'string' as const,
       sortable: false,
       filterable: false,
+      cell: (row: any) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => handleViewContact(row.contact)}
+        >
+          <Eye className="h-4 w-4" />
+        </Button>
+      ),
     },
-  ];
-
-  // Handle row actions
-  const handleViewSale = (sale: PurchaseOrder) => {
-    console.log('View sale:', sale);
-    // Implement view logic
-  };
-
-  const handleEditSale = (sale: PurchaseOrder) => {
-    console.log('Edit sale:', sale);
-    // Implement edit logic
-  };
-
-  const handleDeleteSale = (sale: PurchaseOrder) => {
-    setSelectedSale(sale);
-    setDeleteDialogOpen(true);
-  };
-
-  const confirmDeleteSale = async () => {
-    if (!selectedSale) return;
-    
-    try {
-      // Here you would call the delete API
-      console.log('Deleting sale:', selectedSale.id);
-      
-      toast({
-        title: "Venta eliminada",
-        description: `La venta ${selectedSale.orderNumber} ha sido eliminada`,
-      });
-      
-      onRefresh();
-    } catch (error) {
-      console.error('Error deleting sale:', error);
-      toast({
-        title: "Error",
-        description: "No se pudo eliminar la venta",
-        variant: "destructive",
-      });
-    } finally {
-      setDeleteDialogOpen(false);
-      setSelectedSale(null);
-    }
-  };
-
-  // Format data for DataGrid with complete objects
-  const formattedData = sales.map(sale => {
-    // Create a formatted version but preserve all original properties
-    return {
-      ...sale, // Keep all original properties
-      // Add formatted versions of properties
-      formattedType: sale.type === 'public' ? 'Pública' : 'Privada',
-      formattedTotal: formatCurrency(sale.total),
-      statusBadge: <SalesStatusBadge status={sale.status} />,
-      actionButtons: (
+    {
+      key: 'catalogo',
+      name: 'Catálogo',
+      type: 'string' as const,
+      sortable: true,
+      filterable: true,
+    },
+    {
+      key: 'fecha_form',
+      name: 'Fecha Formalización',
+      type: 'date' as const,
+      sortable: true,
+      filterable: true,
+    },
+    {
+      key: 'fecha_max_form',
+      name: 'Fecha Máx. Entrega',
+      type: 'date' as const,
+      sortable: true,
+      filterable: true,
+    },
+    {
+      key: 'monto_venta',
+      name: 'Monto Venta',
+      type: 'number' as const,
+      sortable: true,
+      filterable: true,
+      cell: (row: any) => formatCurrency(row.monto_venta),
+    },
+    {
+      key: 'cod_unidad',
+      name: 'CUE',
+      type: 'string' as const,
+      sortable: true,
+      filterable: true,
+    },
+    {
+      key: 'departamento_entrega',
+      name: 'Departamento Entrega',
+      type: 'string' as const,
+      sortable: true,
+      filterable: true,
+    },
+    {
+      key: 'documents',
+      name: 'Documentos',
+      type: 'string' as const,
+      sortable: false,
+      filterable: false,
+      cell: (row: any) => (
         <div className="flex space-x-2">
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleViewSale(sale);
-            }}
+            onClick={() => openDocument(row.documento_oce)}
           >
-            <Eye className="h-4 w-4" />
+            <FileText className="h-4 w-4 mr-1" />
+            OCE
           </Button>
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleEditSale(sale);
-            }}
+            onClick={() => openDocument(row.documento_ocf)}
           >
-            <Edit className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-destructive"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDeleteSale(sale);
-            }}
-          >
-            <Trash2 className="h-4 w-4" />
+            <FileText className="h-4 w-4 mr-1" />
+            OCF
           </Button>
         </div>
       ),
-    };
-  });
+    },
+  ];
 
-  const handleRowClick = (row: any) => {
-    const originalSale = sales.find(s => s.id === row.id);
-    if (originalSale) {
-      handleViewSale(originalSale);
-    }
-  };
-
-  const handleEditAction = (row: any) => {
-    const originalSale = sales.find(s => s.id === row.id);
-    if (originalSale) {
-      handleEditSale(originalSale);
-    }
-  };
-
-  const handleDeleteAction = (row: any) => {
-    const originalSale = sales.find(s => s.id === row.id);
-    if (originalSale) {
-      handleDeleteSale(originalSale);
-    }
-  };
+  // Format data for DataGrid
+  const formattedData = sales.map(sale => ({
+    ...sale,
+    codigo_venta: sale.orderNumber,
+    clientRuc: sale.clientId,
+    enterpriseRuc: "RUC-EMPRESA", // This should come from your data
+    enterpriseName: "NOMBRE-EMPRESA", // This should come from your data
+    contact: {
+      name: "Contact Name", // This should come from your data
+      phone: "Contact Phone",
+      email: "contact@email.com"
+    },
+  }));
 
   return (
     <div className="space-y-4">
@@ -220,28 +214,31 @@ const SalesList: React.FC<SalesListProps> = ({
         data={formattedData}
         columns={columns}
         loading={isLoading}
-        onRowClick={handleRowClick}
-        onEdit={handleEditAction}
-        onDelete={handleDeleteAction}
       />
-      
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>¿Está seguro?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta acción no se puede deshacer. Esto eliminará permanentemente la venta
-              {selectedSale && ` ${selectedSale.orderNumber}`} y los datos asociados.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDeleteSale} className="bg-destructive">
-              Eliminar
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+
+      <Sheet open={isContactViewOpen} onOpenChange={setIsContactViewOpen}>
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>Detalles del Contacto</SheetTitle>
+          </SheetHeader>
+          {selectedContact && (
+            <div className="space-y-4 mt-4">
+              <div>
+                <label className="font-medium">Nombre:</label>
+                <p>{selectedContact.name}</p>
+              </div>
+              <div>
+                <label className="font-medium">Teléfono:</label>
+                <p>{selectedContact.phone}</p>
+              </div>
+              <div>
+                <label className="font-medium">Email:</label>
+                <p>{selectedContact.email}</p>
+              </div>
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };
