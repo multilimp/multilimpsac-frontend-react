@@ -1,4 +1,4 @@
-import { supabase } from '@/integrations/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { Sale, SaleFormInput } from '../models/sale.model';
 import { ISaleRepository, SaleFilter } from '../repositories/sale.repository.interface';
 

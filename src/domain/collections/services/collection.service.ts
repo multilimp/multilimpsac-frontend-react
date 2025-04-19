@@ -1,18 +1,14 @@
-import { supabase } from '@/integrations/supabase';
-import { Collection, CollectionFormInput, Payment } from '../models/collection.model';
+import { supabase } from '@/integrations/supabase/client';
+import { Collection, CollectionFormInput } from '../models/collection.model';
 import { ICollectionRepository, CollectionFilter } from '../repositories/collection.repository.interface';
 
 export class CollectionService implements ICollectionRepository {
   private readonly TABLE_NAME = 'collections';
-  private readonly PAYMENTS_TABLE = 'collection_payments';
 
   async getAll(filters?: CollectionFilter): Promise<{ data: Collection[]; count: number }> {
     let query = supabase
       .from(this.TABLE_NAME)
-      .select(`
-        *,
-        payments:${this.PAYMENTS_TABLE}(*)
-      `, { count: 'exact' });
+      .select('*', { count: 'exact' });
 
     if (filters?.status) {
       query = query.eq('status', filters.status);
@@ -27,12 +23,13 @@ export class CollectionService implements ICollectionRepository {
       query = query.lte('date', filters.toDate);
     }
     if (filters?.searchTerm) {
-      query = query.or(`invoiceNumber.ilike.%${filters.searchTerm}%,clientName.ilike.%${filters.searchTerm}%`);
+      query = query.or(`number.ilike.%${filters.searchTerm}%,clientName.ilike.%${filters.searchTerm}%`);
     }
 
+    // Paginación
     const from = filters?.page ? (filters.page - 1) * (filters.pageSize || 10) : 0;
     const to = from + (filters.pageSize || 10) - 1;
-    query = query.range(from, to).order('date', { ascending: false });
+    query = query.range(from, to);
 
     const { data, error, count } = await query;
     
@@ -47,10 +44,7 @@ export class CollectionService implements ICollectionRepository {
   async getById(id: string): Promise<Collection> {
     const { data, error } = await supabase
       .from(this.TABLE_NAME)
-      .select(`
-        *,
-        payments:${this.PAYMENTS_TABLE}(*)
-      `)
+      .select('*')
       .eq('id', id)
       .single();
 
@@ -66,14 +60,10 @@ export class CollectionService implements ICollectionRepository {
       .insert({
         ...formData,
         status: 'pending',
-        balance: formData.amount,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       })
-      .select(`
-        *,
-        payments:${this.PAYMENTS_TABLE}(*)
-      `)
+      .select()
       .single();
 
     if (error) throw error;
@@ -88,13 +78,12 @@ export class CollectionService implements ICollectionRepository {
         updatedAt: new Date().toISOString()
       })
       .eq('id', id)
-      .select(`
-        *,
-        payments:${this.PAYMENTS_TABLE}(*)
-      `)
+      .select()
       .single();
 
     if (error) throw error;
+    if (!data) throw new Error('Collection not found');
+    
     return data as Collection;
   }
 
@@ -106,71 +95,11 @@ export class CollectionService implements ICollectionRepository {
         updatedAt: new Date().toISOString()
       })
       .eq('id', id)
-      .select(`
-        *,
-        payments:${this.PAYMENTS_TABLE}(*)
-      `)
+      .select()
       .single();
 
     if (error) throw error;
     return data as Collection;
-  }
-
-  async addPayment(
-    collectionId: string, 
-    payment: Omit<Payment, 'id' | 'collectionId' | 'createdAt' | 'createdBy'>
-  ): Promise<Payment> {
-    // Iniciamos una transacción para actualizar tanto el pago como la cobranza
-    const { data: newPayment, error: paymentError } = await supabase
-      .from(this.PAYMENTS_TABLE)
-      .insert({
-        ...payment,
-        collectionId,
-        createdAt: new Date().toISOString()
-      })
-      .select()
-      .single();
-
-    if (paymentError) throw paymentError;
-
-    // Actualizamos el balance y estado de la cobranza
-    const { data: collection } = await this.getById(collectionId);
-    const newBalance = collection.balance - payment.amount;
-    const newStatus = newBalance <= 0 ? 'completed' : 'partial';
-
-    await this.update(collectionId, {
-      balance: newBalance,
-      status: newStatus
-    });
-
-    return newPayment as Payment;
-  }
-
-  async updatePayment(
-    collectionId: string,
-    paymentId: string,
-    payment: Partial<Omit<Payment, 'id' | 'collectionId' | 'createdAt' | 'createdBy'>>
-  ): Promise<Payment> {
-    const { data, error } = await supabase
-      .from(this.PAYMENTS_TABLE)
-      .update(payment)
-      .eq('id', paymentId)
-      .eq('collectionId', collectionId)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data as Payment;
-  }
-
-  async deletePayment(collectionId: string, paymentId: string): Promise<void> {
-    const { error } = await supabase
-      .from(this.PAYMENTS_TABLE)
-      .delete()
-      .eq('id', paymentId)
-      .eq('collectionId', collectionId);
-
-    if (error) throw error;
   }
 
   async delete(id: string): Promise<void> {

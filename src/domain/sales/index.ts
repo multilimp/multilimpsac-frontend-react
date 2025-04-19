@@ -1,2 +1,3 @@
+
 export * from './models/sale.model';
-export { ISaleRepository } from './repositories/sale.repository.interface';
+export type { ISaleRepository } from './repositories/sale.repository.interface';

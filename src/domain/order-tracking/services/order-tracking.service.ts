@@ -1,4 +1,4 @@
-import { supabase } from '@/integrations/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { OrderTracking, OrderTrackingFormInput, TrackingEvent } from '../models/order-tracking.model';
 import { IOrderTrackingRepository, OrderTrackingFilter } from '../repositories/order-tracking.repository.interface';
 

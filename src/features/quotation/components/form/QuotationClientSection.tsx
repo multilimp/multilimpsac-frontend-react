@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -7,14 +8,21 @@ import { UseFormReturn } from "react-hook-form";
 import { QuotationFormValues } from "../../models/quotationForm.model";
 import { Cliente } from "@/features/client/models/client.model";
 import { ClientSelectionModal } from "./ClientSelectionModal";
+import { clientService } from "@/features/quotation/services/clientService";
+import { useQuery } from "@tanstack/react-query";
 
 interface QuotationClientSectionProps {
   form: UseFormReturn<QuotationFormValues>;
-  clients: Cliente[];
 }
 
-const QuotationClientSection: React.FC<QuotationClientSectionProps> = ({ form, clients }) => {
+const QuotationClientSection: React.FC<QuotationClientSectionProps> = ({ form }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  const { data: clients = [] } = useQuery({
+    queryKey: ['clients'],
+    queryFn: () => clientService.getClients()
+  });
+  
   const selectedClient = clients.find(c => c.id === form.watch("clientId"));
 
   return (
@@ -45,35 +53,6 @@ const QuotationClientSection: React.FC<QuotationClientSectionProps> = ({ form, c
                   <Search className="h-4 w-4" />
                 </Button>
               </div>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="contactId"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Contacto</FormLabel>
-              <Select 
-                onValueChange={field.onChange} 
-                value={field.value || ""} 
-                disabled={!selectedClient || loading}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar contacto" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {contacts.map((contact) => (
-                    <SelectItem key={contact.id} value={contact.id}>
-                      {contact.nombre} - {contact.cargo}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
               <FormMessage />
             </FormItem>
           )}

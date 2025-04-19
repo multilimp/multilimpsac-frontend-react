@@ -1,2 +1,3 @@
+
 export * from './models/collection.model';
-export { ICollectionRepository } from './repositories/collection.repository.interface';
+export type { ICollectionRepository } from './repositories/collection.repository.interface';

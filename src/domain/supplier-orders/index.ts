@@ -1,2 +1,3 @@
+
 export * from './models/supplier-order.model';
-export { ISupplierOrderRepository } from './repositories/supplier-order.repository.interface';
+export type { ISupplierOrderRepository } from './repositories/supplier-order.repository.interface';

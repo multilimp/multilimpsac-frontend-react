@@ -1,4 +1,4 @@
-import { supabase } from '@/integrations/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { SupplierOrder, SupplierOrderFormInput } from '../models/supplier-order.model';
 import { ISupplierOrderRepository, SupplierOrderFilter } from '../repositories/supplier-order.repository.interface';
 

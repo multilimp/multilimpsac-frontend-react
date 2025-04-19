@@ -1,22 +1,15 @@
-import { supabase } from '@/integrations/supabase';
-import { Invoice, InvoiceFormInput } from '../models/billing.model';
-import { IBillingRepository, InvoiceFilter } from '../repositories/billing.repository.interface';
+import { supabase } from '@/integrations/supabase/client';
+import { Billing, BillingFormInput } from '../models/billing.model';
+import { IBillingRepository, BillingFilter } from '../repositories/billing.repository.interface';
 
 export class BillingService implements IBillingRepository {
-  private readonly TABLE_NAME = 'invoices';
-  private readonly ITEMS_TABLE = 'invoice_items';
+  private readonly TABLE_NAME = 'billings';
 
-  async getAll(filters?: InvoiceFilter): Promise<{ data: Invoice[]; count: number }> {
+  async getAll(filters?: BillingFilter): Promise<{ data: Billing[]; count: number }> {
     let query = supabase
       .from(this.TABLE_NAME)
-      .select(`
-        *,
-        items:${this.ITEMS_TABLE}(*)
-      `, { count: 'exact' });
+      .select('*', { count: 'exact' });
 
-    if (filters?.type) {
-      query = query.eq('type', filters.type);
-    }
     if (filters?.status) {
       query = query.eq('status', filters.status);
     }
@@ -29,67 +22,55 @@ export class BillingService implements IBillingRepository {
     if (filters?.toDate) {
       query = query.lte('date', filters.toDate);
     }
-    if (filters?.series) {
-      query = query.eq('series', filters.series);
-    }
     if (filters?.searchTerm) {
       query = query.or(`number.ilike.%${filters.searchTerm}%,clientName.ilike.%${filters.searchTerm}%`);
     }
-    if (filters?.paymentStatus) {
-      query = query.eq('paymentStatus', filters.paymentStatus);
-    }
 
+    // Paginación
     const from = filters?.page ? (filters.page - 1) * (filters.pageSize || 10) : 0;
     const to = from + (filters.pageSize || 10) - 1;
-    query = query.range(from, to).order('date', { ascending: false });
+    query = query.range(from, to);
 
     const { data, error, count } = await query;
     
     if (error) throw error;
     
     return {
-      data: (data as Invoice[]) || [],
+      data: (data as Billing[]) || [],
       count: count || 0
     };
   }
 
-  async getById(id: string): Promise<Invoice> {
+  async getById(id: string): Promise<Billing> {
     const { data, error } = await supabase
       .from(this.TABLE_NAME)
-      .select(`
-        *,
-        items:${this.ITEMS_TABLE}(*)
-      `)
+      .select('*')
       .eq('id', id)
       .single();
 
     if (error) throw error;
-    if (!data) throw new Error('Invoice not found');
+    if (!data) throw new Error('Billing not found');
 
-    return data as Invoice;
+    return data as Billing;
   }
 
-  async create(formData: InvoiceFormInput): Promise<Invoice> {
+  async create(formData: BillingFormInput): Promise<Billing> {
     const { data, error } = await supabase
       .from(this.TABLE_NAME)
       .insert({
         ...formData,
-        status: 'draft',
-        paymentStatus: 'pending',
+        status: 'pending',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       })
-      .select(`
-        *,
-        items:${this.ITEMS_TABLE}(*)
-      `)
+      .select()
       .single();
 
     if (error) throw error;
-    return data as Invoice;
+    return data as Billing;
   }
 
-  async update(id: string, formData: Partial<InvoiceFormInput>): Promise<Invoice> {
+  async update(id: string, formData: Partial<BillingFormInput>): Promise<Billing> {
     const { data, error } = await supabase
       .from(this.TABLE_NAME)
       .update({
@@ -97,17 +78,14 @@ export class BillingService implements IBillingRepository {
         updatedAt: new Date().toISOString()
       })
       .eq('id', id)
-      .select(`
-        *,
-        items:${this.ITEMS_TABLE}(*)
-      `)
+      .select()
       .single();
 
     if (error) throw error;
-    return data as Invoice;
+    return data as Billing;
   }
 
-  async updateStatus(id: string, status: Invoice['status']): Promise<Invoice> {
+  async updateStatus(id: string, status: Billing['status']): Promise<Billing> {
     const { data, error } = await supabase
       .from(this.TABLE_NAME)
       .update({
@@ -115,70 +93,11 @@ export class BillingService implements IBillingRepository {
         updatedAt: new Date().toISOString()
       })
       .eq('id', id)
-      .select(`
-        *,
-        items:${this.ITEMS_TABLE}(*)
-      `)
+      .select()
       .single();
 
     if (error) throw error;
-    return data as Invoice;
-  }
-
-  async updatePaymentStatus(id: string, paymentStatus: Invoice['paymentStatus']): Promise<Invoice> {
-    const { data, error } = await supabase
-      .from(this.TABLE_NAME)
-      .update({
-        paymentStatus,
-        updatedAt: new Date().toISOString()
-      })
-      .eq('id', id)
-      .select(`
-        *,
-        items:${this.ITEMS_TABLE}(*)
-      `)
-      .single();
-
-    if (error) throw error;
-    return data as Invoice;
-  }
-
-  async void(id: string): Promise<Invoice> {
-    const { data, error } = await supabase
-      .from(this.TABLE_NAME)
-      .update({
-        status: 'void',
-        updatedAt: new Date().toISOString()
-      })
-      .eq('id', id)
-      .select(`
-        *,
-        items:${this.ITEMS_TABLE}(*)
-      `)
-      .single();
-
-    if (error) throw error;
-    return data as Invoice;
-  }
-
-  async generateElectronicBilling(id: string): Promise<Invoice> {
-    // Aquí iría la lógica para generar la facturación electrónica
-    // Por ahora solo actualizamos el estado
-    const { data, error } = await supabase
-      .from(this.TABLE_NAME)
-      .update({
-        electronicBillingStatus: 'sent',
-        updatedAt: new Date().toISOString()
-      })
-      .eq('id', id)
-      .select(`
-        *,
-        items:${this.ITEMS_TABLE}(*)
-      `)
-      .single();
-
-    if (error) throw error;
-    return data as Invoice;
+    return data as Billing;
   }
 
   async delete(id: string): Promise<void> {

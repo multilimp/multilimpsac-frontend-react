@@ -1,2 +1,3 @@
+
 export * from './models/treasury.model';
-export { ITreasuryRepository } from './repositories/treasury.repository.interface';
+export type { ITreasuryRepository } from './repositories/treasury.repository.interface';
