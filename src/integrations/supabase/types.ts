@@ -682,118 +682,277 @@ export type Database = {
           },
         ]
       }
+      historial_gestiones: {
+        Row: {
+          created_at: string | null
+          descripcion: string | null
+          fecha_gestion: string | null
+          historial: string | null
+          id: number
+          orden_compra_id: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          descripcion?: string | null
+          fecha_gestion?: string | null
+          historial?: string | null
+          id?: number
+          orden_compra_id?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          descripcion?: string | null
+          fecha_gestion?: string | null
+          historial?: string | null
+          id?: number
+          orden_compra_id?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       ordenes_compra: {
         Row: {
           archivo_oc: string | null
+          cargo_entrega: number | null
+          catalogo: string | null
           catalogo_empresa_id: number | null
           cliente_id: number | null
           codigo_venta: string
           contacto_cliente_id: number | null
+          contacto_cobrador: number | null
+          contacto_transporte_id: number | null
+          cot_transporte: string | null
           created_at: string | null
           departamento_entrega: string | null
+          detraccion: number | null
           direccion_entrega: string | null
           distrito_entrega: string | null
           documento_oce: string | null
           documento_ocf: string | null
           documento_peru_compras: string | null
           empresa_id: number | null
-          estado_activo: boolean
+          estado_activo: number | null
           estado_cobranza: string | null
+          estado_facturacion: string | null
+          estado_moroza: string | null
+          estado_tesoreria: string | null
           etapa_actual: string
           etapa_siaf: string | null
+          factura: string | null
+          fecha_cobro: string | null
           fecha_emision: string | null
           fecha_entrega: string | null
           fecha_entrega_oc: string | null
           fecha_estado_cobranza: string | null
+          fecha_factura: string | null
           fecha_form: string | null
           fecha_max_form: string | null
+          fecha_orden_pedido: string | null
           fecha_peru_compras: string | null
+          fecha_programacion: string | null
           fecha_proxima_gestion: string | null
           fecha_siaf: string | null
+          fin_cobranza: string | null
+          flete: number | null
+          forma_envio: string | null
+          grr: string | null
           id: number
+          inicio_cobranza: string | null
+          monto_detraccion: number | null
+          monto_retencion: number | null
           monto_venta: number | null
           neto_cobrado: number | null
+          nota_credito: string | null
+          nota_op: string | null
+          op_proveedor: string | null
+          orden_compra_id: number | null
           penalidad: number | null
           productos: Json | null
           provincia_entrega: string | null
+          proxima_gestion: string | null
+          re_detraccion: number | null
+          re_factura: string | null
+          re_fecha_factura: string | null
+          re_forma_envio: string | null
+          re_grr: string | null
+          re_retencion: number | null
           referencia_entrega: string | null
+          retencion: number | null
           siaf: string | null
+          t_departamento: string | null
+          t_direccion: string | null
+          t_distrito: string | null
+          t_factura: string | null
+          t_fecha_pago: string | null
+          t_grt: string | null
+          t_provincia: string | null
+          tipo_envio: string | null
+          transporte_id: number | null
+          transporte_nota: string | null
           updated_at: string | null
           venta_privada: boolean
         }
         Insert: {
           archivo_oc?: string | null
+          cargo_entrega?: number | null
+          catalogo?: string | null
           catalogo_empresa_id?: number | null
           cliente_id?: number | null
           codigo_venta: string
           contacto_cliente_id?: number | null
+          contacto_cobrador?: number | null
+          contacto_transporte_id?: number | null
+          cot_transporte?: string | null
           created_at?: string | null
           departamento_entrega?: string | null
+          detraccion?: number | null
           direccion_entrega?: string | null
           distrito_entrega?: string | null
           documento_oce?: string | null
           documento_ocf?: string | null
           documento_peru_compras?: string | null
           empresa_id?: number | null
-          estado_activo?: boolean
+          estado_activo?: number | null
           estado_cobranza?: string | null
+          estado_facturacion?: string | null
+          estado_moroza?: string | null
+          estado_tesoreria?: string | null
           etapa_actual?: string
           etapa_siaf?: string | null
+          factura?: string | null
+          fecha_cobro?: string | null
           fecha_emision?: string | null
           fecha_entrega?: string | null
           fecha_entrega_oc?: string | null
           fecha_estado_cobranza?: string | null
+          fecha_factura?: string | null
           fecha_form?: string | null
           fecha_max_form?: string | null
+          fecha_orden_pedido?: string | null
           fecha_peru_compras?: string | null
+          fecha_programacion?: string | null
           fecha_proxima_gestion?: string | null
           fecha_siaf?: string | null
+          fin_cobranza?: string | null
+          flete?: number | null
+          forma_envio?: string | null
+          grr?: string | null
           id?: number
+          inicio_cobranza?: string | null
+          monto_detraccion?: number | null
+          monto_retencion?: number | null
           monto_venta?: number | null
           neto_cobrado?: number | null
+          nota_credito?: string | null
+          nota_op?: string | null
+          op_proveedor?: string | null
+          orden_compra_id?: number | null
           penalidad?: number | null
           productos?: Json | null
           provincia_entrega?: string | null
+          proxima_gestion?: string | null
+          re_detraccion?: number | null
+          re_factura?: string | null
+          re_fecha_factura?: string | null
+          re_forma_envio?: string | null
+          re_grr?: string | null
+          re_retencion?: number | null
           referencia_entrega?: string | null
+          retencion?: number | null
           siaf?: string | null
+          t_departamento?: string | null
+          t_direccion?: string | null
+          t_distrito?: string | null
+          t_factura?: string | null
+          t_fecha_pago?: string | null
+          t_grt?: string | null
+          t_provincia?: string | null
+          tipo_envio?: string | null
+          transporte_id?: number | null
+          transporte_nota?: string | null
           updated_at?: string | null
           venta_privada?: boolean
         }
         Update: {
           archivo_oc?: string | null
+          cargo_entrega?: number | null
+          catalogo?: string | null
           catalogo_empresa_id?: number | null
           cliente_id?: number | null
           codigo_venta?: string
           contacto_cliente_id?: number | null
+          contacto_cobrador?: number | null
+          contacto_transporte_id?: number | null
+          cot_transporte?: string | null
           created_at?: string | null
           departamento_entrega?: string | null
+          detraccion?: number | null
           direccion_entrega?: string | null
           distrito_entrega?: string | null
           documento_oce?: string | null
           documento_ocf?: string | null
           documento_peru_compras?: string | null
           empresa_id?: number | null
-          estado_activo?: boolean
+          estado_activo?: number | null
           estado_cobranza?: string | null
+          estado_facturacion?: string | null
+          estado_moroza?: string | null
+          estado_tesoreria?: string | null
           etapa_actual?: string
           etapa_siaf?: string | null
+          factura?: string | null
+          fecha_cobro?: string | null
           fecha_emision?: string | null
           fecha_entrega?: string | null
           fecha_entrega_oc?: string | null
           fecha_estado_cobranza?: string | null
+          fecha_factura?: string | null
           fecha_form?: string | null
           fecha_max_form?: string | null
+          fecha_orden_pedido?: string | null
           fecha_peru_compras?: string | null
+          fecha_programacion?: string | null
           fecha_proxima_gestion?: string | null
           fecha_siaf?: string | null
+          fin_cobranza?: string | null
+          flete?: number | null
+          forma_envio?: string | null
+          grr?: string | null
           id?: number
+          inicio_cobranza?: string | null
+          monto_detraccion?: number | null
+          monto_retencion?: number | null
           monto_venta?: number | null
           neto_cobrado?: number | null
+          nota_credito?: string | null
+          nota_op?: string | null
+          op_proveedor?: string | null
+          orden_compra_id?: number | null
           penalidad?: number | null
           productos?: Json | null
           provincia_entrega?: string | null
+          proxima_gestion?: string | null
+          re_detraccion?: number | null
+          re_factura?: string | null
+          re_fecha_factura?: string | null
+          re_forma_envio?: string | null
+          re_grr?: string | null
+          re_retencion?: number | null
           referencia_entrega?: string | null
+          retencion?: number | null
           siaf?: string | null
+          t_departamento?: string | null
+          t_direccion?: string | null
+          t_distrito?: string | null
+          t_factura?: string | null
+          t_fecha_pago?: string | null
+          t_grt?: string | null
+          t_provincia?: string | null
+          tipo_envio?: string | null
+          transporte_id?: number | null
+          transporte_nota?: string | null
           updated_at?: string | null
           venta_privada?: boolean
         }
@@ -1225,6 +1384,7 @@ export type Database = {
       }
       productos_ordenes_proveedor: {
         Row: {
+          almacen: number | null
           cantidad: number | null
           cantidad_almacen: number | null
           cantidad_total: number | null
@@ -1232,13 +1392,17 @@ export type Database = {
           created_at: string | null
           descripcion: string | null
           id: number
-          orden_proveedor_id: number
+          id_orden_pedido: string | null
+          id_seguimiento: string | null
+          orden_proveedor_id: number | null
+          p_cliente: number | null
           precio_unitario: number | null
           total: number | null
           unidad_medida: string | null
           updated_at: string | null
         }
         Insert: {
+          almacen?: number | null
           cantidad?: number | null
           cantidad_almacen?: number | null
           cantidad_total?: number | null
@@ -1246,13 +1410,17 @@ export type Database = {
           created_at?: string | null
           descripcion?: string | null
           id?: number
-          orden_proveedor_id: number
+          id_orden_pedido?: string | null
+          id_seguimiento?: string | null
+          orden_proveedor_id?: number | null
+          p_cliente?: number | null
           precio_unitario?: number | null
           total?: number | null
           unidad_medida?: string | null
           updated_at?: string | null
         }
         Update: {
+          almacen?: number | null
           cantidad?: number | null
           cantidad_almacen?: number | null
           cantidad_total?: number | null
@@ -1260,21 +1428,16 @@ export type Database = {
           created_at?: string | null
           descripcion?: string | null
           id?: number
-          orden_proveedor_id?: number
+          id_orden_pedido?: string | null
+          id_seguimiento?: string | null
+          orden_proveedor_id?: number | null
+          p_cliente?: number | null
           precio_unitario?: number | null
           total?: number | null
           unidad_medida?: string | null
           updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "productos_ordenes_proveedor_orden_proveedor_id_foreign"
-            columns: ["orden_proveedor_id"]
-            isOneToOne: false
-            referencedRelation: "ordenes_proveedor"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       proveedores: {
         Row: {
@@ -1314,6 +1477,81 @@ export type Database = {
           provincia?: string | null
           razon_social?: string | null
           ruc?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      saldo_proveedores: {
+        Row: {
+          banco: string | null
+          created_at: string | null
+          descripcion: string | null
+          fecha_pago: string | null
+          id: number
+          monto: number | null
+          proveedor_id: number | null
+          tipo: string | null
+          total: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          banco?: string | null
+          created_at?: string | null
+          descripcion?: string | null
+          fecha_pago?: string | null
+          id?: number
+          monto?: number | null
+          proveedor_id?: number | null
+          tipo?: string | null
+          total?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          banco?: string | null
+          created_at?: string | null
+          descripcion?: string | null
+          fecha_pago?: string | null
+          id?: number
+          monto?: number | null
+          proveedor_id?: number | null
+          tipo?: string | null
+          total?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      tesoreria_registros: {
+        Row: {
+          banco: string | null
+          created_at: string | null
+          descripcion: string | null
+          fecha_pago: string | null
+          id: number
+          orden_compra_id: number | null
+          orden_proveedor_id: number | null
+          total: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          banco?: string | null
+          created_at?: string | null
+          descripcion?: string | null
+          fecha_pago?: string | null
+          id?: number
+          orden_compra_id?: number | null
+          orden_proveedor_id?: number | null
+          total?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          banco?: string | null
+          created_at?: string | null
+          descripcion?: string | null
+          fecha_pago?: string | null
+          id?: number
+          orden_compra_id?: number | null
+          orden_proveedor_id?: number | null
+          total?: number | null
           updated_at?: string | null
         }
         Relationships: []
