@@ -37,7 +37,7 @@ export class SaleService implements ISaleRepository {
     if (error) throw error;
     
     return {
-      data: (data || []).map(item => this.mapDbRowToSale(item as any)) as Sale[],
+      data: (data || []).map(item => this.mapDbRowToSale(item)) as Sale[],
       count: count || 0
     };
   }
@@ -52,15 +52,19 @@ export class SaleService implements ISaleRepository {
     if (error) throw error;
     if (!data) throw new Error('Sale not found');
 
-    return this.mapDbRowToSale(data as any) as Sale;
+    return this.mapDbRowToSale(data) as Sale;
   }
 
   async create(formData: SaleFormInput): Promise<Sale> {
+    // Generate a unique sale code
+    const saleCode = `VTA-${Date.now()}`;
+
     const dbData = {
       cliente_id: Number(formData.clientId),
       fecha_form: formData.date,
       monto_venta: this.calculateTotal(formData.items),
       etapa_actual: this.mapStatusToDbValue('pending'),
+      codigo_venta: saleCode, // Add required codigo_venta field
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -72,7 +76,7 @@ export class SaleService implements ISaleRepository {
       .single();
 
     if (error) throw error;
-    return this.mapDbRowToSale(data as any) as Sale;
+    return this.mapDbRowToSale(data) as Sale;
   }
 
   async update(id: string, formData: Partial<SaleFormInput>): Promise<Sale> {
@@ -93,7 +97,7 @@ export class SaleService implements ISaleRepository {
       .single();
 
     if (error) throw error;
-    return this.mapDbRowToSale(data as any) as Sale;
+    return this.mapDbRowToSale(data) as Sale;
   }
 
   async updateStatus(id: string, status: Sale['status']): Promise<Sale> {
@@ -108,7 +112,7 @@ export class SaleService implements ISaleRepository {
       .single();
 
     if (error) throw error;
-    return this.mapDbRowToSale(data as any) as Sale;
+    return this.mapDbRowToSale(data) as Sale;
   }
 
   async delete(id: string): Promise<void> {
