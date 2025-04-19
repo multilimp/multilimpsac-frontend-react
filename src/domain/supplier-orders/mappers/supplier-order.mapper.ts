@@ -1,6 +1,6 @@
 
 import { SupplierOrder, SupplierOrderItem, SupplierOrderFormInput } from '../models/supplier-order.model';
-import { createEntityId, createDateVO, createMoney, createStatus } from '@/core/domain/types/value-objects';
+import { createEntityId, createDateVO, createMoney, createStatus, EntityId } from '@/core/domain/types/value-objects';
 import { v4 as uuidv4 } from 'uuid';
 
 export class SupplierOrderMapper {
@@ -98,7 +98,11 @@ export class SupplierOrderMapper {
         unitPrice: createMoney(item.unitPrice.amount),
         total: createMoney(item.quantity * item.unitPrice.amount),
         unitMeasure: item.unitMeasure,
-        expectedDeliveryDate: createDateVO(item.expectedDeliveryDate ? item.expectedDeliveryDate.value : new Date().toISOString())
+        expectedDeliveryDate: createDateVO(item.expectedDeliveryDate ? 
+          typeof item.expectedDeliveryDate === 'string' ? 
+            item.expectedDeliveryDate : 
+            item.expectedDeliveryDate.value 
+          : new Date().toISOString())
       })) || [],
       createdAt: createDateVO(new Date().toISOString()),
       updatedAt: createDateVO(new Date().toISOString())
