@@ -1,4 +1,3 @@
-
 import { SupplierOrder, SupplierOrderItem, SupplierOrderFormInput } from '../models/supplier-order.model';
 import { createEntityId, createDateVO, createMoney, createStatus, EntityId } from '@/core/domain/types/value-objects';
 import { v4 as uuidv4 } from 'uuid';
@@ -109,12 +108,9 @@ export class SupplierOrderMapper {
     };
   }
 
-  // Add a method to handle updates properly - merging an existing domain object with form input
   public static updateFromFormInput(existingOrder: SupplierOrder, input: Partial<SupplierOrderFormInput>): SupplierOrder {
-    // Start with a copy of the existing order
     const updated: SupplierOrder = { ...existingOrder };
     
-    // Update fields that might have changed
     if (input.supplierId) updated.supplierId = createEntityId(input.supplierId);
     if (input.date) updated.date = createDateVO(input.date);
     if (input.deliveryDate) updated.deliveryDate = createDateVO(input.deliveryDate);
@@ -123,10 +119,9 @@ export class SupplierOrderMapper {
     if (input.deliveryAddress) updated.deliveryAddress = input.deliveryAddress;
     if (input.total !== undefined) updated.total = createMoney(input.total);
     
-    // Update items if provided
     if (input.items) {
       updated.items = input.items.map(item => ({
-        id: item.id ? createEntityId(typeof item.id === 'string' ? item.id : item.id.value) : createEntityId(uuidv4()),
+        id: createEntityId(uuidv4()),
         productId: createEntityId(typeof item.productId === 'string' ? item.productId : item.productId.value),
         productName: item.productName,
         description: item.description,
@@ -144,7 +139,6 @@ export class SupplierOrderMapper {
       }));
     }
     
-    // Always update updatedAt timestamp
     updated.updatedAt = createDateVO(new Date().toISOString());
     
     return updated;

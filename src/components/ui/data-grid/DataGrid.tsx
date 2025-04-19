@@ -78,7 +78,8 @@ export function DataGrid<T extends { id: string | number }>({
     import("./utils").then(({ generateCSV, downloadCSV }) => {
       // Convert column keys to strings for CSV generation 
       const columnKeys = visibleColumnsKeys.map(key => String(key));
-      const csvContent = generateCSV(filteredData, columnKeys, columns);
+      // Make sure to pass the correct types to the generateCSV function
+      const csvContent = generateCSV(filteredData, columnKeys, visibleColumns);
       downloadCSV(csvContent);
     });
   };

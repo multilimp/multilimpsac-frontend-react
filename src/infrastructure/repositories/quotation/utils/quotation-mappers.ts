@@ -48,7 +48,7 @@ export function mapDbQuotationToDomain(
     date: createDateVO(dbQuotation.fecha_cotizacion),
     expiryDate: createDateVO(dbQuotation.fecha_entrega),
     total: createMoney(Number(dbQuotation.monto_total) || 0),
-    status: mapDbStatusToDomain(dbQuotation.estado) as QuotationStatus,
+    status: createStatus(mapDbStatusToDomain(dbQuotation.estado)),
     items: items,
     notes: dbQuotation.nota_pedido,
     paymentNote: dbQuotation.nota_pago,
