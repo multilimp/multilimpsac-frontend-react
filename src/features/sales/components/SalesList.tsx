@@ -1,23 +1,13 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { DataGrid } from '@/components/ui/data-grid';
 import { Button } from '@/components/ui/button';
-import { Download, RefreshCcw, Eye, FileText } from 'lucide-react';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import { 
-  Dialog, 
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Download, RefreshCcw, Eye } from 'lucide-react';
 import { PurchaseOrder } from '@/features/purchaseOrder/models/purchaseOrder';
-import { useToast } from '@/components/ui/use-toast';
 import { formatCurrency } from '@/lib/utils';
+import { useContactView } from '../hooks/useContactView';
+import { SalesDocumentActions } from './SalesDocumentActions';
+import { ContactDetailsSheet } from './ContactDetailsSheet';
 
 interface SalesListProps {
   sales: PurchaseOrder[];
@@ -30,64 +20,19 @@ const SalesList: React.FC<SalesListProps> = ({
   isLoading,
   onRefresh
 }) => {
-  const { toast } = useToast();
-  const [selectedContact, setSelectedContact] = useState<any>(null);
-  const [isContactViewOpen, setIsContactViewOpen] = useState(false);
+  const {
+    selectedContact,
+    isContactViewOpen,
+    setIsContactViewOpen,
+    handleViewContact,
+  } = useContactView();
 
-  const handleViewContact = (contact: any) => {
-    setSelectedContact(contact);
-    setIsContactViewOpen(true);
-  };
-
-  const openDocument = (url: string | undefined) => {
-    if (url) {
-      window.open(url, '_blank');
-    } else {
-      toast({
-        title: "Documento no disponible",
-        description: "No se ha cargado el documento aún",
-        variant: "destructive",
-      });
-    }
-  };
-
-  // Define columns for DataGrid
   const columns = [
-    {
-      key: 'codigo_venta',
-      name: 'Código Venta',
-      type: 'string' as const,
-      sortable: true,
-      filterable: true,
-    },
-    {
-      key: 'clientName',
-      name: 'Cliente',
-      type: 'string' as const,
-      sortable: true,
-      filterable: true,
-    },
-    {
-      key: 'clientRuc',
-      name: 'RUC Cliente',
-      type: 'string' as const,
-      sortable: true,
-      filterable: true,
-    },
-    {
-      key: 'enterpriseRuc',
-      name: 'RUC Empresa',
-      type: 'string' as const,
-      sortable: true,
-      filterable: true,
-    },
-    {
-      key: 'enterpriseName',
-      name: 'Razón Social Empresa',
-      type: 'string' as const,
-      sortable: true,
-      filterable: true,
-    },
+    { key: 'codigo_venta', name: 'Código Venta', type: 'string' as const, sortable: true, filterable: true },
+    { key: 'clientName', name: 'Cliente', type: 'string' as const, sortable: true, filterable: true },
+    { key: 'clientRuc', name: 'RUC Cliente', type: 'string' as const, sortable: true, filterable: true },
+    { key: 'enterpriseRuc', name: 'RUC Empresa', type: 'string' as const, sortable: true, filterable: true },
+    { key: 'enterpriseName', name: 'Razón Social Empresa', type: 'string' as const, sortable: true, filterable: true },
     {
       key: 'contact',
       name: 'Contacto',
@@ -104,27 +49,9 @@ const SalesList: React.FC<SalesListProps> = ({
         </Button>
       ),
     },
-    {
-      key: 'catalogo',
-      name: 'Catálogo',
-      type: 'string' as const,
-      sortable: true,
-      filterable: true,
-    },
-    {
-      key: 'fecha_form',
-      name: 'Fecha Formalización',
-      type: 'date' as const,
-      sortable: true,
-      filterable: true,
-    },
-    {
-      key: 'fecha_max_form',
-      name: 'Fecha Máx. Entrega',
-      type: 'date' as const,
-      sortable: true,
-      filterable: true,
-    },
+    { key: 'catalogo', name: 'Catálogo', type: 'string' as const, sortable: true, filterable: true },
+    { key: 'fecha_form', name: 'Fecha Formalización', type: 'date' as const, sortable: true, filterable: true },
+    { key: 'fecha_max_form', name: 'Fecha Máx. Entrega', type: 'date' as const, sortable: true, filterable: true },
     {
       key: 'monto_venta',
       name: 'Monto Venta',
@@ -133,20 +60,8 @@ const SalesList: React.FC<SalesListProps> = ({
       filterable: true,
       cell: (row: any) => formatCurrency(row.monto_venta),
     },
-    {
-      key: 'cod_unidad',
-      name: 'CUE',
-      type: 'string' as const,
-      sortable: true,
-      filterable: true,
-    },
-    {
-      key: 'departamento_entrega',
-      name: 'Departamento Entrega',
-      type: 'string' as const,
-      sortable: true,
-      filterable: true,
-    },
+    { key: 'cod_unidad', name: 'CUE', type: 'string' as const, sortable: true, filterable: true },
+    { key: 'departamento_entrega', name: 'Departamento Entrega', type: 'string' as const, sortable: true, filterable: true },
     {
       key: 'documents',
       name: 'Documentos',
@@ -154,37 +69,22 @@ const SalesList: React.FC<SalesListProps> = ({
       sortable: false,
       filterable: false,
       cell: (row: any) => (
-        <div className="flex space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => openDocument(row.documento_oce)}
-          >
-            <FileText className="h-4 w-4 mr-1" />
-            OCE
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => openDocument(row.documento_ocf)}
-          >
-            <FileText className="h-4 w-4 mr-1" />
-            OCF
-          </Button>
-        </div>
+        <SalesDocumentActions 
+          documentOce={row.documento_oce}
+          documentOcf={row.documento_ocf}
+        />
       ),
     },
   ];
 
-  // Format data for DataGrid
   const formattedData = sales.map(sale => ({
     ...sale,
     codigo_venta: sale.orderNumber,
     clientRuc: sale.clientId,
-    enterpriseRuc: "RUC-EMPRESA", // This should come from your data
-    enterpriseName: "NOMBRE-EMPRESA", // This should come from your data
+    enterpriseRuc: "RUC-EMPRESA",
+    enterpriseName: "NOMBRE-EMPRESA",
     contact: {
-      name: "Contact Name", // This should come from your data
+      name: "Contact Name",
       phone: "Contact Phone",
       email: "contact@email.com"
     },
@@ -201,10 +101,7 @@ const SalesList: React.FC<SalesListProps> = ({
           <RefreshCcw className="mr-2 h-4 w-4" />
           Actualizar
         </Button>
-        <Button 
-          variant="outline" 
-          size="sm"
-        >
+        <Button variant="outline" size="sm">
           <Download className="mr-2 h-4 w-4" />
           Exportar
         </Button>
@@ -216,29 +113,11 @@ const SalesList: React.FC<SalesListProps> = ({
         loading={isLoading}
       />
 
-      <Sheet open={isContactViewOpen} onOpenChange={setIsContactViewOpen}>
-        <SheetContent>
-          <SheetHeader>
-            <SheetTitle>Detalles del Contacto</SheetTitle>
-          </SheetHeader>
-          {selectedContact && (
-            <div className="space-y-4 mt-4">
-              <div>
-                <label className="font-medium">Nombre:</label>
-                <p>{selectedContact.name}</p>
-              </div>
-              <div>
-                <label className="font-medium">Teléfono:</label>
-                <p>{selectedContact.phone}</p>
-              </div>
-              <div>
-                <label className="font-medium">Email:</label>
-                <p>{selectedContact.email}</p>
-              </div>
-            </div>
-          )}
-        </SheetContent>
-      </Sheet>
+      <ContactDetailsSheet
+        isOpen={isContactViewOpen}
+        onOpenChange={setIsContactViewOpen}
+        contact={selectedContact}
+      />
     </div>
   );
 };
