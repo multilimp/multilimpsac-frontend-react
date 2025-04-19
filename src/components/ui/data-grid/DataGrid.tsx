@@ -76,7 +76,7 @@ export function DataGrid<T extends { id: string | number }>({
     
     // Default download implementation is now in utils.ts
     import("./utils").then(({ generateCSV, downloadCSV }) => {
-      const csvContent = generateCSV(filteredData, visibleColumnsKeys, columns);
+      const csvContent = generateCSV(filteredData, visibleColumnsKeys.map(key => key.toString()), columns);
       downloadCSV(csvContent);
     });
   };

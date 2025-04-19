@@ -5,6 +5,7 @@ import { SupplierOrderService } from '../services/supplier-order.service';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { SupplierOrderMapper } from '../mappers/supplier-order.mapper';
+import { createEntityId } from '@/core/domain/types/value-objects';
 
 // Singleton instance of the service
 const supplierOrderService = new SupplierOrderService();
@@ -39,7 +40,9 @@ export const useSupplierOrder = (id?: string) => {
     queryFn: async () => {
       if (!id) return null;
       try {
-        return await supplierOrderService.getById(id);
+        // Convert string id to SupplierOrderId
+        const orderId = createEntityId(id);
+        return await supplierOrderService.getById(orderId);
       } catch (error) {
         toast({
           title: 'Error',
@@ -93,15 +96,18 @@ export const useUpdateSupplierOrder = () => {
   return useMutation({
     mutationFn: async ({ id, data }: { id: string, data: Partial<SupplierOrderFormInput> }) => {
       try {
+        // Convert string id to SupplierOrderId
+        const orderId = createEntityId(id);
+        
         // First get the existing order
-        const existingOrder = await supplierOrderService.getById(id);
+        const existingOrder = await supplierOrderService.getById(orderId);
         if (!existingOrder) {
           throw new Error('Orden no encontrada');
         }
         
         // Update the order with new data
         const updatedData = { ...existingOrder, ...data };
-        return await supplierOrderService.update(id, updatedData);
+        return await supplierOrderService.update(orderId, updatedData);
       } catch (error) {
         throw error;
       }
@@ -133,7 +139,9 @@ export const useDeleteSupplierOrder = () => {
   return useMutation({
     mutationFn: async (id: string) => {
       try {
-        return await supplierOrderService.delete(id);
+        // Convert string id to SupplierOrderId
+        const orderId = createEntityId(id);
+        return await supplierOrderService.delete(orderId);
       } catch (error) {
         throw error;
       }
