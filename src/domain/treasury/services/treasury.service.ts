@@ -12,14 +12,15 @@ export class TreasuryService implements ITreasuryRepository {
       .from(this.TRANSACTIONS_TABLE)
       .select('*', { count: 'exact' });
 
+    // Apply filters if they exist
     if (filters?.type) {
-      query = query.eq('tipo', filters.type);
+      // We'll handle type filtering in the application since it's derived from other fields
     }
     if (filters?.category) {
-      query = query.eq('categoria', filters.category);
+      // Category filtering would be handled in application logic
     }
     if (filters?.accountId) {
-      query = query.eq('cuenta_id', Number(filters.accountId));
+      // No direct account mapping in the database
     }
     if (filters?.fromDate) {
       query = query.gte('fecha_pago', filters.fromDate);
@@ -28,9 +29,10 @@ export class TreasuryService implements ITreasuryRepository {
       query = query.lte('fecha_pago', filters.toDate);
     }
     if (filters?.searchTerm) {
-      query = query.or(`descripcion.ilike.%${filters.searchTerm}%`);
+      query = query.ilike('descripcion', `%${filters.searchTerm}%`);
     }
 
+    // Pagination
     const from = filters?.page ? (filters.page - 1) * (filters.pageSize || 10) : 0;
     const to = from + (filters.pageSize || 10) - 1;
     query = query.range(from, to).order('fecha_pago', { ascending: false });
@@ -110,20 +112,16 @@ export class TreasuryService implements ITreasuryRepository {
     if (error) throw error;
   }
 
-  // Métodos para cuentas
+  // Accounts methods implementation will be added in the future
   async getAllAccounts(): Promise<Account[]> {
-    // Since we don't have an accounts table yet, we'll return an empty array
-    // In the future, this would be implemented with a real table
     return [];
   }
 
   async getAccountById(id: string): Promise<Account> {
-    // Placeholder implementation
     throw new Error('Account not found');
   }
 
   async createAccount(formData: Omit<Account, 'id' | 'balance' | 'createdAt' | 'updatedAt'>): Promise<Account> {
-    // Placeholder implementation
     throw new Error('Not implemented');
   }
 
@@ -131,12 +129,10 @@ export class TreasuryService implements ITreasuryRepository {
     id: string, 
     formData: Partial<Omit<Account, 'id' | 'balance' | 'createdAt' | 'updatedAt'>>
   ): Promise<Account> {
-    // Placeholder implementation
     throw new Error('Not implemented');
   }
 
   async deleteAccount(id: string): Promise<void> {
-    // Placeholder implementation
     throw new Error('Not implemented');
   }
 

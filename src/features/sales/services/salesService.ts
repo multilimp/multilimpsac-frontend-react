@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { PurchaseOrder } from "@/features/purchaseOrder/models/purchaseOrder";
 
@@ -54,13 +55,14 @@ export async function fetchSales(): Promise<PurchaseOrder[]> {
       } : null,
       documento_oce: item.documento_oce,
       documento_ocf: item.documento_ocf,
-      total: 0,
+      date: item.fecha_form, // Add date property
+      total: item.monto_venta || 0,
       status: "pending",
       type: "public",
       documents: {},
       items: [],
-      createdAt: "",
-      updatedAt: ""
+      createdAt: item.fecha_form || "",
+      updatedAt: item.fecha_form || ""
     }));
   } catch (error) {
     console.error('Error fetching sales:', error);

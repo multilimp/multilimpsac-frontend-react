@@ -10,7 +10,7 @@ export interface SupplierOrder {
   status: "draft" | "sent" | "confirmed" | "received" | "cancelled";
   items: SupplierOrderItem[];
   paymentStatus: "pending" | "partial" | "completed";
-  paymentTerms?: string;
+  paymentType?: string;
   notes?: string;
   deliveryAddress?: string;
   createdAt: string;

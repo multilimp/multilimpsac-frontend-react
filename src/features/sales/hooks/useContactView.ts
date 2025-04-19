@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 
-interface Contact {
+export interface Contact {
   name: string;
   phone: string;
   email: string;

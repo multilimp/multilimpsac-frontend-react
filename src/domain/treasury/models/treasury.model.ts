@@ -37,4 +37,5 @@ export interface TransactionFormInput {
   accountId?: string;
   referenceId?: string;
   supplierId?: string;
+  total?: number; // Added for compatibility
 }

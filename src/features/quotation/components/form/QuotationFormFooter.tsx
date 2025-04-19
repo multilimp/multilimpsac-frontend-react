@@ -2,19 +2,23 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2, Save, FilePlus } from "lucide-react";
+import { UseFormReturn } from "react-hook-form";
+import { QuotationFormValues } from "../../models/quotationForm.model";
 
 interface QuotationFormFooterProps {
   isSubmitting: boolean;
   quotationId?: string;
   onCancel: () => void;
   setFormStatus: (status: "draft" | "sent") => void;
+  form: UseFormReturn<QuotationFormValues>;
 }
 
 export const QuotationFormFooter: React.FC<QuotationFormFooterProps> = ({
   isSubmitting,
   quotationId,
   onCancel,
-  setFormStatus
+  setFormStatus,
+  form
 }) => {
   return (
     <div className="flex justify-between">

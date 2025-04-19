@@ -1,5 +1,5 @@
 
-import React, { useState, Suspense } from "react";
+import React, { useState } from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -41,8 +41,7 @@ const QuotationClientSection: React.FC<QuotationClientSectionProps> = ({ form })
   
   const { data: clients = [], isLoading } = useQuery({
     queryKey: ['clients'],
-    queryFn: () => clientService.getClients(),
-    suspense: true
+    queryFn: () => clientService.getClients()
   });
 
   return (
@@ -58,17 +57,15 @@ const QuotationClientSection: React.FC<QuotationClientSectionProps> = ({ form })
               <FormLabel>Cliente</FormLabel>
               <div className="flex gap-2">
                 <FormControl>
-                  <Suspense fallback={<Skeleton className="h-10 w-full" />}>
-                    {field.value ? (
-                      <ClientDataLoader clientId={field.value} />
-                    ) : (
-                      <Input
-                        readOnly
-                        placeholder="Seleccionar cliente"
-                        className="bg-muted"
-                      />
-                    )}
-                  </Suspense>
+                  {field.value ? (
+                    <ClientDataLoader clientId={field.value} />
+                  ) : (
+                    <Input
+                      readOnly
+                      placeholder="Seleccionar cliente"
+                      className="bg-muted"
+                    />
+                  )}
                 </FormControl>
                 <Button 
                   type="button"

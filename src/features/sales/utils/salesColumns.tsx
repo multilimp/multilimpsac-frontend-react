@@ -64,7 +64,7 @@ export const getSalesColumns = (handleViewContact: (contact: Contact) => void): 
     type: 'string',
     sortable: false,
     filterable: false,
-    cell: (row: any) => (
+    render: (row: any) => (
       <Button
         variant="ghost"
         size="sm"
@@ -101,7 +101,7 @@ export const getSalesColumns = (handleViewContact: (contact: Contact) => void): 
     type: 'number',
     sortable: true,
     filterable: true,
-    cell: (row: any) => formatCurrency(row.monto_venta),
+    render: (row: any) => formatCurrency(row.monto_venta),
   },
   { 
     key: 'cod_unidad', 
