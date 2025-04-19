@@ -23,7 +23,7 @@ const QuotationsPage: React.FC = () => {
     refetch
   } = useQuery({
     queryKey: ['quotations'],
-    queryFn: () => quotationService.getQuotations() // Using getQuotations method
+    queryFn: () => quotationService.getAll() // Using getQuotations method
   });
 
   // Extract the quotations array from the response

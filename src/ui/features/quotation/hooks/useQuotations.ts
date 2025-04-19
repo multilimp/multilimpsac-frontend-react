@@ -32,7 +32,7 @@ export function useQuotations(options: UseQuotationsOptions = {}) {
   } = useQuery({
     queryKey: ['quotations', currentPage, pageSize, filters],
     queryFn: async () => {
-      return quotationService.getQuotations({
+      return quotationService.getAll({
         page: currentPage,
         pageSize,
         ...filters

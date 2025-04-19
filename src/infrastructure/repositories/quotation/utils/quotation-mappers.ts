@@ -1,12 +1,12 @@
 
-import { Quotation, QuotationItem } from "@/domain/quotation/models/quotation.model";
-import { numberToStringId } from "@/core/utils/id-conversions";
-import { createStatus } from "@/core/domain/types/value-objects";
+import { Quotation, QuotationItem, QuotationStatus } from "@/domain/quotation/models/quotation.model";
+import { createEntityId, createDateVO, createMoney, createStatus, EntityId, DateVO, Status } from "@/core/domain/types/value-objects";
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Maps a database status string to a domain status
  */
-export function mapDbStatusToDomain(dbStatus: string): string {
+export function mapDbStatusToDomain(dbStatus: string): QuotationStatus {
   switch (dbStatus) {
     case 'borrador': return 'draft';
     case 'enviada': return 'sent';
@@ -20,7 +20,7 @@ export function mapDbStatusToDomain(dbStatus: string): string {
 /**
  * Maps a domain status to a database status string
  */
-export function mapDomainStatusToDb(status: string | { value: string }): string {
+export function mapDomainStatusToDb(status: string | Status): string {
   const statusValue = typeof status === 'object' ? status.value : status;
   
   switch (statusValue) {
@@ -48,7 +48,7 @@ export function mapDbQuotationToDomain(
     date: createDateVO(dbQuotation.fecha_cotizacion),
     expiryDate: createDateVO(dbQuotation.fecha_entrega),
     total: createMoney(Number(dbQuotation.monto_total) || 0),
-    status: createStatus(mapDbStatusToDomain(dbQuotation.estado)),
+    status: mapDbStatusToDomain(dbQuotation.estado),
     items: items,
     notes: dbQuotation.nota_pedido,
     paymentNote: dbQuotation.nota_pago,
@@ -59,7 +59,7 @@ export function mapDbQuotationToDomain(
     deliveryProvince: dbQuotation.provincia_entrega,
     deliveryDepartment: dbQuotation.departamento_entrega,
     deliveryReference: dbQuotation.referencia_entrega,
-    createdBy: createEntityId(String(dbQuotation.created_by || '0')),
+    createdBy: String(dbQuotation.created_by || '0'),
     createdAt: createDateVO(dbQuotation.created_at),
     updatedAt: createDateVO(dbQuotation.updated_at)
   };
@@ -70,8 +70,8 @@ export function mapDbQuotationToDomain(
  */
 export function mapDbQuotationItemToDomain(dbItem: any): QuotationItem {
   return {
-    id: createEntityId(String(dbItem.id)),
-    productId: dbItem.producto_id ? createEntityId(String(dbItem.producto_id)) : undefined,
+    id: String(dbItem.id),
+    productId: dbItem.producto_id ? String(dbItem.producto_id) : undefined,
     productName: dbItem.descripcion || "",
     description: dbItem.descripcion || "",
     quantity: dbItem.cantidad,
@@ -82,6 +82,3 @@ export function mapDbQuotationItemToDomain(dbItem: any): QuotationItem {
     code: dbItem.codigo
   };
 }
-
-// Import these at the top to avoid circular dependencies
-import { createEntityId, createDateVO, createMoney } from "@/core/domain/types/value-objects";

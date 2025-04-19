@@ -1,62 +1,64 @@
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { DataGridColumn, SortConfig } from "../types";
 
-export function useDataGridState(columns: DataGridColumn[]) {
-  // State for visible columns
+export const useDataGridState = (columns: DataGridColumn[]) => {
   const [visibleColumns, setVisibleColumns] = useState<DataGridColumn[]>(columns);
-  
-  // State for sorting
-  const [sortConfig, setSortConfig] = useState<SortConfig | null>(null);
-  
-  // State for global search
+  const [visibleColumnsKeys, setVisibleColumnsKeys] = useState<string[]>(
+    columns.map((col) => col.key)
+  );
+  const [sortConfig, setSortConfig] = useState<SortConfig>({
+    column: "",
+    direction: "asc"
+  });
   const [searchTerm, setSearchTerm] = useState("");
-  
-  // State for showing/hiding filters
   const [showFilters, setShowFilters] = useState(false);
 
-  // Handle column visibility toggle
-  const handleColumnToggle = (columnKey: string) => {
-    setVisibleColumns(current => 
-      current.map(col => 
-        col.key === columnKey 
-          ? { ...col, hidden: !col.hidden }
-          : col
-      )
-    );
-  };
-  
-  // Handle column sort
-  const handleSort = (column: string) => {
-    let direction: 'asc' | 'desc' = 'asc';
-    
-    if (sortConfig && sortConfig.column === column) {
-      direction = sortConfig.direction === 'asc' ? 'desc' : 'asc';
+  // Toggle column visibility
+  const handleColumnToggle = useCallback((columnKey: string, isVisible: boolean) => {
+    if (isVisible) {
+      // Add column to visible columns
+      const columnToAdd = columns.find((col) => col.key === columnKey);
+      if (columnToAdd) {
+        setVisibleColumns((prev) => [...prev, columnToAdd]);
+        setVisibleColumnsKeys((prev) => [...prev, columnKey]);
+      }
+    } else {
+      // Remove column from visible columns
+      setVisibleColumns((prev) => prev.filter((col) => col.key !== columnKey));
+      setVisibleColumnsKeys((prev) => prev.filter((key) => key !== columnKey));
     }
-    
-    setSortConfig({ column, direction, key: column });
-  };
-  
-  // Handle global search
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-  };
-  
-  // Toggle filters visibility
-  const handleToggleFilters = () => {
-    setShowFilters(prev => !prev);
-  };
+  }, [columns]);
 
-  // Get only the keys of visible columns
-  const getVisibleColumnsKeys = (): string[] => {
-    return visibleColumns
-      .filter(col => !col.hidden)
-      .map(col => col.key);
-  };
+  // Handle sorting
+  const handleSort = useCallback((column: string) => {
+    setSortConfig((prev) => {
+      if (prev.column === column) {
+        return {
+          column,
+          direction: prev.direction === "asc" ? "desc" : "asc"
+        };
+      }
+      return {
+        column,
+        direction: "asc"
+      };
+    });
+  }, []);
+
+  // Handle search
+  const handleSearch = useCallback((term: string) => {
+    setSearchTerm(term);
+  }, []);
+
+  // Toggle filters
+  const handleToggleFilters = useCallback(() => {
+    setShowFilters((prev) => !prev);
+  }, []);
 
   return {
     visibleColumns,
-    visibleColumnsKeys: getVisibleColumnsKeys(),
+    visibleColumnsKeys,
     sortConfig,
     searchTerm,
     showFilters,
@@ -66,4 +68,4 @@ export function useDataGridState(columns: DataGridColumn[]) {
     handleToggleFilters,
     setVisibleColumns
   };
-}
+};

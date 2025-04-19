@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Quotation } from '@/domain/quotation/models/quotation.model';
 import { quotationService } from '@/domain/quotation/services/quotation.service';
+import { createEntityId, createStatus } from '@/core/domain/types/value-objects';
 
 export const useQuotationActions = (onRefresh: () => void) => {
   const [selectedQuotation, setSelectedQuotation] = useState<Quotation | null>(null);
@@ -31,7 +32,7 @@ export const useQuotationActions = (onRefresh: () => void) => {
   const confirmDelete = async () => {
     if (selectedQuotation) {
       try {
-        await quotationService.deleteQuotation(selectedQuotation.id);
+        await quotationService.delete(selectedQuotation.id);
         
         toast({
           title: "Cotización eliminada",
@@ -54,7 +55,7 @@ export const useQuotationActions = (onRefresh: () => void) => {
 
   const handleStatusChange = async (quotation: Quotation, status: Quotation['status']) => {
     try {
-      await quotationService.updateQuotationStatus(quotation.id, status);
+      await quotationService.updateStatus(quotation.id, createStatus(status));
       
       const statusMessages = {
         draft: "borrador",

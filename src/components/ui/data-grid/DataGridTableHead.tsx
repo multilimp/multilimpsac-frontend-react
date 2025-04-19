@@ -1,74 +1,73 @@
 
 import React from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
 import { TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ChevronDown, ChevronUp, ChevronsUpDown } from "lucide-react";
 import { DataGridFilter } from "./DataGridFilter";
-import { cn } from "@/lib/utils";
 import { DataGridColumn, SortConfig } from "./types";
 
 interface DataGridTableHeadProps {
   columns: DataGridColumn[];
   visibleColumns: DataGridColumn[];
   filters: Record<string, any>;
-  sortConfig: SortConfig | null;
+  sortConfig: SortConfig;
+  showFilters: boolean;
   onSort: (key: string) => void;
-  onFilterChange: (columnKey: string, value: any) => void;
-  showFilters?: boolean;
+  onFilterChange: (key: string, value: any) => void;
 }
 
-export const DataGridTableHead: React.FC<DataGridTableHeadProps> = ({
+export function DataGridTableHead({
   columns,
   visibleColumns,
   filters,
   sortConfig,
+  showFilters,
   onSort,
   onFilterChange,
-  showFilters = true,
-}) => {
+}: DataGridTableHeadProps) {
+  // Determine sort icon to display
+  const getSortIcon = (columnKey: string) => {
+    if (sortConfig.column !== columnKey) {
+      return <ChevronsUpDown className="h-3 w-3 ml-1" />;
+    }
+
+    return sortConfig.direction === "asc" ? (
+      <ChevronUp className="h-3 w-3 ml-1" />
+    ) : (
+      <ChevronDown className="h-3 w-3 ml-1" />
+    );
+  };
+
   return (
     <TableHeader>
       <TableRow>
-        {visibleColumns
-          .filter(column => !column.hidden)
-          .map(column => (
-            <TableHead 
-              key={column.key}
-              className={cn(
-                "whitespace-nowrap font-medium text-muted-foreground",
-                column.sortable && "cursor-pointer select-none"
-              )}
-              onClick={() => column.sortable && onSort(column.key)}
-            >
-              <div className="flex items-center gap-1">
+        {visibleColumns.map((column) => (
+          <TableHead key={column.key} className="px-4 py-2 min-w-20">
+            <div className="space-y-2">
+              <button
+                onClick={() => column.sortable && onSort(column.key)}
+                className={`flex items-center ${
+                  column.sortable ? "cursor-pointer hover:text-primary" : ""
+                } ${sortConfig.column === column.key ? "text-primary" : ""}`}
+                type="button"
+              >
                 {column.name}
-                {sortConfig && sortConfig.column === column.key && (
-                  sortConfig.direction === 'asc' 
-                    ? <ChevronUp className="h-4 w-4" /> 
-                    : <ChevronDown className="h-4 w-4" />
-                )}
-              </div>
-            </TableHead>
-          ))}
+                {column.sortable && getSortIcon(column.key)}
+              </button>
+
+              {/* Filters */}
+              {showFilters && column.filterable && (
+                <DataGridFilter
+                  column={column}
+                  value={filters[column.key] || ""}
+                  onChange={(value) => onFilterChange(column.key, value)}
+                />
+              )}
+            </div>
+          </TableHead>
+        ))}
+        {/* Actions column if needed */}
+        <TableHead className="px-4 py-2 w-24">Acciones</TableHead>
       </TableRow>
-      {showFilters && (
-        <TableRow>
-          {visibleColumns
-            .filter(column => !column.hidden)
-            .map(column => (
-              <TableHead key={`filter-${column.key}`} className="p-0">
-                {column.filterable && (
-                  <div className="p-2">
-                    <DataGridFilter 
-                      column={column}
-                      value={filters[column.key]}
-                      onChange={(value) => onFilterChange(column.key, value)}
-                    />
-                  </div>
-                )}
-              </TableHead>
-            ))}
-        </TableRow>
-      )}
     </TableHeader>
   );
 }

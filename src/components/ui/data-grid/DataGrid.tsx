@@ -44,7 +44,7 @@ export function DataGrid<T extends { id: string | number }>({
     filters,
     filteredData,
     handleFilterChange
-  } = useDataGridFilters(data, columns, visibleColumnsKeys, searchTerm, sortConfig);
+  } = useDataGridFilters<T>(data, columns, visibleColumnsKeys, searchTerm, sortConfig);
   
   // Pagination hook
   const {
@@ -52,7 +52,7 @@ export function DataGrid<T extends { id: string | number }>({
     paginatedData,
     totalPages,
     setCurrentPage
-  } = usePagination(filteredData, pageSize);
+  } = usePagination<T>(filteredData, pageSize);
   
   // Custom handlers that call the props
   const handleExternalFilterChange = (filters: Record<string, any>) => {

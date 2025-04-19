@@ -4,6 +4,7 @@ import { EntityId, Status, createEntityId, createStatus } from '@/core/domain/ty
 import { Quotation, QuotationFormInput, QuotationStatus } from '../models/quotation.model';
 import { IQuotationRepository, QuotationFilter } from '../repositories/quotation.repository.interface';
 import { QuotationMapper } from '../mappers/quotation.mapper';
+import { v4 as uuidv4 } from 'uuid';
 
 export class QuotationService implements IQuotationRepository {
   async getAll(filter?: QuotationFilter): Promise<{ data: Quotation[]; count: number; }> {
@@ -74,7 +75,7 @@ export class QuotationService implements IQuotationRepository {
           
         if (itemsError) throw new Error(itemsError.message);
         
-        return QuotationMapper.toDomain({ ...quotation, items });
+        return QuotationMapper.fromDTO({ ...quotation, items });
       }));
       
       return {
@@ -123,7 +124,7 @@ export class QuotationService implements IQuotationRepository {
         
       if (itemsError) throw new Error(itemsError.message);
       
-      return QuotationMapper.toDomain({ ...quotation, items });
+      return QuotationMapper.fromDTO({ ...quotation, items });
     } catch (error) {
       console.error('Error fetching quotation:', error);
       throw error;
@@ -266,3 +267,6 @@ export class QuotationService implements IQuotationRepository {
     return `COT-${year}${month}-${random}`;
   }
 }
+
+// Export a singleton instance of the QuotationService
+export const quotationService = new QuotationService();
