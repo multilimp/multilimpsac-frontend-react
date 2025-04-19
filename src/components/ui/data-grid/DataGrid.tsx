@@ -104,8 +104,8 @@ export function DataGrid<T extends { id: string | number }>({
   };
 
   const handleColumnToggleAdapter = (column: string) => {
-    // We're using a default value of true here, as the actual implementation
-    // in the DataGridHeader component correctly passes both arguments
+    // We need to pass a second parameter for isVisible
+    // Default to true since we're adding it
     handleColumnToggle(column, true);
   };
 

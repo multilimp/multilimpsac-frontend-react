@@ -5,7 +5,7 @@ import { ISupplierOrderRepository } from '../repositories/supplier-order.reposit
 import { SupplierOrderMapper } from '../mappers/supplier-order.mapper';
 import { createEntityId, EntityId } from '@/core/domain/types/value-objects';
 
-export class SupplierOrderService implements ISupplierOrderRepository {
+export class SupplierOrderService {
   private readonly TABLE_NAME = 'ordenes_proveedor';
   
   async getAll(filters?: any): Promise<{ data: SupplierOrder[]; count: number }> {
@@ -80,7 +80,7 @@ export class SupplierOrderService implements ISupplierOrderRepository {
     return SupplierOrderMapper.toDomain(data);
   }
 
-  // Implementation that satisfies the interface
+  // Method for direct creation using domain entity
   async create(entity: Omit<SupplierOrder, "id">): Promise<SupplierOrder> {
     // Convert domain entity to repository format
     const repoData = SupplierOrderMapper.toRepository(entity);
@@ -98,16 +98,28 @@ export class SupplierOrderService implements ISupplierOrderRepository {
     return SupplierOrderMapper.toDomain(data);
   }
 
-  // Additional compatibility method for working with form input
+  // Additional convenience method for form input
   async createFromForm(formData: SupplierOrderFormInput): Promise<SupplierOrder> {
     // Convert form data to domain model
     const domainData = SupplierOrderMapper.fromFormInput(formData);
     
-    // Use the interface-compatible create method
-    return this.create(domainData as Omit<SupplierOrder, "id">);
+    // Convert domain entity to repository format for database operation
+    const repoData = SupplierOrderMapper.toRepository(domainData);
+    
+    // Insert into database
+    const { data, error } = await supabase
+      .from(this.TABLE_NAME)
+      .insert(repoData)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    
+    // Return the created supplier order as domain model
+    return SupplierOrderMapper.toDomain(data);
   }
 
-  // Implementation that satisfies the interface
+  // Method for direct update using domain entity
   async update(id: SupplierOrderId, entity: Partial<SupplierOrder>): Promise<SupplierOrder> {
     // Convert domain entity to repository format
     const repoData = SupplierOrderMapper.toRepository(entity);
@@ -126,13 +138,26 @@ export class SupplierOrderService implements ISupplierOrderRepository {
     return SupplierOrderMapper.toDomain(data);
   }
 
-  // Additional compatibility method for working with form input
+  // Additional convenience method for form input
   async updateFromForm(id: SupplierOrderId, formData: Partial<SupplierOrderFormInput>): Promise<SupplierOrder> {
-    // Convert form data to domain model
-    const domainData = SupplierOrderMapper.fromFormInput(formData as SupplierOrderFormInput);
+    // Convert form data to domain model (partial conversion)
+    const partialDomainData = SupplierOrderMapper.fromFormInput(formData as SupplierOrderFormInput);
     
-    // Use the interface-compatible update method
-    return this.update(id, domainData);
+    // Convert domain entity to repository format for database operation
+    const repoData = SupplierOrderMapper.toRepository(partialDomainData);
+    
+    // Update in database
+    const { data, error } = await supabase
+      .from(this.TABLE_NAME)
+      .update(repoData)
+      .eq('id', Number(id.value))
+      .select()
+      .single();
+    
+    if (error) throw error;
+    
+    // Return the updated supplier order as domain model
+    return SupplierOrderMapper.toDomain(data);
   }
 
   async delete(id: SupplierOrderId): Promise<void> {
@@ -144,7 +169,6 @@ export class SupplierOrderService implements ISupplierOrderRepository {
     if (error) throw error;
   }
   
-  // Additional method for type compatibility to satisfy the interface
   async updateStatus(id: SupplierOrderId, status: any): Promise<SupplierOrder> {
     const { data, error } = await supabase
       .from(this.TABLE_NAME)

@@ -1,6 +1,6 @@
 
+// Re-export all the quotation domain types
 export * from './models/quotation.model';
-// Export repositories interface but rename the QuotationFilter to avoid name collision
 export type { IQuotationRepository } from './repositories/quotation.repository.interface';
-// Export hooks
-export * from './hooks/use-quotation';
+export { QuotationService } from './services/quotation.service';
+export { default as useQuotation } from './hooks/use-quotation';

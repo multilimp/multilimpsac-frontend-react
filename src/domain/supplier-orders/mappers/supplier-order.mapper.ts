@@ -75,15 +75,20 @@ export class SupplierOrderMapper {
     return result;
   }
 
-  public static fromFormInput(input: SupplierOrderFormInput): Partial<SupplierOrder> {
+  public static fromFormInput(input: SupplierOrderFormInput): SupplierOrder {
     return {
+      id: createEntityId(uuidv4()),
+      number: "",
       supplierId: createEntityId(input.supplierId),
+      supplierName: "",
       date: createDateVO(input.date),
       deliveryDate: input.deliveryDate ? createDateVO(input.deliveryDate) : null,
-      paymentTerms: input.paymentTerms,
-      notes: input.notes,
-      deliveryAddress: input.deliveryAddress,
-      total: createMoney(input.total),
+      total: createMoney(input.total || 0),
+      status: createStatus("draft"),
+      paymentStatus: createStatus("pending"),
+      paymentTerms: input.paymentTerms || "",
+      notes: input.notes || "",
+      deliveryAddress: input.deliveryAddress || "",
       items: input.items?.map(item => ({
         id: createEntityId(uuidv4()),
         productId: createEntityId(item.productId),
@@ -94,7 +99,9 @@ export class SupplierOrderMapper {
         total: createMoney(item.quantity * item.unitPrice.amount),
         unitMeasure: item.unitMeasure,
         expectedDeliveryDate: createDateVO(item.expectedDeliveryDate ? item.expectedDeliveryDate.value : new Date().toISOString())
-      })) || []
+      })) || [],
+      createdAt: createDateVO(new Date().toISOString()),
+      updatedAt: createDateVO(new Date().toISOString())
     };
   }
 }
