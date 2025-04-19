@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { DataGridColumn, SortConfig } from "../types";
 
@@ -33,7 +34,7 @@ export function useDataGridState(columns: DataGridColumn[]) {
       direction = sortConfig.direction === 'asc' ? 'desc' : 'asc';
     }
     
-    setSortConfig({ column, direction });
+    setSortConfig({ column, direction, key: column });
   };
   
   // Handle global search
@@ -46,14 +47,23 @@ export function useDataGridState(columns: DataGridColumn[]) {
     setShowFilters(prev => !prev);
   };
 
+  // Get only the keys of visible columns
+  const getVisibleColumnsKeys = (): string[] => {
+    return visibleColumns
+      .filter(col => !col.hidden)
+      .map(col => col.key);
+  };
+
   return {
     visibleColumns,
+    visibleColumnsKeys: getVisibleColumnsKeys(),
     sortConfig,
     searchTerm,
     showFilters,
     handleColumnToggle,
     handleSort,
     handleSearch,
-    handleToggleFilters
+    handleToggleFilters,
+    setVisibleColumns
   };
 }

@@ -1,7 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { EntityId, Status, createEntityId, createStatus } from '@/core/domain/types/value-objects';
-import { Quotation, QuotationFormInput } from '../models/quotation.model';
+import { Quotation, QuotationFormInput, QuotationStatus } from '../models/quotation.model';
 import { IQuotationRepository, QuotationFilter } from '../repositories/quotation.repository.interface';
 import { QuotationMapper } from '../mappers/quotation.mapper';
 
@@ -34,7 +34,7 @@ export class QuotationService implements IQuotationRepository {
       // Apply filters
       if (filter) {
         if (filter.status) {
-          query = query.eq('estado', filter.status.value);
+          query = query.eq('estado', filter.status);
         }
         
         if (filter.clientId) {
@@ -64,9 +64,21 @@ export class QuotationService implements IQuotationRepository {
       const { data, error, count } = await query;
       
       if (error) throw new Error(error.message);
+
+      // Get the quotation items for each quotation
+      const quotations = await Promise.all(data.map(async (quotation) => {
+        const { data: items, error: itemsError } = await supabase
+          .from('cotizacion_productos')
+          .select('*')
+          .eq('cotizacion_id', quotation.id);
+          
+        if (itemsError) throw new Error(itemsError.message);
+        
+        return QuotationMapper.toDomain({ ...quotation, items });
+      }));
       
       return {
-        data: data.map(QuotationMapper.toDomain),
+        data: quotations,
         count: count || 0
       };
     } catch (error) {
@@ -123,6 +135,10 @@ export class QuotationService implements IQuotationRepository {
       const domainQuotation = QuotationMapper.fromFormInput(data);
       const repoData = QuotationMapper.toRepository(domainQuotation);
 
+      // Generate a quotation number
+      const quotationNumber = this.generateQuotationNumber();
+      repoData.codigo_cotizacion = quotationNumber;
+
       const { data: quotation, error: quotationError } = await supabase
         .from('cotizaciones')
         .insert(repoData)
@@ -135,9 +151,9 @@ export class QuotationService implements IQuotationRepository {
       if (data.items?.length > 0) {
         const itemsToInsert = data.items.map(item => ({
           cotizacion_id: quotation.id,
-          codigo: item.code,
+          codigo: item.code || '',
           descripcion: item.description || item.productName,
-          unidad_medida: item.unitMeasure,
+          unidad_medida: item.unitMeasure || 'UND',
           cantidad: item.quantity,
           precio_unitario: item.unitPrice,
           total: item.quantity * item.unitPrice
@@ -181,9 +197,9 @@ export class QuotationService implements IQuotationRepository {
         // Insert new items
         const itemsToInsert = data.items.map(item => ({
           cotizacion_id: Number(id.value),
-          codigo: item.code,
+          codigo: item.code || '',
           descripcion: item.description || item.productName,
-          unidad_medida: item.unitMeasure,
+          unidad_medida: item.unitMeasure || 'UND',
           cantidad: item.quantity,
           precio_unitario: item.unitPrice,
           total: item.quantity * item.unitPrice
@@ -240,5 +256,13 @@ export class QuotationService implements IQuotationRepository {
       console.error('Error deleting quotation:', error);
       throw error;
     }
+  }
+
+  private generateQuotationNumber(): string {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+    return `COT-${year}${month}-${random}`;
   }
 }

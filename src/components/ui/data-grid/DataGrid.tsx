@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from "react";
 import { Table } from "@/components/ui/table";
 import { DataGridPagination } from "./DataGridPagination";
@@ -27,13 +28,15 @@ export function DataGrid<T extends { id: string | number }>({
   // Use our extracted hooks for state management
   const {
     visibleColumns,
+    visibleColumnsKeys,
     sortConfig,
     searchTerm,
     showFilters,
     handleColumnToggle,
     handleSort,
     handleSearch,
-    handleToggleFilters
+    handleToggleFilters,
+    setVisibleColumns
   } = useDataGridState(columns);
   
   // Filters hook
@@ -41,7 +44,7 @@ export function DataGrid<T extends { id: string | number }>({
     filters,
     filteredData,
     handleFilterChange
-  } = useDataGridFilters(data, columns, visibleColumns, searchTerm, sortConfig);
+  } = useDataGridFilters(data, columns, visibleColumnsKeys, searchTerm, sortConfig);
   
   // Pagination hook
   const {
@@ -58,7 +61,7 @@ export function DataGrid<T extends { id: string | number }>({
     }
   };
   
-  const handleExternalColumnToggle = (columns: string[]) => {
+  const handleExternalColumnToggle = (columns: DataGridColumn[]) => {
     if (onColumnToggle) {
       onColumnToggle(columns);
     }
@@ -73,7 +76,7 @@ export function DataGrid<T extends { id: string | number }>({
     
     // Default download implementation is now in utils.ts
     import("./utils").then(({ generateCSV, downloadCSV }) => {
-      const csvContent = generateCSV(filteredData, visibleColumns, columns);
+      const csvContent = generateCSV(filteredData, visibleColumnsKeys, columns);
       downloadCSV(csvContent);
     });
   };

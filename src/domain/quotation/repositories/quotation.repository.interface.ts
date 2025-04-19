@@ -1,10 +1,10 @@
 
 import { IBaseRepository } from '@/core/domain/repository/base.repository.interface';
-import { Quotation, QuotationFormInput } from '../models/quotation.model';
+import { Quotation, QuotationFormInput, QuotationStatus } from '../models/quotation.model';
 import { EntityId, Status } from '@/core/domain/types/value-objects';
 
 export interface QuotationFilter {
-  status?: Status;
+  status?: QuotationStatus;
   clientId?: string;
   fromDate?: string;
   toDate?: string;

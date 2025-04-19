@@ -1,7 +1,8 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createEntityId, createStatus } from '@/core/domain/types/value-objects';
-import type { Quotation, QuotationFormInput, QuotationFilter } from '../models/quotation.model';
+import type { Quotation, QuotationFormInput } from '../models/quotation.model';
+import type { QuotationFilter } from '../repositories/quotation.repository.interface';
 import { QuotationService } from '../services/quotation.service';
 import { toast } from 'sonner';
 

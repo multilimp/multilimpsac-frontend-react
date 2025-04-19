@@ -4,7 +4,7 @@ import { EntityId, Status, DateVO, Money } from "@/core/domain/types/value-objec
 
 export type QuotationStatus = 'draft' | 'sent' | 'approved' | 'rejected' | 'expired';
 
-export interface Quotation extends Omit<EntityBase, 'status'> {
+export interface Quotation extends Omit<EntityBase, 'status' | 'id'> {
   id: EntityId;
   number: string;
   clientId: EntityId;
@@ -16,6 +16,14 @@ export interface Quotation extends Omit<EntityBase, 'status'> {
   items: QuotationItem[];
   notes?: string;
   createdBy: string;
+  paymentType?: string;
+  paymentNote?: string;
+  orderNote?: string;
+  deliveryAddress?: string;
+  deliveryDistrict?: string;
+  deliveryProvince?: string;
+  deliveryDepartment?: string;
+  deliveryReference?: string;
 }
 
 export interface QuotationItem {
@@ -27,6 +35,8 @@ export interface QuotationItem {
   unitPrice: Money;
   total: Money;
   taxRate?: number;
+  unitMeasure?: string;
+  code?: string;
 }
 
 export interface QuotationFilter {
@@ -41,6 +51,7 @@ export interface QuotationFilter {
 
 export interface QuotationFormInput {
   clientId: string;
+  contactId?: string;
   date: string;
   expiryDate: string;
   items: {
@@ -49,7 +60,17 @@ export interface QuotationFormInput {
     description: string;
     quantity: number;
     unitPrice: number;
+    unitMeasure?: string;
+    code?: string;
   }[];
   notes?: string;
   status: QuotationStatus;
+  paymentType?: string;
+  paymentNote?: string;
+  orderNote?: string;
+  deliveryAddress?: string;
+  deliveryDistrict?: string;
+  deliveryProvince?: string;
+  deliveryDepartment?: string;
+  deliveryReference?: string;
 }

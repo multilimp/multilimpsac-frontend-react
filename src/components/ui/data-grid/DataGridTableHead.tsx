@@ -8,7 +8,7 @@ import { DataGridColumn, SortConfig } from "./types";
 
 interface DataGridTableHeadProps {
   columns: DataGridColumn[];
-  visibleColumns: string[];
+  visibleColumns: DataGridColumn[];
   filters: Record<string, any>;
   sortConfig: SortConfig | null;
   onSort: (key: string) => void;
@@ -28,8 +28,8 @@ export const DataGridTableHead: React.FC<DataGridTableHeadProps> = ({
   return (
     <TableHeader>
       <TableRow>
-        {columns
-          .filter(column => visibleColumns.includes(column.key))
+        {visibleColumns
+          .filter(column => !column.hidden)
           .map(column => (
             <TableHead 
               key={column.key}
@@ -41,7 +41,7 @@ export const DataGridTableHead: React.FC<DataGridTableHeadProps> = ({
             >
               <div className="flex items-center gap-1">
                 {column.name}
-                {sortConfig && sortConfig.key === column.key && (
+                {sortConfig && sortConfig.column === column.key && (
                   sortConfig.direction === 'asc' 
                     ? <ChevronUp className="h-4 w-4" /> 
                     : <ChevronDown className="h-4 w-4" />
@@ -52,8 +52,8 @@ export const DataGridTableHead: React.FC<DataGridTableHeadProps> = ({
       </TableRow>
       {showFilters && (
         <TableRow>
-          {columns
-            .filter(column => visibleColumns.includes(column.key))
+          {visibleColumns
+            .filter(column => !column.hidden)
             .map(column => (
               <TableHead key={`filter-${column.key}`} className="p-0">
                 {column.filterable && (
@@ -71,4 +71,4 @@ export const DataGridTableHead: React.FC<DataGridTableHeadProps> = ({
       )}
     </TableHeader>
   );
-};
+}

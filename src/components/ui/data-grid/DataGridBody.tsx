@@ -9,7 +9,7 @@ import { RowActions } from "./RowActions";
 interface DataGridBodyProps<T> {
   data: T[];
   columns: DataGridColumn[];
-  visibleColumns: string[];
+  visibleColumns: DataGridColumn[];
   loading: boolean;
   pageSize: number;
   onRowClick?: (row: T) => void;
@@ -32,8 +32,8 @@ export function DataGridBody<T extends { id: string | number }>({
       <TableBody>
         {Array.from({ length: pageSize }).map((_, index) => (
           <TableRow key={`skeleton-${index}`}>
-            {visibleColumns.map(colKey => (
-              <TableCell key={`skeleton-${index}-${colKey}`}>
+            {visibleColumns.filter(col => !col.hidden).map(col => (
+              <TableCell key={`skeleton-${index}-${col.key}`}>
                 <Skeleton className="h-4 w-full" />
               </TableCell>
             ))}
@@ -48,7 +48,7 @@ export function DataGridBody<T extends { id: string | number }>({
       <TableBody>
         <TableRow>
           <TableCell 
-            colSpan={visibleColumns.length} 
+            colSpan={visibleColumns.filter(col => !col.hidden).length} 
             className="h-24 text-center"
           >
             No se encontraron resultados.
@@ -66,14 +66,11 @@ export function DataGridBody<T extends { id: string | number }>({
           className={cn(onRowClick && "cursor-pointer hover:bg-muted/60")}
           onClick={() => onRowClick && onRowClick(row)}
         >
-          {visibleColumns.map(colKey => {
-            const column = columns.find(col => col.key === colKey);
-            if (!column) return null;
-            
+          {visibleColumns.filter(col => !col.hidden).map(column => {
             // Si es la columna de acciones, renderizar el componente RowActions
             if (column.key === 'actions') {
               return (
-                <TableCell key={`${row.id}-${colKey}`}>
+                <TableCell key={`${row.id}-${column.key}`}>
                   <RowActions 
                     row={row} 
                     onEdit={onEdit} 
@@ -83,9 +80,19 @@ export function DataGridBody<T extends { id: string | number }>({
               );
             }
             
-            const value = getValueByPath(row, colKey);
+            // If the column has a render function, use it
+            if (column.render) {
+              return (
+                <TableCell key={`${row.id}-${column.key}`}>
+                  {column.render(row)}
+                </TableCell>
+              );
+            }
+            
+            // Otherwise, format the value based on the column type
+            const value = column.getValue ? column.getValue(row) : getValueByPath(row, column.key);
             return (
-              <TableCell key={`${row.id}-${colKey}`}>
+              <TableCell key={`${row.id}-${column.key}`}>
                 {formatCellValue(value, column.type)}
               </TableCell>
             );

@@ -6,7 +6,7 @@ import { DataGridColumn, SortConfig } from "../types";
 export function useDataGridFilters<T extends { id: string | number }>(
   data: T[],
   columns: DataGridColumn[],
-  visibleColumns: string[],
+  visibleColumnsKeys: string[],
   searchTerm: string,
   sortConfig: SortConfig | null
 ) {
@@ -65,7 +65,7 @@ export function useDataGridFilters<T extends { id: string | number }>(
     if (searchTerm) {
       const normalizedSearchTerm = searchTerm.toLowerCase();
       result = result.filter(row => {
-        return visibleColumns.some(key => {
+        return visibleColumnsKeys.some(key => {
           const cellValue = getValueByPath(row, key);
           return cellValue !== null && 
                  String(cellValue || '').toLowerCase().includes(normalizedSearchTerm);
@@ -75,9 +75,10 @@ export function useDataGridFilters<T extends { id: string | number }>(
     
     // Apply sorting
     if (sortConfig) {
+      const sortColumn = sortConfig.column;
       result.sort((a, b) => {
-        const aValue = getValueByPath(a, sortConfig.key);
-        const bValue = getValueByPath(b, sortConfig.key);
+        const aValue = getValueByPath(a, sortColumn);
+        const bValue = getValueByPath(b, sortColumn);
         
         if (aValue === bValue) return 0;
         
@@ -87,7 +88,7 @@ export function useDataGridFilters<T extends { id: string | number }>(
     }
     
     return result;
-  }, [data, filters, searchTerm, sortConfig, visibleColumns, columns]);
+  }, [data, filters, searchTerm, sortConfig, visibleColumnsKeys, columns]);
 
   return {
     filters,

@@ -4,7 +4,7 @@ import { ReactNode } from 'react';
 export interface DataGridColumn {
   key: string;
   name: string;
-  type: 'string' | 'number' | 'date' | 'boolean';
+  type: ColumnType;
   sortable: boolean;
   filterable: boolean;
   getValue?: (row: any) => string | number;
@@ -16,6 +16,7 @@ export interface DataGridColumn {
 export interface SortConfig {
   column: string;
   direction: 'asc' | 'desc';
+  key?: string; // Adding key for backward compatibility
 }
 
 export interface DataGridProps<T = any> {
@@ -28,7 +29,7 @@ export interface DataGridProps<T = any> {
   defaultSort?: SortConfig;
   pageSize?: number;
   onFilterChange?: (filters: Record<string, any>) => void;
-  onColumnToggle?: (column: DataGridColumn) => void;
+  onColumnToggle?: (columns: DataGridColumn[]) => void;
   onEdit?: (row: T) => void;
   onDelete?: (row: T) => void;
   onDownload?: () => void;
