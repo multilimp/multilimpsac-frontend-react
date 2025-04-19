@@ -45,8 +45,8 @@ export function mapDbQuotationToDomain(
     number: dbQuotation.codigo_cotizacion,
     clientId: createEntityId(String(dbQuotation.cliente_id)),
     clientName: dbQuotation.clientes?.razon_social || "",
-    date: createDateVO(dbQuotation.fecha_cotizacion),
-    expiryDate: createDateVO(dbQuotation.fecha_entrega),
+    date: createDateVO(dbQuotation.fecha_cotizacion).value,
+    expiryDate: createDateVO(dbQuotation.fecha_entrega).value,
     total: createMoney(Number(dbQuotation.monto_total) || 0),
     status: mapDbStatusToDomain(dbQuotation.estado) as QuotationStatus,
     items: items,
@@ -60,8 +60,8 @@ export function mapDbQuotationToDomain(
     deliveryDepartment: dbQuotation.departamento_entrega,
     deliveryReference: dbQuotation.referencia_entrega,
     createdBy: String(dbQuotation.created_by || '0'),
-    createdAt: dbQuotation.created_at ? createDateVO(dbQuotation.created_at) : createDateVO(new Date().toISOString()),
-    updatedAt: dbQuotation.updated_at ? createDateVO(dbQuotation.updated_at) : createDateVO(new Date().toISOString())
+    createdAt: dbQuotation.created_at ? createDateVO(dbQuotation.created_at).value : createDateVO(new Date().toISOString()).value,
+    updatedAt: dbQuotation.updated_at ? createDateVO(dbQuotation.updated_at).value : createDateVO(new Date().toISOString()).value
   };
 }
 

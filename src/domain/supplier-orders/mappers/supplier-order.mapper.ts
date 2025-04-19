@@ -91,7 +91,7 @@ export class SupplierOrderMapper {
       deliveryAddress: input.deliveryAddress || "",
       items: input.items?.map(item => ({
         id: createEntityId(uuidv4()),
-        productId: createEntityId(item.productId),
+        productId: createEntityId(item.productId.value || ""),
         productName: item.productName,
         description: item.description,
         quantity: item.quantity,
