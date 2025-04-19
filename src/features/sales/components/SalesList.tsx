@@ -2,12 +2,12 @@
 import React from 'react';
 import { DataGrid } from '@/components/ui/data-grid';
 import { Button } from '@/components/ui/button';
-import { Download, RefreshCcw, Eye } from 'lucide-react';
+import { Download, RefreshCcw } from 'lucide-react';
 import { PurchaseOrder } from '@/features/purchaseOrder/models/purchaseOrder';
-import { formatCurrency } from '@/lib/utils';
 import { useContactView } from '../hooks/useContactView';
 import { SalesDocumentActions } from './SalesDocumentActions';
 import { ContactDetailsSheet } from './ContactDetailsSheet';
+import { getSalesColumns } from '../utils/salesColumns';
 
 interface SalesListProps {
   sales: PurchaseOrder[];
@@ -28,40 +28,7 @@ const SalesList: React.FC<SalesListProps> = ({
   } = useContactView();
 
   const columns = [
-    { key: 'codigo_venta', name: 'Código Venta', type: 'string' as const, sortable: true, filterable: true },
-    { key: 'clientName', name: 'Cliente', type: 'string' as const, sortable: true, filterable: true },
-    { key: 'clientRuc', name: 'RUC Cliente', type: 'string' as const, sortable: true, filterable: true },
-    { key: 'enterpriseRuc', name: 'RUC Empresa', type: 'string' as const, sortable: true, filterable: true },
-    { key: 'enterpriseName', name: 'Razón Social Empresa', type: 'string' as const, sortable: true, filterable: true },
-    {
-      key: 'contact',
-      name: 'Contacto',
-      type: 'string' as const,
-      sortable: false,
-      filterable: false,
-      cell: (row: any) => (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => handleViewContact(row.contact)}
-        >
-          <Eye className="h-4 w-4" />
-        </Button>
-      ),
-    },
-    { key: 'catalogo', name: 'Catálogo', type: 'string' as const, sortable: true, filterable: true },
-    { key: 'fecha_form', name: 'Fecha Formalización', type: 'date' as const, sortable: true, filterable: true },
-    { key: 'fecha_max_form', name: 'Fecha Máx. Entrega', type: 'date' as const, sortable: true, filterable: true },
-    {
-      key: 'monto_venta',
-      name: 'Monto Venta',
-      type: 'number' as const,
-      sortable: true,
-      filterable: true,
-      cell: (row: any) => formatCurrency(row.monto_venta),
-    },
-    { key: 'cod_unidad', name: 'CUE', type: 'string' as const, sortable: true, filterable: true },
-    { key: 'departamento_entrega', name: 'Departamento Entrega', type: 'string' as const, sortable: true, filterable: true },
+    ...getSalesColumns(handleViewContact),
     {
       key: 'documents',
       name: 'Documentos',
