@@ -1,29 +1,35 @@
+
+import { EntityId, Money, DateVO, Status } from '@/core/domain/types/value-objects';
+
+export type SaleStatus = "pending" | "completed" | "cancelled";
+export type PaymentStatus = "pending" | "partial" | "completed";
+
 export interface Sale {
-  id: string;
+  id: EntityId;
   number: string;
-  clientId: string;
+  clientId: EntityId;
   clientName: string;
-  date: string;
-  total: number;
-  status: "pending" | "completed" | "cancelled";
+  date: DateVO;
+  total: Money;
+  status: Status;
   items: SaleItem[];
-  quotationId?: string;
-  paymentStatus: "pending" | "partial" | "completed";
+  quotationId?: EntityId;
+  paymentStatus: Status;
   paymentType: string;
   notes?: string;
-  createdBy: string;
-  createdAt: string;
-  updatedAt: string;
+  createdBy: EntityId;
+  createdAt: DateVO;
+  updatedAt: DateVO;
 }
 
 export interface SaleItem {
-  id: string;
-  productId: string;
+  id: EntityId;
+  productId: EntityId;
   productName: string;
   description: string;
   quantity: number;
-  unitPrice: number;
-  total: number;
+  unitPrice: Money;
+  total: Money;
   taxRate: number;
   unitMeasure: string;
 }
@@ -31,7 +37,15 @@ export interface SaleItem {
 export interface SaleFormInput {
   clientId: string;
   date: string;
-  items: Omit<SaleItem, "id" | "total">[];
+  items: Array<{
+    productId: string;
+    productName: string;
+    description: string;
+    quantity: number;
+    unitPrice: number;
+    taxRate: number;
+    unitMeasure: string;
+  }>;
   quotationId?: string;
   paymentType: string;
   notes?: string;
