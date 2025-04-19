@@ -93,7 +93,7 @@ export class SupplierOrderMapper {
         unitPrice: createMoney(item.unitPrice.amount),
         total: createMoney(item.quantity * item.unitPrice.amount),
         unitMeasure: item.unitMeasure,
-        expectedDeliveryDate: createDateVO(item.expectedDeliveryDate.value)
+        expectedDeliveryDate: createDateVO(item.expectedDeliveryDate ? item.expectedDeliveryDate.value : new Date().toISOString())
       })) || []
     };
   }

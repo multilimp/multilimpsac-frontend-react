@@ -80,13 +80,10 @@ export class SupplierOrderService implements ISupplierOrderRepository {
     return SupplierOrderMapper.toDomain(data);
   }
 
-  // Implementation for creating supplier orders from form input
-  async create(formData: SupplierOrderFormInput): Promise<SupplierOrder> {
-    // Convert form data to domain model
-    const domainData = SupplierOrderMapper.fromFormInput(formData);
-    
-    // Convert domain model to repository format
-    const repoData = SupplierOrderMapper.toRepository(domainData);
+  // Implementation that satisfies the interface
+  async create(entity: Omit<SupplierOrder, "id">): Promise<SupplierOrder> {
+    // Convert domain entity to repository format
+    const repoData = SupplierOrderMapper.toRepository(entity);
     
     // Insert into database
     const { data, error } = await supabase
@@ -101,13 +98,19 @@ export class SupplierOrderService implements ISupplierOrderRepository {
     return SupplierOrderMapper.toDomain(data);
   }
 
-  // Implementation for updating supplier orders from form input
-  async update(id: SupplierOrderId, formData: Partial<SupplierOrderFormInput>): Promise<SupplierOrder> {
+  // Additional compatibility method for working with form input
+  async createFromForm(formData: SupplierOrderFormInput): Promise<SupplierOrder> {
     // Convert form data to domain model
-    const domainData = SupplierOrderMapper.fromFormInput(formData as SupplierOrderFormInput);
+    const domainData = SupplierOrderMapper.fromFormInput(formData);
     
-    // Convert domain model to repository format
-    const repoData = SupplierOrderMapper.toRepository(domainData);
+    // Use the interface-compatible create method
+    return this.create(domainData as Omit<SupplierOrder, "id">);
+  }
+
+  // Implementation that satisfies the interface
+  async update(id: SupplierOrderId, entity: Partial<SupplierOrder>): Promise<SupplierOrder> {
+    // Convert domain entity to repository format
+    const repoData = SupplierOrderMapper.toRepository(entity);
     
     // Update in database
     const { data, error } = await supabase
@@ -121,6 +124,15 @@ export class SupplierOrderService implements ISupplierOrderRepository {
     
     // Return the updated supplier order as domain model
     return SupplierOrderMapper.toDomain(data);
+  }
+
+  // Additional compatibility method for working with form input
+  async updateFromForm(id: SupplierOrderId, formData: Partial<SupplierOrderFormInput>): Promise<SupplierOrder> {
+    // Convert form data to domain model
+    const domainData = SupplierOrderMapper.fromFormInput(formData as SupplierOrderFormInput);
+    
+    // Use the interface-compatible update method
+    return this.update(id, domainData);
   }
 
   async delete(id: SupplierOrderId): Promise<void> {

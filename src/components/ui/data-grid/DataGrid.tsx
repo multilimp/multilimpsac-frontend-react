@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, ChangeEvent } from "react";
 import { Table } from "@/components/ui/table";
 import { DataGridPagination } from "./DataGridPagination";
 import { DataGridTableHead } from "./DataGridTableHead";
@@ -98,6 +98,17 @@ export function DataGrid<T extends { id: string | number }>({
     handleExternalColumnToggle(visibleColumns);
   }, [visibleColumns]);
 
+  // Adapters for type compatibility
+  const handleSearchAdapter = (e: ChangeEvent<HTMLInputElement>) => {
+    handleSearch(e.target.value);
+  };
+
+  const handleColumnToggleAdapter = (column: string) => {
+    // We're using a default value of true here, as the actual implementation
+    // in the DataGridHeader component correctly passes both arguments
+    handleColumnToggle(column, true);
+  };
+
   return (
     <div className="space-y-4">
       <DataGridHeader
@@ -105,8 +116,8 @@ export function DataGrid<T extends { id: string | number }>({
         visibleColumns={visibleColumns}
         loading={loading}
         searchTerm={searchTerm}
-        onSearchChange={handleSearch}
-        onColumnToggle={handleColumnToggle}
+        onSearchChange={handleSearchAdapter}
+        onColumnToggle={handleColumnToggleAdapter}
         onDownload={handleDownload}
         onReload={handleReload}
         showFilters={showFilters}
