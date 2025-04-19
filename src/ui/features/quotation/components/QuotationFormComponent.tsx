@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -36,6 +35,16 @@ const QuotationFormComponent: React.FC<QuotationFormComponentProps> = ({
     resolver: zodResolver(quotationFormSchema),
     defaultValues: quotationService.getEmptyQuotationForm(),
   });
+
+  // Add watcher for clientId changes
+  React.useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === 'clientId') {
+        form.setValue('contactId', ''); // Reset contact when client changes
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [form]);
 
   // Load quotation data if editing
   React.useEffect(() => {

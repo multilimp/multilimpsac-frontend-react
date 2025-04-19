@@ -7,8 +7,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { DataGrid } from "@/components/ui/data-grid";
-import { Button } from "@/components/ui/button";
-import { Search } from "lucide-react";
 import { Cliente } from "@/features/client/models/client.model";
 
 interface ClientSelectionModalProps {
@@ -65,6 +63,7 @@ export const ClientSelectionModal: React.FC<ClientSelectionModalProps> = ({
           <DataGrid
             data={clients}
             columns={columns}
+            pageSize={5}
             onRowClick={(row) => {
               onSelect(row as Cliente);
               onOpenChange(false);
