@@ -20,7 +20,7 @@ export class OrderTrackingService implements IOrderTrackingRepository {
       query = query.eq('orderType', filters.orderType);
     }
     if (filters?.orderId) {
-      query = query.eq('orden_compra_id', filters.orderId);
+      query = query.eq('orden_compra_id', Number(filters.orderId));
     }
     if (filters?.fromDate) {
       query = query.gte('fecha_gestion', filters.fromDate);
@@ -41,7 +41,7 @@ export class OrderTrackingService implements IOrderTrackingRepository {
     if (error) throw error;
     
     return {
-      data: (data ? data.map(item => this.mapDbRowToOrderTracking(item)) : []) as OrderTracking[],
+      data: (data || []).map(item => this.mapDbRowToOrderTracking(item as any)) as OrderTracking[],
       count: count || 0
     };
   }
@@ -50,20 +50,20 @@ export class OrderTrackingService implements IOrderTrackingRepository {
     const { data, error } = await supabase
       .from(this.TABLE_NAME)
       .select('*')
-      .eq('id', id)
+      .eq('id', Number(id))
       .single();
 
     if (error) throw error;
     if (!data) throw new Error('Order tracking not found');
 
-    return this.mapDbRowToOrderTracking(data) as OrderTracking;
+    return this.mapDbRowToOrderTracking(data as any) as OrderTracking;
   }
 
   async create(formData: OrderTrackingFormInput): Promise<OrderTracking> {
     const dbData = {
-      orden_compra_id: formData.orderId ? parseInt(formData.orderId) : null,
-      descripcion: formData.description || '',
-      fecha_gestion: formData.date || new Date().toISOString(),
+      orden_compra_id: formData.orderId ? Number(formData.orderId) : null,
+      descripcion: formData.description || formData.notes || '',
+      fecha_gestion: formData.date || formData.estimatedDeliveryDate || new Date().toISOString(),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -75,7 +75,7 @@ export class OrderTrackingService implements IOrderTrackingRepository {
       .single();
 
     if (error) throw error;
-    return this.mapDbRowToOrderTracking(data) as OrderTracking;
+    return this.mapDbRowToOrderTracking(data as any) as OrderTracking;
   }
 
   async update(id: string, formData: Partial<OrderTrackingFormInput>): Promise<OrderTracking> {
@@ -83,19 +83,19 @@ export class OrderTrackingService implements IOrderTrackingRepository {
       updated_at: new Date().toISOString()
     };
 
-    if (formData.orderId) updateData.orden_compra_id = parseInt(formData.orderId);
-    if (formData.description) updateData.descripcion = formData.description;
-    if (formData.date) updateData.fecha_gestion = formData.date;
+    if (formData.orderId) updateData.orden_compra_id = Number(formData.orderId);
+    if (formData.description || formData.notes) updateData.descripcion = formData.description || formData.notes;
+    if (formData.date || formData.estimatedDeliveryDate) updateData.fecha_gestion = formData.date || formData.estimatedDeliveryDate;
 
     const { data, error } = await supabase
       .from(this.TABLE_NAME)
       .update(updateData)
-      .eq('id', id)
+      .eq('id', Number(id))
       .select()
       .single();
 
     if (error) throw error;
-    return this.mapDbRowToOrderTracking(data) as OrderTracking;
+    return this.mapDbRowToOrderTracking(data as any) as OrderTracking;
   }
 
   async updateStatus(id: string, status: OrderTracking['status']): Promise<OrderTracking> {
@@ -105,14 +105,14 @@ export class OrderTrackingService implements IOrderTrackingRepository {
       .update({
         updated_at: new Date().toISOString()
       })
-      .eq('id', id)
+      .eq('id', Number(id))
       .select()
       .single();
 
     if (error) throw error;
     
     // Return with the requested status, even though we didn't actually update it in the database
-    const tracking = this.mapDbRowToOrderTracking(data);
+    const tracking = this.mapDbRowToOrderTracking(data as any);
     tracking.status = status;
     
     return tracking as OrderTracking;
@@ -123,11 +123,11 @@ export class OrderTrackingService implements IOrderTrackingRepository {
     return {
       id: `event-${Date.now()}`,
       orderTrackingId: id,
-      date: event.date || new Date().toISOString(),
-      type: event.type,
-      description: event.description || '',
+      timestamp: event.timestamp || new Date().toISOString(),
+      eventType: event.eventType,
+      notes: event.notes || '',
       location: event.location,
-      createdAt: new Date().toISOString()
+      createdBy: 'system'
     };
   }
 
@@ -135,7 +135,7 @@ export class OrderTrackingService implements IOrderTrackingRepository {
     const { error } = await supabase
       .from(this.TABLE_NAME)
       .delete()
-      .eq('id', id);
+      .eq('id', Number(id));
 
     if (error) throw error;
   }

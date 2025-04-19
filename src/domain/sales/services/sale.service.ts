@@ -1,9 +1,10 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Sale, SaleFormInput } from '../models/sale.model';
 import { ISaleRepository, SaleFilter } from '../repositories/sale.repository.interface';
 
 export class SaleService implements ISaleRepository {
-  private readonly TABLE_NAME = 'sales';
+  private readonly TABLE_NAME = 'ordenes_compra';
 
   async getAll(filters?: SaleFilter): Promise<{ data: Sale[]; count: number }> {
     let query = supabase
@@ -11,19 +12,19 @@ export class SaleService implements ISaleRepository {
       .select('*', { count: 'exact' });
 
     if (filters?.status) {
-      query = query.eq('status', filters.status);
+      query = query.eq('etapa_actual', this.mapStatusToDbValue(filters.status));
     }
     if (filters?.clientId) {
-      query = query.eq('clientId', filters.clientId);
+      query = query.eq('cliente_id', Number(filters.clientId));
     }
     if (filters?.fromDate) {
-      query = query.gte('date', filters.fromDate);
+      query = query.gte('fecha_form', filters.fromDate);
     }
     if (filters?.toDate) {
-      query = query.lte('date', filters.toDate);
+      query = query.lte('fecha_form', filters.toDate);
     }
     if (filters?.searchTerm) {
-      query = query.or(`number.ilike.%${filters.searchTerm}%,clientName.ilike.%${filters.searchTerm}%`);
+      query = query.or(`codigo_venta.ilike.%${filters.searchTerm}%,cliente_id.ilike.%${filters.searchTerm}%`);
     }
 
     // Paginación
@@ -36,7 +37,7 @@ export class SaleService implements ISaleRepository {
     if (error) throw error;
     
     return {
-      data: (data as Sale[]) || [],
+      data: (data || []).map(item => this.mapDbRowToSale(item as any)) as Sale[],
       count: count || 0
     };
   }
@@ -45,67 +46,118 @@ export class SaleService implements ISaleRepository {
     const { data, error } = await supabase
       .from(this.TABLE_NAME)
       .select('*')
-      .eq('id', id)
+      .eq('id', Number(id))
       .single();
 
     if (error) throw error;
     if (!data) throw new Error('Sale not found');
 
-    return data as Sale;
+    return this.mapDbRowToSale(data as any) as Sale;
   }
 
   async create(formData: SaleFormInput): Promise<Sale> {
+    const dbData = {
+      cliente_id: Number(formData.clientId),
+      fecha_form: formData.date,
+      monto_venta: this.calculateTotal(formData.items),
+      etapa_actual: this.mapStatusToDbValue('pending'),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
     const { data, error } = await supabase
       .from(this.TABLE_NAME)
-      .insert({
-        ...formData,
-        status: 'pending',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      })
+      .insert(dbData)
       .select()
       .single();
 
     if (error) throw error;
-    return data as Sale;
+    return this.mapDbRowToSale(data as any) as Sale;
   }
 
   async update(id: string, formData: Partial<SaleFormInput>): Promise<Sale> {
+    const updateData: any = {
+      updated_at: new Date().toISOString()
+    };
+
+    if (formData.clientId) updateData.cliente_id = Number(formData.clientId);
+    if (formData.date) updateData.fecha_form = formData.date;
+    if (formData.items) updateData.monto_venta = this.calculateTotal(formData.items);
+    if (formData.notes) updateData.nota_op = formData.notes;
+
     const { data, error } = await supabase
       .from(this.TABLE_NAME)
-      .update({
-        ...formData,
-        updatedAt: new Date().toISOString()
-      })
-      .eq('id', id)
+      .update(updateData)
+      .eq('id', Number(id))
       .select()
       .single();
 
     if (error) throw error;
-    return data as Sale;
+    return this.mapDbRowToSale(data as any) as Sale;
   }
 
   async updateStatus(id: string, status: Sale['status']): Promise<Sale> {
     const { data, error } = await supabase
       .from(this.TABLE_NAME)
       .update({
-        status,
-        updatedAt: new Date().toISOString()
+        etapa_actual: this.mapStatusToDbValue(status),
+        updated_at: new Date().toISOString()
       })
-      .eq('id', id)
+      .eq('id', Number(id))
       .select()
       .single();
 
     if (error) throw error;
-    return data as Sale;
+    return this.mapDbRowToSale(data as any) as Sale;
   }
 
   async delete(id: string): Promise<void> {
     const { error } = await supabase
       .from(this.TABLE_NAME)
       .delete()
-      .eq('id', id);
+      .eq('id', Number(id));
 
     if (error) throw error;
+  }
+
+  // Helper methods
+  private calculateTotal(items: any[]): number {
+    return items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
+  }
+
+  private mapStatusToDbValue(status: Sale['status']): string {
+    switch (status) {
+      case 'pending': return 'pendiente';
+      case 'completed': return 'completado';
+      case 'cancelled': return 'cancelado';
+      default: return 'pendiente';
+    }
+  }
+
+  private mapDbRowToSale(row: any): Sale {
+    return {
+      id: row.id.toString(),
+      number: row.codigo_venta || '',
+      clientId: row.cliente_id?.toString() || '',
+      clientName: row.cliente_nombre || 'Cliente sin nombre',
+      date: row.fecha_form || new Date().toISOString(),
+      total: Number(row.monto_venta) || 0,
+      status: this.mapDbStatusToModel(row.etapa_actual),
+      items: [], // We would need to fetch these separately
+      paymentStatus: 'pending',
+      paymentType: row.tipo_pago || 'efectivo',
+      notes: row.nota_op || '',
+      createdBy: '',
+      createdAt: row.created_at || new Date().toISOString(),
+      updatedAt: row.updated_at || new Date().toISOString()
+    };
+  }
+
+  private mapDbStatusToModel(dbStatus: string): Sale['status'] {
+    switch (dbStatus) {
+      case 'completado': return 'completed';
+      case 'cancelado': return 'cancelled';
+      default: return 'pending';
+    }
   }
 }
