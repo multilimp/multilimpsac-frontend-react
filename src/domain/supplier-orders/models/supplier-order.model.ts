@@ -10,7 +10,7 @@ export interface SupplierOrder {
   status: "draft" | "sent" | "confirmed" | "received" | "cancelled";
   items: SupplierOrderItem[];
   paymentStatus: "pending" | "partial" | "completed";
-  paymentType?: string;
+  paymentTerms: string;
   notes?: string;
   deliveryAddress?: string;
   createdAt: string;
@@ -34,8 +34,8 @@ export interface SupplierOrderFormInput {
   date: string;
   deliveryDate?: string;
   items?: Omit<SupplierOrderItem, "id" | "total">[];
-  paymentTerms?: string;
+  paymentTerms: string;
   notes?: string;
   deliveryAddress?: string;
-  total?: number;
+  total: number;
 }

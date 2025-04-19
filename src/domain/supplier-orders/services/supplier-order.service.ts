@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { SupplierOrder, SupplierOrderFormInput } from '../models/supplier-order.model';
 import { ISupplierOrderRepository, SupplierOrderFilter } from '../repositories/supplier-order.repository.interface';
@@ -126,7 +125,6 @@ export class SupplierOrderService implements ISupplierOrderRepository {
     if (error) throw error;
   }
 
-  // Helper method to map database rows to domain model
   private mapDbRowToSupplierOrder(row: any): SupplierOrder {
     return {
       id: row.id.toString(),

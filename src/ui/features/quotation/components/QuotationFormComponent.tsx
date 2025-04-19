@@ -48,6 +48,7 @@ const QuotationFormComponent: React.FC<QuotationFormComponentProps> = ({
               quotationId={quotationId}
               onCancel={onCancel}
               setFormStatus={setFormStatus}
+              form={form}
             />
           </CardFooter>
         </Card>

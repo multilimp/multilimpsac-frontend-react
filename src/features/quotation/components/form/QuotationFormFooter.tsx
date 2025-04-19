@@ -43,7 +43,7 @@ export const QuotationFormFooter: React.FC<QuotationFormFooterProps> = ({
         <Button 
           type="submit" 
           disabled={isSubmitting}
-          onClick={() => setFormStatus(quotationId ? form.getValues().status : "sent")}
+          onClick={() => setFormStatus("sent")}
         >
           {isSubmitting ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

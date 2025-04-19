@@ -1,9 +1,13 @@
-
 import { DataGridColumn } from "@/components/ui/data-grid/types";
 import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
-import { Contact } from "../hooks/useContactView";
+
+export interface Contact {
+  name: string;
+  phone: string;
+  email: string;
+}
 
 interface SalesListRow {
   codigo_venta: string;
@@ -64,15 +68,7 @@ export const getSalesColumns = (handleViewContact: (contact: Contact) => void): 
     type: 'string',
     sortable: false,
     filterable: false,
-    render: (row: any) => (
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => handleViewContact(row.contact)}
-      >
-        <Eye className="h-4 w-4" />
-      </Button>
-    ),
+    getValue: (row: any) => row.contact?.name || ''
   },
   { 
     key: 'catalogo', 
@@ -101,7 +97,7 @@ export const getSalesColumns = (handleViewContact: (contact: Contact) => void): 
     type: 'number',
     sortable: true,
     filterable: true,
-    render: (row: any) => formatCurrency(row.monto_venta),
+    getValue: (row: any) => formatCurrency(row.monto_venta)
   },
   { 
     key: 'cod_unidad', 

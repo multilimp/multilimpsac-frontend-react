@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -43,6 +42,12 @@ const QuotationClientSection: React.FC<QuotationClientSectionProps> = ({ form })
     queryKey: ['clients'],
     queryFn: () => clientService.getClients()
   });
+
+  const handleSelectClient = (client: Cliente) => {
+    form.setValue("clientId", client.id);
+    form.setValue("contactId", ""); // Reset contact when client changes
+    setIsModalOpen(false);
+  };
 
   return (
     <div className="space-y-6">
@@ -113,10 +118,7 @@ const QuotationClientSection: React.FC<QuotationClientSectionProps> = ({ form })
       <ClientSelectionModal
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
-        onSelect={(client) => {
-          form.setValue("clientId", client.id);
-          form.setValue("contactId", ""); // Reset contact when client changes
-        }}
+        onSelect={handleSelectClient}
         clients={clients}
       />
     </div>
