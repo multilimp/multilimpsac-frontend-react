@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Collection, CollectionFormInput, Payment } from '../models/collection.model';
 import { ICollectionRepository, CollectionFilter } from '../repositories/collection.repository.interface';
@@ -213,15 +212,17 @@ export class CollectionService implements ICollectionRepository {
   private mapDbRowToCollection(row: any): Collection {
     return {
       id: row.id.toString(),
+      orderNumber: row.factura_id?.toString() || '',  // Used as orderNumber
       invoiceId: row.factura_id?.toString() || '',
       invoiceNumber: row.factura_id?.toString() || '',  // You may want to fetch the actual invoice number
       clientId: row.cliente_id?.toString() || '',
       clientName: row.cliente_name || '',  // This might need to be fetched from a client table
-      amount: Number(row.monto_total) || 0,
       date: row.created_at || new Date().toISOString(),
       dueDate: row.fecha_vencimiento || new Date().toISOString(),
+      total: Number(row.monto_total) || 0,
       status: this.mapDbStatusToModel(row.estado_id),
-      payments: [], // We would need to fetch this separately
+      pendingAmount: Number(row.monto_pendiente) || 0,
+      collectedAmount: Number(row.monto_total) - (Number(row.monto_pendiente) || 0),
       balance: Number(row.monto_pendiente) || 0,
       currency: 'PEN', // Default currency
       notes: row.observaciones || '',
