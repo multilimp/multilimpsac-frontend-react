@@ -10,6 +10,7 @@ import { CompanySection } from './form/CompanySection';
 import { ClientSection } from './form/ClientSection';
 import { DeliverySection } from './form/DeliverySection';
 import { SiafSection } from './form/SiafSection';
+import { DocumentsSection } from './form/DocumentsSection';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface SalesFormProps {
@@ -23,6 +24,8 @@ export const SalesForm: React.FC<SalesFormProps> = ({ onSuccess }) => {
     defaultValues: {
       fechaFormalizacion: new Date().toISOString().split('T')[0],
       fechaMaxFormalizacion: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      fechaMaxEntrega: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      productos: '[]'
     }
   });
 
@@ -54,6 +57,7 @@ export const SalesForm: React.FC<SalesFormProps> = ({ onSuccess }) => {
             <CompanySection form={form} />
             <ClientSection form={form} />
             <DeliverySection form={form} />
+            <DocumentsSection form={form} />
             <SiafSection form={form} />
           </CardContent>
           <CardFooter className="flex justify-between">

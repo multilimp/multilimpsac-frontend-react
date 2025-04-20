@@ -1,4 +1,3 @@
-
 import { ColumnType, DataGridColumn } from './types';
 import { formatDate } from '@/lib/utils';
 
@@ -63,3 +62,14 @@ export function downloadCSV(content: string, filename = `data-export-${new Date(
   link.click();
   document.body.removeChild(link);
 }
+
+export const getCSVData = (data: any[], columns: DataGridColumn[]): string[] => {
+  const headers = columns.map((col) => col.name);
+  const rows = data.map((item) => {
+    return columns.map((col) => {
+      const value = item[col.key];
+      return typeof value === 'string' ? value : JSON.stringify(value);
+    });
+  });
+  return [headers, ...rows];
+};

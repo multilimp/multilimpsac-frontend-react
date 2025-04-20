@@ -23,9 +23,15 @@ export const salesFormSchema = z.object({
   fechaMaxFormalizacion: z.string({
     required_error: "Debe ingresar una fecha máxima de formalización",
   }),
+  fechaMaxEntrega: z.string({
+    required_error: "Debe ingresar una fecha máxima de entrega",
+  }),
   montoTotal: z.coerce.number().min(0, "El monto debe ser mayor a 0"),
   etapaSiaf: z.string().optional(),
   numeroSiaf: z.string().optional(),
+  documentoOce: z.string().optional(),
+  documentoOcf: z.string().optional(),
+  productos: z.string().min(1, "Debe ingresar al menos un producto"),
 });
 
 export type SalesFormValues = z.infer<typeof salesFormSchema>;
