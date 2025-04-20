@@ -29,7 +29,12 @@ export function generateCSV(
     columns.forEach(col => {
       const column = columnDefinitions.find(c => c.key === col.key);
       if (column) {
-        const value = getValueByPath(row, col.key);
+        let value;
+        if (column.getValue) {
+          value = column.getValue(row);
+        } else {
+          value = getValueByPath(row, column.key);
+        }
         rowData[column.name] = formatCellValue(value, column.type);
       }
     });
@@ -65,7 +70,12 @@ export const getCSVData = (data: any[], columns: DataGridColumn[]): string[][] =
   const headers = columns.map((col) => col.name);
   const rows = data.map((item) => {
     return columns.map((col) => {
-      const value = getValueByPath(item, col.key);
+      let value;
+      if (col.getValue) {
+        value = col.getValue(item);
+      } else {
+        value = getValueByPath(item, col.key);
+      }
       return typeof value === 'string' ? value : JSON.stringify(value);
     });
   });

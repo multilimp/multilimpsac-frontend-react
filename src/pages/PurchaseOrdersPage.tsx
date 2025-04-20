@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { PurchaseOrderList } from '@/components/purchases/PurchaseOrderList';
+import PurchaseOrderList from '@/components/purchases/PurchaseOrderList';
 import SecondaryNavWrapper from '@/components/layout/SecondaryNavWrapper';
 import { Box, Package, Truck } from 'lucide-react';
 

@@ -6,6 +6,13 @@ import { Badge } from '@/components/ui/badge';
 import { formatDate } from '@/lib/utils';
 import { Money } from '@/core/domain/types/value-objects';
 
+// Since SupplierOrderId is not directly compatible with string | number, 
+// we'll add a mapper to convert it when presenting to the DataGrid
+const mapSupplierOrderForDataGrid = (order: any) => ({
+  ...order,
+  id: order.id.value, // Extract the string value from the SupplierOrderId object
+});
+
 const columns: DataGridColumn[] = [
   {
     key: 'number',
@@ -57,13 +64,19 @@ const columns: DataGridColumn[] = [
   }
 ];
 
-export const SupplierOrderList = () => {
+export const SupplierOrderList: React.FC = () => {
   const { data: supplierOrders, isLoading } = useSupplierOrders();
+
+  // Map the data to be compatible with DataGrid expecting id as string | number
+  const mappedData = React.useMemo(() => {
+    if (!supplierOrders?.data) return [];
+    return supplierOrders.data.map(mapSupplierOrderForDataGrid);
+  }, [supplierOrders?.data]);
 
   return (
     <DataGrid
       columns={columns}
-      data={supplierOrders?.data || []}
+      data={mappedData}
       loading={isLoading}
       pageSize={10}
     />

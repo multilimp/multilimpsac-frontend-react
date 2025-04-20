@@ -1,3 +1,4 @@
+
 import { Quotation, QuotationItem, QuotationStatus } from "@/domain/quotation/models/quotation.model";
 import { createEntityId, createDateVO, createMoney, createStatus, EntityId, DateVO, Status } from "@/core/domain/types/value-objects";
 import { v4 as uuidv4 } from 'uuid';
@@ -44,8 +45,8 @@ export function mapDbQuotationToDomain(
     number: dbQuotation.codigo_cotizacion,
     clientId: createEntityId(String(dbQuotation.cliente_id)),
     clientName: dbQuotation.clientes?.razon_social || "",
-    date: createDateVO(dbQuotation.fecha_cotizacion).value,
-    expiryDate: createDateVO(dbQuotation.fecha_entrega).value,
+    date: createDateVO(dbQuotation.fecha_cotizacion),
+    expiryDate: createDateVO(dbQuotation.fecha_entrega),
     total: createMoney(Number(dbQuotation.monto_total) || 0),
     status: mapDbStatusToDomain(dbQuotation.estado),
     items: items,
