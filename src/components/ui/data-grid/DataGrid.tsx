@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo, ChangeEvent } from "react";
 import { Table } from "@/components/ui/table";
 import { DataGridPagination } from "./DataGridPagination";
@@ -44,7 +43,7 @@ export function DataGrid<T extends { id: string | number }>({
     filters,
     filteredData,
     handleFilterChange
-  } = useDataGridFilters<T>(data, columns, visibleColumnsKeys, searchTerm, sortConfig);
+  } = useDataGridFilters<T>(data, columns, visibleColumns.map(col => col.key), searchTerm, sortConfig);
   
   // Pagination hook
   const {
