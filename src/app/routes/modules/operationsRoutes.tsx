@@ -1,11 +1,11 @@
-
 import { lazy } from "react";
 import { FileSearch, ShoppingCart, Package, ClipboardList } from "lucide-react";
 import { RouteDefinition } from "../types";
 
-// Lazy load components
 const QuotationsPage = lazy(() => import("@/pages/QuotationsPage"));
 const SalesPage = lazy(() => import("@/pages/SalesPage"));
+const PurchaseOrdersPage = lazy(() => import("@/pages/PurchaseOrdersPage"));
+const SupplierOrdersPage = lazy(() => import("@/pages/SupplierOrdersPage"));
 
 export const operationsRoutes: RouteDefinition[] = [
   {
@@ -26,8 +26,16 @@ export const operationsRoutes: RouteDefinition[] = [
   },
   {
     path: "/ordenes",
-    component: lazy(() => import("@/pages/ModulePage")),
-    title: "Órdenes de Proveedores",
+    component: PurchaseOrdersPage,
+    title: "Órdenes",
+    icon: <Package className="h-5 w-5" />,
+    requireAuth: true,
+    permission: "orders:view",
+  },
+  {
+    path: "/ordenes/proveedor",
+    component: SupplierOrdersPage,
+    title: "Órdenes de Proveedor",
     icon: <Package className="h-5 w-5" />,
     requireAuth: true,
     permission: "orders:view",

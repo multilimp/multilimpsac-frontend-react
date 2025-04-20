@@ -1,3 +1,4 @@
+
 import { ColumnType, DataGridColumn } from './types';
 import { formatDate } from '@/lib/utils';
 
@@ -20,15 +21,15 @@ export function formatCellValue(value: any, type: ColumnType): string {
 
 export function generateCSV(
   data: any[], 
-  columns: string[], 
+  columns: DataGridColumn[],
   columnDefinitions: DataGridColumn[]
 ): string {
   const visibleData = data.map(row => {
     const rowData: Record<string, any> = {};
-    columns.forEach(colKey => {
-      const column = columnDefinitions.find(col => col.key === colKey);
+    columns.forEach(col => {
+      const column = columnDefinitions.find(c => c.key === col.key);
       if (column) {
-        const value = getValueByPath(row, colKey);
+        const value = getValueByPath(row, col.key);
         rowData[column.name] = formatCellValue(value, column.type);
       }
     });
@@ -36,10 +37,7 @@ export function generateCSV(
   });
   
   const csvContent = [
-    columns.map(colKey => {
-      const column = columnDefinitions.find(col => col.key === colKey);
-      return column ? column.name : colKey;
-    }).join(','),
+    columns.map(col => col.name).join(','),
     ...visibleData.map(row => 
       Object.values(row).map(value => 
         typeof value === 'string' && value.includes(',') 
@@ -63,11 +61,11 @@ export function downloadCSV(content: string, filename = `data-export-${new Date(
   document.body.removeChild(link);
 }
 
-export const getCSVData = (data: any[], columns: DataGridColumn[]): string[] => {
+export const getCSVData = (data: any[], columns: DataGridColumn[]): string[][] => {
   const headers = columns.map((col) => col.name);
   const rows = data.map((item) => {
     return columns.map((col) => {
-      const value = item[col.key];
+      const value = getValueByPath(item, col.key);
       return typeof value === 'string' ? value : JSON.stringify(value);
     });
   });
