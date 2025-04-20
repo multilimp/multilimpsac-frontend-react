@@ -1,41 +1,26 @@
 
-export interface Transaction {
+import { EntityId, DateVO, Status, Money } from "@/core/domain/types/value-objects";
+
+export type TreasuryId = EntityId;
+
+export type PaymentStatus = 'pending' | 'partial' | 'completed';
+
+export interface Treasury {
+  id: TreasuryId;
+  orderNumber: string;
+  clientId: EntityId;
+  clientName: string;
+  date: DateVO;
+  dueDate: DateVO;
+  total: Money;
+  paymentStatus: PaymentStatus;
+  payments: Payment[];
+}
+
+export interface Payment {
   id: string;
-  type: 'income' | 'expense' | 'transfer';
-  category: string;
-  amount: number;
-  date: string;
-  description: string;
-  paymentMethod: string;
+  date: DateVO;
+  amount: Money;
+  method: string;
   reference: string;
-  status: 'pending' | 'completed' | 'cancelled';
-  accountId: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Account {
-  id: string;
-  name: string;
-  type: 'cash' | 'bank' | 'credit' | 'other';
-  currency: string;
-  balance: number;
-  description?: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface TransactionFormInput {
-  type?: 'income' | 'expense' | 'transfer';
-  category?: string;
-  amount: number;
-  date: string;
-  description: string;
-  paymentMethod?: string;
-  reference?: string;
-  accountId?: string;
-  referenceId?: string;
-  supplierId?: string;
-  total?: number; // Added for compatibility
 }

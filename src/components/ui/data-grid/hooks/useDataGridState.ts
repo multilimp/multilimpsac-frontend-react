@@ -1,12 +1,8 @@
-
 import { useState, useCallback } from "react";
 import { DataGridColumn, SortConfig } from "../types";
 
 export const useDataGridState = (columns: DataGridColumn[]) => {
   const [visibleColumns, setVisibleColumns] = useState<DataGridColumn[]>(columns);
-  const [visibleColumnsKeys, setVisibleColumnsKeys] = useState<string[]>(
-    columns.map((col) => col.key)
-  );
   const [sortConfig, setSortConfig] = useState<SortConfig>({
     column: "",
     direction: "asc"
@@ -17,18 +13,17 @@ export const useDataGridState = (columns: DataGridColumn[]) => {
   // Toggle column visibility
   const handleColumnToggle = useCallback((columnKey: string, isVisible: boolean) => {
     if (isVisible) {
-      // Add column to visible columns
       const columnToAdd = columns.find((col) => col.key === columnKey);
       if (columnToAdd) {
         setVisibleColumns((prev) => [...prev, columnToAdd]);
-        setVisibleColumnsKeys((prev) => [...prev, columnKey]);
       }
     } else {
-      // Remove column from visible columns
       setVisibleColumns((prev) => prev.filter((col) => col.key !== columnKey));
-      setVisibleColumnsKeys((prev) => prev.filter((key) => key !== columnKey));
     }
   }, [columns]);
+
+  // Get visible column keys
+  const visibleColumnsKeys = visibleColumns.map(col => col.key);
 
   // Handle sorting
   const handleSort = useCallback((column: string) => {
