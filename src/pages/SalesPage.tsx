@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { 
@@ -11,7 +10,7 @@ import { Plus } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PurchaseOrder } from '@/features/purchaseOrder/models/purchaseOrder';
 import SalesList from '@/features/sales/components/SalesList';
-import SalesForm from '@/features/sales/components/SalesForm';
+import { SalesForm } from '@/features/sales/components/SalesForm';
 import { useToast } from '@/components/ui/use-toast';
 import { fetchSales } from '@/features/sales/services/salesService';
 import PageHeader from '@/components/common/PageHeader';
@@ -44,7 +43,6 @@ const SalesPage: React.FC = () => {
       description: "La venta se ha registrado correctamente",
     });
     setActiveTab("list");
-    refetch();
   };
 
   return (
@@ -80,9 +78,9 @@ const SalesPage: React.FC = () => {
             <div className="mt-2">
               <TabsContent value="list" className="m-0">
                 <SalesList 
-                  sales={sales}
-                  isLoading={isLoading}
-                  onRefresh={refetch}
+                  sales={[]}
+                  isLoading={false}
+                  onRefresh={() => {}}
                 />
               </TabsContent>
               <TabsContent value="new" className="m-0">

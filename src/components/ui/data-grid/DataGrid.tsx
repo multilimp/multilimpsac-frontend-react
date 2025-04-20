@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo, ChangeEvent } from "react";
 import { Table } from "@/components/ui/table";
 import { DataGridPagination } from "./DataGridPagination";
@@ -76,9 +75,8 @@ export function DataGrid<T extends { id: string | number }>({
     
     // Default download implementation is now in utils.ts
     import("./utils").then(({ generateCSV, downloadCSV }) => {
-      // Extract just the keys from visibleColumnsKeys for CSV generation
-      const columnKeys = visibleColumnsKeys.map(key => key.toString());
-      // Pass the correct types to the generateCSV function
+      // Extract just the column keys for CSV generation
+      const columnKeys = visibleColumns.map(col => col.key.toString());
       const csvContent = generateCSV(filteredData, columnKeys, visibleColumns);
       downloadCSV(csvContent);
     });
