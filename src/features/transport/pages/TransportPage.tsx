@@ -1,7 +1,8 @@
 
-import React, { useState } from "react";
+import React from "react";
+import { useNavigate } from "react-router-dom";
 import { useTransports } from "../services/transport.service";
-import { Transport, TransportDB } from "../models/transport.model";
+import { Transport } from "../models/transport.model";
 import { LoadingFallback } from "@/components/common/LoadingFallback";
 import PageHeader from "@/components/common/PageHeader";
 import { DataGrid, DataGridColumn } from "@/components/ui/data-grid";
@@ -12,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 const TransportPage: React.FC = () => {
   const { data: transports = [], isLoading, error, refetch } = useTransports();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const breadcrumbItems = [
     {
@@ -35,7 +37,12 @@ const TransportPage: React.FC = () => {
       name: 'Estado',  
       type: 'string',
       sortable: true, 
-      filterable: true
+      filterable: true,
+      render: (row: Transport) => (
+        <Badge variant={row.status === 'active' ? 'default' : 'secondary'}>
+          {row.status === 'active' ? 'Activo' : 'Inactivo'}
+        </Badge>
+      )
     },
   ];
 
@@ -48,11 +55,11 @@ const TransportPage: React.FC = () => {
   };
 
   const handleRowClick = (row: Transport) => {
-    console.log('Transporte seleccionado:', row);
-    toast({
-      title: "Transporte seleccionado",
-      description: row.name,
-    });
+    navigate(`/transportes/${row.id}`);
+  };
+
+  const handleAddTransport = () => {
+    navigate('/transportes/new');
   };
 
   if (isLoading) return <LoadingFallback />;
@@ -73,6 +80,7 @@ const TransportPage: React.FC = () => {
         subtitle="Gestione los servicios de transporte en el sistema"
         showAddButton
         addButtonText="Agregar Transporte"
+        onAddClick={handleAddTransport}
       />
       
       <div className="mb-6">

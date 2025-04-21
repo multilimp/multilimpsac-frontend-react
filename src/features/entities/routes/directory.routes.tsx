@@ -1,3 +1,4 @@
+
 import { lazy } from "react";
 import { Building2, Users, Truck, User } from "lucide-react";
 import { RouteDefinition } from "../../../app/routes/types";
@@ -90,6 +91,45 @@ export const directoryRoutes: RouteDefinition[] = [
     entityType: "transporte",
     action: "list",
     breadcrumb: "Transportes"
+  },
+  {
+    path: "/transportes/:id",
+    component: lazy(() => import("@/features/transport/pages/TransportDetailsPage")),
+    title: "Detalle de Transporte",
+    icon: <Truck className="h-5 w-5" />,
+    requireAuth: true,
+    permission: "transports:view",
+    domain: "transport",
+    entityType: "transporte",
+    action: "detail",
+    breadcrumb: "Detalle",
+    hideInMenu: true
+  },
+  {
+    path: "/transportes/new",
+    component: lazy(() => import("@/features/transport/pages/TransportEditPage")),
+    title: "Nuevo Transporte",
+    icon: <Truck className="h-5 w-5" />,
+    requireAuth: true,
+    permission: "transports:create",
+    domain: "transport",
+    entityType: "transporte",
+    action: "create",
+    breadcrumb: "Nuevo",
+    hideInMenu: true
+  },
+  {
+    path: "/transportes/:id/edit",
+    component: lazy(() => import("@/features/transport/pages/TransportEditPage")),
+    title: "Editar Transporte",
+    icon: <Truck className="h-5 w-5" />,
+    requireAuth: true,
+    permission: "transports:edit",
+    domain: "transport",
+    entityType: "transporte",
+    action: "edit",
+    breadcrumb: "Editar",
+    hideInMenu: true
   },
   {
     path: "/usuarios",

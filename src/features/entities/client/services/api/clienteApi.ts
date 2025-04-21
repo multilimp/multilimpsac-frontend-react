@@ -1,8 +1,18 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Client, ClientContact, ClientDB, ContactoClienteDB, mapClientFromDB, mapClientToDB, mapContactFromDB, mapContactToDB } from '../../models/client.model';
+import { 
+  Client, 
+  ClientDB, 
+  ClientContact, 
+  ContactoClienteDB, 
+  mapClientFromDB, 
+  mapClientToDB, 
+  mapContactFromDB, 
+  mapContactToDB 
+} from '../../models/client.model';
 import { stringToNumberId } from '@/utils/id-conversions';
 
+// Create a class with correct implementation for Supabase operations
 class ClienteApi {
   async fetchClientes(): Promise<Client[]> {
     const { data, error } = await supabase
@@ -29,15 +39,18 @@ class ClienteApi {
   async createCliente(client: Partial<Client>): Promise<Client> {
     const dbClient = mapClientToDB(client);
     
-    // Ensure the required fields are present
-    if (!dbClient.razon_social || !dbClient.ruc || !dbClient.cod_unidad) {
-      throw new Error('Required fields missing: razon_social, ruc, and cod_unidad are required');
-    }
+    // Ensure the required fields are present for Supabase insert
+    const clienteData = {
+      razon_social: dbClient.razon_social || 'Nuevo cliente',
+      ruc: dbClient.ruc || '00000000000',
+      cod_unidad: dbClient.cod_unidad || 'DEFAULT',
+      estado: dbClient.estado !== undefined ? dbClient.estado : true,
+      ...dbClient
+    };
     
-    // Make sure we're sending a single object, not an array
     const { data, error } = await supabase
       .from('clientes')
-      .insert(dbClient) // Remove array wrapping
+      .insert(clienteData)
       .select()
       .single();
       
@@ -70,12 +83,12 @@ class ClienteApi {
     if (error) throw error;
   }
 
-  async fetchContactosCliente(clientId: string): Promise<ClientContact[]> {
-    const numericClientId = stringToNumberId(clientId);
+  async fetchContactosCliente(clienteId: string): Promise<ClientContact[]> {
+    const numericClienteId = stringToNumberId(clienteId);
     const { data, error } = await supabase
       .from('contacto_clientes')
       .select('*')
-      .eq('cliente_id', numericClientId)
+      .eq('cliente_id', numericClienteId)
       .order('nombre');
       
     if (error) throw error;
@@ -87,7 +100,7 @@ class ClienteApi {
     
     const { data, error } = await supabase
       .from('contacto_clientes')
-      .insert(dbContact) // Remove array wrapping
+      .insert(dbContact)
       .select()
       .single();
       

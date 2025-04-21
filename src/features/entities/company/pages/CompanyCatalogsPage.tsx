@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -36,8 +37,8 @@ const CompanyCatalogsPage: React.FC = () => {
   
   const { data: company, isLoading: isCompanyLoading, error: companyError } = useCompany(companyId || '');
   const { data: catalogs, isLoading: isCatalogsLoading, error: catalogsError } = useCompanyCatalogs(companyId || '');
-  const { mutate: createCatalog, isLoading: isCreating } = useCreateCompanyCatalog();
-  const { mutate: deleteCatalog, isLoading: isDeleting } = useDeleteCompanyCatalog();
+  const createCatalogMutation = useCreateCompanyCatalog();
+  const deleteCatalogMutation = useDeleteCompanyCatalog();
   
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newCatalogCode, setNewCatalogCode] = useState('');
@@ -71,12 +72,11 @@ const CompanyCatalogsPage: React.FC = () => {
     navigate('/empresas');
   };
 
-  // Fix the empresa_id to empresaId conversion when creating a catalog
   const handleAddCatalog = async () => {
     setIsLoading(true);
     try {
-      await createCatalog({
-        empresaId: companyId, // Change from empresa_id to empresaId
+      await createCatalogMutation.mutateAsync({
+        empresaId: companyId, 
         codigo: newCatalogCode
       });
       setNewCatalogCode('');
@@ -99,7 +99,7 @@ const CompanyCatalogsPage: React.FC = () => {
   const handleDeleteCatalog = async (id: string) => {
     setIsLoading(true);
     try {
-      await deleteCatalog(id);
+      await deleteCatalogMutation.mutateAsync(id);
       toast({
         title: "Catálogo eliminado",
         description: "El catálogo ha sido eliminado exitosamente"
@@ -182,7 +182,7 @@ const CompanyCatalogsPage: React.FC = () => {
                         variant="destructive" 
                         size="sm"
                         onClick={() => handleDeleteCatalog(catalog.id)}
-                        disabled={isDeleting}
+                        disabled={isLoading || deleteCatalogMutation.isPending}
                       >
                         Eliminar
                       </Button>
@@ -219,8 +219,12 @@ const CompanyCatalogsPage: React.FC = () => {
               <Button type="button" variant="secondary" onClick={() => setIsAddModalOpen(false)}>
                 Cancelar
               </Button>
-              <Button type="submit" onClick={handleAddCatalog} disabled={isCreating || isLoading}>
-                {isCreating || isLoading ? 'Creando...' : 'Crear Catálogo'}
+              <Button 
+                type="submit" 
+                onClick={handleAddCatalog} 
+                disabled={createCatalogMutation.isPending || isLoading}
+              >
+                {createCatalogMutation.isPending || isLoading ? 'Creando...' : 'Crear Catálogo'}
               </Button>
             </DialogFooter>
           </DialogContent>

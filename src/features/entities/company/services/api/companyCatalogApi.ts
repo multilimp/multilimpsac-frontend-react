@@ -43,7 +43,7 @@ class CompanyCatalogApi {
     
     const { data, error } = await supabase
       .from('catalogo_empresas')
-      .insert(dbCatalog) // Remove array wrapping
+      .insert(dbCatalog)
       .select()
       .single();
       
