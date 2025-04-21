@@ -4,9 +4,6 @@ import { Client, ClientContact, ClientDB, ContactoClienteDB, mapClientFromDB, ma
 import { stringToNumberId } from '@/utils/id-conversions';
 
 class ClienteApi {
-  /**
-   * Obtiene todos los clientes
-   */
   async fetchClientes(): Promise<Client[]> {
     const { data, error } = await supabase
       .from('clientes')
@@ -16,10 +13,7 @@ class ClienteApi {
     if (error) throw error;
     return (data || []).map(mapClientFromDB);
   }
-  
-  /**
-   * Obtiene un cliente por su ID
-   */
+
   async fetchClienteById(id: string): Promise<Client> {
     const numericId = stringToNumberId(id);
     const { data, error } = await supabase
@@ -31,38 +25,33 @@ class ClienteApi {
     if (error) throw error;
     return mapClientFromDB(data);
   }
-  
-  /**
-   * Crea un nuevo cliente
-   */
-  async createCliente(cliente: Partial<Client>): Promise<Client> {
-    const dbCliente = mapClientToDB(cliente);
+
+  async createCliente(client: Partial<Client>): Promise<Client> {
+    const dbClient = mapClientToDB(client);
     
-    // Ensure required fields are present
-    if (!dbCliente.razon_social || !dbCliente.ruc || !dbCliente.cod_unidad) {
-      throw new Error('Campos requeridos: razon_social, ruc, y cod_unidad son obligatorios');
+    // Ensure the required fields are present
+    if (!dbClient.razon_social || !dbClient.ruc || !dbClient.cod_unidad) {
+      throw new Error('Required fields missing: razon_social, ruc, and cod_unidad are required');
     }
     
+    // Make sure we're sending a single object, not an array
     const { data, error } = await supabase
       .from('clientes')
-      .insert([dbCliente]) // Wrap in array for Supabase
+      .insert(dbClient) // Remove array wrapping
       .select()
       .single();
       
     if (error) throw error;
     return mapClientFromDB(data);
   }
-  
-  /**
-   * Actualiza un cliente
-   */
-  async updateCliente(id: string, cliente: Partial<Client>): Promise<Client> {
+
+  async updateCliente(id: string, client: Partial<Client>): Promise<Client> {
     const numericId = stringToNumberId(id);
-    const dbCliente = mapClientToDB(cliente);
+    const dbClient = mapClientToDB(client);
     
     const { data, error } = await supabase
       .from('clientes')
-      .update(dbCliente)
+      .update(dbClient)
       .eq('id', numericId)
       .select()
       .single();
@@ -70,10 +59,7 @@ class ClienteApi {
     if (error) throw error;
     return mapClientFromDB(data);
   }
-  
-  /**
-   * Elimina un cliente
-   */
+
   async deleteCliente(id: string): Promise<void> {
     const numericId = stringToNumberId(id);
     const { error } = await supabase
@@ -83,48 +69,39 @@ class ClienteApi {
       
     if (error) throw error;
   }
-  
-  /**
-   * Obtiene los contactos de un cliente
-   */
-  async fetchContactosCliente(clienteId: string): Promise<ClientContact[]> {
-    const numericClienteId = stringToNumberId(clienteId);
+
+  async fetchContactosCliente(clientId: string): Promise<ClientContact[]> {
+    const numericClientId = stringToNumberId(clientId);
     const { data, error } = await supabase
       .from('contacto_clientes')
       .select('*')
-      .eq('cliente_id', numericClienteId)
+      .eq('cliente_id', numericClientId)
       .order('nombre');
       
     if (error) throw error;
     return (data || []).map(mapContactFromDB);
   }
-  
-  /**
-   * Crea un contacto para un cliente
-   */
-  async createContactoCliente(contacto: Partial<ClientContact>): Promise<ClientContact> {
-    const dbContacto = mapContactToDB(contacto);
+
+  async createContactoCliente(contact: Partial<ClientContact>): Promise<ClientContact> {
+    const dbContact = mapContactToDB(contact);
     
     const { data, error } = await supabase
       .from('contacto_clientes')
-      .insert([dbContacto]) // Wrap in array for Supabase
+      .insert(dbContact) // Remove array wrapping
       .select()
       .single();
       
     if (error) throw error;
     return mapContactFromDB(data);
   }
-  
-  /**
-   * Actualiza un contacto
-   */
-  async updateContactoCliente(id: string, contacto: Partial<ClientContact>): Promise<ClientContact> {
+
+  async updateContactoCliente(id: string, contact: Partial<ClientContact>): Promise<ClientContact> {
     const numericId = stringToNumberId(id);
-    const dbContacto = mapContactToDB(contacto);
+    const dbContact = mapContactToDB(contact);
     
     const { data, error } = await supabase
       .from('contacto_clientes')
-      .update(dbContacto)
+      .update(dbContact)
       .eq('id', numericId)
       .select()
       .single();
@@ -132,10 +109,7 @@ class ClienteApi {
     if (error) throw error;
     return mapContactFromDB(data);
   }
-  
-  /**
-   * Elimina un contacto
-   */
+
   async deleteContactoCliente(id: string): Promise<void> {
     const numericId = stringToNumberId(id);
     const { error } = await supabase

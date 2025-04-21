@@ -36,7 +36,7 @@ class ClientService {
     
     const { data, error } = await supabase
       .from('clientes')
-      .insert([dbClient]) // Wrap in array for Supabase
+      .insert(dbClient) // Remove array wrapping
       .select()
       .single();
       
@@ -86,7 +86,7 @@ class ClientService {
     
     const { data, error } = await supabase
       .from('contacto_clientes')
-      .insert([dbContact]) // Wrap in array for Supabase
+      .insert(dbContact) // Remove array wrapping
       .select()
       .single();
       

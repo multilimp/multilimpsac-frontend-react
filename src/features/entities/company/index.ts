@@ -15,7 +15,7 @@ export const companyService = {
   updateCompany: companyApi.updateCompany,
   deleteCompany: companyApi.deleteCompany,
   
-  // Catalog API
+  // Catalog API - Fix method bindings and use the instance methods
   fetchCompanyCatalogs: companyCatalogApi.fetchCompanyCatalogs.bind(companyCatalogApi),
   fetchCompanyCatalogById: companyCatalogApi.fetchCompanyCatalogById.bind(companyCatalogApi),
   createCompanyCatalog: companyCatalogApi.createCompanyCatalog.bind(companyCatalogApi),

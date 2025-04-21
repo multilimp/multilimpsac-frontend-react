@@ -1,156 +1,119 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Edit, Trash2 } from 'lucide-react';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft, Building2, Pencil } from 'lucide-react';
+import PageWithSecondaryNav from '@/components/layout/PageWithSecondaryNav';
+import SecondaryNavWrapper from '@/components/layout/SecondaryNavWrapper';
 import CompanyDetailPanel from '../components/CompanyDetailPanel';
-import { useCompany, useDeleteCompany } from '../index';
+import { companyService, useCompany } from '../index';
+import { Company } from '../models/company.model'; // Import the Company type
 
-const CompanyDetailsPage = () => {
+const CompanyDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+  const [activeTab, setActiveTab] = useState("details");
   
-  const { data: company, isLoading, isError } = useCompany(id || '');
-  const { mutateAsync: deleteCompany, isPending: isDeleting } = useDeleteCompany();
+  const { data: company, isLoading, error } = useCompany(id || '');
   
-  const handleDelete = async () => {
-    if (!company) return;
-    
-    try {
-      await deleteCompany(company.id);
-      navigate('/empresas');
-    } catch (error) {
-      console.error('Error deleting company:', error);
+  const isNewCompany = id === 'new';
+  
+  const navItems = [
+    { 
+      label: "Detalles", 
+      path: `/empresas/${id}`,
+      icon: Building2
     }
+  ];
+  
+  const handleEditClick = () => {
+    navigate(`/empresas/${id}/edit`);
   };
   
-  const handleViewCatalogs = (company: Partial<Company>) => {
-    navigate(`/empresas/${company.id}/catalogos`);
+  const handleBackClick = () => {
+    navigate('/empresas');
+  };
+  
+  const handleFormSubmit = async (data: Partial<Company>) => {
+    try {
+      if (isNewCompany) {
+        // Handle create
+        const newCompany = await companyService.createCompany(data);
+        navigate(`/empresas/${newCompany.id}`);
+      } else if (id) {
+        // Handle update
+        await companyService.updateCompany(id, {
+          ...data,
+          direccion: data.direccion || data.address, // Map address to direccion
+          telefono: data.telefono || data.phone, // Map phone to telefono
+          correo: data.correo || data.email, // Map email to correo
+          razonSocial: data.razonSocial || data.name, // Map name to razonSocial
+          estado: data.estado !== undefined ? data.estado : (data.status === 'active')
+        });
+        navigate(`/empresas/${id}`);
+      }
+    } catch (error) {
+      console.error("Error saving company:", error);
+    }
   };
   
   if (isLoading) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="flex items-center space-x-2 mb-6">
-          <Button variant="outline" size="sm" onClick={() => navigate(-1)}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Volver
-          </Button>
-          <h1 className="text-2xl font-bold">Cargando empresa...</h1>
+      <PageWithSecondaryNav>
+        <div className="flex justify-center items-center h-64">
+          <p className="text-muted-foreground">Cargando datos de la empresa...</p>
         </div>
-      </div>
+      </PageWithSecondaryNav>
     );
   }
   
-  if (isError || !company) {
+  if (error && !isNewCompany) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="flex items-center space-x-2 mb-6">
-          <Button variant="outline" size="sm" onClick={() => navigate(-1)}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Volver
+      <PageWithSecondaryNav>
+        <div className="flex flex-col justify-center items-center h-64">
+          <p className="text-destructive">Error al cargar los datos de la empresa</p>
+          <Button variant="outline" onClick={handleBackClick} className="mt-4">
+            Volver a la lista
           </Button>
-          <h1 className="text-2xl font-bold text-destructive">Error al cargar la empresa</h1>
         </div>
-        <Card>
-          <CardContent className="pt-6">
-            <p>No se pudo cargar la información de la empresa. Por favor, intente nuevamente.</p>
-            <Button onClick={() => navigate('/empresas')} className="mt-4">
-              Volver a Empresas
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      </PageWithSecondaryNav>
     );
   }
   
   return (
-    <div className="container mx-auto p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" size="sm" onClick={() => navigate(-1)}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Volver
-          </Button>
-          <h1 className="text-2xl font-bold">{company.razonSocial}</h1>
+    <SecondaryNavWrapper navItems={navItems} title="Detalles de Empresa">
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center space-x-2">
+            <Button variant="outline" size="sm" onClick={handleBackClick}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Empresas
+            </Button>
+            <h1 className="text-2xl font-bold">
+              {isNewCompany ? "Nueva Empresa" : company?.razonSocial || company?.name}
+            </h1>
+          </div>
+          
+          {!isNewCompany && (
+            <Button onClick={handleEditClick}>
+              <Pencil className="mr-2 h-4 w-4" />
+              Editar
+            </Button>
+          )}
         </div>
-        <div className="flex space-x-2">
-          <Button 
-            variant="outline"
-            onClick={() => navigate(`/empresas/${company.id}/editar`)}
-          >
-            <Edit className="h-4 w-4 mr-2" />
-            Editar
-          </Button>
-          <Button 
-            variant="destructive"
-            onClick={() => setDeleteDialogOpen(true)}
-          >
-            <Trash2 className="h-4 w-4 mr-2" />
-            Eliminar
-          </Button>
-        </div>
+        
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList>
+            <TabsTrigger value="details">Detalles</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="details" className="mt-6">
+            {company && <CompanyDetailPanel company={company} />}
+          </TabsContent>
+        </Tabs>
       </div>
-      
-      <Tabs defaultValue="details">
-        <TabsList className="mb-4">
-          <TabsTrigger value="details">Detalles</TabsTrigger>
-          <TabsTrigger value="additional">Información Adicional</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="details">
-          <Card>
-            <CardContent className="p-0">
-              <CompanyDetailPanel 
-                company={company} 
-                onViewCatalogs={handleViewCatalogs} 
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="additional">
-          <Card>
-            <CardHeader>
-              <CardTitle>Información Adicional</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p>No hay información adicional disponible.</p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-      
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>¿Está seguro de eliminar esta empresa?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta acción no se puede deshacer. Se eliminará permanentemente la empresa "{company.razonSocial}" y todos sus datos asociados.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} disabled={isDeleting}>
-              {isDeleting ? 'Eliminando...' : 'Eliminar'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
+    </SecondaryNavWrapper>
   );
 };
 

@@ -8,8 +8,18 @@ import clientService from "./client.service";
  * Hooks de React Query para la gestión de clientes y sus contactos
  */
 
+// Define the client service object with the proper methods
 export const clienteService = {
-  ...clientService,
+  // Reexport the methods from clientService
+  getAll: clientService.getAll,
+  getById: clientService.getById,
+  create: clientService.create,
+  update: clientService.update,
+  delete: clientService.delete,
+  fetchContactsById: clientService.fetchContactsById,
+  createContact: clientService.createContact,
+  updateContact: clientService.updateContact,
+  deleteContact: clientService.deleteContact
 };
 
 /**

@@ -1,6 +1,11 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { CompanyCatalog, CompanyCatalogDB, mapCompanyCatalogFromDB, mapCompanyCatalogToDB } from '../../models/company.model';
+import { 
+  CompanyCatalog, 
+  CompanyCatalogDB, 
+  mapCompanyCatalogFromDB, 
+  mapCompanyCatalogToDB 
+} from '../../models/company.model';
 import { stringToNumberId } from '@/utils/id-conversions';
 
 class CompanyCatalogApi {
@@ -31,9 +36,14 @@ class CompanyCatalogApi {
   async createCompanyCatalog(catalog: Partial<CompanyCatalog>): Promise<CompanyCatalog> {
     const dbCatalog = mapCompanyCatalogToDB(catalog);
     
+    // Ensure empresa_id is required in the database
+    if (!dbCatalog.empresa_id) {
+      throw new Error('empresa_id is required');
+    }
+    
     const { data, error } = await supabase
       .from('catalogo_empresas')
-      .insert([dbCatalog])
+      .insert(dbCatalog) // Remove array wrapping
       .select()
       .single();
       

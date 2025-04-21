@@ -1,6 +1,8 @@
+
 import { supabase } from '@/integrations/supabase/client';
-import { Company, CompanyCatalog, CompanyDB, CompanyCatalogDB, mapCompanyFromDB, mapCompanyToDB, mapCatalogFromDB, mapCatalogToDB } from '../models/company.model';
+import { Company, CompanyCatalog, CompanyDB, CompanyCatalogDB, mapCompanyFromDB, mapCompanyToDB, mapCompanyCatalogFromDB, mapCompanyCatalogToDB } from '../models/company.model';
 import { stringToNumberId } from '@/utils/id-conversions';
+import { useQuery } from '@tanstack/react-query';
 
 /**
  * Servicio para gestionar operaciones relacionadas con empresas
@@ -49,7 +51,7 @@ export const companyService = {
     
     const { data, error } = await supabase
       .from("empresas")
-      .insert([companyDB])
+      .insert(companyDB)
       .select()
       .single();
 
@@ -112,18 +114,18 @@ export const companyService = {
       throw new Error(`No se pudieron obtener los catálogos: ${error.message}`);
     }
 
-    return (data as CompanyCatalogDB[]).map(mapCatalogFromDB);
+    return (data as CompanyCatalogDB[]).map(mapCompanyCatalogFromDB);
   },
 
   /**
    * Crea un nuevo catálogo para una empresa
    */
-  createCompanyCatalog: async (catalogData: Partial<CompanyCatalog> & { empresa_id: number }): Promise<CompanyCatalog> => {
-    const catalogDB = mapCatalogToDB(catalogData);
+  createCompanyCatalog: async (catalogData: Partial<CompanyCatalog>): Promise<CompanyCatalog> => {
+    const catalogDB = mapCompanyCatalogToDB(catalogData);
     
     const { data, error } = await supabase
       .from("catalogo_empresas")
-      .insert([catalogDB])
+      .insert(catalogDB)
       .select()
       .single();
 
@@ -132,14 +134,14 @@ export const companyService = {
       throw new Error(`No se pudo crear el catálogo: ${error.message}`);
     }
 
-    return mapCatalogFromDB(data as CompanyCatalogDB);
+    return mapCompanyCatalogFromDB(data as CompanyCatalogDB);
   },
 
   /**
    * Actualiza un catálogo existente
    */
   updateCompanyCatalog: async (id: string, catalogData: Partial<CompanyCatalog>): Promise<CompanyCatalog> => {
-    const catalogDB = mapCatalogToDB(catalogData);
+    const catalogDB = mapCompanyCatalogToDB(catalogData);
     
     const { data, error } = await supabase
       .from("catalogo_empresas")
@@ -153,7 +155,7 @@ export const companyService = {
       throw new Error(`No se pudo actualizar el catálogo: ${error.message}`);
     }
 
-    return mapCatalogFromDB(data as CompanyCatalogDB);
+    return mapCompanyCatalogFromDB(data as CompanyCatalogDB);
   },
 
   /**
