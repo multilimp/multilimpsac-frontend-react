@@ -1,43 +1,31 @@
 
 import { Money } from '@/core/domain/types/value-objects';
 
-export interface Transaction {
-  id: {
-    value: string;
-  };
-  reference: string;
+export interface Treasury {
+  id: string;
+  orderNumber: string;
+  clientName: string;
   date: {
     value: string;
   };
-  amount: Money;
-  type: 'income' | 'expense';
-  description: string;
-  category: string;
-  accountId: string;
-  status: 'pending' | 'completed' | 'rejected';
-}
-
-export interface Account {
-  id: {
+  dueDate: {
     value: string;
   };
-  name: string;
-  number: string;
-  bank: string;
-  balance: Money;
-  type: 'checking' | 'savings' | 'cash';
-  currency: string;
-  isActive: boolean;
+  amount: Money;
+  paymentStatus: 'pending' | 'partial' | 'completed';
+  paymentMethod: string;
+  notes?: string;
 }
 
-export interface TransactionFormInput {
-  reference: string;
+export interface TreasuryFormInput {
+  orderNumber: string;
+  clientId: string;
   date: string;
-  amount: number;
-  currency: string;
-  type: 'income' | 'expense';
-  description: string;
-  category: string;
-  accountId: string;
-  status: 'pending' | 'completed' | 'rejected';
+  dueDate: string;
+  amount: {
+    value: number;
+    currency: string;
+  };
+  paymentMethod: string;
+  notes?: string;
 }

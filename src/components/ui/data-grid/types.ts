@@ -11,29 +11,42 @@ export interface DataGridColumn {
   render?: (row: any) => ReactNode;
   width?: number;
   hidden?: boolean;
+  className?: string;
 }
 
-export interface SortConfig {
-  column: string;
-  direction: 'asc' | 'desc';
-  key?: string; // Adding key for backward compatibility
-}
+export type ColumnType = 'string' | 'number' | 'date' | 'boolean';
 
 export interface DataGridProps<T = any> {
   data: T[];
   columns: DataGridColumn[];
   loading?: boolean;
-  onRowClick?: (row: T) => void;
-  onSort?: (config: SortConfig) => void;
-  onFilter?: (filters: Record<string, any>) => void;
-  defaultSort?: SortConfig;
   pageSize?: number;
-  onFilterChange?: (filters: Record<string, any>) => void;
-  onColumnToggle?: (columns: DataGridColumn[]) => void;
+  onRowClick?: (row: T) => void;
   onEdit?: (row: T) => void;
   onDelete?: (row: T) => void;
-  onDownload?: () => void;
   onReload?: () => void;
+  className?: string;
+  variant?: 'default' | 'compact';
+  searchPlaceholder?: string;
+  searchKeys?: string[];
+  emptyState?: {
+    title?: string;
+    description?: string;
+  };
 }
 
-export type ColumnType = 'string' | 'number' | 'date' | 'boolean';
+export interface SortConfig {
+  column: string;
+  direction: 'asc' | 'desc';
+}
+
+export interface PaginationConfig {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}
+
+export interface FilterConfig {
+  value: string;
+  onChange: (value: string) => void;
+}

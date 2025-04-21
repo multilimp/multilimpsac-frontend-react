@@ -1,28 +1,40 @@
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useCallback } from "react";
 
 export function usePagination<T>(data: T[], pageSize: number) {
-  // State for pagination
   const [currentPage, setCurrentPage] = useState(1);
   
-  // Reset to page 1 when data changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [data.length]);
+  const totalPages = Math.ceil(data.length / pageSize);
   
-  // Paginate data
   const paginatedData = useMemo(() => {
     const startIndex = (currentPage - 1) * pageSize;
     return data.slice(startIndex, startIndex + pageSize);
   }, [data, currentPage, pageSize]);
   
-  // Total pages
-  const totalPages = Math.ceil(data.length / pageSize);
-  
+  const goToPage = useCallback((page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  }, [totalPages]);
+
+  const goToPreviousPage = useCallback(() => {
+    if (currentPage > 1) {
+      setCurrentPage(prev => prev - 1);
+    }
+  }, [currentPage]);
+
+  const goToNextPage = useCallback(() => {
+    if (currentPage < totalPages) {
+      setCurrentPage(prev => prev + 1);
+    }
+  }, [currentPage, totalPages]);
+
   return {
     currentPage,
-    setCurrentPage,
+    totalPages,
     paginatedData,
-    totalPages
+    goToPage,
+    goToPreviousPage,
+    goToNextPage
   };
 }
