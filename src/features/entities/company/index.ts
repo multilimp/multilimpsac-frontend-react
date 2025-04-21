@@ -1,7 +1,7 @@
 
 // Re-export API functions and hooks
 import * as companyApi from './services/api/companyApi';
-import * as catalogApi from './services/api/companyCatalogApi';
+import { companyCatalogApi } from './services/api/companyCatalogApi';
 import * as companyHooks from './services/hooks/useCompanyHooks';
 import * as catalogHooks from './services/hooks/useCompanyCatalogHooks';
 
@@ -16,12 +16,11 @@ export const companyService = {
   deleteCompany: companyApi.deleteCompany,
   
   // Catalog API
-  fetchCompanyCatalogs: catalogApi.fetchCompanyCatalogs,
-  fetchCompanyCatalogById: catalogApi.fetchCompanyCatalogById,
-  saveCompanyCatalog: catalogApi.saveCompanyCatalog,
-  createCompanyCatalog: catalogApi.createCompanyCatalog,
-  updateCompanyCatalog: catalogApi.updateCompanyCatalog,
-  deleteCompanyCatalog: catalogApi.deleteCompanyCatalog
+  fetchCompanyCatalogs: companyCatalogApi.fetchCompanyCatalogs.bind(companyCatalogApi),
+  fetchCompanyCatalogById: companyCatalogApi.fetchCompanyCatalogById.bind(companyCatalogApi),
+  createCompanyCatalog: companyCatalogApi.createCompanyCatalog.bind(companyCatalogApi),
+  updateCompanyCatalog: companyCatalogApi.updateCompanyCatalog.bind(companyCatalogApi),
+  deleteCompanyCatalog: companyCatalogApi.deleteCompanyCatalog.bind(companyCatalogApi)
 };
 
 // Re-export hooks

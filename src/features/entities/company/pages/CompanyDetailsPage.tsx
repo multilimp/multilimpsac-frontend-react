@@ -1,159 +1,155 @@
-import React from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { companyService } from "..";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { CompanyForm } from "../components/CompanyForm";
-import BreadcrumbNav from "@/components/layout/BreadcrumbNav";
-import { ArrowLeft, ListPlus } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
-import { Company } from "../models/company.model";
-import PageHeader from "@/components/common/PageHeader";
 
-const CompanyDetailsPage: React.FC = () => {
+import React from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ArrowLeft, Edit, Trash2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import CompanyDetailPanel from '../components/CompanyDetailPanel';
+import { useCompany, useDeleteCompany } from '../index';
+
+const CompanyDetailsPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const isNewCompany = !id || id === 'new';
-
-  const { data: company, isLoading } = useQuery({
-    queryKey: ["company", id],
-    queryFn: () => (isNewCompany ? null : companyService.fetchCompanyById(id!)),
-    enabled: !isNewCompany && !!id,
-  });
-
-  const updateCompanyMutation = useMutation({
-    mutationFn: (data: Partial<Company>) => {
-      // Ensure required fields are present for new companies
-      const companyData = isNewCompany ? {
-        ...data,
-        direccion: data.direccion || data.address || 'Default Address', // Ensure address is provided
-        estado: data.estado !== undefined ? data.estado : (data.status === 'active'),
-      } : data;
-      
-      if (isNewCompany) {
-        return companyService.createCompany(companyData as Omit<Company, "id">);
-      } else {
-        return companyService.updateCompany(id!, companyData);
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["companies"] });
-      queryClient.invalidateQueries({ queryKey: ["company", id] });
-      toast({
-        title: isNewCompany ? "Empresa creada" : "Empresa actualizada",
-        description: isNewCompany 
-          ? "La empresa ha sido creada exitosamente" 
-          : "Los datos de la empresa han sido actualizados",
-      });
-      
-      if (isNewCompany) {
-        navigate("/empresas");
-      }
-    },
-    onError: (error) => {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: `No se pudo ${isNewCompany ? "crear" : "actualizar"} la empresa: ${error instanceof Error ? error.message : "Error desconocido"}`,
-      });
-    },
-  });
-
-  const handleSave = async (data: Partial<Company>) => {
-    updateCompanyMutation.mutate(data);
-  };
-
-  const breadcrumbItems = [
-    {
-      label: "Empresas",
-      path: "/empresas",
-      isCurrentPage: false
-    },
-    {
-      label: isNewCompany ? "Nueva Empresa" : company?.razonSocial || company?.name || "Detalles",
-      path: isNewCompany ? "/empresas/new" : `/empresas/${id}`,
-      isCurrentPage: true
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+  
+  const { data: company, isLoading, isError } = useCompany(id || '');
+  const { mutateAsync: deleteCompany, isPending: isDeleting } = useDeleteCompany();
+  
+  const handleDelete = async () => {
+    if (!company) return;
+    
+    try {
+      await deleteCompany(company.id);
+      navigate('/empresas');
+    } catch (error) {
+      console.error('Error deleting company:', error);
     }
-  ];
-
-  // Definir datos iniciales vacíos para el caso de nueva empresa
-  const emptyCompany: Partial<Company> = {
-    razonSocial: "",
-    ruc: "",
-    direccion: "",
-    telefono: "",
-    correo: "",
-    estado: true,
-    web: "",
-    codUnidad: "",
-    departamento: "",
-    provincia: "",
-    distrito: "",
-    name: "",
-    address: "",
-    phone: "",
-    email: "",
-    status: "active"
   };
-
-  return (
-    <div className="space-y-6">
-      <BreadcrumbNav items={breadcrumbItems} />
-      
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="outline" size="sm" onClick={() => navigate('/empresas')}>
+  
+  const handleViewCatalogs = (company: Partial<Company>) => {
+    navigate(`/empresas/${company.id}/catalogos`);
+  };
+  
+  if (isLoading) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="flex items-center space-x-2 mb-6">
+          <Button variant="outline" size="sm" onClick={() => navigate(-1)}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Volver
           </Button>
-          
-          {!isNewCompany && (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => navigate(`/empresas/${id}/catalogos`)}
-            >
-              <ListPlus className="h-4 w-4 mr-2" />
-              Ver Catálogos
+          <h1 className="text-2xl font-bold">Cargando empresa...</h1>
+        </div>
+      </div>
+    );
+  }
+  
+  if (isError || !company) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="flex items-center space-x-2 mb-6">
+          <Button variant="outline" size="sm" onClick={() => navigate(-1)}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Volver
+          </Button>
+          <h1 className="text-2xl font-bold text-destructive">Error al cargar la empresa</h1>
+        </div>
+        <Card>
+          <CardContent className="pt-6">
+            <p>No se pudo cargar la información de la empresa. Por favor, intente nuevamente.</p>
+            <Button onClick={() => navigate('/empresas')} className="mt-4">
+              Volver a Empresas
             </Button>
-          )}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="container mx-auto p-6">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center space-x-2">
+          <Button variant="outline" size="sm" onClick={() => navigate(-1)}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Volver
+          </Button>
+          <h1 className="text-2xl font-bold">{company.razonSocial}</h1>
+        </div>
+        <div className="flex space-x-2">
+          <Button 
+            variant="outline"
+            onClick={() => navigate(`/empresas/${company.id}/editar`)}
+          >
+            <Edit className="h-4 w-4 mr-2" />
+            Editar
+          </Button>
+          <Button 
+            variant="destructive"
+            onClick={() => setDeleteDialogOpen(true)}
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Eliminar
+          </Button>
         </div>
       </div>
       
-      <PageHeader
-        title={isNewCompany ? "Nueva Empresa" : `Empresa: ${company?.razonSocial || company?.name || ''}`}
-        subtitle={isNewCompany ? "Complete los datos para registrar una nueva empresa" : "Gestione los datos de la empresa"}
-      />
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Datos de la Empresa</CardTitle>
-          <CardDescription>
-            Complete los campos requeridos para {isNewCompany ? "registrar la" : "actualizar la"} empresa
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {isNewCompany ? (
-            <CompanyForm
-              initialData={emptyCompany}
-              onSubmit={handleSave}
-              isSubmitting={updateCompanyMutation.isPending}
-              isNewCompany={true}
-            />
-          ) : (
-            !isLoading && company && (
-              <CompanyForm
-                initialData={company}
-                onSubmit={handleSave}
-                isSubmitting={updateCompanyMutation.isPending}
-                isNewCompany={false}
+      <Tabs defaultValue="details">
+        <TabsList className="mb-4">
+          <TabsTrigger value="details">Detalles</TabsTrigger>
+          <TabsTrigger value="additional">Información Adicional</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="details">
+          <Card>
+            <CardContent className="p-0">
+              <CompanyDetailPanel 
+                company={company} 
+                onViewCatalogs={handleViewCatalogs} 
               />
-            )
-          )}
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="additional">
+          <Card>
+            <CardHeader>
+              <CardTitle>Información Adicional</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>No hay información adicional disponible.</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+      
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Está seguro de eliminar esta empresa?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. Se eliminará permanentemente la empresa "{company.razonSocial}" y todos sus datos asociados.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} disabled={isDeleting}>
+              {isDeleting ? 'Eliminando...' : 'Eliminar'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

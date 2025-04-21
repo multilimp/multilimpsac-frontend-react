@@ -1,24 +1,16 @@
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { clienteApi } from "../services/api/clienteApi";
-import { Cliente, ContactoCliente } from "../models/client.model";
-
-/**
- * Cliente Service
- * Hooks de React Query para la gestión de clientes y sus contactos
- */
-
-export const clienteService = {
-  ...clienteApi,
-};
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Client, ClientContact, normalizeClientContact } from '../models/client.model';
+import { clienteApi } from './api/clienteApi';
+import { useToast } from '@/hooks/use-toast';
 
 /**
  * Hook para obtener todos los clientes
  */
 export const useClientes = () => {
   return useQuery({
-    queryKey: ["clientes"],
-    queryFn: clienteService.fetchClientes,
+    queryKey: ['clientes'],
+    queryFn: clienteApi.fetchClientes.bind(clienteApi)
   });
 };
 
@@ -27,9 +19,9 @@ export const useClientes = () => {
  */
 export const useCliente = (id: string) => {
   return useQuery({
-    queryKey: ["cliente", id],
-    queryFn: () => clienteService.fetchClienteById(id),
-    enabled: !!id,
+    queryKey: ['cliente', id],
+    queryFn: () => clienteApi.fetchClienteById(id),
+    enabled: !!id
   });
 };
 
@@ -38,13 +30,25 @@ export const useCliente = (id: string) => {
  */
 export const useCreateCliente = () => {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   
   return useMutation({
-    mutationFn: (clienteData: Partial<Cliente>) => 
-      clienteService.createCliente(clienteData),
+    mutationFn: (cliente: Partial<Client>) => 
+      clienteApi.createCliente(cliente),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["clientes"] });
+      queryClient.invalidateQueries({ queryKey: ['clientes'] });
+      toast({
+        title: "Cliente creado",
+        description: "El cliente ha sido creado exitosamente"
+      });
     },
+    onError: (error: Error) => {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: `No se pudo crear el cliente: ${error.message}`
+      });
+    }
   });
 };
 
@@ -53,14 +57,26 @@ export const useCreateCliente = () => {
  */
 export const useUpdateCliente = () => {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<Cliente> }) => 
-      clienteService.updateCliente(id, data),
+    mutationFn: ({ id, data }: { id: string; data: Partial<Client> }) =>
+      clienteApi.updateCliente(id, data),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["clientes"] });
-      queryClient.invalidateQueries({ queryKey: ["cliente", variables.id] });
+      queryClient.invalidateQueries({ queryKey: ['clientes'] });
+      queryClient.invalidateQueries({ queryKey: ['cliente', variables.id] });
+      toast({
+        title: "Cliente actualizado",
+        description: "El cliente ha sido actualizado exitosamente"
+      });
     },
+    onError: (error: Error) => {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: `No se pudo actualizar el cliente: ${error.message}`
+      });
+    }
   });
 };
 
@@ -69,12 +85,24 @@ export const useUpdateCliente = () => {
  */
 export const useDeleteCliente = () => {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   
   return useMutation({
-    mutationFn: (id: string) => clienteService.deleteCliente(id),
+    mutationFn: clienteApi.deleteCliente.bind(clienteApi),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["clientes"] });
+      queryClient.invalidateQueries({ queryKey: ['clientes'] });
+      toast({
+        title: "Cliente eliminado",
+        description: "El cliente ha sido eliminado exitosamente"
+      });
     },
+    onError: (error: Error) => {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: `No se pudo eliminar el cliente: ${error.message}`
+      });
+    }
   });
 };
 
@@ -83,9 +111,9 @@ export const useDeleteCliente = () => {
  */
 export const useContactosCliente = (clienteId: string) => {
   return useQuery({
-    queryKey: ["contactosCliente", clienteId],
-    queryFn: () => clienteService.fetchContactosCliente(clienteId),
-    enabled: !!clienteId,
+    queryKey: ['contactosCliente', clienteId],
+    queryFn: () => clienteId ? clienteApi.fetchContactosCliente(clienteId) : [],
+    enabled: !!clienteId
   });
 };
 
@@ -94,17 +122,32 @@ export const useContactosCliente = (clienteId: string) => {
  */
 export const useCreateContactoCliente = () => {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   
   return useMutation({
-    mutationFn: (contactoData: Partial<ContactoCliente>) => 
-      clienteService.createContactoCliente(contactoData),
+    mutationFn: (contacto: Partial<ClientContact>) => {
+      const normalized = normalizeClientContact(contacto);
+      return clienteApi.createContactoCliente(normalized);
+    },
     onSuccess: (_, variables) => {
-      if (variables.clienteId) {
+      const normalized = normalizeClientContact(variables);
+      if (normalized.clientId) {
         queryClient.invalidateQueries({ 
-          queryKey: ["contactosCliente", variables.clienteId] 
+          queryKey: ['contactosCliente', normalized.clientId] 
         });
       }
+      toast({
+        title: "Contacto creado",
+        description: "El contacto ha sido creado exitosamente"
+      });
     },
+    onError: (error: Error) => {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: `No se pudo crear el contacto: ${error.message}`
+      });
+    }
   });
 };
 
@@ -113,17 +156,32 @@ export const useCreateContactoCliente = () => {
  */
 export const useUpdateContactoCliente = () => {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<ContactoCliente> }) => 
-      clienteService.updateContactoCliente(id, data),
+    mutationFn: ({ id, data }: { id: string; data: Partial<ClientContact> }) => {
+      const normalized = normalizeClientContact(data);
+      return clienteApi.updateContactoCliente(id, normalized);
+    },
     onSuccess: (_, variables) => {
-      if (variables.data.clienteId) {
+      const normalized = normalizeClientContact(variables.data);
+      if (normalized.clientId) {
         queryClient.invalidateQueries({ 
-          queryKey: ["contactosCliente", variables.data.clienteId] 
+          queryKey: ['contactosCliente', normalized.clientId] 
         });
       }
+      toast({
+        title: "Contacto actualizado",
+        description: "El contacto ha sido actualizado exitosamente"
+      });
     },
+    onError: (error: Error) => {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: `No se pudo actualizar el contacto: ${error.message}`
+      });
+    }
   });
 };
 
@@ -132,15 +190,27 @@ export const useUpdateContactoCliente = () => {
  */
 export const useDeleteContactoCliente = (clienteId?: string) => {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   
   return useMutation({
-    mutationFn: (id: string) => clienteService.deleteContactoCliente(id),
+    mutationFn: clienteApi.deleteContactoCliente.bind(clienteApi),
     onSuccess: () => {
       if (clienteId) {
         queryClient.invalidateQueries({ 
-          queryKey: ["contactosCliente", clienteId] 
+          queryKey: ['contactosCliente', clienteId] 
         });
       }
+      toast({
+        title: "Contacto eliminado",
+        description: "El contacto ha sido eliminado exitosamente"
+      });
     },
+    onError: (error: Error) => {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: `No se pudo eliminar el contacto: ${error.message}`
+      });
+    }
   });
 };

@@ -38,14 +38,14 @@ class ClienteApi {
   async createCliente(cliente: Partial<Client>): Promise<Client> {
     const dbCliente = mapClientToDB(cliente);
     
-    // Ensure the required fields are present
+    // Ensure required fields are present
     if (!dbCliente.razon_social || !dbCliente.ruc || !dbCliente.cod_unidad) {
-      throw new Error('Required fields missing: razon_social, ruc, and cod_unidad are required');
+      throw new Error('Campos requeridos: razon_social, ruc, y cod_unidad son obligatorios');
     }
     
     const { data, error } = await supabase
       .from('clientes')
-      .insert(dbCliente)
+      .insert([dbCliente]) // Wrap in array for Supabase
       .select()
       .single();
       
@@ -107,7 +107,7 @@ class ClienteApi {
     
     const { data, error } = await supabase
       .from('contacto_clientes')
-      .insert(dbContacto)
+      .insert([dbContacto]) // Wrap in array for Supabase
       .select()
       .single();
       

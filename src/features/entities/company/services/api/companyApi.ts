@@ -6,6 +6,7 @@ import {
   mapCompanyFromDB, 
   mapCompanyToDB
 } from '../../models/company.model';
+import { stringToNumberId } from '@/utils/id-conversions';
 
 // Core company API functions
 export const fetchCompanies = async (): Promise<Company[]> => {
@@ -20,10 +21,11 @@ export const fetchCompanies = async (): Promise<Company[]> => {
 };
 
 export const fetchCompanyById = async (id: string): Promise<Company> => {
+  const numericId = stringToNumberId(id);
   const { data, error } = await supabase
     .from('empresas')
     .select('*')
-    .eq('id', parseInt(id))
+    .eq('id', numericId)
     .single();
   
   if (error) throw new Error(error.message);
@@ -36,16 +38,16 @@ export const saveCompany = async (company: Partial<Company>): Promise<Company> =
   if (company.id) {
     return updateCompany(company.id, company);
   } else {
-    return createCompany(company as Omit<Company, 'id'>);
+    return createCompany(company);
   }
 };
 
-export const createCompany = async (company: Omit<Company, 'id'>): Promise<Company> => {
+export const createCompany = async (company: Partial<Company>): Promise<Company> => {
   const mappedData = mapCompanyToDB(company);
   
   const { data, error } = await supabase
     .from('empresas')
-    .insert(mappedData)
+    .insert([mappedData])
     .select()
     .single();
   
@@ -56,12 +58,13 @@ export const createCompany = async (company: Omit<Company, 'id'>): Promise<Compa
 };
 
 export const updateCompany = async (id: string, company: Partial<Company>): Promise<Company> => {
+  const numericId = stringToNumberId(id);
   const mappedData = mapCompanyToDB(company);
   
   const { data, error } = await supabase
     .from('empresas')
     .update(mappedData)
-    .eq('id', parseInt(id))
+    .eq('id', numericId)
     .select()
     .single();
   
@@ -72,10 +75,11 @@ export const updateCompany = async (id: string, company: Partial<Company>): Prom
 };
 
 export const deleteCompany = async (id: string): Promise<void> => {
+  const numericId = stringToNumberId(id);
   const { error } = await supabase
     .from('empresas')
     .delete()
-    .eq('id', parseInt(id));
+    .eq('id', numericId);
   
   if (error) throw new Error(error.message);
 };

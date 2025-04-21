@@ -1,6 +1,7 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Client, ClientContact, ClientDB, ContactoClienteDB, mapClientFromDB, mapClientToDB, mapContactFromDB, mapContactToDB } from '../models/client.model';
-import { stringToNumberId } from '@/core/utils/id-conversions';
+import { stringToNumberId } from '@/utils/id-conversions';
 
 class ClientService {
   async fetchClients(): Promise<Client[]> {
@@ -35,7 +36,7 @@ class ClientService {
     
     const { data, error } = await supabase
       .from('clientes')
-      .insert([dbClient]) // Wrap in array to fix Supabase typing)
+      .insert([dbClient]) // Wrap in array for Supabase
       .select()
       .single();
       
@@ -85,7 +86,7 @@ class ClientService {
     
     const { data, error } = await supabase
       .from('contacto_clientes')
-      .insert([dbContact]) // Wrap in array to fix Supabase typing
+      .insert([dbContact]) // Wrap in array for Supabase
       .select()
       .single();
       

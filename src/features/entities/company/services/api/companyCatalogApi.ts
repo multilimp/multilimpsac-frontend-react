@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { CompanyCatalog, CompanyCatalogDB, mapCompanyCatalogFromDB, mapCompanyCatalogToDB } from '../../models/company.model';
 import { stringToNumberId } from '@/utils/id-conversions';
@@ -13,6 +14,18 @@ class CompanyCatalogApi {
       
     if (error) throw error;
     return (data || []).map(mapCompanyCatalogFromDB);
+  }
+
+  async fetchCompanyCatalogById(id: string): Promise<CompanyCatalog> {
+    const numericId = stringToNumberId(id);
+    const { data, error } = await supabase
+      .from('catalogo_empresas')
+      .select('*')
+      .eq('id', numericId)
+      .single();
+      
+    if (error) throw error;
+    return mapCompanyCatalogFromDB(data);
   }
 
   async createCompanyCatalog(catalog: Partial<CompanyCatalog>): Promise<CompanyCatalog> {

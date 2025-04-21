@@ -119,7 +119,7 @@ export const mapCompanyToDB = (company: Partial<Company>): Partial<CompanyDB> =>
 
 export const mapEmpresaToDB = mapCompanyToDB;
 
-export const mapCatalogFromDB = (db: CompanyCatalogDB): CompanyCatalog => ({
+export const mapCompanyCatalogFromDB = (db: CompanyCatalogDB): CompanyCatalog => ({
   id: db.id.toString(),
   empresaId: db.empresa_id.toString(),
   codigo: db.codigo,
@@ -127,15 +127,11 @@ export const mapCatalogFromDB = (db: CompanyCatalogDB): CompanyCatalog => ({
   updatedAt: db.updated_at
 });
 
-export const mapCatalogoFromDB = mapCatalogFromDB;
+export const mapCatalogoFromDB = mapCompanyCatalogFromDB;
 
-export const mapCatalogToDB = (catalog: Partial<CompanyCatalog>): Partial<CompanyCatalogDB> => ({
+export const mapCompanyCatalogToDB = (catalog: Partial<CompanyCatalog>): Partial<CompanyCatalogDB> => ({
   empresa_id: catalog.empresaId ? parseInt(catalog.empresaId) : undefined,
   codigo: catalog.codigo
 });
 
-export const mapCatalogoToDB = mapCatalogToDB;
-
-// Add the catalog mapping functions
-export const mapCompanyCatalogFromDB = mapCatalogFromDB;
-export const mapCompanyCatalogToDB = mapCatalogToDB;
+export const mapCatalogoToDB = mapCompanyCatalogToDB;

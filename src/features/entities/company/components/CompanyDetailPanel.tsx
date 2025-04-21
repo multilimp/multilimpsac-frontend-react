@@ -16,7 +16,7 @@ const CompanyDetailPanel: React.FC<CompanyDetailPanelProps> = ({ company, onView
         <h3 className="text-lg font-medium">Información General</h3>
         <div className="mt-2 space-y-2">
           <div>
-            <span className="font-medium">Razón Social:</span> {company.razonSocial || company.name}
+            <span className="font-medium">Razón Social:</span> {company.razonSocial}
           </div>
           <div>
             <span className="font-medium">RUC:</span> {company.ruc}
@@ -25,10 +25,10 @@ const CompanyDetailPanel: React.FC<CompanyDetailPanelProps> = ({ company, onView
             <span className="font-medium">Estado:</span> {company.estado ? "Activo" : "Inactivo"}
           </div>
           <div>
-            <span className="font-medium">Teléfono:</span> {company.telefono || company.phone || "No registrado"}
+            <span className="font-medium">Teléfono:</span> {company.telefono || "No registrado"}
           </div>
           <div>
-            <span className="font-medium">Email:</span> {company.correo || company.email || "No registrado"}
+            <span className="font-medium">Email:</span> {company.correo || "No registrado"}
           </div>
           <div>
             <span className="font-medium">Web:</span> {company.web || "No registrado"}
@@ -39,7 +39,7 @@ const CompanyDetailPanel: React.FC<CompanyDetailPanelProps> = ({ company, onView
         <h3 className="text-lg font-medium">Ubicación</h3>
         <div className="mt-2 space-y-2">
           <div>
-            <span className="font-medium">Dirección:</span> {company.direccion || company.address || "No registrada"}
+            <span className="font-medium">Dirección:</span> {company.direccion || "No registrada"}
           </div>
           <div>
             <span className="font-medium">Departamento:</span> {company.departamento || "No registrado"}
