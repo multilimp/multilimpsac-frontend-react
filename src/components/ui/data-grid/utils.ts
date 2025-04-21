@@ -1,6 +1,6 @@
 
 import { ColumnType, DataGridColumn } from './types';
-import { formatDate } from '@/lib/utils';
+import { formatDate } from '@/app/core/utils';
 
 export function getValueByPath(obj: any, path: string) {
   return path.split('.').reduce((prev, curr) => (prev ? prev[curr] : null), obj);

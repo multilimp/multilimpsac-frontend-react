@@ -2,7 +2,7 @@
 // src/app/routes/config.tsx
 import { lazy } from "react";
 import { RouteDefinition, RouteGroup } from "./types";
-import { directoryRoutes } from "./modules/directoryRoutes";
+import { directoryRoutes } from "../../features/entities/routes/directory.routes";
 import { operationsRoutes } from "./modules/operationsRoutes";
 import { financeRoutes } from "./modules/financeRoutes";
 import { reportRoutes } from "./modules/reportRoutes";

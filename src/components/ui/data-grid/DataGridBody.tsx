@@ -1,7 +1,7 @@
 import React from "react";
 import { TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
+import { cn } from "@/app/core/utils";
 import { DataGridColumn } from "./types";
 import { formatCellValue, getValueByPath } from "./utils";
 import { RowActions } from "./RowActions";

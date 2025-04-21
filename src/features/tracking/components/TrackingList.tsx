@@ -2,7 +2,7 @@
 import React from 'react';
 import { DataGrid, DataGridColumn } from '@/components/ui/data-grid';
 import { Badge } from '@/components/ui/badge';
-import { formatDate } from '@/lib/utils';
+import { formatDate } from '@/app/core/utils';
 import { Money } from '@/core/domain/types/value-objects';
 import { useQuery } from '@tanstack/react-query';
 import { Tracking } from '@/domain/tracking/models/tracking.model';

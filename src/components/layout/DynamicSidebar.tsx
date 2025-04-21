@@ -16,7 +16,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib/utils";
+import { cn } from "@/app/core/utils";
 import Logo from "./Logo";
 import { useAuthStore } from "@/store/authStore";
 import { Button } from "@/components/ui/button";

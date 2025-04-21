@@ -4,7 +4,7 @@ import DataTable, { Column } from "@/components/common/DataTable";
 import SearchBar from "@/components/common/SearchBar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { formatDate } from "@/lib/utils";
+import { formatDate } from "@/app/core/utils";
 import { SupplierOrder } from "@/data/models/purchaseOrder";
 
 const mockData: SupplierOrder[] = [

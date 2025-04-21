@@ -1,6 +1,6 @@
 
 import { Suspense } from "react";
-import { AppProviders } from "@/app/core/providers/AppProviders";
+import { AppProviders } from "@/app/providers/AppProviders";
 import { LoadingFallback } from "@/components/common/LoadingFallback";
 import { AppRoutes } from "./app/routes";
 

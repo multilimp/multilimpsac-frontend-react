@@ -4,7 +4,7 @@ import { BarChart3, ReceiptText, Package, TrendingUp } from "lucide-react";
 import { RouteDefinition } from "../types";
 
 // Lazy load pages
-const SalesReportPage = lazy(() => import("@/pages/reports/SalesReportPage"));
+const SalesReportPage = lazy(() => import("@/features/reports/SalesReportPage"));
 const ModulePage = lazy(() => import("@/pages/ModulePage"));
 
 export const reportRoutes: RouteDefinition[] = [

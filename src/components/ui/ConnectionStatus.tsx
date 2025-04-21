@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAuth } from '@/features/auth';
 import { Wifi, WifiOff, AlertCircle, Laptop } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/app/core/utils';
 import { DEMO_MODE } from '@/features/auth';
 
 interface ConnectionStatusProps {

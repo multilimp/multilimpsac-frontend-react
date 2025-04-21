@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { DataGrid } from "@/components/ui/data-grid";
-import { Cliente } from "@/features/client/models/client.model";
+import { Cliente } from "@/features/entities/client/models/client.model";
 
 interface ClientSelectionModalProps {
   open: boolean;

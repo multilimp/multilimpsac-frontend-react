@@ -16,7 +16,7 @@ import QuotationClientSection from "./form/QuotationClientSection";
 import QuotationItemsSection from "./form/QuotationItemsSection";
 import QuotationSummarySection from "./form/QuotationSummarySection";
 import QuotationFooter from "./form/QuotationFooter";
-import { Cliente } from "@/features/client/models/client.model";
+import { Cliente } from "@/features/entities/client/models/client.model";
 
 interface QuotationFormProps {
   onSuccess: () => void;

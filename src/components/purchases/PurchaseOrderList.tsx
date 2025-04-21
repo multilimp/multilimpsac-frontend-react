@@ -5,7 +5,7 @@ import SearchBar from "@/components/common/SearchBar";
 import { Card, CardContent } from "@/components/ui/card";
 import { PurchaseOrder } from "@/data/models/purchaseOrder";
 import { Badge } from "@/components/ui/badge";
-import { formatDate } from "@/lib/utils";
+import { formatDate } from "@/app/core/utils";
 
 const mockData: PurchaseOrder[] = [
   {

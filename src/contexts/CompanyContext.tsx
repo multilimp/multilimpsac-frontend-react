@@ -1,6 +1,6 @@
 
 import React, { createContext, useState, useContext, ReactNode } from "react";
-import { Company } from "@/features/company/models/company.model";
+import { Company } from "@/features/entities/company/models/company.model";
 
 interface CompanyContextType {
   currentCompany: Company | null;

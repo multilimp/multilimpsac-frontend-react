@@ -1,7 +1,7 @@
 import { DataGridColumn } from "@/components/ui/data-grid/types";
 import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency } from "@/app/core/utils";
 
 export interface Contact {
   name: string;

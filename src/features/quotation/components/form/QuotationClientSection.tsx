@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 import { QuotationFormValues } from "../../models/quotationForm.model";
-import { Cliente } from "@/features/client/models/client.model";
+import { Cliente } from "@/features/entities/client/models/client.model";
 import { ClientSelectionModal } from "./ClientSelectionModal";
 import { clientService } from "@/features/quotation/services/clientService";
 import { useQuery } from "@tanstack/react-query";

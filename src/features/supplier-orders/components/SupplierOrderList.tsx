@@ -3,7 +3,7 @@ import React from 'react';
 import { useSupplierOrders } from '@/domain/supplier-orders';
 import { DataGrid, DataGridColumn } from '@/components/ui/data-grid';
 import { Badge } from '@/components/ui/badge';
-import { formatDate } from '@/lib/utils';
+import { formatDate } from '@/app/core/utils';
 import { Money } from '@/core/domain/types/value-objects';
 
 const columns: DataGridColumn[] = [
