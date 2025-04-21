@@ -3,10 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useTransport, useTransportContacts, useDeleteTransportContact, useCreateTransportContact, useUpdateTransportContact } from '../services/transport.service';
 import { LoadingFallback } from '@/components/common/LoadingFallback';
-import { useState } from 'react';
 import { Pencil, ArrowLeft } from 'lucide-react';
 import BreadcrumbNav from '@/components/layout/BreadcrumbNav';
-import { ContactoTransporte } from '../models/transport.model';
+import { ContactoTransporte, convertToTransporte } from '../models/transport.model';
 import TransportInfo from '../components/TransportInfo';
 import TransportContactSection from '../components/TransportContactSection';
 
@@ -21,7 +20,7 @@ const TransportDetailsPage = () => {
 
   const breadcrumbItems = [
     { label: 'Transportes', path: '/transportes' },
-    { label: transport?.razon_social || 'Detalle', path: `/transportes/${id}`, isCurrentPage: true },
+    { label: transport?.name || 'Detalle', path: `/transportes/${id}`, isCurrentPage: true },
   ];
 
   const handleEdit = () => {
@@ -66,6 +65,9 @@ const TransportDetailsPage = () => {
     );
   }
 
+  // Convert to the Transporte interface for UI components
+  const transporteData = convertToTransporte(transport);
+
   return (
     <div className="space-y-6 p-6">
       <BreadcrumbNav items={breadcrumbItems} />
@@ -76,7 +78,7 @@ const TransportDetailsPage = () => {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Volver
           </Button>
-          <h1 className="text-2xl font-bold">{transport.razon_social}</h1>
+          <h1 className="text-2xl font-bold">{transport.name}</h1>
         </div>
 
         <div className="space-x-2">
@@ -88,7 +90,7 @@ const TransportDetailsPage = () => {
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
-        <TransportInfo transport={transport} />
+        <TransportInfo transport={transporteData} />
         <TransportContactSection
           transportId={id!}
           contacts={contacts}

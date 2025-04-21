@@ -1,5 +1,6 @@
+
 import { supabase } from '@/integrations/supabase/client';
-import { Transport, TransportDB, ContactoTransporte } from '../models/transport.model';
+import { Transport, TransportDB, ContactoTransporte, mapTransportFromDB, mapTransportToDB, convertToTransporte } from '../models/transport.model';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 
@@ -114,11 +115,17 @@ export class TransportService {
     const { data, error } = await supabase
       .from('contacto_transportes')
       .select('*')
-      .eq('transporte_id', transportId)
+      .eq('transporte_id', parseInt(transportId))
       .eq('estado', true);
 
     if (error) throw error;
-    return data;
+    
+    // Ensure we convert the numeric IDs to strings
+    return data.map(contact => ({
+      ...contact,
+      id: contact.id.toString(),
+      transporte_id: contact.transporte_id.toString()
+    }));
   }
 
   static async createContact(transportId: string, contact: Partial<ContactoTransporte>): Promise<ContactoTransporte> {
@@ -133,7 +140,13 @@ export class TransportService {
       .single();
 
     if (error) throw error;
-    return data;
+    
+    // Convert IDs to strings
+    return {
+      ...data,
+      id: data.id.toString(),
+      transporte_id: data.transporte_id.toString()
+    };
   }
 
   static async updateContact(contactId: string, contact: Partial<ContactoTransporte>): Promise<ContactoTransporte> {
@@ -145,7 +158,13 @@ export class TransportService {
       .single();
 
     if (error) throw error;
-    return data;
+    
+    // Convert IDs to strings
+    return {
+      ...data,
+      id: data.id.toString(),
+      transporte_id: data.transporte_id.toString()
+    };
   }
 
   static async deleteContact(contactId: string): Promise<void> {

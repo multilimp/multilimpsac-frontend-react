@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Client, ClientDB, mapClientFromDB, mapClientToDB } from '../models/client.model';
 
@@ -39,7 +40,7 @@ export class ClientService {
     const { data, error } = await supabase
       .from('clientes')
       .select('*')
-      .eq('id', id)
+      .eq('id', parseInt(id))
       .single();
 
     if (error) {
@@ -56,7 +57,7 @@ export class ClientService {
     const { data: updatedClient, error } = await supabase
       .from('clientes')
       .update(data)
-      .eq('id', id)
+      .eq('id', parseInt(id))
       .select()
       .single();
 
@@ -72,7 +73,7 @@ export class ClientService {
     const { error } = await supabase
       .from('clientes')
       .delete()
-      .eq('id', id);
+      .eq('id', parseInt(id));
 
     if (error) {
       console.error(`Error deleting client with ID ${id}:`, error);
@@ -84,7 +85,7 @@ export class ClientService {
     const { data, error } = await supabase
       .from('contacto_clientes')
       .select('*')
-      .eq('cliente_id', clientId);
+      .eq('cliente_id', parseInt(clientId));
 
     if (error) {
       console.error(`Error fetching contacts for client ID ${clientId}:`, error);
@@ -113,7 +114,7 @@ export class ClientService {
     const { data, error } = await supabase
       .from('contacto_clientes')
       .update(contact)
-      .eq('id', id)
+      .eq('id', parseInt(id))
       .select()
       .single();
 
@@ -129,7 +130,7 @@ export class ClientService {
     const { error } = await supabase
       .from('contacto_clientes')
       .delete()
-      .eq('id', id);
+      .eq('id', parseInt(id));
 
     if (error) {
       console.error(`Error deleting contact with ID ${id}:`, error);
