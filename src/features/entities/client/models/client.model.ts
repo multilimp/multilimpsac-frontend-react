@@ -2,32 +2,6 @@
 // Base client model interfaces aligned with database schema
 export interface Client {
   id: string;
-  name: string;
-  ruc: string;
-  address: string;
-  phone: string;
-  email: string;
-  contactName: string;
-  contactPhone: string;
-  contactEmail: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface ClientContact {
-  id: string;
-  clientId: string;
-  name: string;
-  phone: string;
-  email: string;
-  position: string;
-}
-
-export type ClientFormInput = Omit<Client, 'id' | 'createdAt' | 'updatedAt'>;
-
-// Spanish interface versions for backward compatibility
-export interface Cliente {
-  id: string;
   razonSocial: string;
   ruc: string;
   codUnidad: string;
@@ -40,9 +14,9 @@ export interface Cliente {
   updatedAt?: string;
 }
 
-export interface ContactoCliente {
+export interface ClientContact {
   id: string;
-  clienteId: string;
+  clientId: string;
   nombre: string;
   telefono?: string;
   correo?: string;
@@ -50,8 +24,10 @@ export interface ContactoCliente {
   estado: boolean;
 }
 
+export type ClientFormInput = Omit<Client, 'id' | 'createdAt' | 'updatedAt'>;
+
 // Database interfaces
-export interface ClienteDB {
+export interface ClientDB {
   id: number;
   razon_social: string;
   ruc: string;
@@ -78,7 +54,7 @@ export interface ContactoClienteDB {
 }
 
 // Mapping functions
-export const mapClienteFromDB = (db: ClienteDB): Cliente => ({
+export const mapClientFromDB = (db: ClientDB): Client => ({
   id: db.id.toString(),
   razonSocial: db.razon_social,
   ruc: db.ruc,
@@ -92,20 +68,20 @@ export const mapClienteFromDB = (db: ClienteDB): Cliente => ({
   updatedAt: db.updated_at
 });
 
-export const mapClienteToDB = (cliente: Partial<Cliente>): Partial<ClienteDB> => ({
-  razon_social: cliente.razonSocial,
-  ruc: cliente.ruc,
-  cod_unidad: cliente.codUnidad,
-  direccion: cliente.direccion,
-  departamento: cliente.departamento,
-  provincia: cliente.provincia,
-  distrito: cliente.distrito,
-  estado: cliente.estado
+export const mapClientToDB = (client: Partial<Client>): Partial<ClientDB> => ({
+  razon_social: client.razonSocial,
+  ruc: client.ruc,
+  cod_unidad: client.codUnidad,
+  direccion: client.direccion,
+  departamento: client.departamento,
+  provincia: client.provincia,
+  distrito: client.distrito,
+  estado: client.estado
 });
 
-export const mapContactoClienteFromDB = (db: ContactoClienteDB): ContactoCliente => ({
+export const mapContactFromDB = (db: ContactoClienteDB): ClientContact => ({
   id: db.id.toString(),
-  clienteId: db.cliente_id.toString(),
+  clientId: db.cliente_id.toString(),
   nombre: db.nombre,
   telefono: db.telefono,
   correo: db.correo,
@@ -113,11 +89,12 @@ export const mapContactoClienteFromDB = (db: ContactoClienteDB): ContactoCliente
   estado: db.estado
 });
 
-export const mapContactoClienteToDB = (contacto: Partial<ContactoCliente>): Partial<ContactoClienteDB> => ({
-  cliente_id: contacto.clienteId ? parseInt(contacto.clienteId) : undefined,
-  nombre: contacto.nombre,
-  telefono: contacto.telefono,
-  correo: contacto.correo,
-  cargo: contacto.cargo,
-  estado: contacto.estado
+export const mapContactToDB = (contact: Partial<ClientContact>): Partial<ContactoClienteDB> => ({
+  cliente_id: contact.clientId ? parseInt(contact.clientId) : undefined,
+  nombre: contact.nombre,
+  telefono: contact.telefono,
+  correo: contact.correo,
+  cargo: contact.cargo,
+  estado: contact.estado
 });
+

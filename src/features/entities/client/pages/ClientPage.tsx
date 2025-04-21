@@ -1,17 +1,18 @@
-import React, { useState } from "react";
+
+import React from "react";
 import PageHeader from "@/components/common/PageHeader";
 import { DataGrid, DataGridColumn } from "@/components/ui/data-grid";
 import { useToast } from "@/hooks/use-toast";
 import BreadcrumbNav from "@/components/layout/BreadcrumbNav";
 import { useQuery } from "@tanstack/react-query";
-import ClientService from "../../../client/services/client.service";
-import { ClienteDB } from "../models/client.model";
+import { clientService } from "../services/client.service";
+import { Client } from "../models/client.model";
 
 const ClientPage: React.FC = () => {
   const { toast } = useToast();
   const { data: clients = [], isLoading, refetch } = useQuery({
     queryKey: ["clients"],
-    queryFn: ClientService.getAll,
+    queryFn: clientService.fetchClients,
   });
 
   const breadcrumbItems = [
@@ -23,15 +24,14 @@ const ClientPage: React.FC = () => {
   ];
 
   const columns: DataGridColumn[] = [
-    { key: 'id', name: 'ID', type: 'string', sortable: true, filterable: true },
-    { key: 'razon_social', name: 'Razón Social', type: 'string', sortable: true, filterable: true },
-    { key: 'cod_unidad', name: 'Código Unidad', type: 'string', sortable: true, filterable: true },
     { key: 'ruc', name: 'RUC', type: 'string', sortable: true, filterable: true },
+    { key: 'razonSocial', name: 'Razón Social', type: 'string', sortable: true, filterable: true },
+    { key: 'codUnidad', name: 'Código Unidad', type: 'string', sortable: true, filterable: true },
     { key: 'distrito', name: 'Distrito', type: 'string', sortable: true, filterable: true },
     { key: 'provincia', name: 'Provincia', type: 'string', sortable: true, filterable: true },
     { key: 'departamento', name: 'Departamento', type: 'string', sortable: true, filterable: true },
     { key: 'direccion', name: 'Dirección', type: 'string', sortable: true, filterable: true },
-    { key: 'status', name: 'Estado', type: 'string', sortable: true, filterable: true },
+    { key: 'estado', name: 'Estado', type: 'string', sortable: true, filterable: true },
   ];
 
   const handleReload = () => {
@@ -42,11 +42,11 @@ const ClientPage: React.FC = () => {
     });
   };
 
-  const handleRowClick = (row: ClienteDB) => {
+  const handleRowClick = (row: Client) => {
     console.log('Cliente seleccionado:', row);
     toast({
       title: "Cliente seleccionado",
-      description: `${row.razon_social} ha sido seleccionado`,
+      description: `${row.razonSocial} ha sido seleccionado`,
     });
   };
 
@@ -75,3 +75,4 @@ const ClientPage: React.FC = () => {
 };
 
 export default ClientPage;
+
