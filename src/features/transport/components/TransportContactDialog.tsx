@@ -122,7 +122,7 @@ const TransportContactDialog: React.FC<TransportContactDialogProps> = ({
         </Form>
       </DialogContent>
     </Dialog>
-  </>;
+  );
 };
 
 export default TransportContactDialog;

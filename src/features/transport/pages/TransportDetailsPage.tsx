@@ -1,15 +1,14 @@
 
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTransport, useTransportContacts, useDeleteTransportContact, useCreateTransportContact, useUpdateTransportContact } from '../services/transport.service';
 import { LoadingFallback } from '@/components/common/LoadingFallback';
 import { useState } from 'react';
-import { Pencil, Trash2, ArrowLeft } from 'lucide-react';
+import { Pencil, ArrowLeft } from 'lucide-react';
 import BreadcrumbNav from '@/components/layout/BreadcrumbNav';
-import TransportContactList from '../components/TransportContactList';
-import TransportContactDialog from '../components/TransportContactDialog';
 import { ContactoTransporte } from '../models/transport.model';
+import TransportInfo from '../components/TransportInfo';
+import TransportContactSection from '../components/TransportContactSection';
 
 const TransportDetailsPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -19,9 +18,6 @@ const TransportDetailsPage = () => {
   const { mutate: deleteContact } = useDeleteTransportContact();
   const { mutate: createContact, isPending: isCreating } = useCreateTransportContact();
   const { mutate: updateContact, isPending: isUpdating } = useUpdateTransportContact();
-
-  const [isContactDialogOpen, setIsContactDialogOpen] = useState(false);
-  const [selectedContact, setSelectedContact] = useState<ContactoTransporte | null>(null);
 
   const breadcrumbItems = [
     { label: 'Transportes', path: '/transportes' },
@@ -33,30 +29,18 @@ const TransportDetailsPage = () => {
   };
 
   const handleContactSubmit = (data: Partial<ContactoTransporte>) => {
-    if (selectedContact) {
+    if (data.id) {
       updateContact({
-        contactId: selectedContact.id.toString(),
+        contactId: data.id.toString(),
         transportId: id!,
         data
-      }, {
-        onSuccess: () => {
-          setIsContactDialogOpen(false);
-          setSelectedContact(null);
-        }
       });
     } else {
       createContact({
         transportId: id!,
         data
-      }, {
-        onSuccess: () => setIsContactDialogOpen(false)
       });
     }
-  };
-
-  const handleEditContact = (contact: ContactoTransporte) => {
-    setSelectedContact(contact);
-    setIsContactDialogOpen(true);
   };
 
   const handleDeleteContact = (contact: ContactoTransporte) => {
@@ -104,65 +88,16 @@ const TransportDetailsPage = () => {
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Información General</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <p className="text-sm text-muted-foreground">RUC</p>
-              <p>{transport.ruc}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Dirección</p>
-              <p>{transport.direccion || '-'}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Ubicación</p>
-              <p>
-                {[transport.departamento, transport.provincia, transport.distrito]
-                  .filter(Boolean)
-                  .join(', ') || '-'}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Cobertura</p>
-              <p>{transport.cobertura || '-'}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Estado</p>
-              <p>{transport.estado ? 'Activo' : 'Inactivo'}</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <TransportContactList
-              transportId={id!}
-              contacts={contacts}
-              onAdd={() => {
-                setSelectedContact(null);
-                setIsContactDialogOpen(true);
-              }}
-              onEdit={handleEditContact}
-              onDelete={handleDeleteContact}
-              isLoading={loadingContacts}
-            />
-          </CardContent>
-        </Card>
+        <TransportInfo transport={transport} />
+        <TransportContactSection
+          transportId={id!}
+          contacts={contacts}
+          onContactSubmit={handleContactSubmit}
+          onContactDelete={handleDeleteContact}
+          isLoading={loadingContacts}
+          isSubmitting={isCreating || isUpdating}
+        />
       </div>
-
-      <TransportContactDialog
-        isOpen={isContactDialogOpen}
-        onClose={() => {
-          setIsContactDialogOpen(false);
-          setSelectedContact(null);
-        }}
-        onSubmit={handleContactSubmit}
-        contact={selectedContact || undefined}
-        isSubmitting={isCreating || isUpdating}
-      />
     </div>
   );
 };
