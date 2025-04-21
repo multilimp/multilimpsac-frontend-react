@@ -1,6 +1,7 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Client, ClientContact, ClientDB, ContactoClienteDB, mapClientFromDB, mapClientToDB, mapContactFromDB, mapContactToDB } from '../../models/client.model';
-import { stringToNumberId } from '@/core/utils/id-conversions';
+import { stringToNumberId } from '@/utils/id-conversions';
 
 class ClienteApi {
   /**
@@ -14,7 +15,7 @@ class ClienteApi {
       
     if (error) throw error;
     return (data || []).map(mapClientFromDB);
-  },
+  }
   
   /**
    * Obtiene un cliente por su ID
@@ -29,7 +30,7 @@ class ClienteApi {
       
     if (error) throw error;
     return mapClientFromDB(data);
-  },
+  }
   
   /**
    * Crea un nuevo cliente
@@ -44,13 +45,13 @@ class ClienteApi {
     
     const { data, error } = await supabase
       .from('clientes')
-      .insert([dbCliente]) // Wrap in array to fix Supabase typing
+      .insert(dbCliente)
       .select()
       .single();
       
     if (error) throw error;
     return mapClientFromDB(data);
-  },
+  }
   
   /**
    * Actualiza un cliente
@@ -68,7 +69,7 @@ class ClienteApi {
       
     if (error) throw error;
     return mapClientFromDB(data);
-  },
+  }
   
   /**
    * Elimina un cliente
@@ -81,7 +82,7 @@ class ClienteApi {
       .eq('id', numericId);
       
     if (error) throw error;
-  },
+  }
   
   /**
    * Obtiene los contactos de un cliente
@@ -96,7 +97,7 @@ class ClienteApi {
       
     if (error) throw error;
     return (data || []).map(mapContactFromDB);
-  },
+  }
   
   /**
    * Crea un contacto para un cliente
@@ -106,13 +107,13 @@ class ClienteApi {
     
     const { data, error } = await supabase
       .from('contacto_clientes')
-      .insert([dbContacto]) // Wrap in array to fix Supabase typing
+      .insert(dbContacto)
       .select()
       .single();
       
     if (error) throw error;
     return mapContactFromDB(data);
-  },
+  }
   
   /**
    * Actualiza un contacto
@@ -130,7 +131,7 @@ class ClienteApi {
       
     if (error) throw error;
     return mapContactFromDB(data);
-  },
+  }
   
   /**
    * Elimina un contacto
