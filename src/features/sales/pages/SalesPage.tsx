@@ -1,23 +1,35 @@
 
 import React from 'react';
-import { ShoppingCart } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 import PageHeader from '@/components/common/PageHeader';
-import SalesList from '@/features/sales/components/SalesList';
+import SalesList from '../components/SalesList';
 
-const SalesPage: React.FC = () => {
+const SalesPage = () => {
+  const navigate = useNavigate();
+  
+  // Mock data for placeholder
+  const sales = [];
+  const isLoading = false;
+  const handleRefresh = () => {}; // Placeholder
+  
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto py-6">
       <PageHeader
         title="Ventas"
-        description="Gestiona todas las ventas de productos y servicios"
-        showAddButton
-        addButtonText="Nueva Venta"
-        onAddClick={() => {
-          // Handle navigation to new sale page
-          window.location.href = '/ventas/nueva';
-        }}
+        description="Gestión de ventas y órdenes de compra"
+        actions={
+          <Button onClick={() => navigate('/ventas/nueva')}>
+            Nueva Venta
+          </Button>
+        }
       />
-      <SalesList />
+      
+      <SalesList 
+        sales={sales} 
+        isLoading={isLoading} 
+        onRefresh={handleRefresh}
+      />
     </div>
   );
 };

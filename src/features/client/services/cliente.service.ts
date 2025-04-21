@@ -1,61 +1,62 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Cliente, ContactoCliente } from "@/features/entities/client/models/client.model";
+import { Client, ClientContact, normalizeClientContact } from "@/features/entities/client/models/client.model";
+import { clientService } from "./client.service";
 
-// This is a placeholder for the actual service that will be implemented
-// We're using it to satisfy import references while we implement the proper service
+/**
+ * Cliente Service
+ * Hooks de React Query para la gestión de clientes y sus contactos
+ */
 
+export const clienteService = {
+  ...clientService,
+};
+
+/**
+ * Hook para obtener todos los clientes
+ */
 export const useClientes = () => {
   return useQuery({
     queryKey: ["clientes"],
-    queryFn: async () => [] as Cliente[],
+    queryFn: clienteService.getAll,
   });
 };
 
+/**
+ * Hook para obtener un cliente por su ID
+ */
 export const useCliente = (id: string) => {
   return useQuery({
     queryKey: ["cliente", id],
-    queryFn: async () => ({
-      id,
-      razonSocial: "Cliente de ejemplo",
-      ruc: "12345678901",
-      codUnidad: "UNIT-01",
-      direccion: "Dirección de ejemplo",
-      departamento: "Departamento",
-      provincia: "Provincia",
-      distrito: "Distrito",
-      estado: true,
-      createdAt: new Date().toISOString(),
-    } as Cliente),
+    queryFn: () => clienteService.getById(id),
     enabled: !!id,
   });
 };
 
+/**
+ * Hook para crear un cliente
+ */
 export const useCreateCliente = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (clienteData: Partial<Cliente>) => ({
-      ...clienteData,
-      id: "new-id",
-      createdAt: new Date().toISOString(),
-      estado: true
-    } as Cliente),
+    mutationFn: (clienteData: Partial<Client>) => 
+      clienteService.create(clienteData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["clientes"] });
     },
   });
 };
 
+/**
+ * Hook para actualizar un cliente
+ */
 export const useUpdateCliente = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<Cliente> }) => ({
-      ...data,
-      id,
-      updatedAt: new Date().toISOString(),
-    } as Cliente),
+    mutationFn: ({ id, data }: { id: string; data: Partial<Client> }) => 
+      clienteService.update(id, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["clientes"] });
       queryClient.invalidateQueries({ queryKey: ["cliente", variables.id] });
@@ -63,71 +64,83 @@ export const useUpdateCliente = () => {
   });
 };
 
+/**
+ * Hook para eliminar un cliente
+ */
 export const useDeleteCliente = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (id: string) => { 
-      return { success: true };
-    },
+    mutationFn: (id: string) => clienteService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["clientes"] });
     },
   });
 };
 
+/**
+ * Hook para obtener los contactos de un cliente
+ */
 export const useContactosCliente = (clienteId: string) => {
   return useQuery({
     queryKey: ["contactosCliente", clienteId],
-    queryFn: async () => [] as ContactoCliente[],
+    queryFn: () => clienteId ? clienteService.fetchContactsById(clienteId) : [],
     enabled: !!clienteId,
   });
 };
 
+/**
+ * Hook para crear un contacto de cliente
+ */
 export const useCreateContactoCliente = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (contactoData: Partial<ContactoCliente>) => ({
-      ...contactoData,
-      id: "new-contact-id",
-      estado: true
-    } as ContactoCliente),
+    mutationFn: (contactoData: Partial<ClientContact>) => {
+      const normalized = normalizeClientContact(contactoData);
+      return clienteService.createContact(normalized);
+    },
     onSuccess: (_, variables) => {
-      if (variables.clienteId) {
+      const normalized = normalizeClientContact(variables);
+      if (normalized.clientId) {
         queryClient.invalidateQueries({ 
-          queryKey: ["contactosCliente", variables.clienteId] 
+          queryKey: ["contactosCliente", normalized.clientId] 
         });
       }
     },
   });
 };
 
+/**
+ * Hook para actualizar un contacto de cliente
+ */
 export const useUpdateContactoCliente = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<ContactoCliente> }) => ({
-      ...data,
-      id
-    } as ContactoCliente),
+    mutationFn: ({ id, data }: { id: string; data: Partial<ClientContact> }) => {
+      const normalized = normalizeClientContact(data);
+      return clienteService.updateContact(id, normalized);
+    },
     onSuccess: (_, variables) => {
-      if (variables.data.clienteId) {
+      const normalized = normalizeClientContact(variables.data);
+      if (normalized.clientId) {
         queryClient.invalidateQueries({ 
-          queryKey: ["contactosCliente", variables.data.clienteId] 
+          queryKey: ["contactosCliente", normalized.clientId] 
         });
       }
     },
   });
 };
 
+/**
+ * Hook para eliminar un contacto de cliente
+ */
 export const useDeleteContactoCliente = (clienteId?: string) => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (id: string) => { 
-      return { success: true };
-    },
+    mutationFn: (id: string) => clienteService.deleteContact(id),
     onSuccess: () => {
       if (clienteId) {
         queryClient.invalidateQueries({ 

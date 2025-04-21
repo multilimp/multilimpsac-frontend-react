@@ -1,6 +1,5 @@
-
 import { useState } from 'react';
-import { ContactoCliente } from '../models/client.model';
+import { ClientContact } from '../models/client.model';
 import { useToast } from '@/hooks/use-toast';
 import { 
   useDeleteContactoCliente, 
@@ -13,7 +12,7 @@ export const useClienteContactos = (clienteId: string | undefined) => {
   const { toast } = useToast();
   const [isContactoDialogOpen, setIsContactoDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedContacto, setSelectedContacto] = useState<ContactoCliente | null>(null);
+  const [selectedContacto, setSelectedContacto] = useState<ClientContact | null>(null);
   
   const {
     data: contactos = [],
@@ -30,24 +29,24 @@ export const useClienteContactos = (clienteId: string | undefined) => {
     setIsContactoDialogOpen(true);
   };
   
-  const handleOpenEditContactoDialog = (contacto: ContactoCliente) => {
+  const handleOpenEditContactoDialog = (contacto: ClientContact) => {
     setSelectedContacto(contacto);
     setIsContactoDialogOpen(true);
   };
   
-  const handleOpenDeleteContactoDialog = (contacto: ContactoCliente) => {
+  const handleOpenDeleteContactoDialog = (contacto: ClientContact) => {
     setSelectedContacto(contacto);
     setIsDeleteDialogOpen(true);
   };
   
-  const handleContactoSubmit = async (data: Partial<ContactoCliente>) => {
+  const handleContactoSubmit = async (data: Partial<ClientContact>) => {
     try {
       if (selectedContacto) {
         await updateContacto({
           id: selectedContacto.id,
           data: {
             ...data,
-            clienteId
+            clientId: clienteId
           }
         });
         toast({
@@ -58,7 +57,7 @@ export const useClienteContactos = (clienteId: string | undefined) => {
       } else {
         await createContacto({
           ...data,
-          clienteId
+          clientId: clienteId
         });
         toast({
           title: "Contacto creado",
@@ -79,28 +78,6 @@ export const useClienteContactos = (clienteId: string | undefined) => {
     }
   };
   
-  const handleDeleteContacto = async () => {
-    if (!selectedContacto) return;
-    
-    try {
-      await deleteContacto(selectedContacto.id);
-      toast({
-        title: "Contacto eliminado",
-        description: "El contacto ha sido eliminado exitosamente.",
-        variant: "default"
-      });
-      refetchContactos();
-      setIsDeleteDialogOpen(false);
-      setSelectedContacto(null);
-    } catch (error: any) {
-      toast({
-        title: "Error al eliminar",
-        description: error.message || "No se pudo eliminar el contacto.",
-        variant: "destructive"
-      });
-    }
-  };
-  
   return {
     contactos,
     isLoadingContactos,
@@ -116,6 +93,26 @@ export const useClienteContactos = (clienteId: string | undefined) => {
     handleOpenEditContactoDialog,
     handleOpenDeleteContactoDialog,
     handleContactoSubmit,
-    handleDeleteContacto
+    handleDeleteContacto: async () => {
+      if (!selectedContacto) return;
+      
+      try {
+        await deleteContacto(selectedContacto.id);
+        toast({
+          title: "Contacto eliminado",
+          description: "El contacto ha sido eliminado exitosamente.",
+          variant: "default"
+        });
+        refetchContactos();
+        setIsDeleteDialogOpen(false);
+        setSelectedContacto(null);
+      } catch (error: any) {
+        toast({
+          title: "Error al eliminar",
+          description: error.message || "No se pudo eliminar el contacto.",
+          variant: "destructive"
+        });
+      }
+    }
   };
 };

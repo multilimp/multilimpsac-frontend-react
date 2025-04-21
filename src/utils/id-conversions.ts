@@ -17,3 +17,18 @@ export function fromUUID(uuid: string): number {
   const lastPart = uuid.split('-').pop() || '0';
   return parseInt(lastPart, 10);
 }
+
+/**
+ * Convert a string ID to a number ID
+ */
+export function stringIdToNumber(id: string): number {
+  if (!id) return 0;
+  return parseInt(id.replace(/\D/g, ''), 10);
+}
+
+/**
+ * Convert a number ID to a string ID
+ */
+export function numberToStringId(id: number): string {
+  return id.toString();
+}

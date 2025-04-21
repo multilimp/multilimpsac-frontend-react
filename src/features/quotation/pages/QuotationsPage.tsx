@@ -1,23 +1,39 @@
 
 import React from 'react';
-import { FileSearch } from 'lucide-react';
+import { useQuotationActions } from '../hooks/useQuotationActions';
+import QuotationList from '../components/QuotationList';
 import PageHeader from '@/components/common/PageHeader';
-import QuotationList from '@/features/quotation/components/QuotationList';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
-const QuotationsPage: React.FC = () => {
+const QuotationsPage = () => {
+  const navigate = useNavigate();
+  const { 
+    quotations, 
+    isLoading, 
+    handleRefresh, 
+    handleEdit, 
+    handleDelete
+  } = useQuotationActions();
+
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto py-6">
       <PageHeader
         title="Cotizaciones"
-        description="Gestiona todas las cotizaciones de productos y servicios"
-        showAddButton
-        addButtonText="Nueva Cotización"
-        onAddClick={() => {
-          // Handle navigation to new quotation page
-          window.location.href = '/cotizaciones/nueva';
-        }}
+        description="Gestión de cotizaciones"
+        actions={
+          <Button onClick={() => navigate('/cotizaciones/nueva')}>
+            Nueva Cotización
+          </Button>
+        }
       />
-      <QuotationList />
+      
+      <QuotationList 
+        quotations={quotations || []} 
+        isLoading={isLoading} 
+        onRefresh={handleRefresh} 
+        onEdit={handleEdit} 
+      />
     </div>
   );
 };

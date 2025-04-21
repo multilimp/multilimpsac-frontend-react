@@ -19,7 +19,7 @@ export type Cliente = Client;
 
 export interface ClientContact {
   id: string;
-  clientId: string;
+  clientId: string; // Consistent English naming
   nombre: string;
   telefono?: string;
   correo?: string;
@@ -29,6 +29,11 @@ export interface ClientContact {
 
 // Alias for ClientContact to support Spanish naming in the codebase
 export type ContactoCliente = ClientContact;
+
+// Important: adding this alias with Spanish property naming to help with transition
+export interface ClientContactSpanish extends Omit<ClientContact, 'clientId'> {
+  clienteId: string; // Spanish naming for backward compatibility
+}
 
 export type ClientFormInput = Omit<Client, 'id' | 'createdAt' | 'updatedAt'>;
 
@@ -118,3 +123,16 @@ export const mapContactToDB = (contact: Partial<ClientContact>): Partial<Contact
 
 // Alias for mapContactToDB
 export const mapContactoClienteToDB = mapContactToDB;
+
+// Helper function to convert between clientId and clienteId property naming
+export const normalizeClientContact = (contact: Partial<ClientContact> | Partial<ClientContactSpanish>): Partial<ClientContact> => {
+  const result = { ...contact } as any;
+  
+  // Handle Spanish style clienteId if present
+  if ('clienteId' in contact && contact.clienteId) {
+    result.clientId = contact.clienteId;
+    delete result.clienteId;
+  }
+  
+  return result;
+};

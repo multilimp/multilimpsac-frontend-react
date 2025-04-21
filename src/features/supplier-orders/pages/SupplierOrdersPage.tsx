@@ -1,22 +1,25 @@
 
 import React from 'react';
-import { Package } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import PageHeader from '@/components/common/PageHeader';
-import SupplierOrderList from '@/features/supplier-orders/components/SupplierOrderList';
+import { SupplierOrderList } from '../components/SupplierOrderList';
+import { useNavigate } from 'react-router-dom';
 
-const SupplierOrdersPage: React.FC = () => {
+const SupplierOrdersPage = () => {
+  const navigate = useNavigate();
+  
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto py-6">
       <PageHeader
         title="Órdenes de Proveedor"
-        description="Gestiona todas las órdenes enviadas a proveedores"
-        showAddButton
-        addButtonText="Nueva Orden de Proveedor"
-        onAddClick={() => {
-          // Handle navigation to new supplier order page
-          window.location.href = '/ordenes/proveedor/nueva';
-        }}
+        description="Gestión de órdenes a proveedores"
+        actions={
+          <Button onClick={() => navigate('/proveedores/ordenes/nueva')}>
+            Nueva Orden
+          </Button>
+        }
       />
+      
       <SupplierOrderList />
     </div>
   );

@@ -28,9 +28,15 @@ class ClientService {
 
   async createClient(client: Partial<Client>): Promise<Client> {
     const dbClient = mapClientToDB(client);
+    
+    // Ensure the required fields are present
+    if (!dbClient.razon_social || !dbClient.ruc || !dbClient.cod_unidad) {
+      throw new Error('Required fields missing: razon_social, ruc, and cod_unidad are required');
+    }
+    
     const { data, error } = await supabase
       .from('clientes')
-      .insert([dbClient])
+      .insert(dbClient)
       .select()
       .single();
       
@@ -40,9 +46,11 @@ class ClientService {
 
   async updateClient(id: string, client: Partial<Client>): Promise<Client> {
     const numericId = stringToNumberId(id);
+    const dbClient = mapClientToDB(client);
+    
     const { data, error } = await supabase
       .from('clientes')
-      .update(mapClientToDB(client))
+      .update(dbClient)
       .eq('id', numericId)
       .select()
       .single();
@@ -76,9 +84,10 @@ class ClientService {
 
   async createContact(contact: Partial<ClientContact>): Promise<ClientContact> {
     const dbContact = mapContactToDB(contact);
+    
     const { data, error } = await supabase
       .from('contacto_clientes')
-      .insert([dbContact])
+      .insert(dbContact)
       .select()
       .single();
       
@@ -88,9 +97,11 @@ class ClientService {
 
   async updateContact(id: string, contact: Partial<ClientContact>): Promise<ClientContact> {
     const numericId = stringToNumberId(id);
+    const dbContact = mapContactToDB(contact);
+    
     const { data, error } = await supabase
       .from('contacto_clientes')
-      .update(mapContactToDB(contact))
+      .update(dbContact)
       .eq('id', numericId)
       .select()
       .single();

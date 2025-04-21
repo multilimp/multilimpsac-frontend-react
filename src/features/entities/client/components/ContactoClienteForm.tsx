@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ContactoCliente } from "../models/client.model";
+import { ClientContact } from "../models/client.model";
 
 // Esquema de validación con Zod
 const contactoSchema = z.object({
@@ -34,8 +34,8 @@ type ContactoFormData = z.infer<typeof contactoSchema>;
 
 interface ContactoClienteFormProps {
   clienteId: string;
-  initialData?: Partial<ContactoCliente>;
-  onSubmit: (data: Partial<ContactoCliente>) => Promise<void>;
+  initialData?: Partial<ClientContact>;
+  onSubmit: (data: Partial<ClientContact>) => Promise<void>;
   isSubmitting?: boolean;
   onCancel?: () => void;
 }
@@ -64,7 +64,7 @@ export const ContactoClienteForm: React.FC<ContactoClienteFormProps> = ({
     try {
       await onSubmit({
         ...initialData,
-        clienteId,
+        clientId: clienteId,
         ...values,
       });
       

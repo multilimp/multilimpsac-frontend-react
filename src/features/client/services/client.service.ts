@@ -63,6 +63,44 @@ class ClientService {
     // Mock implementation
     return;
   }
+
+  // Contact methods
+  async fetchContactsById(clientId: string): Promise<ClientContact[]> {
+    // Mock implementation
+    return [
+      {
+        id: "1",
+        clientId,
+        nombre: "John Doe",
+        telefono: "123456789",
+        correo: "john.doe@example.com",
+        cargo: "Manager",
+        estado: true
+      }
+    ];
+  }
+
+  async createContact(contact: Partial<ClientContact>): Promise<ClientContact> {
+    // Mock implementation
+    return {
+      ...contact,
+      id: "new-contact-id",
+      estado: true
+    } as ClientContact;
+  }
+
+  async updateContact(id: string, contact: Partial<ClientContact>): Promise<ClientContact> {
+    // Mock implementation
+    return {
+      ...contact,
+      id
+    } as ClientContact;
+  }
+
+  async deleteContact(id: string): Promise<void> {
+    // Mock implementation
+    return;
+  }
 }
 
 export default new ClientService();
