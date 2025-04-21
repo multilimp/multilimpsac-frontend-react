@@ -40,22 +40,7 @@ const TransportEditPage: React.FC = () => {
   
   const handleFormSubmit = async (data: Partial<Transport>) => {
     if (isNewTransport) {
-      // For new transport, provide required fields
-      const newTransportData: Omit<Transport, 'id'> = {
-        name: data.name || '',
-        ruc: data.ruc || '',
-        address: data.address || '',
-        coverage: data.coverage || '',
-        phone: data.phone || '',
-        email: data.email || '',
-        contact: data.contact || '',
-        status: data.status || 'active',
-        department: data.department,
-        province: data.province,
-        district: data.district
-      };
-      
-      const newTransport = await createMutation.mutateAsync(newTransportData);
+      const newTransport = await createMutation.mutateAsync(data);
       navigate(`/transportes/${newTransport.id}`);
     } else if (id) {
       await updateMutation.mutateAsync({ id, data });

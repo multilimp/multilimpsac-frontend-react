@@ -1,102 +1,149 @@
 # Instrucciones para GitHub Copilot en el proyecto multilimp-react
 
-## 📃 Contexto del Proyecto
+## Contexto del Proyecto
 
-Aplicación web empresarial llamada `multilimp-react`, basada en:
+Estás trabajando en `multilimp-react`, una aplicación web construida con:
 
-- **Framework:** React (v18+) + Vite
-- **Lenguaje:** TypeScript
-- **Estilos:** Tailwind CSS + shadcn/ui (Radix UI)
-- **Estado Global:** Zustand
-- **Cache de Servidor:** React Query (`@tanstack/react-query`)
-- **Routing:** React Router DOM (v6+)
-- **Backend:** Supabase (auth, base de datos) + posible API REST externa
+* **Framework:** React (v18+) con Vite
+* **Lenguaje:** TypeScript
+* **Estilos:** Tailwind CSS y shadcn-ui (basado en Radix UI)
+* **Gestión de Estado:**
+  * Estado Global: Zustand
+  * Estado del Servidor/Caché: React Query (`@tanstack/react-query`)
+* **Routing:** React Router DOM (v6+)
+* **Backend/Integraciones:** Supabase (para autenticación y base de datos) y potencialmente una API REST separada.
 
-## 🏛️ Arquitectura Basada en Feature-Sliced Design (FSD)
+## Estructura y Arquitectura del Proyecto
 
-### 1. Capas del Proyecto
+### 1. Estructura Modular Base
 
 ```plaintext
 src/
-├── app/                # Inicialización global, rutas, providers
-├── pages/              # Páginas principales
-├── widgets/            # Componentes UI autocontenidos
-├── features/           # Funcionalidades con valor de negocio
-├── entities/           # Modelos centrales (cliente, proveedor, etc.)
-├── shared/             # Utilidades y componentes genéricos
-└── types/              # Tipos globales
+├── app/                # Configuración global de la app
+│   ├── routes/         # Rutas principales
+│   ├── providers/      # Providers globales
+│   └── core/           # Configuración general
+├── features/           
+│   ├── entities/       # Gestión de Entidades
+│   │   ├── client/     # Gestión de Clientes
+│   │   ├── supplier/   # Gestión de Proveedores
+│   │   ├── transport/  # Gestión de Transportes
+│   │   ├── company/    # Gestión de Empresas
+│   │   └── user/       # Gestión de Usuarios
+│   └── processes/      # Procesos de Negocio
+│       ├── quotation/  # Cotizaciones
+│       ├── sales/      # Ventas
+│       ├── purchase-orders/ # Órdenes de Compra
+│       ├── treasury/   # Tesorería
+│       ├── tracking/   # Seguimientos
+│       ├── billing/    # Facturación
+│       └── collections/ # Cobranzas
+├── components/         
+│   ├── entities/       # Componentes de Entidades
+│   ├── processes/      # Componentes de Procesos
+│   └── shared/         # Componentes Compartidos
+├── store/              # Estado Global
+│   ├── entities/       # Estados de Entidades
+│   └── processes/      # Estados de Procesos
+└── types/             # Tipos Globales
 ```
 
-Cada slice (`features`, `entities`, etc.) puede contener:
+### 2. Modularidad y Separación de Dominios
+
+Cada feature debe mantener una separación estricta entre entidades y procesos:
 
 ```plaintext
-[domain]/[feature-name]/
-├── model/       # Lógica y estado (Zustand)
-├── ui/          # Componentes UI
-├── services/    # Integración API (React Query)
-├── hooks/       # Hooks personalizados
-├── lib/         # Funciones auxiliares
-└── index.ts     # Public API del slice
+src/features/[domain]/[feature-name]/
+├── ui/                 # Componentes específicos de la feature
+├── model/             # Lógica de negocio y tipos
+├── services/          # Servicios de API
+└── hooks/             # Hooks específicos
 ```
 
-### 2. Principios Clave
+### 3. Principios de Diseño
 
-- **Separación estricta entre features, entidades y procesos**
-- **Flujo de datos unidireccional**
-- **Última palabra la tiene la lógica de negocio (`model/`)**
-- **Comunicación entre slices solo a través de servicios bien definidos**
-- **Estructura basada en dominios, no en tipos técnicos**
+1. **Separación de Dominios:**
+   * Las entidades (clients, suppliers, etc.) no deben depender de los procesos
+   * Los procesos pueden consumir entidades a través de interfaces definidas
+   * Evitar acoplamiento directo entre componentes de diferentes dominios
 
-## ✅ Directrices para GitHub Copilot y la IA
+2. **Gestión de Estado:**
+   * Estados de entidades y procesos separados en diferentes stores
+   * Usar interfaces para la comunicación entre dominios
+   * Mantener la consistencia de datos entre dominios
 
-- Sugerir código siguiendo el esquema modular y de slices
-- No mezclar UI con lógica de negocio
-- No generar dependencia cruzada entre slices
-- Usar `model/` + `services/` para toda nueva lógica funcional
-- Mantener consistencia en nomenclatura y arquitectura
+3. **Comunicación entre Dominios:**
+   * Usar servicios intermediarios para la comunicación entre entidades y procesos
+   * Implementar interfaces claras para el consumo de entidades en procesos
+   * Mantener la unidireccionalidad del flujo de datos
 
-## ⚖️ Convenciones de Código
+## Directrices Generales
 
-- `camelCase` para variables y funciones
-- `PascalCase` para componentes y tipos
-- Imports ordenados: externos > internos
-- Tipado estricto con TypeScript
-- Documentar componentes y hooks complejos
+1. **Desarrollo de Features:**
+   * Crear nuevas features siguiendo la estructura modular establecida
+   * Mantener la lógica de negocio separada de la UI
+   * Usar tipos TypeScript estrictos
 
-## 📆 Patrones de Implementación
+2. **Componentes:**
+   * Componentes de UI básicos en `src/components/ui`
+   * Componentes complejos reutilizables en `src/components/shared`
+   * Componentes específicos de feature en su carpeta correspondiente
 
-### Entidades (ej. Clientes)
+3. **Estado y Datos:**
+   * Usar React Query para interacciones con el backend
+   * Implementar stores de Zustand por dominio funcional
+   * Mantener la persistencia de datos consistente
 
-```ts
-// src/entities/client/model/client.store.ts
+4. **Convenciones de Código:**
+   * Nombres descriptivos en camelCase/PascalCase según corresponda
+   * Documentación clara en componentes y funciones complejas
+   * Tests para lógica de negocio crítica
+
+## Directrices de Implementación
+
+1. **Para Entidades (src/features/entities):**
+
+```typescript
+// src/features/entities/client/types.ts
+export interface Client {
+  id: string;
+  name: string;
+  // ...otros campos
+}
+
+// src/features/entities/client/model/client.store.ts
 export const useClientStore = create<ClientState>((set) => ({
   clients: [],
   setClients: (clients) => set({ clients }),
 }));
 ```
 
-### Procesos (ej. Órdenes de Compra)
+2. **Para Procesos (src/features/processes):**
 
-```ts
-// src/features/purchase-orders/services/purchase-order.service.ts
+```typescript
+// src/features/processes/purchase-orders/services/purchase-order.service.ts
 export const usePurchaseOrder = (clientId: string) => {
   const client = useClientStore(state => state.getClient(clientId));
-
+  
   return useQuery(['purchase-order', clientId], async () => {
-    return await fetchPurchaseOrder(client.id);
+    // Lógica específica del proceso
+    return data;
   });
 };
 ```
 
-### Autenticación (ejemplo completo)
+## Ejemplo de Implementación
 
-```ts
+Para una nueva feature, seguir este patrón:
+
+```typescript
 // src/features/auth/services/auth.service.ts
-export const useAuth = () =>
-  useQuery(['auth'], async () => {
+export const useAuth = () => {
+  return useQuery(['auth'], async () => {
     const response = await supabase.auth.getSession();
     return response.data;
   });
+};
 
 // src/features/auth/model/auth.store.ts
 export const useAuthStore = create<AuthState>((set) => ({
@@ -105,14 +152,9 @@ export const useAuthStore = create<AuthState>((set) => ({
 }));
 ```
 
-## 🔄 Beneficios Esperados
+Esta estructura garantiza:
 
-- Escalabilidad y mantenibilidad de largo plazo
-- Claridad entre lógica, datos y presentación
-- Reducción de dependencias cruzadas
-- Facilitación del testing y reusabilidad
-- Base sólida para colaborar en equipo
-
----
-
-Copilot deberá sugerir código que respete esta estructura en toda nueva feature o mejora.
+* Clara separación entre entidades y procesos
+* Evita dependencias circulares
+* Facilita el mantenimiento y escalabilidad
+* Permite la reutilización de entidades en diferentes procesos

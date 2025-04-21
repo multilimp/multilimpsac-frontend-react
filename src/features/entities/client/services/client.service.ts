@@ -1,140 +1,123 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Client, ClientDB, mapClientFromDB, mapClientToDB } from '../models/client.model';
+import { Client, ClientContact, ClientDB, ContactoClienteDB, mapClientFromDB, mapClientToDB, mapContactFromDB, mapContactToDB } from '../models/client.model';
+import { stringToNumberId } from '@/utils/id-conversions';
 
-export class ClientService {
-  static async createClient(client: Partial<Client>): Promise<Client> {
-    const data = mapClientToDB(client as Client);
-    const required = {
-      ruc: data.ruc || '',
-      razon_social: data.razon_social || '',
-      cod_unidad: data.cod_unidad || '',
-      estado: true
-    };
-
-    const { data: newClient, error } = await supabase
-      .from('clientes')
-      .insert({ ...data, ...required })
-      .select()
-      .single();
-
-    if (error) throw error;
-    return mapClientFromDB(newClient);
-  }
-
-  static async fetchClients(): Promise<Client[]> {
+class ClientService {
+  async fetchClients(): Promise<Client[]> {
     const { data, error } = await supabase
       .from('clientes')
       .select('*')
-      .order('razon_social', { ascending: true });
-
-    if (error) {
-      console.error('Error fetching clients:', error);
-      throw new Error(error.message);
-    }
-
+      .order('razon_social');
+      
+    if (error) throw error;
     return (data || []).map(mapClientFromDB);
   }
 
-  static async fetchClientById(id: string): Promise<Client> {
+  async fetchClientById(id: string): Promise<Client> {
+    const numericId = stringToNumberId(id);
     const { data, error } = await supabase
       .from('clientes')
       .select('*')
-      .eq('id', parseInt(id))
+      .eq('id', numericId)
       .single();
-
-    if (error) {
-      console.error(`Error fetching client with ID ${id}:`, error);
-      throw new Error(error.message);
-    }
-
+      
+    if (error) throw error;
     return mapClientFromDB(data);
   }
 
-  static async updateClient(id: string, client: Partial<Client>): Promise<Client> {
-    const data = mapClientToDB(client as Client);
-
-    const { data: updatedClient, error } = await supabase
+  async createClient(client: Partial<Client>): Promise<Client> {
+    const dbClient = mapClientToDB(client);
+    
+    // Ensure the required fields are present
+    if (!dbClient.razon_social || !dbClient.ruc || !dbClient.cod_unidad) {
+      throw new Error('Required fields missing: razon_social, ruc, and cod_unidad are required');
+    }
+    
+    const { data, error } = await supabase
       .from('clientes')
-      .update(data)
-      .eq('id', parseInt(id))
+      .insert(dbClient)
       .select()
       .single();
-
-    if (error) {
-      console.error(`Error updating client with ID ${id}:`, error);
-      throw new Error(error.message);
-    }
-
-    return mapClientFromDB(updatedClient);
+      
+    if (error) throw error;
+    return mapClientFromDB(data);
   }
 
-  static async deleteClient(id: string): Promise<void> {
+  async updateClient(id: string, client: Partial<Client>): Promise<Client> {
+    const numericId = stringToNumberId(id);
+    const dbClient = mapClientToDB(client);
+    
+    const { data, error } = await supabase
+      .from('clientes')
+      .update(dbClient)
+      .eq('id', numericId)
+      .select()
+      .single();
+      
+    if (error) throw error;
+    return mapClientFromDB(data);
+  }
+
+  async deleteClient(id: string): Promise<void> {
+    const numericId = stringToNumberId(id);
     const { error } = await supabase
       .from('clientes')
       .delete()
-      .eq('id', parseInt(id));
-
-    if (error) {
-      console.error(`Error deleting client with ID ${id}:`, error);
-      throw new Error(error.message);
-    }
+      .eq('id', numericId);
+      
+    if (error) throw error;
   }
 
-  static async fetchClientContacts(clientId: string): Promise<any[]> {
+  async fetchClientContacts(clientId: string): Promise<ClientContact[]> {
+    const numericClientId = stringToNumberId(clientId);
     const { data, error } = await supabase
       .from('contacto_clientes')
       .select('*')
-      .eq('cliente_id', parseInt(clientId));
-
-    if (error) {
-      console.error(`Error fetching contacts for client ID ${clientId}:`, error);
-      throw new Error(error.message);
-    }
-
-    return data || [];
+      .eq('cliente_id', numericClientId)
+      .order('nombre');
+      
+    if (error) throw error;
+    return (data || []).map(mapContactFromDB);
   }
 
-  static async createContact(contact: any): Promise<any> {
+  async createContact(contact: Partial<ClientContact>): Promise<ClientContact> {
+    const dbContact = mapContactToDB(contact);
+    
     const { data, error } = await supabase
       .from('contacto_clientes')
-      .insert(contact)
+      .insert(dbContact)
       .select()
       .single();
-
-    if (error) {
-      console.error('Error creating contact:', error);
-      throw new Error(error.message);
-    }
-
-    return data;
+      
+    if (error) throw error;
+    return mapContactFromDB(data);
   }
 
-  static async updateContact(id: string, contact: any): Promise<any> {
+  async updateContact(id: string, contact: Partial<ClientContact>): Promise<ClientContact> {
+    const numericId = stringToNumberId(id);
+    const dbContact = mapContactToDB(contact);
+    
     const { data, error } = await supabase
       .from('contacto_clientes')
-      .update(contact)
-      .eq('id', parseInt(id))
+      .update(dbContact)
+      .eq('id', numericId)
       .select()
       .single();
-
-    if (error) {
-      console.error(`Error updating contact with ID ${id}:`, error);
-      throw new Error(error.message);
-    }
-
-    return data;
+      
+    if (error) throw error;
+    return mapContactFromDB(data);
   }
 
-  static async deleteContact(id: string): Promise<void> {
+  async deleteContact(id: string): Promise<void> {
+    const numericId = stringToNumberId(id);
     const { error } = await supabase
       .from('contacto_clientes')
       .delete()
-      .eq('id', parseInt(id));
-
-    if (error) {
-      console.error(`Error deleting contact with ID ${id}:`, error);
-      throw new Error(error.message);
-    }
+      .eq('id', numericId);
+      
+    if (error) throw error;
   }
 }
+
+export const clientService = new ClientService();

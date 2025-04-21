@@ -48,32 +48,6 @@ export interface TransportDB {
   distrito?: string;
 }
 
-// For compatibility with existing components
-export interface Transporte {
-  id: string;
-  razon_social: string;
-  ruc: string;
-  direccion: string;
-  cobertura?: string;
-  estado: boolean;
-  created_at?: string;
-  updated_at?: string;
-  departamento?: string;
-  provincia?: string;
-  distrito?: string;
-}
-
-// For compatibility with existing components
-export interface ContactoTransporte {
-  id: string;
-  transporte_id: string;
-  nombre: string;
-  cargo: string;
-  correo?: string;
-  telefono: string;
-  estado?: boolean;
-}
-
 // Domain mappers
 export const mapTransportFromDB = (db: TransportDB): Transport => ({
   id: db.id.toString(),
@@ -98,23 +72,8 @@ export const mapTransportToDB = (domain: Partial<Transport>): Partial<TransportD
   ...(domain.ruc ? { ruc: domain.ruc } : {}),
   ...(domain.address ? { direccion: domain.address } : {}),
   ...(domain.coverage ? { cobertura: domain.coverage } : {}),
-  ...(domain.status !== undefined ? { estado: domain.status === 'active' } : {}),
+  ...(domain.status ? { estado: domain.status === 'active' } : {}),
   ...(domain.department ? { departamento: domain.department } : {}),
   ...(domain.province ? { provincia: domain.province } : {}),
   ...(domain.district ? { distrito: domain.district } : {})
-});
-
-// Utility function to convert TransportDB to Transporte for UI components
-export const convertToTransporte = (transport: Transport): Transporte => ({
-  id: transport.id,
-  razon_social: transport.name,
-  ruc: transport.ruc,
-  direccion: transport.address,
-  cobertura: transport.coverage,
-  estado: transport.status === 'active',
-  departamento: transport.department,
-  provincia: transport.province,
-  distrito: transport.district,
-  created_at: transport.createdAt,
-  updated_at: transport.updatedAt
 });

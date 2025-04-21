@@ -1,126 +1,80 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { CompanyCatalog, CompanyCatalogDB } from '../../models/companyCatalog';
+import { 
+  CompanyCatalog, 
+  CompanyCatalogDB, 
+  mapCompanyCatalogFromDB, 
+  mapCompanyCatalogToDB 
+} from '../../models/company.model';
+import { stringToNumberId } from '@/utils/id-conversions';
 
-export class CompanyCatalogApi {
-  static async getAll(companyId: string): Promise<CompanyCatalog[]> {
-    try {
-      const { data, error } = await supabase
-        .from('catalogo_empresas')
-        .select('*')
-        .eq('empresa_id', parseInt(companyId));
-
-      if (error) {
-        throw new Error(`Error fetching catalogs: ${error.message}`);
-      }
-
-      if (!data || data.length === 0) {
-        return [];
-      }
-
-      return data.map(this.mapFromDB);
-    } catch (error) {
-      console.error('Error in getAll catalogs:', error);
-      throw error;
-    }
+class CompanyCatalogApi {
+  async fetchCompanyCatalogs(companyId: string): Promise<CompanyCatalog[]> {
+    const numericCompanyId = stringToNumberId(companyId);
+    const { data, error } = await supabase
+      .from('catalogo_empresas')
+      .select('*')
+      .eq('empresa_id', numericCompanyId)
+      .order('codigo');
+      
+    if (error) throw error;
+    return (data || []).map(mapCompanyCatalogFromDB);
   }
 
-  static async getById(id: string): Promise<CompanyCatalog> {
-    try {
-      const { data, error } = await supabase
-        .from('catalogo_empresas')
-        .select('*')
-        .eq('id', parseInt(id))
-        .single();
-
-      if (error) {
-        throw new Error(`Error fetching catalog: ${error.message}`);
-      }
-
-      return this.mapFromDB(data);
-    } catch (error) {
-      console.error('Error in getById catalog:', error);
-      throw error;
-    }
+  async fetchCompanyCatalogById(id: string): Promise<CompanyCatalog> {
+    const numericId = stringToNumberId(id);
+    const { data, error } = await supabase
+      .from('catalogo_empresas')
+      .select('*')
+      .eq('id', numericId)
+      .single();
+      
+    if (error) throw error;
+    return mapCompanyCatalogFromDB(data);
   }
 
-  static async create(companyId: string, catalog: Partial<CompanyCatalog>): Promise<CompanyCatalog> {
-    try {
-      const dbCatalog: Partial<CompanyCatalogDB> = {
-        ...this.mapToDB(catalog),
-        empresa_id: parseInt(companyId) // Ensure empresa_id is included and is a number
-      };
-
-      const { data, error } = await supabase
-        .from('catalogo_empresas')
-        .insert(dbCatalog)
-        .select()
-        .single();
-
-      if (error) {
-        throw new Error(`Error creating catalog: ${error.message}`);
-      }
-
-      return this.mapFromDB(data);
-    } catch (error) {
-      console.error('Error in create catalog:', error);
-      throw error;
-    }
-  }
-
-  static async update(id: string, catalog: Partial<CompanyCatalog>): Promise<CompanyCatalog> {
-    try {
-      const { data, error } = await supabase
-        .from('catalogo_empresas')
-        .update(this.mapToDB(catalog))
-        .eq('id', parseInt(id))
-        .select()
-        .single();
-
-      if (error) {
-        throw new Error(`Error updating catalog: ${error.message}`);
-      }
-
-      return this.mapFromDB(data);
-    } catch (error) {
-      console.error('Error in update catalog:', error);
-      throw error;
-    }
-  }
-
-  static async delete(id: string): Promise<void> {
-    try {
-      const { error } = await supabase
-        .from('catalogo_empresas')
-        .delete()
-        .eq('id', parseInt(id));
-
-      if (error) {
-        throw new Error(`Error deleting catalog: ${error.message}`);
-      }
-    } catch (error) {
-      console.error('Error in delete catalog:', error);
-      throw error;
-    }
-  }
-
-  private static mapFromDB(data: any): CompanyCatalog {
-    return {
-      id: data.id.toString(),
-      code: data.codigo || '',
-      companyId: data.empresa_id.toString(),
-      createdAt: data.created_at,
-      updatedAt: data.updated_at
-    };
-  }
-
-  private static mapToDB(catalog: Partial<CompanyCatalog>): Partial<CompanyCatalogDB> {
-    const result: Partial<CompanyCatalogDB> = {};
+  async createCompanyCatalog(catalog: Partial<CompanyCatalog>): Promise<CompanyCatalog> {
+    const dbCatalog = mapCompanyCatalogToDB(catalog);
     
-    if (catalog.id) result.id = parseInt(catalog.id);
-    if (catalog.code) result.codigo = catalog.code;
-    if (catalog.companyId) result.empresa_id = parseInt(catalog.companyId);
+    // Ensure empresa_id is required in the database
+    if (!dbCatalog.empresa_id) {
+      throw new Error('empresa_id is required');
+    }
     
-    return result;
+    const { data, error } = await supabase
+      .from('catalogo_empresas')
+      .insert(dbCatalog)
+      .select()
+      .single();
+      
+    if (error) throw error;
+    return mapCompanyCatalogFromDB(data);
+  }
+
+  async updateCompanyCatalog(id: string, catalog: Partial<CompanyCatalog>): Promise<CompanyCatalog> {
+    const numericId = stringToNumberId(id);
+    const dbCatalog = mapCompanyCatalogToDB(catalog);
+    
+    const { data, error } = await supabase
+      .from('catalogo_empresas')
+      .update(dbCatalog)
+      .eq('id', numericId)
+      .select()
+      .single();
+      
+    if (error) throw error;
+    return mapCompanyCatalogFromDB(data);
+  }
+
+  async deleteCompanyCatalog(id: string): Promise<void> {
+    const numericId = stringToNumberId(id);
+    const { error } = await supabase
+      .from('catalogo_empresas')
+      .delete()
+      .eq('id', numericId);
+      
+    if (error) throw error;
   }
 }
+
+export const companyCatalogApi = new CompanyCatalogApi();

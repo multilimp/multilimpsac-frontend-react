@@ -1,159 +1,207 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Company, CompanyDB, mapCompanyFromDB, mapCompanyToDB } from '../models/company.model';
+import { Company, CompanyCatalog, CompanyDB, CompanyCatalogDB, mapCompanyFromDB, mapCompanyToDB, mapCompanyCatalogFromDB, mapCompanyCatalogToDB } from '../models/company.model';
+import { stringToNumberId } from '@/utils/id-conversions';
+import { useQuery } from '@tanstack/react-query';
 
-export default class CompanyService {
-  static async getById(id: string): Promise<Company> {
-    try {
-      const { data, error } = await supabase
-        .from('empresas')
-        .select('*')
-        .eq('id', parseInt(id))
-        .single();
+/**
+ * Servicio para gestionar operaciones relacionadas con empresas
+ */
+export const companyService = {
+  /**
+   * Obtiene todas las empresas
+   */
+  fetchCompanies: async (): Promise<Company[]> => {
+    const { data, error } = await supabase
+      .from("empresas")
+      .select("*")
+      .order("id", { ascending: true });
 
-      if (error) throw error;
-      if (!data) throw new Error('Company not found');
-
-      return mapCompanyFromDB(data as CompanyDB);
-    } catch (error) {
-      console.error('Error fetching company:', error);
-      throw error;
+    if (error) {
+      console.error("Error al obtener las empresas:", error);
+      throw new Error(`No se pudieron obtener las empresas: ${error.message}`);
     }
-  }
 
-  static async getAll(): Promise<Company[]> {
-    try {
-      const { data, error } = await supabase
-        .from('empresas')
-        .select('*')
-        .order('razon_social', { ascending: true });
+    return (data as CompanyDB[]).map(mapCompanyFromDB);
+  },
 
-      if (error) throw error;
+  /**
+   * Obtiene una empresa por su ID
+   */
+  fetchCompanyById: async (id: string): Promise<Company> => {
+    const { data, error } = await supabase
+      .from("empresas")
+      .select("*")
+      .eq("id", stringToNumberId(id))
+      .single();
 
-      return (data as CompanyDB[]).map(mapCompanyFromDB);
-    } catch (error) {
-      console.error('Error fetching companies:', error);
-      throw error;
+    if (error) {
+      console.error(`Error al obtener la empresa con ID ${id}:`, error);
+      throw new Error(`No se pudo obtener la empresa: ${error.message}`);
     }
-  }
 
-  static async create(company: Partial<Company>): Promise<Company> {
-    try {
-      const mappedData = mapCompanyToDB(company as Company);
+    return mapCompanyFromDB(data as CompanyDB);
+  },
 
-      const { data, error } = await supabase
-        .from('empresas')
-        .insert(mappedData)
-        .select()
-        .single();
+  /**
+   * Crea una nueva empresa
+   */
+  createCompany: async (companyData: Partial<Company>): Promise<Company> => {
+    const companyDB = mapCompanyToDB(companyData);
+    
+    const { data, error } = await supabase
+      .from("empresas")
+      .insert(companyDB)
+      .select()
+      .single();
 
-      if (error) throw error;
-      if (!data) throw new Error('Company creation failed');
-
-      return mapCompanyFromDB(data as CompanyDB);
-    } catch (error) {
-      console.error('Error creating company:', error);
-      throw error;
+    if (error) {
+      console.error("Error al crear la empresa:", error);
+      throw new Error(`No se pudo crear la empresa: ${error.message}`);
     }
-  }
 
-  static async update(id: string, company: Partial<Company>): Promise<Company> {
-    try {
-      const mappedData = mapCompanyToDB(company as Company);
+    return mapCompanyFromDB(data as CompanyDB);
+  },
 
-      const { data, error } = await supabase
-        .from('empresas')
-        .update(mappedData)
-        .eq('id', parseInt(id))
-        .select()
-        .single();
+  /**
+   * Actualiza una empresa existente
+   */
+  updateCompany: async (id: string, companyData: Partial<Company>): Promise<Company> => {
+    const companyDB = mapCompanyToDB(companyData);
+    
+    const { data, error } = await supabase
+      .from("empresas")
+      .update(companyDB)
+      .eq("id", stringToNumberId(id))
+      .select()
+      .single();
 
-      if (error) throw error;
-      if (!data) throw new Error('Company update failed');
-
-      return mapCompanyFromDB(data as CompanyDB);
-    } catch (error) {
-      console.error('Error updating company:', error);
-      throw error;
+    if (error) {
+      console.error(`Error al actualizar la empresa con ID ${id}:`, error);
+      throw new Error(`No se pudo actualizar la empresa: ${error.message}`);
     }
-  }
 
-  static async delete(id: string): Promise<void> {
-    try {
-      const { error } = await supabase
-        .from('empresas')
-        .delete()
-        .eq('id', parseInt(id));
+    return mapCompanyFromDB(data as CompanyDB);
+  },
 
-      if (error) throw error;
-    } catch (error) {
-      console.error('Error deleting company:', error);
-      throw error;
+  /**
+   * Elimina una empresa
+   */
+  deleteCompany: async (id: string): Promise<void> => {
+    const { error } = await supabase
+      .from("empresas")
+      .delete()
+      .eq("id", stringToNumberId(id));
+
+    if (error) {
+      console.error(`Error al eliminar la empresa con ID ${id}:`, error);
+      throw new Error(`No se pudo eliminar la empresa: ${error.message}`);
     }
-  }
+  },
 
-  static async fetchCatalogs(companyId: string): Promise<any[]> {
-    try {
-      const { data, error } = await supabase
-        .from('catalogo_empresas')
-        .select('*')
-        .eq('empresa_id', parseInt(companyId));
+  /**
+   * Obtiene todos los catálogos de una empresa
+   */
+  fetchCompanyCatalogs: async (companyId: string): Promise<CompanyCatalog[]> => {
+    const { data, error } = await supabase
+      .from("catalogo_empresas")
+      .select("*")
+      .eq("empresa_id", stringToNumberId(companyId))
+      .order("id", { ascending: true });
 
-      if (error) throw error;
-
-      return data || [];
-    } catch (error) {
-      console.error('Error fetching company catalogs:', error);
-      throw error;
+    if (error) {
+      console.error(`Error al obtener los catálogos de la empresa con ID ${companyId}:`, error);
+      throw new Error(`No se pudieron obtener los catálogos: ${error.message}`);
     }
-  }
 
-  static async createCatalog(companyId: string, catalog: any): Promise<any> {
-    try {
-      const { data, error } = await supabase
-        .from('catalogo_empresas')
-        .insert({ ...catalog, empresa_id: parseInt(companyId) })
-        .select()
-        .single();
+    return (data as CompanyCatalogDB[]).map(mapCompanyCatalogFromDB);
+  },
 
-      if (error) throw error;
+  /**
+   * Crea un nuevo catálogo para una empresa
+   */
+  createCompanyCatalog: async (catalogData: Partial<CompanyCatalog>): Promise<CompanyCatalog> => {
+    const catalogDB = mapCompanyCatalogToDB(catalogData);
+    
+    const { data, error } = await supabase
+      .from("catalogo_empresas")
+      .insert(catalogDB)
+      .select()
+      .single();
 
-      return data;
-    } catch (error) {
-      console.error('Error creating company catalog:', error);
-      throw error;
+    if (error) {
+      console.error("Error al crear el catálogo:", error);
+      throw new Error(`No se pudo crear el catálogo: ${error.message}`);
     }
-  }
 
-  static async updateCatalog(id: string, catalog: any): Promise<any> {
-    try {
-      const { data, error } = await supabase
-        .from('catalogo_empresas')
-        .update(catalog)
-        .eq('id', parseInt(id))
-        .select()
-        .single();
+    return mapCompanyCatalogFromDB(data as CompanyCatalogDB);
+  },
 
-      if (error) throw error;
+  /**
+   * Actualiza un catálogo existente
+   */
+  updateCompanyCatalog: async (id: string, catalogData: Partial<CompanyCatalog>): Promise<CompanyCatalog> => {
+    const catalogDB = mapCompanyCatalogToDB(catalogData);
+    
+    const { data, error } = await supabase
+      .from("catalogo_empresas")
+      .update(catalogDB)
+      .eq("id", stringToNumberId(id))
+      .select()
+      .single();
 
-      return data;
-    } catch (error) {
-      console.error('Error updating company catalog:', error);
-      throw error;
+    if (error) {
+      console.error(`Error al actualizar el catálogo con ID ${id}:`, error);
+      throw new Error(`No se pudo actualizar el catálogo: ${error.message}`);
     }
-  }
 
-  static async deleteCatalog(id: string): Promise<void> {
-    try {
-      const { error } = await supabase
-        .from('catalogo_empresas')
-        .delete()
-        .eq('id', parseInt(id));
+    return mapCompanyCatalogFromDB(data as CompanyCatalogDB);
+  },
 
-      if (error) throw error;
-    } catch (error) {
-      console.error('Error deleting company catalog:', error);
-      throw error;
+  /**
+   * Elimina un catálogo
+   */
+  deleteCompanyCatalog: async (id: string): Promise<void> => {
+    const { error } = await supabase
+      .from("catalogo_empresas")
+      .delete()
+      .eq("id", stringToNumberId(id));
+
+    if (error) {
+      console.error(`Error al eliminar el catálogo con ID ${id}:`, error);
+      throw new Error(`No se pudo eliminar el catálogo: ${error.message}`);
     }
-  }
-}
+  },
+};
+
+/**
+ * Hook para obtener todas las empresas
+ */
+export const useCompanies = () => {
+  return useQuery({
+    queryKey: ["companies"],
+    queryFn: companyService.fetchCompanies,
+  });
+};
+
+/**
+ * Hook para obtener una empresa por su ID
+ */
+export const useCompany = (id: string) => {
+  return useQuery({
+    queryKey: ["company", id],
+    queryFn: () => companyService.fetchCompanyById(id),
+    enabled: !!id,
+  });
+};
+
+/**
+ * Hook para obtener los catálogos de una empresa
+ */
+export const useCompanyCatalogs = (companyId: string) => {
+  return useQuery({
+    queryKey: ["companyCatalogs", companyId],
+    queryFn: () => companyService.fetchCompanyCatalogs(companyId),
+    enabled: !!companyId,
+  });
+};
