@@ -1,9 +1,9 @@
 import { supabase } from '@/integrations/supabase/client';
-import { Transport, TransportDB, mapTransportFromDB, mapTransportToDB } from '../models/transport.model';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Transport, TransportDB, ContactoTransporte } from '../models/transport.model';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 
-export default class TransportService {
+export class TransportService {
   // Crear un nuevo transporte
   static async create(data: Omit<Transport, 'id'>): Promise<Transport> {
     try {
@@ -109,9 +109,55 @@ export default class TransportService {
       throw error;
     }
   }
+
+  static async getContacts(transportId: string): Promise<ContactoTransporte[]> {
+    const { data, error } = await supabase
+      .from('contacto_transportes')
+      .select('*')
+      .eq('transporte_id', transportId)
+      .eq('estado', true);
+
+    if (error) throw error;
+    return data;
+  }
+
+  static async createContact(transportId: string, contact: Partial<ContactoTransporte>): Promise<ContactoTransporte> {
+    const { data, error } = await supabase
+      .from('contacto_transportes')
+      .insert({
+        ...contact,
+        transporte_id: parseInt(transportId),
+        estado: true
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  static async updateContact(contactId: string, contact: Partial<ContactoTransporte>): Promise<ContactoTransporte> {
+    const { data, error } = await supabase
+      .from('contacto_transportes')
+      .update(contact)
+      .eq('id', parseInt(contactId))
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  static async deleteContact(contactId: string): Promise<void> {
+    const { error } = await supabase
+      .from('contacto_transportes')
+      .update({ estado: false })
+      .eq('id', parseInt(contactId));
+
+    if (error) throw error;
+  }
 }
 
-// React hooks para el dominio de transportes
 export const useTransports = () => {
   return useQuery({
     queryKey: ['transports'],
@@ -195,5 +241,81 @@ export const useDeleteTransport = () => {
         description: `No se pudo eliminar el transporte: ${error.message}`
       });
     }
+  });
+};
+
+export const useTransportContacts = (transportId: string) => {
+  return useQuery({
+    queryKey: ['transportContacts', transportId],
+    queryFn: () => TransportService.getContacts(transportId),
+    enabled: !!transportId,
+  });
+};
+
+export const useCreateTransportContact = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: ({
+      transportId,
+      data,
+    }: {
+      transportId: string;
+      data: Partial<ContactoTransporte>;
+    }) => TransportService.createContact(transportId, data),
+    onSuccess: (_, { transportId }) => {
+      queryClient.invalidateQueries({ queryKey: ['transportContacts', transportId] });
+      toast({
+        title: 'Contacto creado',
+        description: 'El contacto ha sido creado exitosamente',
+      });
+    },
+  });
+};
+
+export const useUpdateTransportContact = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: ({
+      contactId,
+      data,
+      transportId,
+    }: {
+      contactId: string;
+      data: Partial<ContactoTransporte>;
+      transportId: string;
+    }) => TransportService.updateContact(contactId, data),
+    onSuccess: (_, { transportId }) => {
+      queryClient.invalidateQueries({ queryKey: ['transportContacts', transportId] });
+      toast({
+        title: 'Contacto actualizado',
+        description: 'El contacto ha sido actualizado exitosamente',
+      });
+    },
+  });
+};
+
+export const useDeleteTransportContact = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: ({
+      contactId,
+      transportId,
+    }: {
+      contactId: string;
+      transportId: string;
+    }) => TransportService.deleteContact(contactId),
+    onSuccess: (_, { transportId }) => {
+      queryClient.invalidateQueries({ queryKey: ['transportContacts', transportId] });
+      toast({
+        title: 'Contacto eliminado',
+        description: 'El contacto ha sido eliminado exitosamente',
+      });
+    },
   });
 };
