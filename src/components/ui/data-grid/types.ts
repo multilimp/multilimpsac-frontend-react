@@ -50,3 +50,17 @@ export interface FilterConfig {
   value: string;
   onChange: (value: string) => void;
 }
+
+export interface DataGridHeaderProps {
+  filterValue: string;
+  setFilterValue: (value: string) => void;
+  searchPlaceholder: string;
+}
+
+export interface DataGridPaginationProps {
+  currentPage: number;
+  totalPages: number;
+  onPreviousPage: () => void;
+  onNextPage: () => void;
+  onPageChange: (page: number) => void;
+}

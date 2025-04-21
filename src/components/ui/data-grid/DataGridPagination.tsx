@@ -1,119 +1,74 @@
 
-import React from "react";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
-
-interface DataGridPaginationProps {
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-}
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { DataGridPaginationProps } from './types';
 
 export const DataGridPagination: React.FC<DataGridPaginationProps> = ({
   currentPage,
   totalPages,
-  onPageChange,
+  onPreviousPage,
+  onNextPage,
+  onPageChange
 }) => {
-  // If there are less than 2 pages, don't show pagination
-  if (totalPages <= 1) {
-    return null;
-  }
-  
-  // Generate page numbers to display
-  const getPageNumbers = () => {
-    // Always show first and last page
-    // Show 5 pages around current page if possible
-    const pageNumbers: (number | null)[] = [];
-    
-    if (totalPages <= 7) {
-      // If total pages is small, show all pages
-      for (let i = 1; i <= totalPages; i++) {
-        pageNumbers.push(i);
-      }
-    } else {
-      // Always add first page
-      pageNumbers.push(1);
-      
-      // Add ellipsis if needed
-      if (currentPage > 3) {
-        pageNumbers.push(null); // null represents ellipsis
-      }
-      
-      // Add pages around current page
-      const startPage = Math.max(2, currentPage - 1);
-      const endPage = Math.min(totalPages - 1, currentPage + 1);
-      
-      for (let i = startPage; i <= endPage; i++) {
-        pageNumbers.push(i);
-      }
-      
-      // Add ellipsis if needed
-      if (currentPage < totalPages - 2) {
-        pageNumbers.push(null);
-      }
-      
-      // Always add last page
-      pageNumbers.push(totalPages);
-    }
-    
-    return pageNumbers;
-  };
-  
-  const pageNumbers = getPageNumbers();
-  
   return (
-    <Pagination>
-      <PaginationContent>
-        <PaginationItem>
-          <PaginationPrevious 
-            href="#" 
-            onClick={(e) => {
-              e.preventDefault();
-              if (currentPage > 1) onPageChange(currentPage - 1);
-            }}
-            className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
-          />
-        </PaginationItem>
-        
-        {pageNumbers.map((page, index) => 
-          page === null ? (
-            <PaginationItem key={`ellipsis-${index}`}>
-              <PaginationEllipsis />
-            </PaginationItem>
-          ) : (
-            <PaginationItem key={page}>
-              <PaginationLink 
-                href="#" 
-                isActive={page === currentPage}
-                onClick={(e) => {
-                  e.preventDefault();
-                  onPageChange(page);
-                }}
-              >
-                {page}
-              </PaginationLink>
-            </PaginationItem>
-          )
-        )}
-        
-        <PaginationItem>
-          <PaginationNext 
-            href="#" 
-            onClick={(e) => {
-              e.preventDefault();
-              if (currentPage < totalPages) onPageChange(currentPage + 1);
-            }}
-            className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
-          />
-        </PaginationItem>
-      </PaginationContent>
-    </Pagination>
+    <div className="flex items-center justify-between">
+      <div className="text-sm text-muted-foreground">
+        Página {currentPage} de {totalPages}
+      </div>
+      <div className="flex items-center space-x-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onPreviousPage}
+          disabled={currentPage <= 1}
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <div className="flex gap-1">
+          {generatePageNumbers(currentPage, totalPages).map((page, index) => (
+            <React.Fragment key={index}>
+              {page === '...' ? (
+                <span className="px-2 py-1">...</span>
+              ) : (
+                <Button
+                  variant={currentPage === page ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => onPageChange(Number(page))}
+                  className="w-8 h-8 p-0"
+                >
+                  {page}
+                </Button>
+              )}
+            </React.Fragment>
+          ))}
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onNextPage}
+          disabled={currentPage >= totalPages}
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
   );
 };
+
+// Helper function to generate page numbers array
+function generatePageNumbers(current: number, total: number): (number | string)[] {
+  if (total <= 7) {
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
+
+  if (current <= 3) {
+    return [1, 2, 3, 4, '...', total];
+  }
+
+  if (current >= total - 2) {
+    return [1, '...', total - 3, total - 2, total - 1, total];
+  }
+
+  return [1, '...', current - 1, current, current + 1, '...', total];
+}

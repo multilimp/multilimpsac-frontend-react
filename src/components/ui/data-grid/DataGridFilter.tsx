@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Input } from "@/components/ui/input";
-import { ColumnType, DataGridColumn } from "./DataGrid";
+import { ColumnType, DataGridColumn } from "./types";
 
 interface NumberRangeFilterProps {
   value: { min?: number; max?: number } | undefined;

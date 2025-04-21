@@ -1,5 +1,6 @@
 
 // Re-export from domain models for backwards compatibility
+export type { Client } from "@/features/entities/client/models/client.model";
 export type { Cliente } from "@/features/entities/client/models/client.model";
 export type { Company } from "@/features/entities/company/models/company.model";
 export type { Supplier } from "@/features/supplier/models/supplier.model";

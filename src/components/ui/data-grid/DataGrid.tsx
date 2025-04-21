@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import {
   Table,
   TableBody,
@@ -11,30 +11,12 @@ import {
 import { DataGridHeader } from './DataGridHeader';
 import { DataGridFilter } from './DataGridFilter';
 import { DataGridPagination } from './DataGridPagination';
-import { useDataGridState } from './hooks/useDataGridState';
 import { useDataGridFilters } from './hooks/useDataGridFilters';
 import { usePagination } from './hooks/usePagination';
 import { Skeleton } from '@/components/ui/skeleton';
-import { DataGridColumn } from './types';
-import { Input } from '../input';
+import { DataGridColumn, DataGridProps } from './types';
 import { Card } from '../card';
 import TableEmptyState from '@/components/common/TableEmptyState';
-
-interface DataGridProps<T extends object = any> {
-  columns: DataGridColumn[];
-  data: T[];
-  loading?: boolean;
-  pageSize?: number;
-  searchPlaceholder?: string;
-  searchKeys?: string[];
-  emptyState?: {
-    title?: string;
-    description?: string;
-  };
-  onRowClick?: (row: T) => void;
-  className?: string;
-  variant?: 'default' | 'compact';
-}
 
 export function DataGrid<T extends object>({
   columns,
@@ -47,14 +29,15 @@ export function DataGrid<T extends object>({
   onRowClick,
   className,
   variant = 'default',
+  onReload,
 }: DataGridProps<T>) {
   const [tableColumns, setTableColumns] = useState<DataGridColumn[]>(columns);
   
+  // Use the updated hook
   const {
     filteredData,
     filterValue,
     setFilterValue,
-    handleFilterChange,
   } = useDataGridFilters(data, searchKeys);
   
   const {
