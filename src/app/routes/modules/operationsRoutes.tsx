@@ -1,11 +1,14 @@
+
 import { lazy } from "react";
 import { FileSearch, ShoppingCart, Package, ClipboardList } from "lucide-react";
 import { RouteDefinition } from "../types";
 
-const QuotationsPage = lazy(() => import("@/pages/QuotationsPage"));
-const SalesPage = lazy(() => import("@/pages/SalesPage"));
-const PurchaseOrdersPage = lazy(() => import("@/pages/PurchaseOrdersPage"));
-const SupplierOrdersPage = lazy(() => import("@/pages/SupplierOrdersPage"));
+// Update imports to use the correct feature-based paths
+const QuotationsPage = lazy(() => import("@/features/quotation/pages/QuotationsPage"));
+const SalesPage = lazy(() => import("@/features/sales/pages/SalesPage"));
+const PurchaseOrdersPage = lazy(() => import("@/features/purchaseOrder/pages/PurchaseOrdersPage"));
+const SupplierOrdersPage = lazy(() => import("@/features/supplier-orders/pages/SupplierOrdersPage"));
+const TrackingPage = lazy(() => import("@/pages/ModulePage"));
 
 export const operationsRoutes: RouteDefinition[] = [
   {
@@ -42,7 +45,7 @@ export const operationsRoutes: RouteDefinition[] = [
   },
   {
     path: "/seguimiento",
-    component: lazy(() => import("@/pages/ModulePage")),
+    component: TrackingPage,
     title: "Seguimiento de Órdenes",
     icon: <ClipboardList className="h-5 w-5" />,
     requireAuth: true,

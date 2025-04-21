@@ -1,160 +1,173 @@
-import React, { useState, useEffect, useMemo, ChangeEvent } from "react";
-import { Table } from "@/components/ui/table";
-import { DataGridPagination } from "./DataGridPagination";
-import { DataGridTableHead } from "./DataGridTableHead";
-import { DataGridHeader } from "./DataGridHeader";
-import { DataGridBody } from "./DataGridBody";
-import { useDataGridState } from "./hooks/useDataGridState";
-import { useDataGridFilters } from "./hooks/useDataGridFilters";
-import { usePagination } from "./hooks/usePagination";
-import { ColumnType, DataGridColumn, DataGridProps } from "./types";
 
-export type { ColumnType, DataGridColumn, DataGridProps };
+import React, { useState, useCallback, useEffect } from 'react';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { DataGridHeader } from './DataGridHeader';
+import { DataGridFilter } from './DataGridFilter';
+import { DataGridPagination } from './DataGridPagination';
+import { useDataGridState } from './hooks/useDataGridState';
+import { useDataGridFilters } from './hooks/useDataGridFilters';
+import { usePagination } from './hooks/usePagination';
+import { Skeleton } from '@/components/ui/skeleton';
+import { DataGridColumn } from './types';
+import { Input } from '../input';
+import { Card } from '../card';
+import TableEmptyState from '@/components/common/TableEmptyState';
 
-export function DataGrid<T extends { id: string | number }>({
-  data,
+interface DataGridProps<T extends object = any> {
+  columns: DataGridColumn[];
+  data: T[];
+  loading?: boolean;
+  pageSize?: number;
+  searchPlaceholder?: string;
+  searchKeys?: string[];
+  emptyState?: {
+    title?: string;
+    description?: string;
+  };
+  onRowClick?: (row: T) => void;
+  className?: string;
+  variant?: 'default' | 'compact';
+}
+
+export function DataGrid<T extends object>({
   columns,
+  data,
   loading = false,
   pageSize = 10,
-  onFilterChange,
-  onColumnToggle,
+  searchPlaceholder = 'Buscar...',
+  searchKeys,
+  emptyState,
   onRowClick,
-  onEdit,
-  onDelete,
-  onDownload,
-  onReload,
+  className,
+  variant = 'default',
 }: DataGridProps<T>) {
-  // Use our extracted hooks for state management
-  const {
-    visibleColumns,
-    visibleColumnsKeys,
-    sortConfig,
-    searchTerm,
-    showFilters,
-    handleColumnToggle,
-    handleSort,
-    handleSearch,
-    handleToggleFilters,
-    setVisibleColumns
-  } = useDataGridState(columns);
+  const [tableColumns, setTableColumns] = useState<DataGridColumn[]>(columns);
   
-  // Filters hook
   const {
-    filters,
     filteredData,
-    handleFilterChange
-  } = useDataGridFilters<T>(data, columns, visibleColumns.map(col => col.key), searchTerm, sortConfig);
+    filterValue,
+    setFilterValue,
+    handleFilterChange,
+  } = useDataGridFilters(data, searchKeys);
   
-  // Pagination hook
   const {
-    currentPage,
     paginatedData,
+    currentPage,
     totalPages,
-    setCurrentPage
-  } = usePagination<T>(filteredData, pageSize);
-  
-  // Custom handlers that call the props
-  const handleExternalFilterChange = (filters: Record<string, any>) => {
-    if (onFilterChange) {
-      onFilterChange(filters);
-    }
-  };
-  
-  const handleExternalColumnToggle = (columns: DataGridColumn[]) => {
-    if (onColumnToggle) {
-      onColumnToggle(columns);
-    }
-  };
-  
-  // Handle download
-  const handleDownload = () => {
-    if (onDownload) {
-      onDownload();
-      return;
+    goToPage,
+    goToPreviousPage,
+    goToNextPage,
+  } = usePagination(filteredData, pageSize);
+
+  // Reset to first page when data changes
+  useEffect(() => {
+    goToPage(1);
+  }, [data, goToPage]);
+
+  const handleRowClick = useCallback((row: T) => {
+    if (onRowClick) onRowClick(row);
+  }, [onRowClick]);
+
+  const renderCellValue = useCallback((row: T, column: DataGridColumn) => {
+    if (column.render) {
+      return column.render(row);
     }
     
-    // Default download implementation is now in utils.ts
-    import("./utils").then(({ generateCSV, downloadCSV }) => {
-      // Generate CSV with the actual DataGridColumn objects
-      const csvContent = generateCSV(filteredData, visibleColumns, columns);
-      downloadCSV(csvContent);
-    });
-  };
-  
-  // Handle reload
-  const handleReload = () => {
-    if (onReload) {
-      onReload();
+    if (column.getValue) {
+      return column.getValue(row);
     }
-    setCurrentPage(1);
-  };
-  
-  // Call external callbacks when internal state changes
-  useEffect(() => {
-    handleExternalFilterChange(filters);
-  }, [filters]);
-  
-  useEffect(() => {
-    handleExternalColumnToggle(visibleColumns);
-  }, [visibleColumns]);
+    
+    const keys = column.key.split('.');
+    let value: any = row;
+    
+    for (const key of keys) {
+      if (value === null || value === undefined) break;
+      value = value[key as keyof typeof value];
+    }
+    
+    return value;
+  }, []);
 
-  // Adapters for type compatibility
-  const handleSearchAdapter = (e: ChangeEvent<HTMLInputElement>) => {
-    handleSearch(e.target.value);
-  };
-
-  const handleColumnToggleAdapter = (column: string) => {
-    handleColumnToggle(column, true);
-  };
+  if (loading) {
+    return (
+      <Card className="border shadow-sm">
+        <div className="p-4">
+          <Skeleton className="h-8 w-3/12 mb-4" />
+          <div className="space-y-2">
+            {Array(5).fill(0).map((_, index) => (
+              <Skeleton key={index} className="h-12 w-full" />
+            ))}
+          </div>
+        </div>
+      </Card>
+    );
+  }
 
   return (
-    <div className="space-y-4">
+    <div className={`space-y-4 ${className}`}>
       <DataGridHeader
-        columns={columns}
-        visibleColumns={visibleColumns}
-        loading={loading}
-        searchTerm={searchTerm}
-        onSearchChange={handleSearchAdapter}
-        onColumnToggle={handleColumnToggleAdapter}
-        onDownload={handleDownload}
-        onReload={handleReload}
-        showFilters={showFilters}
-        onToggleFilters={handleToggleFilters}
+        filterValue={filterValue}
+        setFilterValue={setFilterValue}
+        searchPlaceholder={searchPlaceholder}
       />
       
       <div className="rounded-md border">
-        <Table>
-          <DataGridTableHead
-            columns={columns}
-            visibleColumns={visibleColumns}
-            filters={filters}
-            sortConfig={sortConfig}
-            onSort={handleSort}
-            onFilterChange={handleFilterChange}
-            showFilters={showFilters}
-          />
-          <DataGridBody
-            data={paginatedData}
-            columns={columns}
-            visibleColumns={visibleColumns}
-            loading={loading}
-            pageSize={pageSize}
-            onRowClick={onRowClick}
-            onEdit={onEdit}
-            onDelete={onDelete}
-          />
+        <Table className={variant === 'compact' ? 'text-sm' : ''}>
+          <TableHeader>
+            <TableRow>
+              {tableColumns.map((column) => (
+                <TableHead key={column.key} className={column.className}>
+                  {column.name}
+                </TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
+          
+          <TableBody>
+            {paginatedData.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={tableColumns.length} className="h-32 text-center">
+                  <TableEmptyState
+                    title={emptyState?.title || "No hay datos"}
+                    description={emptyState?.description || "No se encontraron registros."}
+                  />
+                </TableCell>
+              </TableRow>
+            ) : (
+              paginatedData.map((row, rowIndex) => (
+                <TableRow
+                  key={rowIndex}
+                  onClick={() => handleRowClick(row)}
+                  className={onRowClick ? 'cursor-pointer hover:bg-muted/50' : ''}
+                >
+                  {tableColumns.map((column) => (
+                    <TableCell key={`${rowIndex}-${column.key}`} className={column.className}>
+                      {renderCellValue(row, column)}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            )}
+          </TableBody>
         </Table>
       </div>
       
-      <div className="flex items-center justify-end">
-        <DataGridPagination 
+      {totalPages > 1 && (
+        <DataGridPagination
           currentPage={currentPage}
           totalPages={totalPages}
-          onPageChange={setCurrentPage}
+          onPreviousPage={goToPreviousPage}
+          onNextPage={goToNextPage}
+          onPageChange={goToPage}
         />
-      </div>
+      )}
     </div>
   );
 }
-
-export default DataGrid;
