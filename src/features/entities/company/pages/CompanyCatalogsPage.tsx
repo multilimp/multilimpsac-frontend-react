@@ -61,7 +61,7 @@ const CompanyCatalogsPage: React.FC = () => {
       } else {
         return companyService.createCompanyCatalog({
           ...data,
-          empresa_id: Number(companyId),
+          empresaId: companyId,
         });
       }
     },
@@ -141,7 +141,7 @@ const CompanyCatalogsPage: React.FC = () => {
       isCurrentPage: false
     },
     {
-      label: company?.name || "Empresa",
+      label: company?.razonSocial || company?.name || "Empresa",
       path: `/empresas/${companyId}`,
       isCurrentPage: false
     },
@@ -172,7 +172,7 @@ const CompanyCatalogsPage: React.FC = () => {
       
       <div className="flex justify-between items-center">
         <PageHeader
-          title={`Catálogos de ${company?.name || 'la Empresa'}`}
+          title={`Catálogos de ${company?.razonSocial || company?.name || 'la Empresa'}`}
           subtitle="Gestione los catálogos asociados a esta empresa"
         />
         <Button onClick={handleAddCatalog}>

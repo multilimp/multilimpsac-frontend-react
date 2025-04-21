@@ -1,7 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Client, ClientContact, normalizeClientContact } from "@/features/entities/client/models/client.model";
-import { clientService } from "./client.service";
+import clientService from "./client.service";
 
 /**
  * Cliente Service

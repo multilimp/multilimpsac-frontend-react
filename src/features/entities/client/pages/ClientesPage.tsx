@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -29,12 +28,12 @@ export const ClientesPage: React.FC = () => {
   const { mutate: deleteCliente, isPending: isDeleting } = useDeleteCliente();
 
   // Filtrar clientes basado en término de búsqueda
-  const filteredClientes = clientes.filter(
+  const filteredClientes = Array.isArray(clientes) ? clientes.filter(
     (cliente) =>
       cliente.razonSocial.toLowerCase().includes(searchTerm.toLowerCase()) ||
       cliente.ruc.toLowerCase().includes(searchTerm.toLowerCase()) ||
       cliente.codUnidad.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  ) : [];
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);

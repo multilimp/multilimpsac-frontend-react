@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -29,8 +28,8 @@ const CompanyDetailsPage: React.FC = () => {
       // Ensure required fields are present for new companies
       const companyData = isNewCompany ? {
         ...data,
-        address: data.address || 'Default Address', // Ensure address is provided
-        status: data.status || 'active',
+        direccion: data.direccion || data.address || 'Default Address', // Ensure address is provided
+        estado: data.estado !== undefined ? data.estado : (data.status === 'active'),
       } : data;
       
       if (isNewCompany) {
@@ -73,7 +72,7 @@ const CompanyDetailsPage: React.FC = () => {
       isCurrentPage: false
     },
     {
-      label: isNewCompany ? "Nueva Empresa" : company?.name || "Detalles",
+      label: isNewCompany ? "Nueva Empresa" : company?.razonSocial || company?.name || "Detalles",
       path: isNewCompany ? "/empresas/new" : `/empresas/${id}`,
       isCurrentPage: true
     }
@@ -81,19 +80,22 @@ const CompanyDetailsPage: React.FC = () => {
 
   // Definir datos iniciales vacíos para el caso de nueva empresa
   const emptyCompany: Partial<Company> = {
-    name: "",
+    razonSocial: "",
     ruc: "",
-    address: "",
-    phone: "",
-    email: "",
-    status: "active",
+    direccion: "",
+    telefono: "",
+    correo: "",
+    estado: true,
     web: "",
-    direcciones: "",
-    cod_unidad: "",
+    codUnidad: "",
     departamento: "",
     provincia: "",
     distrito: "",
-    contact: ""
+    name: "",
+    address: "",
+    phone: "",
+    email: "",
+    status: "active"
   };
 
   return (
@@ -121,7 +123,7 @@ const CompanyDetailsPage: React.FC = () => {
       </div>
       
       <PageHeader
-        title={isNewCompany ? "Nueva Empresa" : `Empresa: ${company?.name || ''}`}
+        title={isNewCompany ? "Nueva Empresa" : `Empresa: ${company?.razonSocial || company?.name || ''}`}
         subtitle={isNewCompany ? "Complete los datos para registrar una nueva empresa" : "Gestione los datos de la empresa"}
       />
 

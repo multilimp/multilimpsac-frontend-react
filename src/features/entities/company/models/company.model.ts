@@ -16,6 +16,13 @@ export interface Company {
   estado: boolean;
   createdAt: string;
   updatedAt?: string;
+  
+  // Aliases for code compatibility with existing components
+  name?: string;
+  address?: string; 
+  phone?: string;
+  email?: string;
+  status?: 'active' | 'inactive';
 }
 
 // Alias for Spanish naming conventions
@@ -83,24 +90,31 @@ export const mapCompanyFromDB = (db: CompanyDB): Company => ({
   logo: db.logo,
   estado: db.estado,
   createdAt: db.created_at,
-  updatedAt: db.updated_at
+  updatedAt: db.updated_at,
+  
+  // Add aliases for compatibility
+  name: db.razon_social,
+  address: db.direccion,
+  phone: db.telefono,
+  email: db.correo,
+  status: db.estado ? 'active' : 'inactive'
 });
 
 export const mapEmpresaFromDB = mapCompanyFromDB;
 
 export const mapCompanyToDB = (company: Partial<Company>): Partial<CompanyDB> => ({
-  razon_social: company.razonSocial,
+  razon_social: company.razonSocial || company.name,
   ruc: company.ruc,
   cod_unidad: company.codUnidad,
-  direccion: company.direccion,
+  direccion: company.direccion || company.address,
   departamento: company.departamento,
   provincia: company.provincia,
   distrito: company.distrito,
-  telefono: company.telefono,
-  correo: company.correo,
+  telefono: company.telefono || company.phone,
+  correo: company.correo || company.email,
   web: company.web,
   logo: company.logo,
-  estado: company.estado
+  estado: company.estado !== undefined ? company.estado : (company.status === 'active')
 });
 
 export const mapEmpresaToDB = mapCompanyToDB;
@@ -121,3 +135,7 @@ export const mapCatalogToDB = (catalog: Partial<CompanyCatalog>): Partial<Compan
 });
 
 export const mapCatalogoToDB = mapCatalogToDB;
+
+// Add the catalog mapping functions
+export const mapCompanyCatalogFromDB = mapCatalogFromDB;
+export const mapCompanyCatalogToDB = mapCatalogToDB;

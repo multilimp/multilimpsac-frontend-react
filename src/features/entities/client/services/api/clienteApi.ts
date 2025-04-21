@@ -1,22 +1,8 @@
-
 import { supabase } from '@/integrations/supabase/client';
-import { 
-  Client, 
-  ClientDB, 
-  ClientContact,
-  ContactoClienteDB,
-  mapClientFromDB,
-  mapClientToDB, 
-  mapContactFromDB,
-  mapContactToDB 
-} from '../../models/client.model';
+import { Client, ClientContact, ClientDB, ContactoClienteDB, mapClientFromDB, mapClientToDB, mapContactFromDB, mapContactToDB } from '../../models/client.model';
 import { stringToNumberId } from '@/core/utils/id-conversions';
 
-/**
- * Cliente API
- * Métodos de la API para la gestión de clientes
- */
-export const clienteApi = {
+class ClienteApi {
   /**
    * Obtiene todos los clientes
    */
@@ -51,14 +37,14 @@ export const clienteApi = {
   async createCliente(cliente: Partial<Client>): Promise<Client> {
     const dbCliente = mapClientToDB(cliente);
     
-    // Ensure required fields are present
+    // Ensure the required fields are present
     if (!dbCliente.razon_social || !dbCliente.ruc || !dbCliente.cod_unidad) {
       throw new Error('Required fields missing: razon_social, ruc, and cod_unidad are required');
     }
     
     const { data, error } = await supabase
       .from('clientes')
-      .insert(dbCliente)
+      .insert([dbCliente]) // Wrap in array to fix Supabase typing
       .select()
       .single();
       
@@ -120,7 +106,7 @@ export const clienteApi = {
     
     const { data, error } = await supabase
       .from('contacto_clientes')
-      .insert(dbContacto)
+      .insert([dbContacto]) // Wrap in array to fix Supabase typing
       .select()
       .single();
       
@@ -158,4 +144,6 @@ export const clienteApi = {
       
     if (error) throw error;
   }
-};
+}
+
+export const clienteApi = new ClienteApi();

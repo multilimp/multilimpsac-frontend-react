@@ -23,12 +23,24 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Company } from "../models/company.model";
 
-// Esquema de validación con Zod
+// Esquema de validación para compañías
 const companySchema = z.object({
-  name: z.string().min(3, { message: "El nombre debe tener al menos 3 caracteres" }),
+  razonSocial: z.string().min(3, { message: "La razón social debe tener al menos 3 caracteres" })
+    .or(z.literal('').transform(() => undefined)),
+  name: z.string().min(3, { message: "El nombre debe tener al menos 3 caracteres" })
+    .or(z.literal('').transform(() => undefined))
+    .optional(),
   ruc: z.string().length(11, { message: "El RUC debe tener 11 dígitos" }).regex(/^\d+$/, { message: "El RUC debe contener solo números" }),
-  address: z.string().min(5, { message: "La dirección es requerida" }),
-  phone: z.string().min(5, { message: "El teléfono es requerido" }),
+  direccion: z.string().min(5, { message: "La dirección es requerida" })
+    .or(z.literal('').transform(() => undefined)),
+  address: z.string().min(5, { message: "La dirección es requerida" })
+    .or(z.literal('').transform(() => undefined))
+    .optional(),
+  telefono: z.string().min(5, { message: "El teléfono es requerido" })
+    .or(z.literal('').transform(() => undefined)),
+  phone: z.string().min(5, { message: "El teléfono es requerido" })
+    .or(z.literal('').transform(() => undefined))
+    .optional(),
   email: z.string().optional(), // Eliminada la validación de formato de email
   status: z.enum(["active", "inactive"]),
   web: z.string().optional(),
@@ -37,7 +49,14 @@ const companySchema = z.object({
   departamento: z.string().optional(),
   provincia: z.string().optional(),
   distrito: z.string().optional(),
-});
+}).transform((data) => ({
+  ...data,
+  razonSocial: data.razonSocial || data.name,
+  direccion: data.direccion || data.address,
+  telefono: data.telefono || data.phone,
+  correo: data.correo || data.email,
+  estado: data.estado !== undefined ? data.estado : (data.status === 'active')
+}));
 
 type CompanyFormData = z.infer<typeof companySchema>;
 
@@ -57,18 +76,23 @@ export const CompanyForm: React.FC<CompanyFormProps> = ({
   const form = useForm<CompanyFormData>({
     resolver: zodResolver(companySchema),
     defaultValues: {
-      name: initialData.name || "",
+      name: initialData.name || initialData.razonSocial || "",
+      razonSocial: initialData.razonSocial || initialData.name || "",
       ruc: initialData.ruc || "",
-      address: initialData.address || "",
-      phone: initialData.phone || "",
-      email: initialData.email || "",
+      address: initialData.address || initialData.direccion || "",
+      direccion: initialData.direccion || initialData.address || "",
+      phone: initialData.phone || initialData.telefono || "",
+      telefono: initialData.telefono || initialData.phone || "",
+      email: initialData.email || initialData.correo || "",
+      correo: initialData.correo || initialData.email || "",
       web: initialData.web || "",
-      direcciones: initialData.direcciones || "",
-      cod_unidad: initialData.cod_unidad || "",
+      direccion: initialData.direccion || "",
+      codUnidad: initialData.codUnidad || "",
       departamento: initialData.departamento || "",
       provincia: initialData.provincia || "",
       distrito: initialData.distrito || "",
       status: initialData.status || "active",
+      estado: initialData.estado !== undefined ? initialData.estado : true,
     },
   });
 

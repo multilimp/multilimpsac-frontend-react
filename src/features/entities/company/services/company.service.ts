@@ -1,16 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
-import { 
-  Company, 
-  CompanyDB, 
-  mapCompanyFromDB, 
-  mapCompanyToDB,
-  CompanyCatalog,
-  CompanyCatalogDB,
-  mapCompanyCatalogFromDB,
-  mapCompanyCatalogToDB
-} from "../../entities/company/models/company.model";
-import { supabase } from "@/integrations/supabase/client";
-import { stringIdToNumber } from "@/utils/id-conversions";
+import { supabase } from '@/integrations/supabase/client';
+import { Company, CompanyCatalog, CompanyDB, CompanyCatalogDB, mapCompanyFromDB, mapCompanyToDB, mapCatalogFromDB, mapCatalogToDB } from '../models/company.model';
+import { stringToNumberId } from '@/utils/id-conversions';
 
 /**
  * Servicio para gestionar operaciones relacionadas con empresas
@@ -40,7 +30,7 @@ export const companyService = {
     const { data, error } = await supabase
       .from("empresas")
       .select("*")
-      .eq("id", stringIdToNumber(id))
+      .eq("id", stringToNumberId(id))
       .single();
 
     if (error) {
@@ -80,7 +70,7 @@ export const companyService = {
     const { data, error } = await supabase
       .from("empresas")
       .update(companyDB)
-      .eq("id", stringIdToNumber(id))
+      .eq("id", stringToNumberId(id))
       .select()
       .single();
 
@@ -99,7 +89,7 @@ export const companyService = {
     const { error } = await supabase
       .from("empresas")
       .delete()
-      .eq("id", stringIdToNumber(id));
+      .eq("id", stringToNumberId(id));
 
     if (error) {
       console.error(`Error al eliminar la empresa con ID ${id}:`, error);
@@ -114,7 +104,7 @@ export const companyService = {
     const { data, error } = await supabase
       .from("catalogo_empresas")
       .select("*")
-      .eq("empresa_id", stringIdToNumber(companyId))
+      .eq("empresa_id", stringToNumberId(companyId))
       .order("id", { ascending: true });
 
     if (error) {
@@ -122,14 +112,14 @@ export const companyService = {
       throw new Error(`No se pudieron obtener los catálogos: ${error.message}`);
     }
 
-    return (data as CompanyCatalogDB[]).map(mapCompanyCatalogFromDB);
+    return (data as CompanyCatalogDB[]).map(mapCatalogFromDB);
   },
 
   /**
    * Crea un nuevo catálogo para una empresa
    */
   createCompanyCatalog: async (catalogData: Partial<CompanyCatalog> & { empresa_id: number }): Promise<CompanyCatalog> => {
-    const catalogDB = mapCompanyCatalogToDB(catalogData);
+    const catalogDB = mapCatalogToDB(catalogData);
     
     const { data, error } = await supabase
       .from("catalogo_empresas")
@@ -142,19 +132,19 @@ export const companyService = {
       throw new Error(`No se pudo crear el catálogo: ${error.message}`);
     }
 
-    return mapCompanyCatalogFromDB(data as CompanyCatalogDB);
+    return mapCatalogFromDB(data as CompanyCatalogDB);
   },
 
   /**
    * Actualiza un catálogo existente
    */
   updateCompanyCatalog: async (id: string, catalogData: Partial<CompanyCatalog>): Promise<CompanyCatalog> => {
-    const catalogDB = mapCompanyCatalogToDB(catalogData);
+    const catalogDB = mapCatalogToDB(catalogData);
     
     const { data, error } = await supabase
       .from("catalogo_empresas")
       .update(catalogDB)
-      .eq("id", stringIdToNumber(id))
+      .eq("id", stringToNumberId(id))
       .select()
       .single();
 
@@ -163,7 +153,7 @@ export const companyService = {
       throw new Error(`No se pudo actualizar el catálogo: ${error.message}`);
     }
 
-    return mapCompanyCatalogFromDB(data as CompanyCatalogDB);
+    return mapCatalogFromDB(data as CompanyCatalogDB);
   },
 
   /**
@@ -173,7 +163,7 @@ export const companyService = {
     const { error } = await supabase
       .from("catalogo_empresas")
       .delete()
-      .eq("id", stringIdToNumber(id));
+      .eq("id", stringToNumberId(id));
 
     if (error) {
       console.error(`Error al eliminar el catálogo con ID ${id}:`, error);
