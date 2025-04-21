@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Client, ClientContact, ClientDB, ContactoClienteDB, mapClientFromDB, mapClientToDB, mapContactFromDB, mapContactToDB } from '../models/client.model';
+import { Client, ClientContact, ClientDB, ContactoClienteDB, mapClientFromDB, mapClientToDB, mapContactFromDB, mapContactToDB } from '../models/client.model.ts';
+import { stringToNumberId } from '@/core/utils/id-conversions';
 
 class ClientService {
   async fetchClients(): Promise<Client[]> {
@@ -14,10 +15,11 @@ class ClientService {
   }
 
   async fetchClientById(id: string): Promise<Client> {
+    const numericId = stringToNumberId(id);
     const { data, error } = await supabase
       .from('clientes')
       .select('*')
-      .eq('id', id)
+      .eq('id', numericId)
       .single();
       
     if (error) throw error;
@@ -25,9 +27,10 @@ class ClientService {
   }
 
   async createClient(client: Partial<Client>): Promise<Client> {
+    const dbClient = mapClientToDB(client);
     const { data, error } = await supabase
       .from('clientes')
-      .insert([mapClientToDB(client)])
+      .insert([dbClient])
       .select()
       .single();
       
@@ -36,10 +39,11 @@ class ClientService {
   }
 
   async updateClient(id: string, client: Partial<Client>): Promise<Client> {
+    const numericId = stringToNumberId(id);
     const { data, error } = await supabase
       .from('clientes')
       .update(mapClientToDB(client))
-      .eq('id', id)
+      .eq('id', numericId)
       .select()
       .single();
       
@@ -48,20 +52,22 @@ class ClientService {
   }
 
   async deleteClient(id: string): Promise<void> {
+    const numericId = stringToNumberId(id);
     const { error } = await supabase
       .from('clientes')
       .delete()
-      .eq('id', id);
+      .eq('id', numericId);
       
     if (error) throw error;
   }
 
   // Contact methods
   async fetchClientContacts(clientId: string): Promise<ClientContact[]> {
+    const numericClientId = stringToNumberId(clientId);
     const { data, error } = await supabase
       .from('contacto_clientes')
       .select('*')
-      .eq('cliente_id', clientId)
+      .eq('cliente_id', numericClientId)
       .order('nombre');
       
     if (error) throw error;
@@ -69,9 +75,10 @@ class ClientService {
   }
 
   async createContact(contact: Partial<ClientContact>): Promise<ClientContact> {
+    const dbContact = mapContactToDB(contact);
     const { data, error } = await supabase
       .from('contacto_clientes')
-      .insert([mapContactToDB(contact)])
+      .insert([dbContact])
       .select()
       .single();
       
@@ -80,10 +87,11 @@ class ClientService {
   }
 
   async updateContact(id: string, contact: Partial<ClientContact>): Promise<ClientContact> {
+    const numericId = stringToNumberId(id);
     const { data, error } = await supabase
       .from('contacto_clientes')
       .update(mapContactToDB(contact))
-      .eq('id', id)
+      .eq('id', numericId)
       .select()
       .single();
       
@@ -92,14 +100,14 @@ class ClientService {
   }
 
   async deleteContact(id: string): Promise<void> {
+    const numericId = stringToNumberId(id);
     const { error } = await supabase
       .from('contacto_clientes')
       .delete()
-      .eq('id', id);
+      .eq('id', numericId);
       
     if (error) throw error;
   }
 }
 
 export const clientService = new ClientService();
-

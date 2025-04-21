@@ -8,14 +8,14 @@ class ClientService {
     return [
       {
         id: "1",
-        name: "ACME Corporation",
+        razonSocial: "ACME Corporation",
         ruc: "12345678901",
-        address: "123 Main St",
-        phone: "123-456-7890",
-        email: "contact@acme.com",
-        contactName: "John Doe",
-        contactPhone: "123-456-7890",
-        contactEmail: "john@acme.com",
+        codUnidad: "ACME-001",
+        direccion: "123 Main St",
+        departamento: "Lima",
+        provincia: "Lima",
+        distrito: "Miraflores",
+        estado: true,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       }
@@ -26,14 +26,14 @@ class ClientService {
     // Mock implementation
     return {
       id,
-      name: "ACME Corporation",
+      razonSocial: "ACME Corporation",
       ruc: "12345678901",
-      address: "123 Main St",
-      phone: "123-456-7890",
-      email: "contact@acme.com",
-      contactName: "John Doe",
-      contactPhone: "123-456-7890",
-      contactEmail: "john@acme.com",
+      codUnidad: "ACME-001",
+      direccion: "123 Main St",
+      departamento: "Lima",
+      provincia: "Lima",
+      distrito: "Miraflores",
+      estado: true,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -44,6 +44,7 @@ class ClientService {
     return {
       ...client,
       id: "new-id",
+      estado: true,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     } as Client;

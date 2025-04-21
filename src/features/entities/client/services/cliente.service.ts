@@ -1,7 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { clienteApi } from "../../entities/client/services/api/clienteApi";
-import { Cliente, ContactoCliente } from "../../entities/client/models/client.model";
+import { clienteApi } from "../services/api/clienteApi";
+import { Cliente, ContactoCliente } from "../models/client.model";
 
 /**
  * Cliente Service

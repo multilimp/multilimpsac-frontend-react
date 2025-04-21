@@ -14,6 +14,9 @@ export interface Client {
   updatedAt?: string;
 }
 
+// Alias for Client to support Spanish naming in the codebase
+export type Cliente = Client;
+
 export interface ClientContact {
   id: string;
   clientId: string;
@@ -23,6 +26,9 @@ export interface ClientContact {
   cargo?: string;
   estado: boolean;
 }
+
+// Alias for ClientContact to support Spanish naming in the codebase
+export type ContactoCliente = ClientContact;
 
 export type ClientFormInput = Omit<Client, 'id' | 'createdAt' | 'updatedAt'>;
 
@@ -40,6 +46,9 @@ export interface ClientDB {
   created_at: string;
   updated_at?: string;
 }
+
+// Alias for ClientDB to support Spanish naming in the codebase
+export type ClienteDB = ClientDB;
 
 export interface ContactoClienteDB {
   id: number;
@@ -68,6 +77,9 @@ export const mapClientFromDB = (db: ClientDB): Client => ({
   updatedAt: db.updated_at
 });
 
+// Alias for mapClientFromDB
+export const mapClienteFromDB = mapClientFromDB;
+
 export const mapClientToDB = (client: Partial<Client>): Partial<ClientDB> => ({
   razon_social: client.razonSocial,
   ruc: client.ruc,
@@ -79,6 +91,9 @@ export const mapClientToDB = (client: Partial<Client>): Partial<ClientDB> => ({
   estado: client.estado
 });
 
+// Alias for mapClientToDB
+export const mapClienteToDB = mapClientToDB;
+
 export const mapContactFromDB = (db: ContactoClienteDB): ClientContact => ({
   id: db.id.toString(),
   clientId: db.cliente_id.toString(),
@@ -89,6 +104,9 @@ export const mapContactFromDB = (db: ContactoClienteDB): ClientContact => ({
   estado: db.estado
 });
 
+// Alias for mapContactFromDB
+export const mapContactoClienteFromDB = mapContactFromDB;
+
 export const mapContactToDB = (contact: Partial<ClientContact>): Partial<ContactoClienteDB> => ({
   cliente_id: contact.clientId ? parseInt(contact.clientId) : undefined,
   nombre: contact.nombre,
@@ -98,3 +116,5 @@ export const mapContactToDB = (contact: Partial<ClientContact>): Partial<Contact
   estado: contact.estado
 });
 
+// Alias for mapContactToDB
+export const mapContactoClienteToDB = mapContactToDB;
