@@ -1,120 +1,124 @@
+
 import { useState } from 'react';
-import { TransportContact } from '../../../transport/models/transport.model';
-import { useToast } from '@/hooks/use-toast';
+import { TransportContact } from '../models/transport.model';
 import { 
   useTransportContacts, 
   useCreateTransportContact, 
   useUpdateTransportContact, 
   useDeleteTransportContact 
-} from '../services/transport.service';
+} from '../services/transport-contact.service';
+import { useToast } from '@/hooks/use-toast';
 
-export const useTransportContactos = (transportId: string | undefined) => {
+export const useTransportContactos = (transporteId: string) => {
   const { toast } = useToast();
-  const [isContactoDialogOpen, setIsContactoDialogOpen] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedContacto, setSelectedContacto] = useState<TransportContact | null>(null);
   
-  const {
+  const { 
     data: contactos = [],
-    isLoading: isLoadingContactos,
-    refetch: refetchContactos
-  } = useTransportContacts(transportId);
+    isLoading,
+    refetch
+  } = useTransportContacts(transporteId);
   
-  const { mutateAsync: createContacto, isPending: isCreatingContacto } = useCreateTransportContact();
-  const { mutateAsync: updateContacto, isPending: isUpdatingContacto } = useUpdateTransportContact();
-  const { mutateAsync: deleteContacto, isPending: isDeletingContacto } = useDeleteTransportContact(transportId);
+  const createMutation = useCreateTransportContact();
+  const updateMutation = useUpdateTransportContact();
+  const deleteMutation = useDeleteTransportContact();
   
-  const handleOpenAddContactoDialog = () => {
+  const handleAddClick = () => {
     setSelectedContacto(null);
-    setIsContactoDialogOpen(true);
+    setIsDialogOpen(true);
   };
   
-  const handleOpenEditContactoDialog = (contacto: TransportContact) => {
+  const handleEditClick = (contacto: TransportContact) => {
     setSelectedContacto(contacto);
-    setIsContactoDialogOpen(true);
+    setIsDialogOpen(true);
   };
   
-  const handleOpenDeleteContactoDialog = (contacto: TransportContact) => {
+  const handleDeleteClick = (contacto: TransportContact) => {
     setSelectedContacto(contacto);
     setIsDeleteDialogOpen(true);
   };
   
-  const handleContactoSubmit = async (data: Partial<TransportContact>) => {
+  const handleCloseDialog = () => {
+    setIsDialogOpen(false);
+  };
+  
+  const handleCloseDeleteDialog = () => {
+    setIsDeleteDialogOpen(false);
+  };
+  
+  const handleSubmit = async (data: Partial<TransportContact>) => {
     try {
       if (selectedContacto) {
-        await updateContacto({
-          id: selectedContacto.id,
-          data: {
-            ...data,
-            transportId
-          }
+        // Update existing contacto
+        await updateMutation.mutateAsync({
+          ...selectedContacto,
+          ...data
         });
         toast({
           title: "Contacto actualizado",
-          description: "El contacto ha sido actualizado exitosamente.",
-          variant: "default"
+          description: "El contacto ha sido actualizado correctamente.",
         });
       } else {
-        await createContacto({
+        // Create new contacto
+        await createMutation.mutateAsync({
           ...data,
-          transportId
-        });
+          transporte_id: transporteId,
+          estado: true
+        } as Omit<TransportContact, 'id'>);
         toast({
           title: "Contacto creado",
-          description: "El contacto ha sido creado exitosamente.",
-          variant: "default"
+          description: "El contacto ha sido creado correctamente.",
         });
       }
-      
-      refetchContactos();
-      setIsContactoDialogOpen(false);
-      setSelectedContacto(null);
-    } catch (error: any) {
+      setIsDialogOpen(false);
+      refetch();
+    } catch (error) {
       toast({
+        variant: "destructive",
         title: "Error",
-        description: error.message || "Ocurrió un error al guardar el contacto.",
-        variant: "destructive"
+        description: error instanceof Error ? error.message : "Ha ocurrido un error",
       });
     }
   };
   
-  const handleDeleteContacto = async () => {
+  const handleDelete = async () => {
     if (!selectedContacto) return;
     
     try {
-      await deleteContacto(selectedContacto.id);
+      await deleteMutation.mutateAsync(selectedContacto);
       toast({
         title: "Contacto eliminado",
-        description: "El contacto ha sido eliminado exitosamente.",
-        variant: "default"
+        description: "El contacto ha sido eliminado correctamente.",
       });
-      refetchContactos();
       setIsDeleteDialogOpen(false);
-      setSelectedContacto(null);
-    } catch (error: any) {
+      refetch();
+    } catch (error) {
       toast({
-        title: "Error al eliminar",
-        description: error.message || "No se pudo eliminar el contacto.",
-        variant: "destructive"
+        variant: "destructive",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Ha ocurrido un error al eliminar",
       });
     }
   };
   
   return {
     contactos,
-    isLoadingContactos,
-    isContactoDialogOpen,
-    setIsContactoDialogOpen,
-    isDeleteDialogOpen,
-    setIsDeleteDialogOpen,
+    isLoading,
+    isSubmitting: createMutation.isPending || updateMutation.isPending,
+    isDeleting: deleteMutation.isPending,
     selectedContacto,
-    isCreatingContacto,
-    isUpdatingContacto,
-    isDeletingContacto,
-    handleOpenAddContactoDialog,
-    handleOpenEditContactoDialog,
-    handleOpenDeleteContactoDialog,
-    handleContactoSubmit,
-    handleDeleteContacto
+    isDialogOpen,
+    isDeleteDialogOpen,
+    handleAddClick,
+    handleEditClick,
+    handleDeleteClick,
+    handleCloseDialog,
+    handleCloseDeleteDialog,
+    handleSubmit,
+    handleDelete,
   };
 };
+
+export default useTransportContactos;

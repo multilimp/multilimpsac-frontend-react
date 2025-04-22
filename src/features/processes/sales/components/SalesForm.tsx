@@ -1,77 +1,99 @@
 
 import React from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Form } from '@/components/ui/form';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
-import { salesFormSchema, type SalesFormValues } from '../../../sales/models/salesForm.model';
-import { CompanySection } from '../../processes/sales/form/CompanySection';
-import { ClientSection } from '../../processes/sales/form/ClientSection';
-import { DeliverySection } from '../../processes/sales/form/DeliverySection';
-import { SiafSection } from '../../processes/sales/form/SiafSection';
-import { DocumentsSection } from '../../processes/sales/form/DocumentsSection';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { SalesFormData } from '@/features/sales/models/salesForm.model';
+import CompanySection from '@/features/sales/components/form/CompanySection';
+import ClientSection from '@/features/sales/components/form/ClientSection';
+import DeliverySection from '@/features/sales/components/form/DeliverySection';
+import SiafSection from '@/features/sales/components/form/SiafSection';
+import DocumentsSection from '@/features/sales/components/form/DocumentsSection';
 
 interface SalesFormProps {
-  onSuccess: () => void;
+  initialData?: Partial<SalesFormData>;
+  onSubmit: (data: SalesFormData) => void;
+  isSubmitting?: boolean;
 }
 
-export const SalesForm: React.FC<SalesFormProps> = ({ onSuccess }) => {
-  const { toast } = useToast();
-  const form = useForm<SalesFormValues>({
-    resolver: zodResolver(salesFormSchema),
-    defaultValues: {
-      fechaFormalizacion: new Date().toISOString().split('T')[0],
-      fechaMaxFormalizacion: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      fechaMaxEntrega: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      productos: '[]'
-    }
-  });
+const SalesForm: React.FC<SalesFormProps> = ({ 
+  initialData, 
+  onSubmit, 
+  isSubmitting = false 
+}) => {
+  const [formData, setFormData] = React.useState<SalesFormData>(initialData || {});
 
-  const onSubmit = async (data: SalesFormValues) => {
-    try {
-      console.log('Form submitted:', data);
-      toast({
-        title: "Venta creada",
-        description: "La venta se ha creado exitosamente",
-      });
-      onSuccess();
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "No se pudo crear la venta",
-        variant: "destructive",
-      });
-    }
+  const handleChange = (section: keyof SalesFormData, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      [section]: value
+    }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit(formData);
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Nueva Venta</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <CompanySection form={form} />
-            <ClientSection form={form} />
-            <DeliverySection form={form} />
-            <DocumentsSection form={form} />
-            <SiafSection form={form} />
-          </CardContent>
-          <CardFooter className="flex justify-between">
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={onSuccess}
-            >
-              Cancelar
-            </Button>
-            <Button type="submit">Crear Venta</Button>
-          </CardFooter>
+    <form onSubmit={handleSubmit}>
+      <Tabs defaultValue="company" className="w-full">
+        <TabsList className="grid grid-cols-5 mb-6">
+          <TabsTrigger value="company">Empresa</TabsTrigger>
+          <TabsTrigger value="client">Cliente</TabsTrigger>
+          <TabsTrigger value="delivery">Entrega</TabsTrigger>
+          <TabsTrigger value="siaf">SIAF</TabsTrigger>
+          <TabsTrigger value="documents">Documentos</TabsTrigger>
+        </TabsList>
+        
+        <Card className="mb-6">
+          <TabsContent value="company">
+            <CompanySection
+              data={formData}
+              onChange={(value) => setFormData(prev => ({ ...prev, ...value }))}
+            />
+          </TabsContent>
+          
+          <TabsContent value="client">
+            <ClientSection
+              data={formData}
+              onChange={(value) => setFormData(prev => ({ ...prev, ...value }))}
+            />
+          </TabsContent>
+          
+          <TabsContent value="delivery">
+            <DeliverySection
+              data={formData}
+              onChange={(value) => setFormData(prev => ({ ...prev, ...value }))}
+            />
+          </TabsContent>
+          
+          <TabsContent value="siaf">
+            <SiafSection
+              data={formData}
+              onChange={(value) => setFormData(prev => ({ ...prev, ...value }))}
+            />
+          </TabsContent>
+          
+          <TabsContent value="documents">
+            <DocumentsSection
+              data={formData}
+              onChange={(value) => setFormData(prev => ({ ...prev, ...value }))}
+            />
+          </TabsContent>
         </Card>
-      </form>
-    </Form>
+        
+        <div className="flex justify-end gap-2 mt-4">
+          <Button type="button" variant="outline">
+            Cancelar
+          </Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? 'Guardando...' : 'Guardar'}
+          </Button>
+        </div>
+      </Tabs>
+    </form>
   );
 };
+
+export default SalesForm;

@@ -3,7 +3,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import PageHeader from '@/components/common/PageHeader';
-import SalesList from '../../processes/sales/components/SalesList';
+import SalesList from '../components/SalesList';
 
 const SalesPage = () => {
   const navigate = useNavigate();

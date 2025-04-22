@@ -1,33 +1,46 @@
 
-import React, { ReactNode } from 'react';
-import { LucideIcon, FolderX } from 'lucide-react';
+import React from 'react';
 
 export interface TableEmptyStateProps {
   title?: string;
   description?: string;
-  icon?: LucideIcon;
-  action?: ReactNode;
+  action?: React.ReactNode;
   className?: string;
-  loading?: boolean;
   colSpan?: number;
+  loading?: boolean;
 }
 
-const TableEmptyState: React.FC<TableEmptyStateProps> = ({
-  title = "No hay datos",
-  description = "No hay registros disponibles para mostrar.",
-  icon: Icon = FolderX,
+export const TableEmptyState: React.FC<TableEmptyStateProps> = ({
+  title = "No data available",
+  description = "No records found.",
   action,
   className = "",
-  loading = false,
-  colSpan
+  colSpan,
+  loading = false
 }) => {
+  if (loading) {
+    return (
+      <tr>
+        <td colSpan={colSpan} className="h-24 text-center">
+          <div className="flex justify-center items-center h-full">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
+            <span className="ml-2 text-sm text-muted-foreground">Loading...</span>
+          </div>
+        </td>
+      </tr>
+    );
+  }
+  
   return (
-    <div className={`flex flex-col items-center justify-center p-8 text-center ${className}`}>
-      <Icon className="h-12 w-12 text-muted-foreground mb-4" />
-      <h3 className="text-lg font-medium mb-2">{title}</h3>
-      <p className="text-sm text-muted-foreground mb-4">{description}</p>
-      {action && <div className="mt-2">{action}</div>}
-    </div>
+    <tr>
+      <td colSpan={colSpan} className={`h-24 text-center ${className}`}>
+        <div className="flex flex-col items-center justify-center p-6">
+          <h3 className="text-lg font-medium">{title}</h3>
+          <p className="text-sm text-muted-foreground mt-1">{description}</p>
+          {action && <div className="mt-4">{action}</div>}
+        </div>
+      </td>
+    </tr>
   );
 };
 

@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "@/components/common/PageHeader";
@@ -15,7 +16,13 @@ export const NuevoClientePage: React.FC = () => {
   
   const handleSubmit = async (data: Partial<Cliente>) => {
     try {
-      await createCliente(data);
+      // Ensure estado is set to true for new clients
+      const clienteData = {
+        ...data,
+        estado: true // Setting estado explicitly as it's required
+      };
+      
+      await createCliente(clienteData);
       
       toast({
         title: "Cliente creado",

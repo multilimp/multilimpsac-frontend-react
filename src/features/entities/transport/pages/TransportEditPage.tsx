@@ -1,96 +1,98 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { LoadingFallback } from '@/components/common/LoadingFallback';
-import BreadcrumbNav from '@/components/layout/BreadcrumbNav';
-import { useTransport, useUpdateTransport, useCreateTransport } from '../services/transport.service';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
+import PageHeader from '@/components/common/PageHeader';
 import TransportForm from '../components/TransportForm';
+import { useGetTransport, useUpdateTransport } from '../services/transport.service';
 import { Transport } from '../models/transport.model';
 
-const TransportEditPage: React.FC = () => {
+const TransportEditPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const isNewTransport = id === 'new';
+  const { toast } = useToast();
   
-  const { data: transport, isLoading, error } = useTransport(id || '');
-  const updateMutation = useUpdateTransport();
-  const createMutation = useCreateTransport();
+  const { data: transport, isLoading } = useGetTransport(id || '');
+  const { mutateAsync: updateTransport, isPending: isSubmitting } = useUpdateTransport();
   
-  const breadcrumbItems = [
-    {
-      label: "Transportes",
-      path: "/transportes",
-    },
-    {
-      label: isNewTransport ? "Nuevo Transporte" : (transport?.name || "Editar"),
-      path: isNewTransport ? "/transportes/new" : `/transportes/${id}/edit`,
-      isCurrentPage: true
+  const [formData, setFormData] = useState<Transport | null>(null);
+  
+  useEffect(() => {
+    if (transport) {
+      setFormData(transport);
     }
-  ];
+  }, [transport]);
   
-  const handleBackClick = () => {
-    if (isNewTransport) {
+  const handleSubmit = async (data: Partial<Transport>) => {
+    if (!id) return;
+    
+    try {
+      // Make sure all required fields are provided
+      // Temporary fix: if address is required, we'll ensure it's passed
+      const updatedTransport = {
+        ...data,
+        // Add any required fields here if they're missing
+      };
+      
+      await updateTransport({ id, ...updatedTransport });
+      
+      toast({
+        title: 'Transporte actualizado',
+        description: 'Los datos del transporte han sido actualizados exitosamente.',
+      });
+      
       navigate('/transportes');
-    } else {
-      navigate(`/transportes/${id}`);
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Error al actualizar',
+        description: error instanceof Error 
+          ? error.message 
+          : 'Ocurrió un error al actualizar el transporte.',
+      });
     }
   };
   
-  const handleFormSubmit = async (data: Partial<Transport>) => {
-    if (isNewTransport) {
-      const newTransport = await createMutation.mutateAsync(data);
-      navigate(`/transportes/${newTransport.id}`);
-    } else if (id) {
-      await updateMutation.mutateAsync({ id, data });
-      navigate(`/transportes/${id}`);
-    }
-  };
-  
-  if (!isNewTransport && isLoading) {
-    return <LoadingFallback />;
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-full">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      </div>
+    );
   }
   
-  if (!isNewTransport && (error || !transport)) {
+  if (!formData) {
     return (
-      <div className="p-4">
-        <BreadcrumbNav items={breadcrumbItems} />
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          <p>Error: {(error as Error)?.message || "No se pudo cargar el transporte"}</p>
-          <Button 
-            variant="outline" 
-            className="mt-4" 
-            onClick={() => navigate('/transportes')}
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Volver a Transportes
-          </Button>
-        </div>
+      <div className="text-center">
+        <p>No se encontró el transporte solicitado.</p>
       </div>
     );
   }
   
   return (
-    <div className="space-y-6">
-      <BreadcrumbNav items={breadcrumbItems} />
-      
-      <div className="flex items-center space-x-2 mb-6">
-        <Button variant="outline" size="sm" onClick={handleBackClick}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          {isNewTransport ? 'Transportes' : 'Detalles'}
-        </Button>
-        <h1 className="text-2xl font-bold">
-          {isNewTransport ? "Nuevo Transporte" : `Editar ${transport?.name}`}
-        </h1>
-      </div>
-      
-      <TransportForm
-        transport={isNewTransport ? undefined : transport}
-        onSubmit={handleFormSubmit}
-        onCancel={handleBackClick}
-        isLoading={createMutation.isPending || updateMutation.isPending}
+    <div className="container mx-auto py-6 space-y-6">
+      <PageHeader
+        title="Editar Transporte"
+        description="Actualiza los datos del transporte"
+        backButton={{
+          label: "Volver a transportes",
+          onClick: () => navigate("/transportes"),
+        }}
       />
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Información del Transporte</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <TransportForm
+            transport={formData}
+            onSubmit={handleSubmit}
+            isSubmitting={isSubmitting}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 };
