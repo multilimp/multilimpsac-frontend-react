@@ -4,9 +4,9 @@ import { FileSearch, ShoppingCart, Package, ClipboardList } from "lucide-react";
 import { RouteDefinition } from "../types";
 
 // Update imports to use the correct feature-based paths
-const QuotationsPage = lazy(() => import("@/features/quotation/pages/QuotationsPage"));
+const QuotationsPage = lazy(() => import("@/features/processes/quotation/pages/QuotationsPage"));
 const SalesPage = lazy(() => import("@/features/sales/pages/SalesPage"));
-const PurchaseOrdersPage = lazy(() => import("@/features/purchaseOrder/pages/PurchaseOrdersPage"));
+const PurchaseOrdersPage = lazy(() => import("@/features/processes/purchase-orders/pages/PurchaseOrdersPage"));
 const SupplierOrdersPage = lazy(() => import("@/features/supplier-orders/pages/SupplierOrdersPage"));
 const TrackingPage = lazy(() => import("@/pages/ModulePage"));
 

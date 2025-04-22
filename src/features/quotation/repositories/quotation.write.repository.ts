@@ -1,7 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Quotation } from "../models/quotation";
-import { QuotationFormValues } from "../models/quotationForm.model";
+import { Quotation } from "../../processes/quotation/models/quotation";
+import { QuotationFormValues } from "../../processes/quotation/models/quotationForm.model";
 import { stringToNumberId } from "../utils/id-conversions";
 import { mapDomainStatusToDb } from "./utils/quotation-mappers";
 import { generateQuotationCode } from "./utils/quotation-code-generator";

@@ -1,7 +1,7 @@
 
 import React from "react";
 import { UseFormReturn } from "react-hook-form";
-import { QuotationFormValues } from "../../models/quotationForm.model";
+import { QuotationFormValues } from "../../../processes/quotation/models/quotationForm.model";
 import { formatCurrency } from "@/app/core/utils";
 
 interface QuotationSummarySectionProps {

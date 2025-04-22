@@ -2,10 +2,10 @@
 import React from 'react';
 import { DataGrid, DataGridColumn } from '@/components/ui/data-grid';
 import { Card, CardContent } from '@/components/ui/card';
-import { Quotation as FeatureQuotation } from '@/features/quotation/models/quotation';
+import { Quotation as FeatureQuotation } from '@/features/processes/quotation/models/quotation';
 import { Quotation as DataQuotation } from '@/data/models/quotation';
 import DeleteQuotationDialog from './DeleteQuotationDialog';
-import { useQuotationActions } from '../hooks/useQuotationActions';
+import { useQuotationActions } from '../../processes/quotation/hooks/useQuotationActions';
 import { formatQuotationData } from '../utils/formatQuotationData';
 import { useToast } from '@/hooks/use-toast';
 

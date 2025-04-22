@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { UseFormReturn, useFieldArray } from "react-hook-form";
-import { QuotationFormValues } from "../../models/quotationForm.model";
+import { QuotationFormValues } from "../../../processes/quotation/models/quotationForm.model";
 import { Plus, X } from "lucide-react";
 
 interface QuotationItemsSectionProps {

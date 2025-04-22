@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Quotation as FeatureQuotation } from '../models/quotation';
+import { Quotation as FeatureQuotation } from '../../processes/quotation/models/quotation';
 import { Quotation as DataQuotation } from '@/data/models/quotation';
 import QuotationStatusBadge from '../components/QuotationStatusBadge';
 import QuotationActionMenu from '../components/QuotationActionMenu';

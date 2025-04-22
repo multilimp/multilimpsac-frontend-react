@@ -1,8 +1,8 @@
 
 /* Custom scrollbar styles for the application */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 12px;
+  height: 12px;
 }
 
 ::-webkit-scrollbar-track {
@@ -20,6 +20,6 @@
 
 /* Optional: Scrollbar for Firefox */
 * {
-  scrollbar-width: thin;
-  scrollbar-color: hsl(var(--secondary)) hsl(var(--background));
+  scrollbar-width: 12px;
+  scrollbar-color: hsl(var(--primary)) hsl(var(--background));
 }

@@ -1,6 +1,6 @@
 
-import { Quotation } from "../models/quotation";
-import { QuotationFormValues } from "../models/quotationForm.model";
+import { Quotation } from "../../processes/quotation/models/quotation";
+import { QuotationFormValues } from "../../processes/quotation/models/quotationForm.model";
 import { QuotationRepository } from "./quotation.repository";
 import { QuotationReadRepository } from "./quotation.read.repository";
 import { QuotationWriteRepository } from "./quotation.write.repository";

@@ -1,4 +1,3 @@
-
 import { lazy } from "react";
 import { Building2, Users, Truck, User } from "lucide-react";
 import { RouteDefinition } from "../../../app/routes/types";
@@ -69,8 +68,47 @@ export const directoryRoutes: RouteDefinition[] = [
     breadcrumb: "Clientes"
   },
   {
+    path: "/clientes/:id",
+    component: lazy(() => import("@/features/entities/client/pages/ClientDetailsPage")),
+    title: "Detalle de Cliente",
+    icon: <Users className="h-5 w-5" />,
+    requireAuth: true,
+    permission: "clients:view",
+    domain: "client",
+    entityType: "cliente",
+    action: "detail",
+    breadcrumb: "Detalle",
+    hideInMenu: true
+  },
+  {
+    path: "/clientes/new",
+    component: lazy(() => import("@/features/entities/client/pages/ClientEditPage")),
+    title: "Nuevo Cliente",
+    icon: <Users className="h-5 w-5" />,
+    requireAuth: true,
+    permission: "clients:create",
+    domain: "client",
+    entityType: "cliente",
+    action: "create",
+    breadcrumb: "Nuevo",
+    hideInMenu: true
+  },
+  {
+    path: "/clientes/:id/edit",
+    component: lazy(() => import("@/features/entities/client/pages/ClientEditPage")),
+    title: "Editar Cliente",
+    icon: <Users className="h-5 w-5" />,
+    requireAuth: true,
+    permission: "clients:edit",
+    domain: "client",
+    entityType: "cliente",
+    action: "edit",
+    breadcrumb: "Editar",
+    hideInMenu: true
+  },
+  {
     path: "/proveedores",
-    component: lazy(() => import("@/features/supplier/pages/SupplierPage")),
+    component: lazy(() => import("@/features/entities/supplier/pages/SupplierPage")),
     title: "Proveedores",
     icon: <Building2 className="h-5 w-5" />,
     requireAuth: true,
@@ -81,8 +119,47 @@ export const directoryRoutes: RouteDefinition[] = [
     breadcrumb: "Proveedores"
   },
   {
+    path: "/proveedores/:id",
+    component: lazy(() => import("@/features/entities/supplier/pages/SupplierDetailsPage")),
+    title: "Detalle de Proveedor",
+    icon: <Building2 className="h-5 w-5" />,
+    requireAuth: true,
+    permission: "suppliers:view",
+    domain: "supplier",
+    entityType: "proveedor",
+    action: "detail",
+    breadcrumb: "Detalle",
+    hideInMenu: true
+  },
+  {
+    path: "/proveedores/new",
+    component: lazy(() => import("@/features/entities/supplier/pages/SupplierEditPage")),
+    title: "Nuevo Proveedor",
+    icon: <Building2 className="h-5 w-5" />,
+    requireAuth: true,
+    permission: "suppliers:create",
+    domain: "supplier",
+    entityType: "proveedor",
+    action: "create",
+    breadcrumb: "Nuevo",
+    hideInMenu: true
+  },
+  {
+    path: "/proveedores/:id/edit",
+    component: lazy(() => import("@/features/entities/supplier/pages/SupplierEditPage")),
+    title: "Editar Proveedor",
+    icon: <Building2 className="h-5 w-5" />,
+    requireAuth: true,
+    permission: "suppliers:edit",
+    domain: "supplier",
+    entityType: "proveedor",
+    action: "edit",
+    breadcrumb: "Editar",
+    hideInMenu: true
+  },
+  {
     path: "/transportes",
-    component: lazy(() => import("@/features/transport/pages/TransportPage")),
+    component: lazy(() => import("@/features/entities/transport/pages/TransportPage")),
     title: "Transportes",
     icon: <Truck className="h-5 w-5" />,
     requireAuth: true,
@@ -94,7 +171,7 @@ export const directoryRoutes: RouteDefinition[] = [
   },
   {
     path: "/transportes/:id",
-    component: lazy(() => import("@/features/transport/pages/TransportDetailsPage")),
+    component: lazy(() => import("@/features/entities/transport/pages/TransportDetailsPage")),
     title: "Detalle de Transporte",
     icon: <Truck className="h-5 w-5" />,
     requireAuth: true,
@@ -107,7 +184,7 @@ export const directoryRoutes: RouteDefinition[] = [
   },
   {
     path: "/transportes/new",
-    component: lazy(() => import("@/features/transport/pages/TransportEditPage")),
+    component: lazy(() => import("@/features/entities/transport/pages/TransportEditPage")),
     title: "Nuevo Transporte",
     icon: <Truck className="h-5 w-5" />,
     requireAuth: true,
@@ -120,7 +197,7 @@ export const directoryRoutes: RouteDefinition[] = [
   },
   {
     path: "/transportes/:id/edit",
-    component: lazy(() => import("@/features/transport/pages/TransportEditPage")),
+    component: lazy(() => import("@/features/entities/transport/pages/TransportEditPage")),
     title: "Editar Transporte",
     icon: <Truck className="h-5 w-5" />,
     requireAuth: true,

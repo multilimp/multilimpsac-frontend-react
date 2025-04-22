@@ -1,5 +1,5 @@
 
-import { Quotation, QuotationItem } from "../../models/quotation";
+import { Quotation, QuotationItem } from "../../../processes/quotation/models/quotation";
 import { numberToStringId, stringToNumberId } from "../../utils/id-conversions";
 
 /**

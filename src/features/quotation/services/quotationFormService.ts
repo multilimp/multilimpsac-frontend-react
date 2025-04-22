@@ -1,6 +1,6 @@
 
-import { Quotation } from "../models/quotation";
-import { QuotationFormValues } from "../models/quotationForm.model";
+import { Quotation } from "../../processes/quotation/models/quotation";
+import { QuotationFormValues } from "../../processes/quotation/models/quotationForm.model";
 import { QuotationRepository } from "../repositories/quotation.repository";
 import { SupabaseQuotationRepository } from "../repositories/quotation.supabase.repository";
 

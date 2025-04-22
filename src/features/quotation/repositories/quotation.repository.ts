@@ -1,6 +1,6 @@
 
-import { Quotation, QuotationItem } from "../models/quotation";
-import { QuotationFormValues } from "../models/quotationForm.model";
+import { Quotation, QuotationItem } from "../../processes/quotation/models/quotation";
+import { QuotationFormValues } from "../../processes/quotation/models/quotationForm.model";
 
 export interface QuotationRepository {
   getAll(): Promise<Quotation[]>;

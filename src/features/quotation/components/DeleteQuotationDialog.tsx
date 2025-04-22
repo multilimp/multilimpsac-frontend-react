@@ -10,7 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Quotation as FeatureQuotation } from '@/features/quotation/models/quotation';
+import { Quotation as FeatureQuotation } from '@/features/processes/quotation/models/quotation';
 import { Quotation as DataQuotation } from '@/data/models/quotation';
 
 // Define a type that works with either quotation model

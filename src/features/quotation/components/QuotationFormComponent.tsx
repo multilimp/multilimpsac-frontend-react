@@ -7,7 +7,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, Save, FilePlus } from "lucide-react";
-import { quotationFormSchema, QuotationFormValues } from "../models/quotationForm.model";
+import { quotationFormSchema, QuotationFormValues } from "../../processes/quotation/models/quotationForm.model";
 import { quotationService } from "../services/quotationFormService";
 import QuotationClientSection from "./form/QuotationClientSection";
 import QuotationItemsSection from "./form/QuotationItemsSection";

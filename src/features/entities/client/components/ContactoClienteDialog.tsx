@@ -1,19 +1,20 @@
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription
+  DialogFooter,
 } from '@/components/ui/dialog';
-import { ContactoClienteForm } from './ContactoClienteForm';
 import { ContactoCliente } from '../models/client.model';
 
 interface ContactoClienteDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  contacto: ContactoCliente | null;
+  contacto?: ContactoCliente;
   clienteId: string;
   onSubmit: (data: Partial<ContactoCliente>) => Promise<void>;
   isSubmitting: boolean;
@@ -27,27 +28,119 @@ const ContactoClienteDialog: React.FC<ContactoClienteDialogProps> = ({
   onSubmit,
   isSubmitting
 }) => {
-  const isNew = !contacto;
+  const [formData, setFormData] = useState<Partial<ContactoCliente>>({
+    nombre: '',
+    cargo: '',
+    telefono: '',
+    correo: '',
+  });
+  
+  const isEditing = !!contacto;
+  
+  useEffect(() => {
+    if (contacto) {
+      setFormData({
+        nombre: contacto.nombre || '',
+        cargo: contacto.cargo || '',
+        telefono: contacto.telefono || '',
+        correo: contacto.correo || '',
+      });
+    } else {
+      setFormData({
+        nombre: '',
+        cargo: '',
+        telefono: '',
+        correo: '',
+        clienteId
+      });
+    }
+  }, [contacto, clienteId]);
+  
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+  
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await onSubmit({ ...formData, clienteId });
+    onOpenChange(false);
+  };
   
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>
-            {isNew ? 'Nuevo Contacto' : 'Editar Contacto'}
+            {isEditing ? 'Editar Contacto' : 'Agregar Contacto'}
           </DialogTitle>
-          <DialogDescription>
-            {isNew 
-              ? 'Complete los datos para agregar un nuevo contacto'
-              : 'Actualice los datos del contacto'}
-          </DialogDescription>
         </DialogHeader>
-        <ContactoClienteForm 
-          clienteId={clienteId}
-          initialData={contacto || undefined}
-          onSubmit={onSubmit}
-          isSubmitting={isSubmitting}
-        />
+        <form onSubmit={handleSubmit}>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="nombre" className="text-right">
+                Nombre *
+              </Label>
+              <Input
+                id="nombre"
+                name="nombre"
+                value={formData.nombre}
+                onChange={handleChange}
+                className="col-span-3"
+                required
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="cargo" className="text-right">
+                Cargo
+              </Label>
+              <Input
+                id="cargo"
+                name="cargo"
+                value={formData.cargo}
+                onChange={handleChange}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="telefono" className="text-right">
+                Teléfono
+              </Label>
+              <Input
+                id="telefono"
+                name="telefono"
+                value={formData.telefono}
+                onChange={handleChange}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="correo" className="text-right">
+                Correo
+              </Label>
+              <Input
+                id="correo"
+                name="correo"
+                type="email"
+                value={formData.correo}
+                onChange={handleChange}
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting
+                ? 'Guardando...'
+                : isEditing
+                ? 'Actualizar'
+                : 'Crear'}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

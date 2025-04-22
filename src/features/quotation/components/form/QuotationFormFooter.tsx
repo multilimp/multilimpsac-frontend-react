@@ -3,7 +3,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2, Save, FilePlus } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
-import { QuotationFormValues } from "../../models/quotationForm.model";
+import { QuotationFormValues } from "../../../processes/quotation/models/quotationForm.model";
 
 interface QuotationFormFooterProps {
   isSubmitting: boolean;

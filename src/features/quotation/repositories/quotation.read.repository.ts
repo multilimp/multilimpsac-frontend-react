@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Quotation, QuotationItem } from "../models/quotation";
+import { Quotation, QuotationItem } from "../../processes/quotation/models/quotation";
 import { stringToNumberId } from "../utils/id-conversions";
 import { mapDbQuotationToDomain, mapDbQuotationItemToDomain } from "./utils/quotation-mappers";
 

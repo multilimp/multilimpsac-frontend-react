@@ -2,7 +2,7 @@
 import React from "react";
 import { UseFormReturn } from "react-hook-form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { QuotationFormValues } from "../../models/quotationForm.model";
+import { QuotationFormValues } from "../../../processes/quotation/models/quotationForm.model";
 import QuotationClientSection from "./QuotationClientSection";
 import QuotationItemsSection from "./QuotationItemsSection";
 import QuotationDeliverySection from "./QuotationDeliverySection";
