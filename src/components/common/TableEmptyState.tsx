@@ -2,12 +2,14 @@
 import React, { ReactNode } from 'react';
 import { LucideIcon, FolderX } from 'lucide-react';
 
-interface TableEmptyStateProps {
+export interface TableEmptyStateProps {
   title?: string;
   description?: string;
   icon?: LucideIcon;
   action?: ReactNode;
   className?: string;
+  loading?: boolean;
+  colSpan?: number;
 }
 
 const TableEmptyState: React.FC<TableEmptyStateProps> = ({
@@ -15,7 +17,9 @@ const TableEmptyState: React.FC<TableEmptyStateProps> = ({
   description = "No hay registros disponibles para mostrar.",
   icon: Icon = FolderX,
   action,
-  className = ""
+  className = "",
+  loading = false,
+  colSpan
 }) => {
   return (
     <div className={`flex flex-col items-center justify-center p-8 text-center ${className}`}>

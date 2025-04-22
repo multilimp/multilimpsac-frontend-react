@@ -65,7 +65,7 @@ const TopBar: React.FC = () => {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="sm" className="relative gap-2">
               <Avatar className="h-8 w-8">
-                <AvatarImage src={user?.avatarUrl} />
+                <AvatarImage src={user?.avatar} />
                 <AvatarFallback>{getInitials(user?.name || "")}</AvatarFallback>
               </Avatar>
               <span className="hidden md:inline-flex">{user?.name}</span>
