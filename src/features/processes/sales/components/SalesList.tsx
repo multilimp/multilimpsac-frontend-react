@@ -4,7 +4,7 @@ import { DataGrid } from '@/components/ui/data-grid';
 import { Button } from '@/components/ui/button';
 import { Download, RefreshCcw } from 'lucide-react';
 import { PurchaseOrder } from '@/features/processes/purchase-orders/models/purchaseOrder';
-import { useContactView } from '../../processes/sales/hooks/useContactView';
+import { useContactView } from '../hooks/useContactView';
 import { SalesDocumentActions } from './SalesDocumentActions';
 import { ContactDetailsSheet } from './ContactDetailsSheet';
 import { getSalesColumns } from '../utils/salesColumns';
