@@ -1,90 +1,127 @@
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { TransportContact } from '../models/transport.model';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from "@/integrations/supabase/client";
+import { TransportContact } from "../models/transport.model";
 
-// Fetch transport contacts
-export const useTransportContacts = (transportId: string) => {
-  return useQuery({
-    queryKey: ['transport-contacts', transportId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('contacto_transportes')
-        .select('*')
-        .eq('transporte_id', transportId);
-        
-      if (error) throw new Error(error.message);
-      return data as TransportContact[];
-    },
-    enabled: !!transportId,
-  });
+export const getTransportContacts = async (transporteId: string): Promise<TransportContact[]> => {
+  try {
+    // Convert string ID to number if needed by the database
+    const numericId = typeof transporteId === 'string' ? parseInt(transporteId, 10) : transporteId;
+    
+    const { data, error } = await supabase
+      .from('contacto_transportes')
+      .select('*')
+      .eq('transporte_id', numericId);
+    
+    if (error) throw error;
+    
+    // Map database results to our model
+    return data.map(item => ({
+      id: String(item.id),
+      nombre: item.nombre,
+      cargo: item.cargo,
+      telefono: item.telefono,
+      correo: item.correo,
+      email: item.correo, // Map correo to email for compatibility
+      estado: item.estado,
+      transporte_id: String(item.transporte_id)
+    }));
+  } catch (error) {
+    console.error("Error fetching transport contacts:", error);
+    throw error;
+  }
 };
 
-// Create transport contact
-export const useCreateTransportContact = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: async (contact: Omit<TransportContact, 'id'>) => {
-      const { data, error } = await supabase
-        .from('contacto_transportes')
-        .insert(contact)
-        .select()
-        .single();
-        
-      if (error) throw new Error(error.message);
-      return data as TransportContact;
-    },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: ['transport-contacts', variables.transporte_id],
-      });
-    },
-  });
+export const createTransportContact = async (contacto: Omit<TransportContact, "id">): Promise<TransportContact> => {
+  try {
+    // Convert string transporte_id to number for the database
+    const numericTransporteId = contacto.transporte_id ? parseInt(contacto.transporte_id, 10) : null;
+    
+    const { data, error } = await supabase
+      .from('contacto_transportes')
+      .insert({
+        nombre: contacto.nombre,
+        cargo: contacto.cargo,
+        telefono: contacto.telefono,
+        correo: contacto.correo,
+        estado: contacto.estado,
+        transporte_id: numericTransporteId
+      })
+      .select()
+      .single();
+    
+    if (error) throw error;
+    
+    // Map database result to our model
+    return {
+      id: String(data.id),
+      nombre: data.nombre,
+      cargo: data.cargo,
+      telefono: data.telefono,
+      correo: data.correo,
+      email: data.correo, // Map correo to email for compatibility
+      estado: data.estado,
+      transporte_id: String(data.transporte_id)
+    };
+  } catch (error) {
+    console.error("Error creating transport contact:", error);
+    throw error;
+  }
 };
 
-// Update transport contact
-export const useUpdateTransportContact = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: async ({ id, ...contact }: TransportContact) => {
-      const { data, error } = await supabase
-        .from('contacto_transportes')
-        .update(contact)
-        .eq('id', id)
-        .select()
-        .single();
-        
-      if (error) throw new Error(error.message);
-      return data as TransportContact;
-    },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: ['transport-contacts', variables.transporte_id],
-      });
-    },
-  });
+export const updateTransportContact = async (id: string, contacto: Partial<TransportContact>): Promise<TransportContact> => {
+  try {
+    // Convert string ID to number if needed by the database
+    const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
+    
+    // Convert string transporte_id to number for the database if it exists
+    const numericTransporteId = contacto.transporte_id ? parseInt(contacto.transporte_id, 10) : undefined;
+    
+    const { data, error } = await supabase
+      .from('contacto_transportes')
+      .update({
+        nombre: contacto.nombre,
+        cargo: contacto.cargo,
+        telefono: contacto.telefono,
+        correo: contacto.correo,
+        estado: contacto.estado,
+        transporte_id: numericTransporteId
+      })
+      .eq('id', numericId)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    
+    // Map database result to our model
+    return {
+      id: String(data.id),
+      nombre: data.nombre,
+      cargo: data.cargo,
+      telefono: data.telefono,
+      correo: data.correo,
+      email: data.correo, // Map correo to email for compatibility
+      estado: data.estado,
+      transporte_id: String(data.transporte_id)
+    };
+  } catch (error) {
+    console.error("Error updating transport contact:", error);
+    throw error;
+  }
 };
 
-// Delete transport contact
-export const useDeleteTransportContact = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: async (contact: TransportContact) => {
-      const { error } = await supabase
-        .from('contacto_transportes')
-        .delete()
-        .eq('id', contact.id);
-        
-      if (error) throw new Error(error.message);
-      return contact;
-    },
-    onSuccess: (deletedContact) => {
-      queryClient.invalidateQueries({
-        queryKey: ['transport-contacts', deletedContact.transporte_id],
-      });
-    },
-  });
+export const deleteTransportContact = async (id: string): Promise<void> => {
+  try {
+    // Convert string ID to number if needed by the database
+    const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
+    
+    const { error } = await supabase
+      .from('contacto_transportes')
+      .delete()
+      .eq('id', numericId);
+    
+    if (error) throw error;
+  } catch (error) {
+    console.error("Error deleting transport contact:", error);
+    throw error;
+  }
 };

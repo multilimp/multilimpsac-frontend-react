@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   AlertDialog,
@@ -8,44 +9,41 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Loader2 } from 'lucide-react';
-import { TransportContact } from '../../../transport/models/transport.model';
+} from "@/components/ui/alert-dialog";
+import { TransportContact } from "../models/transport.model";
 
-interface ContactoTransporteDeleteDialogProps {
+interface DeleteContactoDialogProps {
   isOpen: boolean;
-  onClose: () => void;
-  onDelete: () => void;
+  onOpenChange: (open: boolean) => void;
+  onConfirm: () => Promise<void>;
+  isDeleting: boolean;
   contacto: TransportContact | null;
-  isLoading: boolean;
 }
 
-const ContactoTransporteDeleteDialog: React.FC<ContactoTransporteDeleteDialogProps> = ({
+const DeleteContactoDialog: React.FC<DeleteContactoDialogProps> = ({
   isOpen,
-  onClose,
-  onDelete,
-  contacto,
-  isLoading,
+  onOpenChange,
+  onConfirm,
+  isDeleting,
+  contacto
 }) => {
+  const handleConfirm = async () => {
+    await onConfirm();
+  };
+  
   return (
-    <AlertDialog open={isOpen} onOpenChange={onClose}>
+    <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>¿Está seguro?</AlertDialogTitle>
           <AlertDialogDescription>
-            Esta acción no se puede deshacer. Esto eliminará permanentemente el contacto
-            {contacto && ` ${contacto.name}`}.
+            Esta acción no se puede deshacer. Esto eliminará permanentemente el contacto {contacto?.nombre}.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isLoading}>Cancelar</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={onDelete}
-            className="bg-red-600 hover:bg-red-700"
-            disabled={isLoading}
-          >
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Eliminar
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction onClick={handleConfirm} disabled={isDeleting}>
+            {isDeleting ? "Eliminando..." : "Eliminar"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
@@ -53,4 +51,4 @@ const ContactoTransporteDeleteDialog: React.FC<ContactoTransporteDeleteDialogPro
   );
 };
 
-export default ContactoTransporteDeleteDialog;
+export default DeleteContactoDialog;

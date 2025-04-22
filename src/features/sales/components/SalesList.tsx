@@ -1,41 +1,65 @@
 
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { RefreshCw } from 'lucide-react';
+import DataTable from '@/components/common/DataTable';
+
+interface Sale {
+  id: string;
+  number: string;
+  client: string;
+  date: string;
+  status: string;
+  total: number;
+}
 
 interface SalesListProps {
-  sales: any[];
+  sales: Sale[];
   isLoading: boolean;
   onRefresh: () => void;
 }
 
 const SalesList: React.FC<SalesListProps> = ({ sales, isLoading, onRefresh }) => {
+  const columns = [
+    {
+      header: "Número",
+      accessorKey: "number" as keyof Sale,
+    },
+    {
+      header: "Cliente",
+      accessorKey: "client" as keyof Sale,
+    },
+    {
+      header: "Fecha",
+      accessorKey: "date" as keyof Sale,
+    },
+    {
+      header: "Estado",
+      accessorKey: "status" as keyof Sale,
+      cell: (sale: Sale) => (
+        <span className={`px-2 py-1 rounded text-xs font-semibold ${
+          sale.status === 'Completado' ? 'bg-green-100 text-green-800' : 
+          sale.status === 'Pendiente' ? 'bg-yellow-100 text-yellow-800' : 
+          'bg-gray-100 text-gray-800'
+        }`}>
+          {sale.status}
+        </span>
+      ),
+    },
+    {
+      header: "Total",
+      accessorKey: "total" as keyof Sale,
+      cell: (sale: Sale) => `S/ ${sale.total.toFixed(2)}`,
+    },
+  ];
+
   return (
     <Card>
       <CardContent className="p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">Listado de Ventas</h2>
-          <Button variant="outline" onClick={onRefresh} disabled={isLoading}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Actualizar
-          </Button>
-        </div>
-        
-        {isLoading ? (
-          <div className="flex justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-          </div>
-        ) : sales.length === 0 ? (
-          <div className="text-center py-8 border rounded-md">
-            <p className="text-muted-foreground">No hay ventas registradas</p>
-          </div>
-        ) : (
-          <div>
-            {/* Sales table would go here */}
-            <p>Lista de ventas se mostrará aquí</p>
-          </div>
-        )}
+        <DataTable 
+          columns={columns} 
+          data={sales}
+          loading={isLoading}
+        />
       </CardContent>
     </Card>
   );

@@ -1,93 +1,98 @@
 
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useToast } from '@/hooks/use-toast';
-import PageHeader from '@/components/common/PageHeader';
-import TransportForm from '../components/TransportForm';
-import { useGetTransport, useUpdateTransport } from '../services/transport.service';
-import { Transport } from '../models/transport.model';
+import React from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import PageHeader from "@/components/common/PageHeader";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { TransportForm } from "../components/TransportForm";
+import { useToast } from "@/hooks/use-toast";
+import { useTransport, useUpdateTransport } from "../services/transport.service";
 
-const TransportEditPage = () => {
+export const TransportEditPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  const { data: transport, isLoading } = useGetTransport(id || '');
+  const { data: transport, isLoading } = useTransport(id as string);
   const { mutateAsync: updateTransport, isPending: isSubmitting } = useUpdateTransport();
-  
-  const [formData, setFormData] = useState<Transport | null>(null);
-  
-  useEffect(() => {
-    if (transport) {
-      setFormData(transport);
-    }
-  }, [transport]);
   
   const handleSubmit = async (data: Partial<Transport>) => {
     if (!id) return;
     
     try {
-      // Make sure all required fields are provided
-      // Temporary fix: if address is required, we'll ensure it's passed
-      const updatedTransport = {
-        ...data,
-        // Add any required fields here if they're missing
-      };
-      
-      await updateTransport({ id, ...updatedTransport });
-      
-      toast({
-        title: 'Transporte actualizado',
-        description: 'Los datos del transporte han sido actualizados exitosamente.',
+      await updateTransport({
+        id,
+        data: {
+          ...data,
+        }
       });
       
-      navigate('/transportes');
-    } catch (error) {
       toast({
-        variant: 'destructive',
-        title: 'Error al actualizar',
-        description: error instanceof Error 
-          ? error.message 
-          : 'Ocurrió un error al actualizar el transporte.',
+        title: "Transporte actualizado",
+        description: "El transporte ha sido actualizado exitosamente.",
+      });
+      
+      navigate(`/transportes/${id}`);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error al actualizar",
+        description: error.message || "No se pudo actualizar el transporte.",
       });
     }
   };
   
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-full">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      <div className="container mx-auto py-6">
+        <PageHeader 
+          title="Cargando transporte" 
+          description="Espere mientras cargamos la información..."
+          backButton={{
+            label: "Volver",
+            onClick: () => navigate(-1),
+          }}
+        />
+        <div className="animate-pulse p-6">Cargando...</div>
       </div>
     );
   }
   
-  if (!formData) {
+  if (!transport) {
     return (
-      <div className="text-center">
-        <p>No se encontró el transporte solicitado.</p>
+      <div className="container mx-auto py-6">
+        <PageHeader 
+          title="Transporte no encontrado" 
+          description="El transporte solicitado no existe o ha sido eliminado."
+          backButton={{
+            label: "Volver a transportes",
+            onClick: () => navigate("/transportes"),
+          }}
+        />
       </div>
     );
   }
   
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      <PageHeader
-        title="Editar Transporte"
-        description="Actualiza los datos del transporte"
+    <div className="container mx-auto py-6">
+      <PageHeader 
+        title="Editar Transporte" 
+        description="Actualiza la información del transporte"
         backButton={{
-          label: "Volver a transportes",
-          onClick: () => navigate("/transportes"),
+          label: "Volver a detalles",
+          onClick: () => navigate(`/transportes/${id}`),
         }}
       />
       
       <Card>
         <CardHeader>
           <CardTitle>Información del Transporte</CardTitle>
+          <CardDescription>
+            Completa los datos del transporte. Los campos marcados con * son obligatorios.
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <TransportForm
-            transport={formData}
+          <TransportForm 
+            transport={transport}
             onSubmit={handleSubmit}
             isSubmitting={isSubmitting}
           />

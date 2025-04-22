@@ -1,10 +1,8 @@
-
-import React from 'react';
-import { useForm } from 'react-hook-form';
-import { useToast } from '@/hooks/use-toast';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import React from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -13,64 +11,68 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+import { Input } from "@/components/ui/input";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
 } from "@/components/ui/select";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Transport } from '../../../transport/models/transport.model';
+import { Transport } from "../../../entities/transport/models/transport.model";
 
-interface TransportFormProps {
-  transport?: Transport;
+const transportSchema = z.object({
+  razon_social: z.string().min(3, { message: "La razón social debe tener al menos 3 caracteres" }),
+  ruc: z.string().length(11, { message: "El RUC debe tener 11 dígitos" }).regex(/^\d+$/, { message: "El RUC debe contener solo números" }),
+  direccion: z.string().min(1, { message: "La dirección es requerida" }),
+  departamento: z.string().min(1, { message: "El departamento es requerido" }),
+  provincia: z.string().min(1, { message: "La provincia es requerida" }),
+  distrito: z.string().min(1, { message: "El distrito es requerido" }),
+  cobertura: z.string().optional(),
+  estado: z.boolean().default(true),
+});
+
+type TransportFormData = z.infer<typeof transportSchema>;
+
+export interface TransportFormProps {
+  transport?: Partial<Transport>;
   onSubmit: (data: Partial<Transport>) => Promise<void>;
-  onCancel: () => void;
-  isLoading?: boolean;
+  isSubmitting?: boolean;
 }
 
-const TransportForm: React.FC<TransportFormProps> = ({
-  transport,
+export const TransportForm: React.FC<TransportFormProps> = ({
+  transport = {},
   onSubmit,
-  onCancel,
-  isLoading = false
+  isSubmitting = false,
 }) => {
-  const { toast } = useToast();
-  const isEditMode = !!transport;
-  
-  const form = useForm<Partial<Transport>>({
+  const form = useForm<TransportFormData>({
+    resolver: zodResolver(transportSchema),
     defaultValues: {
-      name: transport?.name || '',
-      ruc: transport?.ruc || '',
-      address: transport?.address || '',
-      department: transport?.department || '',
-      province: transport?.province || '',
-      district: transport?.district || '',
-      coverage: transport?.coverage || '',
-      status: transport?.status || 'active',
-    }
+      razon_social: transport.razon_social || "",
+      ruc: transport.ruc || "",
+      direccion: transport.direccion || "",
+      departamento: transport.departamento || "",
+      provincia: transport.provincia || "",
+      distrito: transport.distrito || "",
+      cobertura: transport.cobertura || "",
+      estado: transport.estado !== undefined ? transport.estado : true,
+    },
   });
-  
-  const handleFormSubmit = async (data: Partial<Transport>) => {
+
+  async function handleSubmit(values: TransportFormData) {
     try {
-      await onSubmit(data);
-      toast({
-        title: `Transporte ${isEditMode ? 'actualizado' : 'creado'}`,
-        description: `El transporte ha sido ${isEditMode ? 'actualizado' : 'creado'} exitosamente`
+      await onSubmit({
+        ...transport,
+        ...values
       });
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: `No se pudo ${isEditMode ? 'actualizar' : 'crear'} el transporte: ${error.message}`
-      });
+    } catch (error) {
+      console.error("Error al guardar transporte:", error);
     }
-  };
-  
+  }
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleFormSubmit)}>
+      <form onSubmit={form.handleSubmit(handleSubmit)}>
         <Card>
           <CardHeader>
             <CardTitle>{isEditMode ? 'Editar Transporte' : 'Nuevo Transporte'}</CardTitle>
@@ -80,7 +82,7 @@ const TransportForm: React.FC<TransportFormProps> = ({
             <div className="grid md:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
-                name="name"
+                name="razon_social"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Razón Social</FormLabel>
@@ -109,7 +111,7 @@ const TransportForm: React.FC<TransportFormProps> = ({
             
             <FormField
               control={form.control}
-              name="address"
+              name="direccion"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Dirección</FormLabel>
@@ -124,7 +126,7 @@ const TransportForm: React.FC<TransportFormProps> = ({
             <div className="grid md:grid-cols-3 gap-6">
               <FormField
                 control={form.control}
-                name="department"
+                name="departamento"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Departamento</FormLabel>
@@ -138,7 +140,7 @@ const TransportForm: React.FC<TransportFormProps> = ({
               
               <FormField
                 control={form.control}
-                name="province"
+                name="provincia"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Provincia</FormLabel>
@@ -152,7 +154,7 @@ const TransportForm: React.FC<TransportFormProps> = ({
               
               <FormField
                 control={form.control}
-                name="district"
+                name="distrito"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Distrito</FormLabel>
@@ -167,7 +169,7 @@ const TransportForm: React.FC<TransportFormProps> = ({
             
             <FormField
               control={form.control}
-              name="coverage"
+              name="cobertura"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Cobertura</FormLabel>
@@ -185,7 +187,7 @@ const TransportForm: React.FC<TransportFormProps> = ({
             
             <FormField
               control={form.control}
-              name="status"
+              name="estado"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Estado</FormLabel>
@@ -230,5 +232,3 @@ const TransportForm: React.FC<TransportFormProps> = ({
     </Form>
   );
 };
-
-export default TransportForm;

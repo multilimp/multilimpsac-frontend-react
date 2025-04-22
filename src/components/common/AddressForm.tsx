@@ -1,100 +1,89 @@
 
 import React from 'react';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { Control } from 'react-hook-form';
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-interface AddressFormProps {
-  control: any;
-  disabled?: boolean;
+export interface AddressFormProps {
+  control: Control<any>;
+  addressField?: string;
+  departmentField?: string;
+  provinceField?: string;
+  districtField?: string;
 }
 
-const AddressForm: React.FC<AddressFormProps> = ({ control, disabled = false }) => {
+const AddressForm: React.FC<AddressFormProps> = ({
+  control,
+  addressField = 'direccion',
+  departmentField = 'departamento',
+  provinceField = 'provincia',
+  districtField = 'distrito',
+}) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="space-y-4">
       <FormField
         control={control}
-        name="direccion"
+        name={addressField}
         render={({ field }) => (
           <FormItem>
             <FormLabel>Dirección</FormLabel>
             <FormControl>
-              <Input 
-                placeholder="Dirección completa" 
-                {...field} 
-                disabled={disabled}
-              />
+              <Input placeholder="Dirección" {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
         )}
       />
-
-      <FormField
-        control={control}
-        name="departamento"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Departamento</FormLabel>
-            <Select 
-              onValueChange={field.onChange} 
-              defaultValue={field.value}
-              disabled={disabled}
-            >
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <FormField
+          control={control}
+          name={departmentField}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Departamento</FormLabel>
               <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar departamento" />
-                </SelectTrigger>
+                <Input placeholder="Departamento" {...field} />
               </FormControl>
-              <SelectContent>
-                <SelectItem value="LIMA">Lima</SelectItem>
-                <SelectItem value="AREQUIPA">Arequipa</SelectItem>
-                <SelectItem value="CUSCO">Cusco</SelectItem>
-                <SelectItem value="LA LIBERTAD">La Libertad</SelectItem>
-                <SelectItem value="PIURA">Piura</SelectItem>
-                {/* Add other departments as needed */}
-              </SelectContent>
-            </Select>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={control}
-        name="provincia"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Provincia</FormLabel>
-            <FormControl>
-              <Input 
-                placeholder="Provincia" 
-                {...field} 
-                disabled={disabled}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={control}
-        name="distrito"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Distrito</FormLabel>
-            <FormControl>
-              <Input 
-                placeholder="Distrito" 
-                {...field} 
-                disabled={disabled}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={control}
+          name={provinceField}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Provincia</FormLabel>
+              <FormControl>
+                <Input placeholder="Provincia" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={control}
+          name={districtField}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Distrito</FormLabel>
+              <FormControl>
+                <Input placeholder="Distrito" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
     </div>
   );
 };

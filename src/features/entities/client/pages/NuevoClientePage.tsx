@@ -16,9 +16,17 @@ export const NuevoClientePage: React.FC = () => {
   
   const handleSubmit = async (data: Partial<Cliente>) => {
     try {
+      // Make sure required fields are present
+      if (!data.razonSocial || !data.ruc || !data.codUnidad) {
+        throw new Error("Faltan campos requeridos");
+      }
+      
       // Ensure estado is set to true for new clients
       const clienteData = {
         ...data,
+        razonSocial: data.razonSocial,
+        ruc: data.ruc,
+        codUnidad: data.codUnidad,
         estado: true // Setting estado explicitly as it's required
       };
       
@@ -29,7 +37,7 @@ export const NuevoClientePage: React.FC = () => {
         description: "El cliente ha sido creado exitosamente.",
       });
       navigate("/clientes");
-    } catch (error) {
+    } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Error al crear",
