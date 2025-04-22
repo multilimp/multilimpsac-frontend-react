@@ -3,7 +3,7 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import PageHeader from '@/components/common/PageHeader';
 import { Button } from '@/components/ui/button';
-import { useCliente } from '../../../client/services/cliente.service';
+import { useCliente } from '../services/client.service';
 
 import ClienteInfo from '../components/ClienteInfo';
 import ClienteDetailsTabs from '../components/ClienteDetailsTabs';

@@ -55,12 +55,14 @@ export const useSupplierContacts = (supplierId?: string) => {
           title: "Contacto actualizado",
           description: "El contacto ha sido actualizado exitosamente."
         });
-      } else {
+      } else if (supplierId) {
         await createContactMutation.mutateAsync({
           ...data,
           supplierId,
+          name: data.name || '',
           status: 'active'
-        });
+        } as Omit<SupplierContact, 'id'>);
+        
         toast({
           title: "Contacto creado",
           description: "El contacto ha sido creado exitosamente."

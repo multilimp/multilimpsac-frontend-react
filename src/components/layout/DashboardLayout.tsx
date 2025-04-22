@@ -2,8 +2,8 @@
 import React, { ReactNode } from "react";
 import { Outlet } from "react-router-dom";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
-import TopBar from "@/features/layout/components/TopBar";
-import AppSidebar from "@/features/layout/components/AppSidebar";
+import TopBar from "@/components/layout/TopBar";
+import AppSidebar from "@/components/layout/AppSidebar";
 
 interface DashboardLayoutProps {
   children?: ReactNode;

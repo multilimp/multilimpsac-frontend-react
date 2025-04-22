@@ -1,29 +1,28 @@
 
-import React from "react";
-import { TableRow, TableCell } from "@/components/ui/table";
+import React, { ReactNode } from 'react';
+import { LucideIcon, FolderX } from 'lucide-react';
 
 interface TableEmptyStateProps {
   title?: string;
   description?: string;
-  colSpan?: number;
-  loading?: boolean;
+  icon?: LucideIcon;
+  action?: ReactNode;
   className?: string;
-  action?: React.ReactNode;
 }
 
-const TableEmptyState: React.FC<TableEmptyStateProps> = ({ 
-  title = "No hay datos disponibles", 
-  description, 
-  colSpan = 6,
-  loading = false,
-  className = "",
-  action
+const TableEmptyState: React.FC<TableEmptyStateProps> = ({
+  title = "No hay datos",
+  description = "No hay registros disponibles para mostrar.",
+  icon: Icon = FolderX,
+  action,
+  className = ""
 }) => {
   return (
-    <div className={`w-full flex flex-col items-center justify-center p-8 text-center ${className}`}>
-      <h3 className="text-lg font-medium">{loading ? "Cargando datos..." : title}</h3>
-      {description && <p className="text-sm text-muted-foreground mt-2">{description}</p>}
-      {action && <div className="mt-4">{action}</div>}
+    <div className={`flex flex-col items-center justify-center p-8 text-center ${className}`}>
+      <Icon className="h-12 w-12 text-muted-foreground mb-4" />
+      <h3 className="text-lg font-medium mb-2">{title}</h3>
+      <p className="text-sm text-muted-foreground mb-4">{description}</p>
+      {action && <div className="mt-2">{action}</div>}
     </div>
   );
 };

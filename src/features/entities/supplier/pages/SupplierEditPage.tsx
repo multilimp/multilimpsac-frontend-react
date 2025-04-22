@@ -1,10 +1,11 @@
+
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LoadingFallback } from '@/components/common/LoadingFallback';
 import BreadcrumbNav from '@/components/layout/BreadcrumbNav';
-import { useSupplier, useUpdateSupplier, useCreateSupplier } from '../../entities/supplier/services/supplier.serviceupplier.service';
+import { useSupplier, useUpdateSupplier, useCreateSupplier } from '../services/supplier.service';
 import SupplierForm from '../components/SupplierForm';
 import { Supplier } from '../models/supplier.model';
 

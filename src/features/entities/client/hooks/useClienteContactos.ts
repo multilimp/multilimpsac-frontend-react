@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { ClientContact } from '../models/client.model';
 import { useToast } from '@/hooks/use-toast';
@@ -6,7 +7,7 @@ import {
   useContactosCliente, 
   useCreateContactoCliente, 
   useUpdateContactoCliente 
-} from '../../../client/services/cliente.service';
+} from '../services/client.service';
 
 export const useClienteContactos = (clienteId: string | undefined) => {
   const { toast } = useToast();

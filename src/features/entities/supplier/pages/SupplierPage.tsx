@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "@/components/common/PageHeader";
@@ -5,7 +6,7 @@ import { DataGrid, DataGridColumn } from "@/components/ui/data-grid";
 import { useToast } from "@/hooks/use-toast";
 import BreadcrumbNav from "@/components/layout/BreadcrumbNav";
 import { useSuppliers } from "@/features/entities/supplier/services/supplier.service";
-import { Supplier } from "@/features/supplier/models/supplier.model";
+import { Supplier } from "@/features/entities/supplier/models/supplier.model";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";

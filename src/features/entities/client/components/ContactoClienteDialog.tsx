@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -51,7 +52,7 @@ const ContactoClienteDialog: React.FC<ContactoClienteDialogProps> = ({
         cargo: '',
         telefono: '',
         correo: '',
-        clienteId
+        clientId: clienteId
       });
     }
   }, [contacto, clienteId]);
@@ -63,7 +64,7 @@ const ContactoClienteDialog: React.FC<ContactoClienteDialogProps> = ({
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await onSubmit({ ...formData, clienteId });
+    await onSubmit({ ...formData, clientId: clienteId });
     onOpenChange(false);
   };
   
