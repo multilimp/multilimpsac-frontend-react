@@ -1,10 +1,9 @@
-
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "@/components/common/PageHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ClienteForm } from "../components/ClienteForm";
-import { useCreateCliente } from "../../../client/services/cliente.service";
+import { useCreateCliente } from "../services/client.service";
 import { useToast } from "@/hooks/use-toast";
 import { Cliente } from "../models/client.model";
 
@@ -12,7 +11,6 @@ export const NuevoClientePage: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  // Mutación para crear cliente
   const { mutateAsync: createCliente, isPending: isSubmitting } = useCreateCliente();
   
   const handleSubmit = async (data: Partial<Cliente>) => {

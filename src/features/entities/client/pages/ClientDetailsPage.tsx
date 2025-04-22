@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Users, Pencil, Plus } from 'lucide-react';
 import BreadcrumbNav from '@/components/layout/BreadcrumbNav';
 import { useToast } from '@/hooks/use-toast';
-import { useCliente, useDeleteClient } from '../services/cliente.service';
+import { useCliente, useDeleteCliente } from '../services/client.service';
 import { LoadingFallback } from '@/components/common/LoadingFallback';
 import {
   Dialog,
@@ -38,7 +38,7 @@ const ClientDetailsPage: React.FC = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   
   const { data: cliente, isLoading: isLoadingCliente, error: clienteError } = useCliente(id || '');
-  const deleteMutation = useDeleteClient();
+  const deleteMutation = useDeleteCliente();
   
   const {
     contactos,
@@ -95,12 +95,10 @@ const ClientDetailsPage: React.FC = () => {
     }
   };
   
-  // Render loading state
   if (isLoadingCliente) {
     return <LoadingFallback />;
   }
   
-  // Render error state
   if (clienteError || !cliente) {
     return (
       <div className="p-4">

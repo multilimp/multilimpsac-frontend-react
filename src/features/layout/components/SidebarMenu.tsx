@@ -1,14 +1,20 @@
 
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { MenuItem } from "@/components/layout/DynamicSidebar";
-import {
+import { 
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarMenu as SMenu,
 } from "@/components/ui/sidebar";
 import { RequirePermission } from "@/core/utils/permissions";
 import { cn } from "@/app/core/utils";
+
+interface MenuItem {
+  label: string;
+  path: string;
+  icon?: React.ComponentType<{ className?: string }>;
+  permission?: string;
+}
 
 interface SidebarMenuProps {
   items: MenuItem[];

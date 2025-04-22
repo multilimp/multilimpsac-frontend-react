@@ -5,7 +5,7 @@ import { DataGrid, DataGridColumn } from "@/components/ui/data-grid";
 import { useToast } from "@/hooks/use-toast";
 import BreadcrumbNav from "@/components/layout/BreadcrumbNav";
 import { useQuery } from "@tanstack/react-query";
-import { clientService } from "../services/client.service";
+import { fetchClientes } from "../services/client.service";
 import { Client } from "../models/client.model";
 import { Badge } from "@/components/ui/badge";
 
@@ -14,7 +14,7 @@ const ClientPage: React.FC = () => {
   const navigate = useNavigate();
   const { data: clients = [], isLoading, refetch } = useQuery({
     queryKey: ["clients"],
-    queryFn: clientService.fetchClients,
+    queryFn: fetchClientes
   });
 
   const breadcrumbItems = [
@@ -93,4 +93,3 @@ const ClientPage: React.FC = () => {
 };
 
 export default ClientPage;
-

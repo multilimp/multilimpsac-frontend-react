@@ -41,9 +41,15 @@ class CompanyCatalogApi {
       throw new Error('empresa_id is required');
     }
     
+    // Fix the typing issue by explicitly setting the values expected by Supabase
     const { data, error } = await supabase
       .from('catalogo_empresas')
-      .insert(dbCatalog)
+      .insert({
+        empresa_id: dbCatalog.empresa_id,
+        codigo: dbCatalog.codigo,
+        created_at: dbCatalog.created_at,
+        updated_at: dbCatalog.updated_at
+      })
       .select()
       .single();
       

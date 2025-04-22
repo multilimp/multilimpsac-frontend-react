@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import PageHeader from "@/components/common/PageHeader";
 import SearchBar from "@/components/common/SearchBar";
 import { ClienteTable } from "../components/ClienteTable";
-import { useClientes, useDeleteCliente } from "../../../client/services/cliente.service";
+import { useClientes, useDeleteCliente } from "../services/client.service";
 import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
@@ -21,13 +21,10 @@ export const ClientesPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [clienteToDelete, setClienteToDelete] = useState<string | null>(null);
   
-  // Consulta React Query para obtener clientes
   const { data: clientes = [], isLoading } = useClientes();
   
-  // Mutación para eliminar clientes
   const { mutate: deleteCliente, isPending: isDeleting } = useDeleteCliente();
 
-  // Filtrar clientes basado en término de búsqueda
   const filteredClientes = Array.isArray(clientes) ? clientes.filter(
     (cliente) =>
       cliente.razonSocial.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -91,7 +88,6 @@ export const ClientesPage: React.FC = () => {
         />
       </div>
 
-      {/* Diálogo de confirmación de eliminación */}
       <Dialog open={!!clienteToDelete} onOpenChange={(open) => !open && setClienteToDelete(null)}>
         <DialogContent>
           <DialogHeader>

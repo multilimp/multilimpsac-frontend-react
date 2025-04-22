@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "@/components/common/PageHeader";
@@ -6,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { ClienteForm } from "../components/ClienteForm";
-import { useCliente, useUpdateCliente } from "../../../client/services/cliente.service";
+import { useCliente, useUpdateCliente } from "../services/client.service";
 import { useToast } from "@/hooks/use-toast";
 import { Cliente } from "../models/client.model";
 

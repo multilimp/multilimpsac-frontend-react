@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Company, CompanyCatalog, CompanyDB, CompanyCatalogDB, mapCompanyFromDB, mapCompanyToDB, mapCompanyCatalogFromDB, mapCompanyCatalogToDB } from '../models/company.model';
 import { stringToNumberId } from '@/utils/id-conversions';
@@ -123,9 +122,20 @@ export const companyService = {
   createCompanyCatalog: async (catalogData: Partial<CompanyCatalog>): Promise<CompanyCatalog> => {
     const catalogDB = mapCompanyCatalogToDB(catalogData);
     
+    // Ensure empresa_id exists for the insert operation
+    if (!catalogDB.empresa_id) {
+      throw new Error('empresa_id is required for creating a catalog');
+    }
+    
+    // Fix the typing issue by explicitly setting the values expected by Supabase
     const { data, error } = await supabase
       .from("catalogo_empresas")
-      .insert(catalogDB)
+      .insert({
+        empresa_id: catalogDB.empresa_id,
+        codigo: catalogDB.codigo,
+        created_at: catalogDB.created_at,
+        updated_at: catalogDB.updated_at
+      })
       .select()
       .single();
 
