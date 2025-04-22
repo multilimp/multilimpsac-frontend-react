@@ -1,54 +1,54 @@
 
 import { useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
-import { TransportContact } from '../models/transportContact.model';
+import { SupplierContact } from '../models/supplierContact.model';
 import { 
-  useTransportContacts as useTransportContactsQuery, 
-  useCreateTransportContact, 
-  useUpdateTransportContact,
-  useDeleteTransportContact 
-} from '../services/transport-contact.service';
+  useSupplierContacts as useSupplierContactsQuery,
+  useCreateSupplierContact, 
+  useUpdateSupplierContact,
+  useDeleteSupplierContact 
+} from '../services/supplier-contact.service';
 
-export const useTransportContacts = (transportId?: string) => {
+export const useSupplierContacts = (supplierId?: string) => {
   const { toast } = useToast();
   
   const [isContactDialogOpen, setIsContactDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedContact, setSelectedContact] = useState<TransportContact | null>(null);
+  const [selectedContact, setSelectedContact] = useState<SupplierContact | null>(null);
   
   const { 
     data: contacts = [], 
     isLoading: isLoadingContacts,
     refetch: refetchContacts
-  } = useTransportContactsQuery(transportId);
+  } = useSupplierContactsQuery(supplierId);
   
-  const createContactMutation = useCreateTransportContact();
-  const updateContactMutation = useUpdateTransportContact();
-  const deleteContactMutation = useDeleteTransportContact(transportId);
+  const createContactMutation = useCreateSupplierContact();
+  const updateContactMutation = useUpdateSupplierContact();
+  const deleteContactMutation = useDeleteSupplierContact(supplierId);
   
   const handleOpenAddContactDialog = () => {
     setSelectedContact(null);
     setIsContactDialogOpen(true);
   };
   
-  const handleOpenEditContactDialog = (contact: TransportContact) => {
+  const handleOpenEditContactDialog = (contact: SupplierContact) => {
     setSelectedContact(contact);
     setIsContactDialogOpen(true);
   };
   
-  const handleOpenDeleteContactDialog = (contact: TransportContact) => {
+  const handleOpenDeleteContactDialog = (contact: SupplierContact) => {
     setSelectedContact(contact);
     setIsDeleteDialogOpen(true);
   };
   
-  const handleContactSubmit = async (data: Partial<TransportContact>) => {
+  const handleContactSubmit = async (data: Partial<SupplierContact>) => {
     try {
       if (selectedContact?.id) {
         await updateContactMutation.mutateAsync({
           id: selectedContact.id,
           data: {
             ...data,
-            transportId
+            supplierId
           }
         });
         toast({
@@ -58,7 +58,7 @@ export const useTransportContacts = (transportId?: string) => {
       } else {
         await createContactMutation.mutateAsync({
           ...data,
-          transportId,
+          supplierId,
           status: 'active'
         });
         toast({

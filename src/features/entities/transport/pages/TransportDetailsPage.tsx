@@ -1,8 +1,9 @@
+
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Truck, Pencil, Users, Plus } from 'lucide-react';
+import { ArrowLeft, Truck, Pencil } from 'lucide-react';
 import BreadcrumbNav from '@/components/layout/BreadcrumbNav';
 import { useToast } from '@/hooks/use-toast';
 import { useTransport, useDeleteTransport } from '../services/transport.service';
@@ -18,10 +19,10 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import ContactosTransporteTab from '../components/ContactosTransporteTab';
-import ContactoTransporteFormDialog from '../components/ContactoTransporteFormDialog';
-import ContactoTransporteDeleteDialog from '../components/ContactoTransporteDeleteDialog';
-import { useTransportContactos } from '../hooks/useTransportContactos';
+import { useTransportContacts } from '../hooks/useTransportContacts';
+import TransportContactsTab from '../components/TransportContactsTab';
+import TransportContactDialog from '../components/TransportContactDialog';
+import TransportContactDeleteDialog from '../components/TransportContactDeleteDialog';
 
 const TransportDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -33,24 +34,24 @@ const TransportDetailsPage: React.FC = () => {
   const { data: transport, isLoading, error } = useTransport(id || '');
   const deleteMutation = useDeleteTransport();
 
-  // Hook para gestionar contactos de transporte
+  // Hook for managing transport contacts
   const {
-    contactos,
-    isLoadingContactos,
-    isContactoDialogOpen,
-    setIsContactoDialogOpen,
-    isDeleteDialogOpen: isContactoDeleteDialogOpen,
-    setIsDeleteDialogOpen: setIsContactoDeleteDialogOpen,
-    selectedContacto,
-    isCreatingContacto,
-    isUpdatingContacto,
-    isDeletingContacto,
-    handleOpenAddContactoDialog,
-    handleOpenEditContactoDialog,
-    handleOpenDeleteContactoDialog,
-    handleContactoSubmit,
-    handleDeleteContacto
-  } = useTransportContactos(id);
+    contacts,
+    isLoadingContacts,
+    isContactDialogOpen,
+    setIsContactDialogOpen,
+    isDeleteDialogOpen: isContactDeleteDialogOpen,
+    setIsDeleteDialogOpen: setIsContactDeleteDialogOpen,
+    selectedContact,
+    isCreatingContact,
+    isUpdatingContact,
+    isDeletingContact,
+    handleOpenAddContactDialog,
+    handleOpenEditContactDialog,
+    handleOpenDeleteContactDialog,
+    handleContactSubmit,
+    handleDeleteContact
+  } = useTransportContacts(id);
   
   const breadcrumbItems = [
     {
@@ -221,32 +222,17 @@ const TransportDetailsPage: React.FC = () => {
         </TabsContent>
         
         <TabsContent value="contacts" className="space-y-6">
-          <ContactosTransporteTab 
-            contactos={contactos}
-            isLoading={isLoadingContactos}
-            onAddContacto={handleOpenAddContactoDialog}
-            onEditContacto={handleOpenEditContactoDialog}
-            onDeleteContacto={handleOpenDeleteContactoDialog}
-          />
-          
-          <ContactoTransporteFormDialog 
-            isOpen={isContactoDialogOpen}
-            onClose={() => setIsContactoDialogOpen(false)}
-            onSubmit={handleContactoSubmit}
-            contacto={selectedContacto}
-            isLoading={isCreatingContacto || isUpdatingContacto}
-          />
-          
-          <ContactoTransporteDeleteDialog 
-            isOpen={isContactoDeleteDialogOpen}
-            onClose={() => setIsContactoDeleteDialogOpen(false)}
-            onDelete={handleDeleteContacto}
-            contacto={selectedContacto}
-            isLoading={isDeletingContacto}
+          <TransportContactsTab 
+            contacts={contacts}
+            isLoading={isLoadingContacts}
+            onAddContact={handleOpenAddContactDialog}
+            onEditContact={handleOpenEditContactDialog}
+            onDeleteContact={handleOpenDeleteContactDialog}
           />
         </TabsContent>
       </Tabs>
       
+      {/* Transport delete confirmation dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -268,6 +254,23 @@ const TransportDetailsPage: React.FC = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      
+      {/* Contact dialogs */}
+      <TransportContactDialog 
+        isOpen={isContactDialogOpen}
+        onClose={() => setIsContactDialogOpen(false)}
+        contact={selectedContact}
+        onSubmit={handleContactSubmit}
+        isLoading={isCreatingContact || isUpdatingContact}
+      />
+      
+      <TransportContactDeleteDialog 
+        isOpen={isContactDeleteDialogOpen}
+        onClose={() => setIsContactDeleteDialogOpen(false)}
+        onDelete={handleDeleteContact}
+        contact={selectedContact}
+        isLoading={isDeletingContact}
+      />
     </div>
   );
 };

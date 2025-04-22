@@ -1,20 +1,13 @@
+
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Building2, Pencil, Users, Plus } from 'lucide-react';
+import { ArrowLeft, Building2, Pencil } from 'lucide-react';
 import BreadcrumbNav from '@/components/layout/BreadcrumbNav';
 import { useToast } from '@/hooks/use-toast';
 import { useSupplier, useDeleteSupplier } from '../services/supplier.service';
 import { LoadingFallback } from '@/components/common/LoadingFallback';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,6 +19,10 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useSupplierContacts } from '../hooks/useSupplierContacts';
+import SupplierContactsTab from '../components/SupplierContactsTab';
+import SupplierContactDialog from '../components/SupplierContactDialog';
+import SupplierContactDeleteDialog from '../components/SupplierContactDeleteDialog';
 
 const SupplierDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -36,6 +33,25 @@ const SupplierDetailsPage: React.FC = () => {
   
   const { data: supplier, isLoading, error } = useSupplier(id || '');
   const deleteMutation = useDeleteSupplier();
+  
+  // Use the supplier contacts hook
+  const {
+    contacts,
+    isLoadingContacts,
+    isContactDialogOpen,
+    setIsContactDialogOpen,
+    isDeleteDialogOpen: isContactDeleteDialogOpen,
+    setIsDeleteDialogOpen: setIsContactDeleteDialogOpen,
+    selectedContact,
+    isCreatingContact,
+    isUpdatingContact,
+    isDeletingContact,
+    handleOpenAddContactDialog,
+    handleOpenEditContactDialog,
+    handleOpenDeleteContactDialog,
+    handleContactSubmit,
+    handleDeleteContact
+  } = useSupplierContacts(id);
   
   const breadcrumbItems = [
     {
@@ -197,27 +213,17 @@ const SupplierDetailsPage: React.FC = () => {
         </TabsContent>
         
         <TabsContent value="contacts" className="space-y-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold flex items-center">
-              <Users className="mr-2 h-5 w-5 text-muted-foreground" />
-              Contactos
-            </h2>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Agregar Contacto
-            </Button>
-          </div>
-          
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-muted-foreground text-center py-8">
-                No hay contactos asociados a este proveedor.
-              </p>
-            </CardContent>
-          </Card>
+          <SupplierContactsTab 
+            contacts={contacts}
+            isLoading={isLoadingContacts}
+            onAddContact={handleOpenAddContactDialog}
+            onEditContact={handleOpenEditContactDialog}
+            onDeleteContact={handleOpenDeleteContactDialog}
+          />
         </TabsContent>
       </Tabs>
       
+      {/* Supplier delete confirmation dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -235,6 +241,23 @@ const SupplierDetailsPage: React.FC = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      
+      {/* Contact dialogs */}
+      <SupplierContactDialog 
+        isOpen={isContactDialogOpen}
+        onClose={() => setIsContactDialogOpen(false)}
+        contact={selectedContact}
+        onSubmit={handleContactSubmit}
+        isLoading={isCreatingContact || isUpdatingContact}
+      />
+      
+      <SupplierContactDeleteDialog 
+        isOpen={isContactDeleteDialogOpen}
+        onClose={() => setIsContactDeleteDialogOpen(false)}
+        onDelete={handleDeleteContact}
+        contact={selectedContact}
+        isLoading={isDeletingContact}
+      />
     </div>
   );
 };

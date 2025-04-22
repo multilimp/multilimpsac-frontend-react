@@ -1,24 +1,17 @@
+
 import { supabase } from '@/integrations/supabase/client';
-import { 
-  Transport, 
-  TransportDB, 
-  TransportContact, 
-  TransportContactDB,
-  mapTransportFromDB, 
-  mapTransportToDB,
-  mapTransportContactFromDB,
-  mapTransportContactToDB
-} from '../models/transport.model';
+import { Transport, TransportDB, mapTransportFromDB, mapTransportToDB } from '../models/transport.model';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 
+// Class for Transport service
 export default class TransportService {
-  // Crear un nuevo transporte
+  // Create a new transport
   static async create(data: Omit<Transport, 'id'>): Promise<Transport> {
     try {
       const mappedData = mapTransportToDB(data);
       
-      // Asegurar que los campos requeridos tengan valores por defecto
+      // Ensure required fields have default values
       const transportData = {
         razon_social: data.name || 'Nuevo transporte',
         ruc: data.ruc || '00000000000',
@@ -46,7 +39,7 @@ export default class TransportService {
     }
   }
   
-  // Obtener todos los transportes
+  // Get all transports
   static async getAll(): Promise<Transport[]> {
     try {
       const { data, error } = await supabase
@@ -63,7 +56,7 @@ export default class TransportService {
     }
   }
   
-  // Obtener un transporte por ID
+  // Get a transport by ID
   static async getById(id: string): Promise<Transport> {
     try {
       const { data, error } = await supabase
@@ -82,7 +75,7 @@ export default class TransportService {
     }
   }
   
-  // Actualizar un transporte existente
+  // Update a transport
   static async update(id: string, updates: Partial<Transport>): Promise<Transport> {
     try {
       const mappedData = mapTransportToDB(updates);
@@ -104,7 +97,7 @@ export default class TransportService {
     }
   }
   
-  // Eliminar un transporte
+  // Delete a transport
   static async delete(id: string): Promise<void> {
     try {
       const { error } = await supabase
@@ -118,85 +111,9 @@ export default class TransportService {
       throw error;
     }
   }
-
-  // Obtener contactos de un transporte
-  static async getContactsByTransportId(transportId: string): Promise<TransportContact[]> {
-    try {
-      const { data, error } = await supabase
-        .from('contacto_transportes')
-        .select('*')
-        .eq('transporte_id', parseInt(transportId))
-        .order('nombre', { ascending: true });
-      
-      if (error) throw new Error(error.message);
-      
-      return (data || []).map(mapTransportContactFromDB);
-    } catch (error) {
-      console.error(`Error fetching contacts for transport ID ${transportId}:`, error);
-      throw error;
-    }
-  }
-
-  // Crear un nuevo contacto para un transporte
-  static async createContact(data: Partial<TransportContact>): Promise<TransportContact> {
-    try {
-      const mappedData = mapTransportContactToDB(data);
-      
-      const { data: newContact, error } = await supabase
-        .from('contacto_transportes')
-        .insert(mappedData)
-        .select()
-        .single();
-      
-      if (error) throw new Error(error.message);
-      if (!newContact) throw new Error('Failed to create contact');
-      
-      return mapTransportContactFromDB(newContact as TransportContactDB);
-    } catch (error) {
-      console.error('Error creating transport contact:', error);
-      throw error;
-    }
-  }
-
-  // Actualizar un contacto existente
-  static async updateContact(id: string, updates: Partial<TransportContact>): Promise<TransportContact> {
-    try {
-      const mappedData = mapTransportContactToDB(updates);
-      
-      const { data, error } = await supabase
-        .from('contacto_transportes')
-        .update(mappedData)
-        .eq('id', parseInt(id))
-        .select()
-        .single();
-      
-      if (error) throw new Error(error.message);
-      if (!data) throw new Error('Contact not found');
-      
-      return mapTransportContactFromDB(data as TransportContactDB);
-    } catch (error) {
-      console.error(`Error updating contact with ID ${id}:`, error);
-      throw error;
-    }
-  }
-
-  // Eliminar un contacto
-  static async deleteContact(id: string): Promise<void> {
-    try {
-      const { error } = await supabase
-        .from('contacto_transportes')
-        .delete()
-        .eq('id', parseInt(id));
-      
-      if (error) throw new Error(error.message);
-    } catch (error) {
-      console.error(`Error deleting contact with ID ${id}:`, error);
-      throw error;
-    }
-  }
 }
 
-// React hooks para el dominio de transportes
+// React hooks for transport domain
 export const useTransports = () => {
   return useQuery({
     queryKey: ['transports'],
@@ -278,97 +195,6 @@ export const useDeleteTransport = () => {
         variant: "destructive",
         title: "Error",
         description: `No se pudo eliminar el transporte: ${error.message}`
-      });
-    }
-  });
-};
-
-// Hooks para contactos de transportes
-export const useTransportContacts = (transportId?: string) => {
-  return useQuery({
-    queryKey: ['transportContacts', transportId],
-    queryFn: () => transportId ? TransportService.getContactsByTransportId(transportId) : [],
-    enabled: !!transportId
-  });
-};
-
-export const useCreateTransportContact = () => {
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
-  
-  return useMutation({
-    mutationFn: TransportService.createContact,
-    onSuccess: (_, variables) => {
-      if (variables.transportId) {
-        queryClient.invalidateQueries({ 
-          queryKey: ['transportContacts', variables.transportId] 
-        });
-      }
-      toast({
-        title: "Contacto creado",
-        description: "El contacto ha sido creado exitosamente"
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: `No se pudo crear el contacto: ${error.message}`
-      });
-    }
-  });
-};
-
-export const useUpdateTransportContact = () => {
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
-  
-  return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<TransportContact> }) =>
-      TransportService.updateContact(id, data),
-    onSuccess: (_, variables) => {
-      if (variables.data.transportId) {
-        queryClient.invalidateQueries({ 
-          queryKey: ['transportContacts', variables.data.transportId] 
-        });
-      }
-      toast({
-        title: "Contacto actualizado",
-        description: "El contacto ha sido actualizado exitosamente"
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: `No se pudo actualizar el contacto: ${error.message}`
-      });
-    }
-  });
-};
-
-export const useDeleteTransportContact = (transportId?: string) => {
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
-  
-  return useMutation({
-    mutationFn: TransportService.deleteContact,
-    onSuccess: () => {
-      if (transportId) {
-        queryClient.invalidateQueries({ 
-          queryKey: ['transportContacts', transportId] 
-        });
-      }
-      toast({
-        title: "Contacto eliminado",
-        description: "El contacto ha sido eliminado exitosamente"
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: `No se pudo eliminar el contacto: ${error.message}`
       });
     }
   });
