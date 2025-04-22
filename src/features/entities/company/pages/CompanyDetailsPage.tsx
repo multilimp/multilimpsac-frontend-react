@@ -8,47 +8,38 @@ import PageWithSecondaryNav from '@/components/layout/PageWithSecondaryNav';
 import SecondaryNavWrapper from '@/components/layout/SecondaryNavWrapper';
 import CompanyDetailPanel from '../components/CompanyDetailPanel';
 import { companyService, useCompany } from '../index';
-import { Company } from '../models/company.model'; // Import the Company type
+import { Company } from '../models/company.model';
 
 const CompanyDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("details");
-  
   const { data: company, isLoading, error } = useCompany(id || '');
-  
   const isNewCompany = id === 'new';
-  
   const navItems = [
-    { 
-      label: "Detalles", 
-      path: `/empresas/${id}`,
-      icon: Building2
-    }
+    { label: "Detalles", path: `/empresas/${id}`, icon: Building2 }
   ];
-  
+
   const handleEditClick = () => {
     navigate(`/empresas/${id}/edit`);
   };
-  
+
   const handleBackClick = () => {
     navigate('/empresas');
   };
-  
+
   const handleFormSubmit = async (data: Partial<Company>) => {
     try {
       if (isNewCompany) {
-        // Handle create
         const newCompany = await companyService.createCompany(data);
         navigate(`/empresas/${newCompany.id}`);
       } else if (id) {
-        // Handle update
         await companyService.updateCompany(id, {
           ...data,
-          direccion: data.direccion || data.address, // Map address to direccion
-          telefono: data.telefono || data.phone, // Map phone to telefono
-          correo: data.correo || data.email, // Map email to correo
-          razonSocial: data.razonSocial || data.name, // Map name to razonSocial
+          direccion: data.direccion || data.address,
+          telefono: data.telefono || data.phone,
+          correo: data.correo || data.email,
+          razonSocial: data.razonSocial || data.name,
           estado: data.estado !== undefined ? data.estado : (data.status === 'active')
         });
         navigate(`/empresas/${id}`);
@@ -57,7 +48,12 @@ const CompanyDetailsPage: React.FC = () => {
       console.error("Error saving company:", error);
     }
   };
-  
+
+  // Nuevo handler para ver catálogos
+  const handleViewCatalogs = (company: Company) => {
+    navigate(`/empresas/${company.id}/catalogos`);
+  };
+
   if (isLoading) {
     return (
       <PageWithSecondaryNav>
@@ -67,7 +63,7 @@ const CompanyDetailsPage: React.FC = () => {
       </PageWithSecondaryNav>
     );
   }
-  
+
   if (error && !isNewCompany) {
     return (
       <PageWithSecondaryNav>
@@ -80,7 +76,7 @@ const CompanyDetailsPage: React.FC = () => {
       </PageWithSecondaryNav>
     );
   }
-  
+
   return (
     <SecondaryNavWrapper navItems={navItems} title="Detalles de Empresa">
       <div className="space-y-6">
@@ -94,7 +90,6 @@ const CompanyDetailsPage: React.FC = () => {
               {isNewCompany ? "Nueva Empresa" : company?.razonSocial || company?.name}
             </h1>
           </div>
-          
           {!isNewCompany && (
             <Button onClick={handleEditClick}>
               <Pencil className="mr-2 h-4 w-4" />
@@ -102,14 +97,17 @@ const CompanyDetailsPage: React.FC = () => {
             </Button>
           )}
         </div>
-        
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
             <TabsTrigger value="details">Detalles</TabsTrigger>
           </TabsList>
-          
           <TabsContent value="details" className="mt-6">
-            {company && <CompanyDetailPanel company={company} />}
+            {company && (
+              <CompanyDetailPanel
+                company={company}
+                onViewCatalogs={handleViewCatalogs}
+              />
+            )}
           </TabsContent>
         </Tabs>
       </div>
