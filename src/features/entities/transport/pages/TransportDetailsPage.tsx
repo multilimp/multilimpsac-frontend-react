@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Pencil, Trash } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { ContactosTransporteTab } from '../components/ContactosTransporteTab';
+import ContactosTransporteTab from '../components/ContactosTransporteTab';
 import DeleteContactoDialog from '../components/ContactoTransporteDeleteDialog';
 import ContactoTransporteDialog from '../components/ContactoTransporteDialog';
 
@@ -50,7 +50,7 @@ const TransportDetailsPage: React.FC = () => {
   
   if (isLoading) {
     return (
-      <div className="container mx-auto py-6">
+      <div className="flex flex-col space-y-6">
         <PageHeader 
           title="Cargando detalles del transporte" 
           description="Por favor espere mientras se cargan los datos..."
@@ -68,7 +68,7 @@ const TransportDetailsPage: React.FC = () => {
   
   if (error || !transport) {
     return (
-      <div className="container mx-auto py-6">
+      <div className="flex flex-col space-y-6">
         <PageHeader 
           title="Error al cargar transporte" 
           description="Ocurrió un error al cargar los datos del transporte"
@@ -102,7 +102,7 @@ const TransportDetailsPage: React.FC = () => {
   };
   
   return (
-    <div className="container mx-auto py-6">
+    <div className="flex flex-col space-y-6">
       <PageHeader 
         title={transport.razon_social} 
         description={`RUC: ${transport.ruc}`}
@@ -201,18 +201,20 @@ const TransportDetailsPage: React.FC = () => {
           </Card>
         </TabsContent>
         
-        <ContactosTransporteTab 
-          contactos={contactos}
-          isLoading={isLoadingContactos}
-          onAddContacto={handleOpenAddContactoDialog}
-          onEditContacto={handleOpenEditContactoDialog}
-          onDeleteContacto={handleOpenDeleteContactoDialog}
-        />
+        <TabsContent value="contactos">
+          <ContactosTransporteTab 
+            contactos={contactos}
+            isLoading={isLoadingContactos}
+            onAddContacto={handleOpenAddContactoDialog}
+            onEditContacto={handleOpenEditContactoDialog}
+            onDeleteContacto={handleOpenDeleteContactoDialog}
+          />
+        </TabsContent>
       </Tabs>
       
       <ContactoTransporteDialog 
         isOpen={isContactoDialogOpen}
-        onOpenChange={setIsContactoDialogOpen}
+        onClose={() => setIsContactoDialogOpen(false)}
         contacto={selectedContacto}
         transporteId={transport.id}
         onSubmit={handleContactoSubmit}
@@ -221,8 +223,8 @@ const TransportDetailsPage: React.FC = () => {
       
       <DeleteContactoDialog
         isOpen={isContactoDeleteDialogOpen}
-        onOpenChange={setIsContactoDeleteDialogOpen}
-        onConfirm={handleDeleteContacto}
+        onClose={() => setIsContactoDeleteDialogOpen(false)}
+        onDelete={handleDeleteContacto}
         contacto={selectedContacto}
         isDeleting={isDeletingContacto}
       />

@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { TransportForm } from "../components/TransportForm";
 import { useToast } from "@/hooks/use-toast";
 import { useTransport, useUpdateTransport } from "../services/transport.service";
+import { Transport } from "../models/transport.model";
 
 export const TransportEditPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -43,7 +44,7 @@ export const TransportEditPage: React.FC = () => {
   
   if (isLoading) {
     return (
-      <div className="container mx-auto py-6">
+      <div className="flex flex-col space-y-6">
         <PageHeader 
           title="Cargando transporte" 
           description="Espere mientras cargamos la información..."
@@ -59,7 +60,7 @@ export const TransportEditPage: React.FC = () => {
   
   if (!transport) {
     return (
-      <div className="container mx-auto py-6">
+      <div className="flex flex-col space-y-6">
         <PageHeader 
           title="Transporte no encontrado" 
           description="El transporte solicitado no existe o ha sido eliminado."
@@ -73,7 +74,7 @@ export const TransportEditPage: React.FC = () => {
   }
   
   return (
-    <div className="container mx-auto py-6">
+    <div className="flex flex-col space-y-6">
       <PageHeader 
         title="Editar Transporte" 
         description="Actualiza la información del transporte"
@@ -95,6 +96,7 @@ export const TransportEditPage: React.FC = () => {
             transport={transport}
             onSubmit={handleSubmit}
             isSubmitting={isSubmitting}
+            onCancel={() => navigate(`/transportes/${id}`)}
           />
         </CardContent>
       </Card>

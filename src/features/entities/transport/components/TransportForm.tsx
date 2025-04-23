@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,7 +20,15 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { Transport } from "../../../entities/transport/models/transport.model";
+import { 
+  Card, 
+  CardContent, 
+  CardHeader, 
+  CardTitle, 
+  CardFooter 
+} from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+import { Transport } from "../models/transport.model";
 
 const transportSchema = z.object({
   razon_social: z.string().min(3, { message: "La razón social debe tener al menos 3 caracteres" }),
@@ -38,13 +47,17 @@ export interface TransportFormProps {
   transport?: Partial<Transport>;
   onSubmit: (data: Partial<Transport>) => Promise<void>;
   isSubmitting?: boolean;
+  onCancel?: () => void; 
 }
 
 export const TransportForm: React.FC<TransportFormProps> = ({
   transport = {},
   onSubmit,
   isSubmitting = false,
+  onCancel,
 }) => {
+  const isEditMode = !!transport.id;
+  
   const form = useForm<TransportFormData>({
     resolver: zodResolver(transportSchema),
     defaultValues: {
@@ -192,8 +205,8 @@ export const TransportForm: React.FC<TransportFormProps> = ({
                 <FormItem>
                   <FormLabel>Estado</FormLabel>
                   <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
+                    onValueChange={(value) => field.onChange(value === 'true')}
+                    defaultValue={field.value ? 'true' : 'false'}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -201,8 +214,8 @@ export const TransportForm: React.FC<TransportFormProps> = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="active">Activo</SelectItem>
-                      <SelectItem value="inactive">Inactivo</SelectItem>
+                      <SelectItem value="true">Activo</SelectItem>
+                      <SelectItem value="false">Inactivo</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -212,19 +225,21 @@ export const TransportForm: React.FC<TransportFormProps> = ({
           </CardContent>
           
           <CardFooter className="flex justify-end space-x-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              disabled={isLoading}
-            >
-              Cancelar
-            </Button>
+            {onCancel && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onCancel}
+                disabled={isSubmitting}
+              >
+                Cancelar
+              </Button>
+            )}
             <Button 
               type="submit" 
-              disabled={isLoading}
+              disabled={isSubmitting}
             >
-              {isLoading ? 'Guardando...' : isEditMode ? 'Actualizar' : 'Guardar'}
+              {isSubmitting ? 'Guardando...' : isEditMode ? 'Actualizar' : 'Guardar'}
             </Button>
           </CardFooter>
         </Card>
@@ -232,3 +247,5 @@ export const TransportForm: React.FC<TransportFormProps> = ({
     </Form>
   );
 };
+
+export default TransportForm;

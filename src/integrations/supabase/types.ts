@@ -372,7 +372,7 @@ export type Database = {
           direccion_entrega: string | null
           distrito_entrega: string | null
           empresa_id: number
-          estado: string | null
+          estado: Database["public"]["Enums"]["estado_cotizacion"] | null
           fecha_cotizacion: string | null
           fecha_entrega: string | null
           id: number
@@ -393,7 +393,7 @@ export type Database = {
           direccion_entrega?: string | null
           distrito_entrega?: string | null
           empresa_id: number
-          estado?: string | null
+          estado?: Database["public"]["Enums"]["estado_cotizacion"] | null
           fecha_cotizacion?: string | null
           fecha_entrega?: string | null
           id?: number
@@ -414,7 +414,7 @@ export type Database = {
           direccion_entrega?: string | null
           distrito_entrega?: string | null
           empresa_id?: number
-          estado?: string | null
+          estado?: Database["public"]["Enums"]["estado_cotizacion"] | null
           fecha_cotizacion?: string | null
           fecha_entrega?: string | null
           id?: number
@@ -1751,7 +1751,7 @@ export type Database = {
           nombre: string | null
           password: string
           remember_token: string | null
-          rol: string
+          rol: Database["public"]["Enums"]["user_role"]
           tabla: string | null
           updated_at: string | null
           username: string
@@ -1766,7 +1766,7 @@ export type Database = {
           nombre?: string | null
           password: string
           remember_token?: string | null
-          rol: string
+          rol?: Database["public"]["Enums"]["user_role"]
           tabla?: string | null
           updated_at?: string | null
           username: string
@@ -1781,7 +1781,7 @@ export type Database = {
           nombre?: string | null
           password?: string
           remember_token?: string | null
-          rol?: string
+          rol?: Database["public"]["Enums"]["user_role"]
           tabla?: string | null
           updated_at?: string | null
           username?: string
@@ -1793,9 +1793,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_catalogo_id_from_codigo: {
+        Args: { p_catalogo_codigo: string }
+        Returns: number
+      }
     }
     Enums: {
+      estado_cotizacion: "Aprobado" | "Rechazado" | "Enviado"
       user_role: "admin" | "user"
     }
     CompositeTypes: {
@@ -1912,6 +1916,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      estado_cotizacion: ["Aprobado", "Rechazado", "Enviado"],
       user_role: ["admin", "user"],
     },
   },

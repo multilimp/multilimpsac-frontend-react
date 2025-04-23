@@ -14,25 +14,25 @@ import { TransportContact } from "../models/transport.model";
 
 interface DeleteContactoDialogProps {
   isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
-  onConfirm: () => Promise<void>;
-  isDeleting: boolean;
+  onClose: () => void;
+  onDelete: () => Promise<void>;
   contacto: TransportContact | null;
+  isDeleting: boolean;
 }
 
 const DeleteContactoDialog: React.FC<DeleteContactoDialogProps> = ({
   isOpen,
-  onOpenChange,
-  onConfirm,
+  onClose,
+  onDelete,
   isDeleting,
   contacto
 }) => {
   const handleConfirm = async () => {
-    await onConfirm();
+    await onDelete();
   };
   
   return (
-    <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
+    <AlertDialog open={isOpen} onOpenChange={onClose}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>¿Está seguro?</AlertDialogTitle>

@@ -21,12 +21,15 @@ export const NuevoClientePage: React.FC = () => {
         throw new Error("Faltan campos requeridos");
       }
       
-      // Ensure estado is set to true for new clients
+      // Create a properly typed object with required fields
       const clienteData = {
-        ...data,
         razonSocial: data.razonSocial,
         ruc: data.ruc,
         codUnidad: data.codUnidad,
+        direccion: data.direccion,
+        departamento: data.departamento,
+        provincia: data.provincia,
+        distrito: data.distrito,
         estado: true // Setting estado explicitly as it's required
       };
       
@@ -75,3 +78,5 @@ export const NuevoClientePage: React.FC = () => {
     </div>
   );
 };
+
+export default NuevoClientePage;

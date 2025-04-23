@@ -25,22 +25,22 @@ const TransportPage: React.FC = () => {
 
   const columns: DataGridColumn[] = [
     { key: 'id', name: 'ID', type: 'string', sortable: true, filterable: true },
-    { key: 'name', name: 'Razón Social', type: 'string', sortable: true, filterable: true },
+    { key: 'razon_social', name: 'Razón Social', type: 'string', sortable: true, filterable: true },
     { key: 'ruc', name: 'RUC', type: 'string', sortable: true, filterable: true },
-    { key: 'address', name: 'Dirección', type: 'string', sortable: true, filterable: true },
-    { key: 'coverage', name: 'Cobertura', type: 'string', sortable: true, filterable: true },
-    { key: 'department', name: 'Departamento', type: 'string', sortable: true, filterable: true },
-    { key: 'province', name: 'Provincia', type: 'string', sortable: true, filterable: true },
-    { key: 'district', name: 'Distrito', type: 'string', sortable: true, filterable: true },
+    { key: 'direccion', name: 'Dirección', type: 'string', sortable: true, filterable: true },
+    { key: 'cobertura', name: 'Cobertura', type: 'string', sortable: true, filterable: true },
+    { key: 'departamento', name: 'Departamento', type: 'string', sortable: true, filterable: true },
+    { key: 'provincia', name: 'Provincia', type: 'string', sortable: true, filterable: true },
+    { key: 'distrito', name: 'Distrito', type: 'string', sortable: true, filterable: true },
     { 
-      key: 'status', 
+      key: 'estado', 
       name: 'Estado',  
       type: 'string',
       sortable: true, 
       filterable: true,
       render: (row: Transport) => (
-        <Badge variant={row.status === 'active' ? 'default' : 'secondary'}>
-          {row.status === 'active' ? 'Activo' : 'Inactivo'}
+        <Badge variant={row.estado ? 'default' : 'secondary'}>
+          {row.estado ? 'Activo' : 'Inactivo'}
         </Badge>
       )
     },

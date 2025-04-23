@@ -16,6 +16,7 @@ export interface AddressFormProps {
   departmentField?: string;
   provinceField?: string;
   districtField?: string;
+  districtFiel?: string; // For backward compatibility with existing code
 }
 
 const AddressForm: React.FC<AddressFormProps> = ({
@@ -24,7 +25,11 @@ const AddressForm: React.FC<AddressFormProps> = ({
   departmentField = 'departamento',
   provinceField = 'provincia',
   districtField = 'distrito',
+  districtFiel,  // For backward compatibility
 }) => {
+  // Use the districtFiel prop if districtField is not provided (for backward compatibility)
+  const actualDistrictField = districtField || districtFiel || 'distrito';
+  
   return (
     <div className="space-y-4">
       <FormField
@@ -72,7 +77,7 @@ const AddressForm: React.FC<AddressFormProps> = ({
         
         <FormField
           control={control}
-          name={districtField}
+          name={actualDistrictField}
           render={({ field }) => (
             <FormItem>
               <FormLabel>Distrito</FormLabel>

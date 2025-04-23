@@ -53,8 +53,11 @@ export const useTransportContactos = (transporteId: string) => {
       if (selectedContacto) {
         // Update existing contacto
         await updateMutation.mutateAsync({
-          ...selectedContacto,
-          ...data
+          id: selectedContacto.id,
+          data: {
+            ...data,
+            transporte_id: transporteId
+          }
         });
         toast({
           title: "Contacto actualizado",
@@ -64,6 +67,7 @@ export const useTransportContactos = (transporteId: string) => {
         // Create new contacto
         await createMutation.mutateAsync({
           ...data,
+          nombre: data.nombre || '',
           transporte_id: transporteId,
           estado: true
         } as Omit<TransportContact, 'id'>);
