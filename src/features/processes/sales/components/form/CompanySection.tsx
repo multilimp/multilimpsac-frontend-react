@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { FormField, FormItem, FormLabel, FormControl } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { SalesFormValues } from '../../../../sales/models/salesForm.model';
+import { SalesFormValues } from '../../../sales/models/salesForm.model';
 import { UseFormReturn } from 'react-hook-form';
 
 interface CompanySectionProps {

@@ -2,249 +2,146 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import * as z from "zod";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
-import { 
-  Card, 
-  CardContent, 
-  CardHeader, 
-  CardTitle, 
-  CardFooter 
-} from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Transport } from "../models/transport.model";
+import AddressForm from "@/components/forms/AddressForm";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
 const transportSchema = z.object({
-  razon_social: z.string().min(3, { message: "La razón social debe tener al menos 3 caracteres" }),
-  ruc: z.string().length(11, { message: "El RUC debe tener 11 dígitos" }).regex(/^\d+$/, { message: "El RUC debe contener solo números" }),
-  direccion: z.string().min(1, { message: "La dirección es requerida" }),
-  departamento: z.string().min(1, { message: "El departamento es requerido" }),
-  provincia: z.string().min(1, { message: "La provincia es requerida" }),
-  distrito: z.string().min(1, { message: "El distrito es requerido" }),
+  razon_social: z.string().min(1, "La razón social es obligatoria"),
+  ruc: z.string().regex(/^\d{11}$/, "El RUC debe tener 11 dígitos"),
+  direccion: z.string().min(1, "La dirección es obligatoria"),
   cobertura: z.string().optional(),
+  departamento: z.string().optional(),
+  provincia: z.string().optional(),
+  distrito: z.string().optional(),
   estado: z.boolean().default(true),
 });
 
-type TransportFormData = z.infer<typeof transportSchema>;
-
-export interface TransportFormProps {
-  transport?: Partial<Transport>;
+interface TransportFormProps {
+  transport?: Transport;
   onSubmit: (data: Partial<Transport>) => Promise<void>;
   isSubmitting?: boolean;
-  onCancel?: () => void; 
+  onCancel?: () => void;
 }
 
 export const TransportForm: React.FC<TransportFormProps> = ({
-  transport = {},
+  transport,
   onSubmit,
   isSubmitting = false,
   onCancel,
 }) => {
-  const isEditMode = !!transport.id;
-  
-  const form = useForm<TransportFormData>({
+  const isEditMode = !!transport;
+
+  const form = useForm<z.infer<typeof transportSchema>>({
     resolver: zodResolver(transportSchema),
     defaultValues: {
-      razon_social: transport.razon_social || "",
-      ruc: transport.ruc || "",
-      direccion: transport.direccion || "",
-      departamento: transport.departamento || "",
-      provincia: transport.provincia || "",
-      distrito: transport.distrito || "",
-      cobertura: transport.cobertura || "",
-      estado: transport.estado !== undefined ? transport.estado : true,
+      razon_social: transport?.razon_social || "",
+      ruc: transport?.ruc || "",
+      direccion: transport?.direccion || "",
+      cobertura: transport?.cobertura || "",
+      departamento: transport?.departamento || "",
+      provincia: transport?.provincia || "",
+      distrito: transport?.distrito || "",
+      estado: transport?.estado ?? true,
     },
   });
 
-  async function handleSubmit(values: TransportFormData) {
-    try {
-      await onSubmit({
-        ...transport,
-        ...values
-      });
-    } catch (error) {
-      console.error("Error al guardar transporte:", error);
-    }
-  }
+  const handleSubmit = async (values: z.infer<typeof transportSchema>) => {
+    await onSubmit(values);
+  };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)}>
-        <Card>
-          <CardHeader>
-            <CardTitle>{isEditMode ? 'Editar Transporte' : 'Nuevo Transporte'}</CardTitle>
-          </CardHeader>
-          
-          <CardContent className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="razon_social"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Razón Social</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Razón Social" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+    <Card>
+      <CardHeader>
+        <CardTitle>{isEditMode ? "Editar Transporte" : "Nuevo Transporte"}</CardTitle>
+      </CardHeader>
+      
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="razon_social"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Razón Social *</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Nombre de la empresa transportista" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="ruc"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>RUC *</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Número de RUC" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="cobertura"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Cobertura</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Zonas donde brinda servicios (nacional, local, etc.)"
+                          className="resize-none"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
               
-              <FormField
-                control={form.control}
-                name="ruc"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>RUC</FormLabel>
-                    <FormControl>
-                      <Input placeholder="RUC" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="space-y-4">
+                <AddressForm
+                  control={form.control}
+                  addressField="direccion"
+                  departmentField="departamento"
+                  provinceField="provincia"
+                  districtField="distrito"
+                  required={true}
+                />
+              </div>
             </div>
-            
-            <FormField
-              control={form.control}
-              name="direccion"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Dirección</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Dirección" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <div className="grid md:grid-cols-3 gap-6">
-              <FormField
-                control={form.control}
-                name="departamento"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Departamento</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Departamento" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="provincia"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Provincia</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Provincia" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="distrito"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Distrito</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Distrito" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            
-            <FormField
-              control={form.control}
-              name="cobertura"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Cobertura</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Describa las zonas de cobertura del transporte" 
-                      className="resize-none min-h-[100px]"
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="estado"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Estado</FormLabel>
-                  <Select
-                    onValueChange={(value) => field.onChange(value === 'true')}
-                    defaultValue={field.value ? 'true' : 'false'}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar estado" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="true">Activo</SelectItem>
-                      <SelectItem value="false">Inactivo</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </CardContent>
-          
-          <CardFooter className="flex justify-end space-x-2">
-            {onCancel && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onCancel}
-                disabled={isSubmitting}
-              >
-                Cancelar
-              </Button>
-            )}
-            <Button 
-              type="submit" 
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Guardando...' : isEditMode ? 'Actualizar' : 'Guardar'}
-            </Button>
-          </CardFooter>
-        </Card>
-      </form>
-    </Form>
+          </form>
+        </Form>
+      </CardContent>
+      
+      <CardFooter className="flex justify-end space-x-2">
+        {onCancel && (
+          <Button variant="outline" onClick={onCancel} disabled={isLoading}>
+            Cancelar
+          </Button>
+        )}
+        <Button 
+          onClick={form.handleSubmit(handleSubmit)} 
+          disabled={isLoading}
+        >
+          {isLoading ? "Guardando..." : isEditMode ? "Actualizar" : "Crear"}
+        </Button>
+      </CardFooter>
+    </Card>
   );
 };
 

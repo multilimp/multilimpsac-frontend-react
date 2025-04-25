@@ -1,45 +1,47 @@
 
 import React from 'react';
+import { Button } from '@/components/ui/button';
 import { InboxIcon } from 'lucide-react';
 
 export interface TableEmptyStateProps {
-  title?: string;
-  message?: string;
-  description?: string; // Added for backward compatibility
-  icon?: React.ReactNode;
-  className?: string;
+  title: string;
+  description?: string;
   action?: React.ReactNode;
-  colSpan?: number; // Added for DataTable
-  loading?: boolean; // Added for DataTable loading state
+  className?: string;
+  colSpan?: number;
+  loading?: boolean;
 }
 
 export const TableEmptyState: React.FC<TableEmptyStateProps> = ({
-  title = 'No hay datos',
-  message = 'No se encontraron registros para mostrar.',
-  description, // Support both message and description for backward compatibility
-  icon = <InboxIcon className="h-10 w-10 text-gray-400" />,
-  className = '',
+  title,
+  description,
   action,
-  loading = false,
-  colSpan
+  className = '',
+  colSpan,
+  loading = false
 }) => {
-  // Use description as fallback if message is not provided
-  const displayMessage = message || description || 'No se encontraron registros para mostrar.';
-  
+  if (loading) {
+    return (
+      <div className={`flex flex-col items-center justify-center py-12 px-4 ${className}`}>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
+        <p className="text-muted-foreground text-sm">Cargando...</p>
+      </div>
+    );
+  }
+
   return (
-    <div className={`flex flex-col items-center justify-center p-8 text-center ${className}`}>
-      {loading ? (
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mb-3"></div>
-      ) : (
-        <div className="mb-3">
-          {icon}
-        </div>
+    <div className={`flex flex-col items-center justify-center py-12 px-4 ${className}`}>
+      <div className="bg-muted rounded-full p-3 mb-4">
+        <InboxIcon className="h-6 w-6 text-muted-foreground" />
+      </div>
+      <h3 className="text-lg font-medium mb-1">{title}</h3>
+      {description && (
+        <p className="text-sm text-muted-foreground mb-4 text-center max-w-md">
+          {description}
+        </p>
       )}
-      <h3 className="text-lg font-semibold">{loading ? 'Cargando...' : title}</h3>
-      <p className="text-sm text-gray-500 mt-1">{loading ? 'Obteniendo datos...' : displayMessage}</p>
-      
-      {action && !loading && (
-        <div className="mt-4">
+      {action && (
+        <div className="mt-2">
           {action}
         </div>
       )}

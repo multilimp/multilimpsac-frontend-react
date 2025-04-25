@@ -1,21 +1,21 @@
 
 import React from 'react';
+import { DataTable, DataTableColumn } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
-import { Download, RefreshCcw } from 'lucide-react';
-import TableEmptyState from '@/components/common/TableEmptyState';
+import { TableEmptyState } from '@/components/common/TableEmptyState';
+import { useNavigate } from 'react-router-dom';
+import { Badge } from '@/components/ui/badge';
+import { Eye, FileText } from 'lucide-react';
+import { formatDate, formatCurrency } from '@/utils/formatters';
 
-// Temporary mock type until we implement the full functionality
-interface Sale {
+export interface Sale {
   id: string;
-  orderNumber: string;
-  clientId: string;
-  clientName?: string;
-  clientRuc?: string;
-  status: string;
-  totalAmount: number;
+  companyName: string;
+  clientName: string;
+  contactName: string;
   date: string;
-  documento_oce?: string;
-  documento_ocf?: string;
+  totalAmount: number;
+  status: 'draft' | 'pending' | 'completed' | 'cancelled';
 }
 
 interface SalesListProps {
@@ -24,51 +24,113 @@ interface SalesListProps {
   onRefresh: () => void;
 }
 
-const SalesList: React.FC<SalesListProps> = ({ 
-  sales, 
-  isLoading,
-  onRefresh
-}) => {
-  if (isLoading) {
-    return <TableEmptyState loading={true} title="Cargando ventas" message="Obteniendo datos de ventas..." />;
-  }
+const STATUS_COLORS = {
+  draft: 'bg-gray-200 text-gray-800',
+  pending: 'bg-yellow-200 text-yellow-800',
+  completed: 'bg-green-200 text-green-800',
+  cancelled: 'bg-red-200 text-red-800',
+};
 
-  if (sales.length === 0) {
+const STATUS_LABELS = {
+  draft: 'Borrador',
+  pending: 'Pendiente',
+  completed: 'Completada',
+  cancelled: 'Cancelada',
+};
+
+const SalesList: React.FC<SalesListProps> = ({ sales, isLoading, onRefresh }) => {
+  const navigate = useNavigate();
+  
+  const handleRowClick = (sale: Sale) => {
+    navigate(`/ventas/${sale.id}`);
+  };
+  
+  const columns: DataTableColumn<Sale>[] = [
+    {
+      id: 'date',
+      header: 'Fecha',
+      accessorKey: 'date',
+      cell: ({ row }) => formatDate(row.original.date),
+    },
+    {
+      id: 'companyName',
+      header: 'Empresa',
+      accessorKey: 'companyName',
+    },
+    {
+      id: 'clientName',
+      header: 'Cliente',
+      accessorKey: 'clientName',
+    },
+    {
+      id: 'contactName',
+      header: 'Contacto',
+      accessorKey: 'contactName',
+    },
+    {
+      id: 'totalAmount',
+      header: 'Monto Total',
+      accessorKey: 'totalAmount',
+      cell: ({ row }) => formatCurrency(row.original.totalAmount),
+    },
+    {
+      id: 'status',
+      header: 'Estado',
+      accessorKey: 'status',
+      cell: ({ row }) => (
+        <Badge variant="outline" className={STATUS_COLORS[row.original.status]}>
+          {STATUS_LABELS[row.original.status]}
+        </Badge>
+      ),
+    },
+    {
+      id: 'actions',
+      header: '',
+      cell: ({ row }) => (
+        <div className="flex justify-end gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/ventas/${row.original.id}`);
+            }}
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/ventas/${row.original.id}/pdf`);
+            }}
+          >
+            <FileText className="h-4 w-4" />
+          </Button>
+        </div>
+      ),
+    },
+  ];
+  
+  if (sales.length === 0 && !isLoading) {
     return (
       <TableEmptyState 
         title="No hay ventas registradas" 
-        message="No se encontraron registros de ventas para mostrar." 
-        action={
-          <Button onClick={onRefresh} variant="outline" size="sm">
-            <RefreshCcw className="mr-2 h-4 w-4" />
-            Actualizar
-          </Button>
-        }
+        description="Crea una nueva venta para comenzar."
       />
     );
   }
-
+  
   return (
-    <div className="space-y-4">
-      <div className="flex justify-end space-x-2">
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={onRefresh}
-        >
-          <RefreshCcw className="mr-2 h-4 w-4" />
-          Actualizar
-        </Button>
-        <Button variant="outline" size="sm">
-          <Download className="mr-2 h-4 w-4" />
-          Exportar
-        </Button>
-      </div>
-      
-      <div className="border rounded-md p-4">
-        <p className="text-center text-gray-500">Lista de ventas (Implementación pendiente)</p>
-      </div>
-    </div>
+    <DataTable
+      data={sales}
+      columns={columns}
+      onRowClick={handleRowClick}
+      isLoading={isLoading}
+      onReload={onRefresh}
+      searchPlaceholder="Buscar ventas..."
+    />
   );
 };
 

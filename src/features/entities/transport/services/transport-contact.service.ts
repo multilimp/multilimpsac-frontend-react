@@ -5,7 +5,7 @@ import {
   TransportContactDB, 
   mapTransportContactFromDB, 
   mapTransportContactToDB 
-} from "../models/transport.model";
+} from "../models/transportContact.model";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 // Transport Contact Service functions
@@ -105,8 +105,8 @@ export const useCreateTransportContact = () => {
     mutationFn: (contact: Omit<TransportContact, 'id'>) => 
       createTransportContact(contact),
     onSuccess: (_, variables) => {
-      if (variables.transporte_id) {
-        queryClient.invalidateQueries({ queryKey: ['transportContacts', variables.transporte_id] });
+      if (variables.transportId) {
+        queryClient.invalidateQueries({ queryKey: ['transportContacts', variables.transportId] });
       }
     }
   });
@@ -119,7 +119,7 @@ export const useUpdateTransportContact = () => {
     mutationFn: ({ id, data }: { id: string, data: Partial<TransportContact> }) => 
       updateTransportContact(id, data),
     onSuccess: (_, variables) => {
-      const transportId = variables.data.transporte_id;
+      const transportId = variables.data.transportId;
       if (transportId) {
         queryClient.invalidateQueries({ queryKey: ['transportContacts', transportId] });
       }
@@ -133,8 +133,8 @@ export const useDeleteTransportContact = () => {
   return useMutation({
     mutationFn: (contact: TransportContact) => deleteTransportContact(contact.id),
     onSuccess: (_, variables) => {
-      if (variables.transporte_id) {
-        queryClient.invalidateQueries({ queryKey: ['transportContacts', variables.transporte_id] });
+      if (variables.transportId) {
+        queryClient.invalidateQueries({ queryKey: ['transportContacts', variables.transportId] });
       }
     }
   });

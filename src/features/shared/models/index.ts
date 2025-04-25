@@ -1,50 +1,46 @@
 
 /**
- * Modelos compartidos para entidades comunes
+ * Base shared models for reuse across the application
  */
 
-// Interfaces base para entidades comunes
+// Base entity interface with common properties
 export interface EntityBase {
   id: string;
-  status: "active" | "inactive";
+  status: 'active' | 'inactive';
   createdAt?: string;
   updatedAt?: string;
 }
 
-// Interfaces compartidas para direcciones
+// Address interface for entities that have location data
 export interface Address {
-  address: string;
-  district?: string;
-  province?: string;
+  address?: string;
   department?: string;
+  province?: string;
+  district?: string;
 }
 
-// Interfaces compartidas para contactos
+// Contact interface for contact-related entities
 export interface Contact {
   name: string;
   position?: string;
-  email?: string;
   phone?: string;
-  isPrimary?: boolean;
+  email?: string;
 }
 
-// Mapeo de estados booleanos a estados de dominio
-export const mapEntityStatus = (estado: boolean): "active" | "inactive" => {
-  return estado ? "active" : "inactive";
+// Helper functions for mapping entities
+export const mapEntityStatus = (status: boolean): 'active' | 'inactive' => {
+  return status ? 'active' : 'inactive';
 };
 
-// Mapeo de estados de dominio a estados booleanos para base de datos
-export const mapStatusToBoolean = (status: "active" | "inactive"): boolean => {
-  return status === "active";
+export const mapStatusToBoolean = (status?: 'active' | 'inactive'): boolean => {
+  return status === 'inactive' ? false : true;
 };
 
-// Utilidades para mapeo de fechas
-export const formatDateString = (date?: string | null): string | undefined => {
+export const formatDateString = (date?: string): string | undefined => {
   if (!date) return undefined;
-  return new Date(date).toISOString();
+  return date;
 };
 
-// Utilidades para mapeo de IDs
-export const mapId = (id: number | string): string => {
+export const mapId = (id: number): string => {
   return id.toString();
 };
