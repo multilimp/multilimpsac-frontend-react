@@ -757,6 +757,7 @@ export type Database = {
           fin_cobranza: string | null
           flete: number | null
           forma_envio: string | null
+          group_id: number | null
           grr: string | null
           id: number
           inicio_cobranza: string | null
@@ -838,6 +839,7 @@ export type Database = {
           fin_cobranza?: string | null
           flete?: number | null
           forma_envio?: string | null
+          group_id?: number | null
           grr?: string | null
           id?: number
           inicio_cobranza?: string | null
@@ -919,6 +921,7 @@ export type Database = {
           fin_cobranza?: string | null
           flete?: number | null
           forma_envio?: string | null
+          group_id?: number | null
           grr?: string | null
           id?: number
           inicio_cobranza?: string | null
@@ -1051,6 +1054,8 @@ export type Database = {
           cargo_oea: string | null
           codigo_op: string
           contacto_proveedor_id: number | null
+          contacto_transporte_id: number | null
+          cot_transporte: string | null
           created_at: string | null
           embalaje: string | null
           empresa_id: number | null
@@ -1058,19 +1063,34 @@ export type Database = {
           etiquetado: string | null
           fecha_despacho: string | null
           fecha_entrega: string | null
+          fecha_orden_pedido: string | null
+          fecha_programacion: string | null
           fecha_programada: string | null
           fecha_recepcion: string | null
+          flete: number | null
           id: number
           nota_adicional: string | null
           nota_gestion_op: string | null
+          nota_op: string | null
           nota_pago: string | null
           nota_pedido: string | null
           observaciones: string | null
+          orden_compra_id: number | null
           proveedor_id: number | null
           retorno_mercaderia: string | null
+          t_departamento: string | null
+          t_direccion: string | null
+          t_distrito: string | null
+          t_factura: string | null
+          t_fecha_pago: string | null
+          t_grt: string | null
+          t_provincia: string | null
           tipo_entrega: string | null
+          tipo_envio: string | null
           tipo_pago: string | null
           total_proveedor: number | null
+          transporte_id: number | null
+          transporte_nota: string | null
           updated_at: string | null
         }
         Insert: {
@@ -1078,6 +1098,8 @@ export type Database = {
           cargo_oea?: string | null
           codigo_op: string
           contacto_proveedor_id?: number | null
+          contacto_transporte_id?: number | null
+          cot_transporte?: string | null
           created_at?: string | null
           embalaje?: string | null
           empresa_id?: number | null
@@ -1085,19 +1107,34 @@ export type Database = {
           etiquetado?: string | null
           fecha_despacho?: string | null
           fecha_entrega?: string | null
+          fecha_orden_pedido?: string | null
+          fecha_programacion?: string | null
           fecha_programada?: string | null
           fecha_recepcion?: string | null
+          flete?: number | null
           id?: number
           nota_adicional?: string | null
           nota_gestion_op?: string | null
+          nota_op?: string | null
           nota_pago?: string | null
           nota_pedido?: string | null
           observaciones?: string | null
+          orden_compra_id?: number | null
           proveedor_id?: number | null
           retorno_mercaderia?: string | null
+          t_departamento?: string | null
+          t_direccion?: string | null
+          t_distrito?: string | null
+          t_factura?: string | null
+          t_fecha_pago?: string | null
+          t_grt?: string | null
+          t_provincia?: string | null
           tipo_entrega?: string | null
+          tipo_envio?: string | null
           tipo_pago?: string | null
           total_proveedor?: number | null
+          transporte_id?: number | null
+          transporte_nota?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -1105,6 +1142,8 @@ export type Database = {
           cargo_oea?: string | null
           codigo_op?: string
           contacto_proveedor_id?: number | null
+          contacto_transporte_id?: number | null
+          cot_transporte?: string | null
           created_at?: string | null
           embalaje?: string | null
           empresa_id?: number | null
@@ -1112,19 +1151,34 @@ export type Database = {
           etiquetado?: string | null
           fecha_despacho?: string | null
           fecha_entrega?: string | null
+          fecha_orden_pedido?: string | null
+          fecha_programacion?: string | null
           fecha_programada?: string | null
           fecha_recepcion?: string | null
+          flete?: number | null
           id?: number
           nota_adicional?: string | null
           nota_gestion_op?: string | null
+          nota_op?: string | null
           nota_pago?: string | null
           nota_pedido?: string | null
           observaciones?: string | null
+          orden_compra_id?: number | null
           proveedor_id?: number | null
           retorno_mercaderia?: string | null
+          t_departamento?: string | null
+          t_direccion?: string | null
+          t_distrito?: string | null
+          t_factura?: string | null
+          t_fecha_pago?: string | null
+          t_grt?: string | null
+          t_provincia?: string | null
           tipo_entrega?: string | null
+          tipo_envio?: string | null
           tipo_pago?: string | null
           total_proveedor?: number | null
+          transporte_id?: number | null
+          transporte_nota?: string | null
           updated_at?: string | null
         }
         Relationships: [

@@ -1,16 +1,8 @@
+
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -21,150 +13,150 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { TransportContact } from '../../../transport/models/transport.model';
+import { Checkbox } from '@/components/ui/checkbox';
+import { TransportContact } from '../models/transport.model';
 
-const contactoSchema = z.object({
-  nombre: z.string().min(1, "El nombre es requerido"),
-  cargo: z.string().min(1, "El cargo es requerido"),
-  email: z.string().email("Email inválido").or(z.string().length(0)),
-  telefono: z.string().min(1, "El teléfono es requerido"),
+const contactSchema = z.object({
+  nombre: z.string().min(1, { message: 'El nombre es requerido' }),
+  cargo: z.string().optional(),
+  telefono: z.string().optional(),
+  correo: z.string().email({ message: 'Email inválido' }).optional().or(z.literal('')),
+  estado: z.boolean().default(true),
 });
 
-type ContactoFormValues = z.infer<typeof contactoSchema>;
+type ContactFormValues = z.infer<typeof contactSchema>;
 
-interface ContactoTransporteFormDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSubmit: (values: ContactoFormValues) => void;
-  contacto?: TransportContact | null;
-  isLoading: boolean;
+export interface ContactoTransporteFormDialogProps {
+  contacto: TransportContact | null;
+  transporteId: string; // Added transporteId prop
+  onSubmit: (data: Partial<TransportContact>) => Promise<void>;
+  onCancel: () => void;
+  isSubmitting?: boolean;
 }
 
 const ContactoTransporteFormDialog: React.FC<ContactoTransporteFormDialogProps> = ({
-  isOpen,
-  onClose,
-  onSubmit,
   contacto,
-  isLoading,
+  transporteId,
+  onSubmit,
+  onCancel,
+  isSubmitting = false,
 }) => {
-  const isEditing = !!contacto;
-  
-  const form = useForm<ContactoFormValues>({
-    resolver: zodResolver(contactoSchema),
+  const form = useForm<ContactFormValues>({
+    resolver: zodResolver(contactSchema),
     defaultValues: {
       nombre: contacto?.nombre || '',
       cargo: contacto?.cargo || '',
-      email: contacto?.email || '',
       telefono: contacto?.telefono || '',
+      correo: contacto?.correo || '',
+      estado: contacto?.estado ?? true,
     },
   });
-  
-  // Reset form when contacto changes
-  React.useEffect(() => {
-    if (isOpen) {
-      form.reset({
-        nombre: contacto?.nombre || '',
-        cargo: contacto?.cargo || '',
-        email: contacto?.email || '',
-        telefono: contacto?.telefono || '',
+
+  const handleSubmit = async (values: ContactFormValues) => {
+    try {
+      await onSubmit({
+        id: contacto?.id,
+        ...values,
+        transporte_id: transporteId,
       });
+      
+      if (!contacto) {
+        form.reset();
+      }
+    } catch (error) {
+      console.error('Error al guardar contacto:', error);
     }
-  }, [form, contacto, isOpen]);
-  
-  const handleSubmit = (values: ContactoFormValues) => {
-    onSubmit(values);
   };
-  
+
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>
-            {isEditing ? 'Editar Contacto' : 'Añadir Contacto'}
-          </DialogTitle>
-          <DialogDescription>
-            {isEditing
-              ? 'Actualiza los datos del contacto de transporte.'
-              : 'Completa el formulario para crear un nuevo contacto.'}
-          </DialogDescription>
-        </DialogHeader>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="nombre"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Nombre*</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="nombre"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nombre</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Nombre del contacto" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="cargo"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Cargo</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Cargo del contacto" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input 
-                      type="email" 
-                      placeholder="correo@ejemplo.com" 
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="telefono"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Teléfono</FormLabel>
-                  <FormControl>
-                    <Input placeholder="987654321" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button type="button" variant="outline">
-                  Cancelar
-                </Button>
-              </DialogClose>
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? 'Guardando...' : isEditing ? 'Actualizar' : 'Crear'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+        <FormField
+          control={form.control}
+          name="cargo"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Cargo</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="telefono"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Teléfono</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="correo"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Correo</FormLabel>
+                <FormControl>
+                  <Input type="email" {...field} value={field.value || ''} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        
+        <FormField
+          control={form.control}
+          name="estado"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>Activo</FormLabel>
+              </div>
+            </FormItem>
+          )}
+        />
+        
+        <div className="flex justify-end space-x-2 pt-4">
+          <Button type="button" variant="outline" onClick={onCancel}>
+            Cancelar
+          </Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? 'Guardando...' : contacto?.id ? 'Actualizar' : 'Crear'}
+          </Button>
+        </div>
+      </form>
+    </Form>
   );
 };
 

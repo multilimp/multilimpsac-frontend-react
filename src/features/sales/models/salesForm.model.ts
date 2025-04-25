@@ -42,3 +42,6 @@ export interface SalesFormContextType {
   isSubmitting?: boolean;
   errors?: Record<string, string>;
 }
+
+// Add SalesFormValues type for form components
+export type SalesFormValues = SalesFormData;

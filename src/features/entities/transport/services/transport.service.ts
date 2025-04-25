@@ -1,201 +1,174 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Transport, TransportDB, mapTransportFromDB, mapTransportToDB } from '../models/transport.model';
+import { Transport } from '../models/transport.model';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useToast } from '@/hooks/use-toast';
 
-// Class for Transport service
-export default class TransportService {
-  // Create a new transport
-  static async create(data: Omit<Transport, 'id'>): Promise<Transport> {
-    try {
-      const mappedData = mapTransportToDB(data);
-      
-      // Ensure required fields have default values
-      const transportData = {
-        razon_social: data.name || 'Nuevo transporte',
-        ruc: data.ruc || '00000000000',
-        direccion: data.address || 'Nueva dirección',
-        cobertura: data.coverage || '',
-        estado: data.status === 'active',
-        departamento: data.department || '',
-        provincia: data.province || '',
-        distrito: data.district || ''
-      };
-      
-      const { data: newTransport, error } = await supabase
-        .from('transportes')
-        .insert(transportData)
-        .select()
-        .single();
-      
-      if (error) throw new Error(error.message);
-      if (!newTransport) throw new Error('Failed to create transport');
-      
-      return mapTransportFromDB(newTransport as TransportDB);
-    } catch (error) {
-      console.error('Error creating transport:', error);
-      throw error;
-    }
-  }
+export const getTransports = async (): Promise<Transport[]> => {
+  const { data, error } = await supabase.from('transportes').select('*');
   
-  // Get all transports
-  static async getAll(): Promise<Transport[]> {
-    try {
-      const { data, error } = await supabase
-        .from('transportes')
-        .select('*')
-        .order('razon_social', { ascending: true });
-      
-      if (error) throw new Error(error.message);
-      
-      return (data as TransportDB[]).map(mapTransportFromDB);
-    } catch (error) {
-      console.error('Error fetching transports:', error);
-      throw error;
-    }
-  }
+  if (error) throw new Error(error.message);
   
-  // Get a transport by ID
-  static async getById(id: string): Promise<Transport> {
-    try {
-      const { data, error } = await supabase
-        .from('transportes')
-        .select('*')
-        .eq('id', parseInt(id))
-        .single();
-      
-      if (error) throw new Error(error.message);
-      if (!data) throw new Error('Transport not found');
-      
-      return mapTransportFromDB(data as TransportDB);
-    } catch (error) {
-      console.error(`Error fetching transport with ID ${id}:`, error);
-      throw error;
-    }
-  }
-  
-  // Update a transport
-  static async update(id: string, updates: Partial<Transport>): Promise<Transport> {
-    try {
-      const mappedData = mapTransportToDB(updates);
-      
-      const { data, error } = await supabase
-        .from('transportes')
-        .update(mappedData)
-        .eq('id', parseInt(id))
-        .select()
-        .single();
-      
-      if (error) throw new Error(error.message);
-      if (!data) throw new Error('Transport not found');
-      
-      return mapTransportFromDB(data as TransportDB);
-    } catch (error) {
-      console.error(`Error updating transport with ID ${id}:`, error);
-      throw error;
-    }
-  }
-  
-  // Delete a transport
-  static async delete(id: string): Promise<void> {
-    try {
-      const { error } = await supabase
-        .from('transportes')
-        .delete()
-        .eq('id', parseInt(id));
-      
-      if (error) throw new Error(error.message);
-    } catch (error) {
-      console.error(`Error deleting transport with ID ${id}:`, error);
-      throw error;
-    }
-  }
-}
+  return data.map(item => ({
+    id: item.id.toString(),
+    razon_social: item.razon_social || '',
+    ruc: item.ruc || '',
+    direccion: item.direccion || '',
+    cobertura: item.cobertura || '',
+    estado: item.estado ?? true,
+    departamento: item.departamento || '',
+    provincia: item.provincia || '',
+    distrito: item.distrito || '',
+    createdAt: item.created_at,
+    updatedAt: item.updated_at
+  }));
+};
 
-// React hooks for transport domain
+export const getTransport = async (id: string): Promise<Transport> => {
+  const { data, error } = await supabase
+    .from('transportes')
+    .select('*')
+    .eq('id', parseInt(id, 10))
+    .single();
+  
+  if (error) throw new Error(error.message);
+  
+  return {
+    id: data.id.toString(),
+    razon_social: data.razon_social || '',
+    ruc: data.ruc || '',
+    direccion: data.direccion || '',
+    cobertura: data.cobertura || '',
+    estado: data.estado ?? true,
+    departamento: data.departamento || '',
+    provincia: data.provincia || '',
+    distrito: data.distrito || '',
+    createdAt: data.created_at,
+    updatedAt: data.updated_at
+  };
+};
+
+export const createTransport = async (transport: Omit<Transport, 'id'>): Promise<Transport> => {
+  const { data, error } = await supabase
+    .from('transportes')
+    .insert({
+      razon_social: transport.razon_social,
+      ruc: transport.ruc,
+      direccion: transport.direccion,
+      cobertura: transport.cobertura,
+      estado: transport.estado,
+      departamento: transport.departamento,
+      provincia: transport.provincia,
+      distrito: transport.distrito
+    })
+    .select()
+    .single();
+  
+  if (error) throw new Error(error.message);
+  
+  return {
+    id: data.id.toString(),
+    razon_social: data.razon_social || '',
+    ruc: data.ruc || '',
+    direccion: data.direccion || '',
+    cobertura: data.cobertura || '',
+    estado: data.estado ?? true,
+    departamento: data.departamento || '',
+    provincia: data.provincia || '',
+    distrito: data.distrito || '',
+    createdAt: data.created_at,
+    updatedAt: data.updated_at
+  };
+};
+
+export const updateTransport = async ({ id, data }: { id: string, data: Partial<Transport> }): Promise<Transport> => {
+  const { data: updatedData, error } = await supabase
+    .from('transportes')
+    .update({
+      razon_social: data.razon_social,
+      ruc: data.ruc,
+      direccion: data.direccion,
+      cobertura: data.cobertura,
+      estado: data.estado,
+      departamento: data.departamento,
+      provincia: data.provincia,
+      distrito: data.distrito
+    })
+    .eq('id', parseInt(id, 10))
+    .select()
+    .single();
+  
+  if (error) throw new Error(error.message);
+  
+  return {
+    id: updatedData.id.toString(),
+    razon_social: updatedData.razon_social || '',
+    ruc: updatedData.ruc || '',
+    direccion: updatedData.direccion || '',
+    cobertura: updatedData.cobertura || '',
+    estado: updatedData.estado ?? true,
+    departamento: updatedData.departamento || '',
+    provincia: updatedData.provincia || '',
+    distrito: updatedData.distrito || '',
+    createdAt: updatedData.created_at,
+    updatedAt: updatedData.updated_at
+  };
+};
+
+export const deleteTransport = async (id: string): Promise<void> => {
+  const { error } = await supabase
+    .from('transportes')
+    .delete()
+    .eq('id', parseInt(id, 10));
+  
+  if (error) throw new Error(error.message);
+};
+
+// React Query hooks
 export const useTransports = () => {
   return useQuery({
     queryKey: ['transports'],
-    queryFn: TransportService.getAll
+    queryFn: getTransports
   });
 };
 
 export const useTransport = (id: string) => {
   return useQuery({
-    queryKey: ['transports', id],
-    queryFn: () => TransportService.getById(id),
+    queryKey: ['transport', id],
+    queryFn: () => getTransport(id),
     enabled: !!id
   });
 };
 
 export const useCreateTransport = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   
   return useMutation({
-    mutationFn: TransportService.create,
+    mutationFn: createTransport,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transports'] });
-      toast({
-        title: "Transporte creado",
-        description: "El transporte ha sido creado exitosamente"
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: `No se pudo crear el transporte: ${error.message}`
-      });
     }
   });
 };
 
 export const useUpdateTransport = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<Transport> }) =>
-      TransportService.update(id, data),
+    mutationFn: updateTransport,
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['transports'] });
-      queryClient.invalidateQueries({ queryKey: ['transports', variables.id] });
-      toast({
-        title: "Transporte actualizado",
-        description: "El transporte ha sido actualizado exitosamente"
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: `No se pudo actualizar el transporte: ${error.message}`
-      });
+      queryClient.invalidateQueries({ queryKey: ['transport', variables.id] });
     }
   });
 };
 
 export const useDeleteTransport = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   
   return useMutation({
-    mutationFn: TransportService.delete,
+    mutationFn: deleteTransport,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transports'] });
-      toast({
-        title: "Transporte eliminado",
-        description: "El transporte ha sido eliminado exitosamente"
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: `No se pudo eliminar el transporte: ${error.message}`
-      });
     }
   });
 };

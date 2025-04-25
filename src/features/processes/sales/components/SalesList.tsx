@@ -1,16 +1,25 @@
 
 import React from 'react';
-import { DataGrid } from '@/components/ui/data-grid';
 import { Button } from '@/components/ui/button';
 import { Download, RefreshCcw } from 'lucide-react';
-import { PurchaseOrder } from '@/features/processes/purchase-orders/models/purchaseOrder';
-import { useContactView } from '../hooks/useContactView';
-import { SalesDocumentActions } from './SalesDocumentActions';
-import { ContactDetailsSheet } from './ContactDetailsSheet';
-import { getSalesColumns } from '../utils/salesColumns';
+import TableEmptyState from '@/components/common/TableEmptyState';
+
+// Temporary mock type until we implement the full functionality
+interface Sale {
+  id: string;
+  orderNumber: string;
+  clientId: string;
+  clientName?: string;
+  clientRuc?: string;
+  status: string;
+  totalAmount: number;
+  date: string;
+  documento_oce?: string;
+  documento_ocf?: string;
+}
 
 interface SalesListProps {
-  sales: PurchaseOrder[];
+  sales: Sale[];
   isLoading: boolean;
   onRefresh: () => void;
 }
@@ -20,42 +29,24 @@ const SalesList: React.FC<SalesListProps> = ({
   isLoading,
   onRefresh
 }) => {
-  const {
-    selectedContact,
-    isContactViewOpen,
-    setIsContactViewOpen,
-    handleViewContact,
-  } = useContactView();
+  if (isLoading) {
+    return <TableEmptyState loading={true} title="Cargando ventas" message="Obteniendo datos de ventas..." />;
+  }
 
-  const columns = [
-    ...getSalesColumns(handleViewContact),
-    {
-      key: 'documents',
-      name: 'Documentos',
-      type: 'string' as const,
-      sortable: false,
-      filterable: false,
-      cell: (row: any) => (
-        <SalesDocumentActions 
-          documentOce={row.documento_oce}
-          documentOcf={row.documento_ocf}
-        />
-      ),
-    },
-  ];
-
-  const formattedData = sales.map(sale => ({
-    ...sale,
-    codigo_venta: sale.orderNumber,
-    clientRuc: sale.clientId,
-    enterpriseRuc: "RUC-EMPRESA",
-    enterpriseName: "NOMBRE-EMPRESA",
-    contact: {
-      name: "Contact Name",
-      phone: "Contact Phone",
-      email: "contact@email.com"
-    },
-  }));
+  if (sales.length === 0) {
+    return (
+      <TableEmptyState 
+        title="No hay ventas registradas" 
+        message="No se encontraron registros de ventas para mostrar." 
+        action={
+          <Button onClick={onRefresh} variant="outline" size="sm">
+            <RefreshCcw className="mr-2 h-4 w-4" />
+            Actualizar
+          </Button>
+        }
+      />
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -63,7 +54,7 @@ const SalesList: React.FC<SalesListProps> = ({
         <Button 
           variant="outline" 
           size="sm"
-          onClick={() => onRefresh()}
+          onClick={onRefresh}
         >
           <RefreshCcw className="mr-2 h-4 w-4" />
           Actualizar
@@ -74,17 +65,9 @@ const SalesList: React.FC<SalesListProps> = ({
         </Button>
       </div>
       
-      <DataGrid
-        data={formattedData}
-        columns={columns}
-        loading={isLoading}
-      />
-
-      <ContactDetailsSheet
-        isOpen={isContactViewOpen}
-        onOpenChange={setIsContactViewOpen}
-        contact={selectedContact}
-      />
+      <div className="border rounded-md p-4">
+        <p className="text-center text-gray-500">Lista de ventas (Implementación pendiente)</p>
+      </div>
     </div>
   );
 };

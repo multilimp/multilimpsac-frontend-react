@@ -1,6 +1,8 @@
+
 import React from 'react';
-import { Card } from '@/components/ui/card';
-import { TransportContact } from '../../../transport/models/transport.model';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
+import { TransportContact } from '../models/transport.model';
 import ContactosTransporteTable from './ContactosTransporteTable';
 
 interface ContactosTransporteTabProps {
@@ -16,20 +18,26 @@ const ContactosTransporteTab: React.FC<ContactosTransporteTabProps> = ({
   isLoading,
   onAddContacto,
   onEditContacto,
-  onDeleteContacto,
+  onDeleteContacto
 }) => {
   return (
-    <Card>
-      <div className="p-6">
-        <ContactosTransporteTable
-          contactos={contactos}
-          isLoading={isLoading}
-          onAdd={onAddContacto}
-          onEdit={onEditContacto}
-          onDelete={onDeleteContacto}
-        />
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold">Contactos</h2>
+        <Button onClick={onAddContacto}>
+          <Plus className="w-4 h-4 mr-2" />
+          Agregar Contacto
+        </Button>
       </div>
-    </Card>
+      
+      <ContactosTransporteTable 
+        contactos={contactos}
+        isLoading={isLoading}
+        onAdd={onAddContacto}
+        onEdit={onEditContacto}
+        onDelete={onDeleteContacto}
+      />
+    </div>
   );
 };
 

@@ -1,26 +1,23 @@
+import { LucideIcon } from 'lucide-react';
 
-import { MenuItem, MenuGroup } from "@/components/layout/DynamicSidebar";
-import {
-  BarChart3,
-  FileText,
-  Building,
-  Users,
-  Truck,
-  ShoppingCart,
-  FileSearch,
-  Package,
-  ClipboardList,
-  CreditCard,
-  Settings,
-  User,
-} from "lucide-react";
+export interface MenuItem {
+  title: string;
+  path: string;
+  icon: LucideIcon;
+  permission: string;
+}
+
+export interface MenuGroup {
+  label: string;
+  items: MenuItem[];
+}
 
 export const navigationGroups: MenuGroup[] = [
   {
     label: "Principal",
-    routes: [
+    items: [
       { 
-        label: "Dashboard", 
+        title: "Dashboard", 
         path: "/", 
         icon: BarChart3,
         permission: "view_dashboard" 
@@ -29,27 +26,27 @@ export const navigationGroups: MenuGroup[] = [
   },
   {
     label: "Directorio",
-    routes: [
+    items: [
       { 
-        label: "Empresas", 
+        title: "Empresas", 
         path: "/empresas", 
         icon: Building,
         permission: "manage_companies" 
       },
       { 
-        label: "Clientes", 
+        title: "Clientes", 
         path: "/clientes", 
         icon: Users,
         permission: "manage_clients" 
       },
       { 
-        label: "Proveedores", 
+        title: "Proveedores", 
         path: "/proveedores", 
         icon: Users,
         permission: "manage_suppliers" 
       },
       { 
-        label: "Transportes", 
+        title: "Transportes", 
         path: "/transportes", 
         icon: Truck,
         permission: "manage_transports" 
@@ -60,39 +57,39 @@ export const navigationGroups: MenuGroup[] = [
 
 export const processesGroup: MenuGroup = {
   label: "Procesos",
-  routes: [
+  items: [
     { 
-      label: "Cotizaciones", 
+      title: "Cotizaciones", 
       path: "/cotizaciones", 
       icon: FileSearch,
       permission: "manage_quotes" 
     },
     { 
-      label: "Ventas", 
+      title: "Ventas", 
       path: "/ventas", 
       icon: ShoppingCart,
       permission: "manage_sales" 
     },
     { 
-      label: "Órdenes", 
+      title: "Órdenes", 
       path: "/ordenes", 
       icon: Package,
       permission: "manage_orders" 
     },
     { 
-      label: "Seguimiento", 
+      title: "Seguimiento", 
       path: "/seguimiento", 
       icon: ClipboardList,
       permission: "manage_tracking" 
     },
     { 
-      label: "Tesorería", 
+      title: "Tesorería", 
       path: "/tesoreria", 
       icon: CreditCard,
       permission: "manage_treasury" 
     },
     { 
-      label: "Facturación", 
+      title: "Facturación", 
       path: "/facturacion", 
       icon: FileText,
       permission: "manage_billing" 
@@ -102,15 +99,15 @@ export const processesGroup: MenuGroup = {
 
 export const userGroup: MenuGroup = {
   label: "Usuario",
-  routes: [
+  items: [
     { 
-      label: "Perfil", 
+      title: "Perfil", 
       path: "/perfil", 
       icon: User,
       permission: "view_dashboard" 
     },
     { 
-      label: "Configuración", 
+      title: "Configuración", 
       path: "/configuracion", 
       icon: Settings,
       permission: "view_dashboard" 

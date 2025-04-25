@@ -1,95 +1,92 @@
 
 import React from 'react';
-import { Control } from 'react-hook-form';
-import {
+import { 
+  FormControl,
   FormField,
   FormItem,
   FormLabel,
-  FormControl,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+  FormMessage
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Control } from 'react-hook-form';
 
 export interface AddressFormProps {
   control: Control<any>;
-  addressField?: string;
-  departmentField?: string;
-  provinceField?: string;
-  districtField?: string;
-  districtFiel?: string; // For backward compatibility with existing code
+  addressName?: string;
+  departmentName?: string;
+  provinceName?: string;
+  districtName?: string;
+  required?: boolean;
 }
 
 const AddressForm: React.FC<AddressFormProps> = ({
   control,
-  addressField = 'direccion',
-  departmentField = 'departamento',
-  provinceField = 'provincia',
-  districtField = 'distrito',
-  districtFiel,  // For backward compatibility
+  addressName = 'address',
+  departmentName = 'department',
+  provinceName = 'province',
+  districtName = 'district',
+  required = false
 }) => {
-  // Use the districtFiel prop if districtField is not provided (for backward compatibility)
-  const actualDistrictField = districtField || districtFiel || 'distrito';
-  
   return (
-    <div className="space-y-4">
+    <>
       <FormField
         control={control}
-        name={addressField}
+        name={addressName}
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Dirección</FormLabel>
+            <FormLabel>{required ? 'Dirección*' : 'Dirección'}</FormLabel>
             <FormControl>
-              <Input placeholder="Dirección" {...field} />
+              <Input {...field} placeholder="Av. Principal 123" />
             </FormControl>
             <FormMessage />
           </FormItem>
         )}
       />
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
         <FormField
           control={control}
-          name={departmentField}
+          name={departmentName}
           render={({ field }) => (
             <FormItem>
               <FormLabel>Departamento</FormLabel>
               <FormControl>
-                <Input placeholder="Departamento" {...field} />
+                <Input {...field} placeholder="Lima" />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        
+
         <FormField
           control={control}
-          name={provinceField}
+          name={provinceName}
           render={({ field }) => (
             <FormItem>
               <FormLabel>Provincia</FormLabel>
               <FormControl>
-                <Input placeholder="Provincia" {...field} />
+                <Input {...field} placeholder="Lima" />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        
+
         <FormField
           control={control}
-          name={actualDistrictField}
+          name={districtName}
           render={({ field }) => (
             <FormItem>
               <FormLabel>Distrito</FormLabel>
               <FormControl>
-                <Input placeholder="Distrito" {...field} />
+                <Input {...field} placeholder="San Isidro" />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
       </div>
-    </div>
+    </>
   );
 };
 

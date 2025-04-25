@@ -1,4 +1,3 @@
-
 import { supabase, checkSupabaseConnection, checkTableAccess } from '@/integrations/supabase/client';
 import { DEMO_MODE, DEMO_USER, User, ProfileData } from '../models/auth.types';
 import { createUserFromProfile, createBasicUser, mapRoleToAllowedType } from '../utils/auth.utils';
@@ -152,27 +151,23 @@ export const createUserService = async (
     throw new Error("Solo los administradores pueden crear nuevos usuarios");
   }
 
-  // Verificar la conexión antes de intentar crear un usuario
+  // Verify connection
   const isConnected = await checkSupabaseConnection();
   if (!isConnected) {
     throw new Error("No hay conexión con el servidor. Verifica tu conexión a internet.");
   }
   
-  // Verificar acceso a tabla de usuarios
-  const { exists: usuariosTableExists, error: usuariosError } = await checkTableAccess('users');
-  if (!usuariosTableExists) {
-    console.error("Error accediendo a tabla usuarios:", usuariosError);
-    throw new Error("Error accediendo a datos de usuario. Contacta al administrador.");
-  }
+  // Map role to allowed types (admin or user)
+  const validRole = role === 'admin' ? 'admin' : 'user';
   
-  // Crear el usuario en Supabase Auth usando la API pública
+  // Create the user in Supabase Auth using the API
   const { data: authData, error: authError } = await supabase.auth.signUp({
     email,
     password,
     options: {
       data: {
         name,
-        role
+        role: validRole
       }
     }
   });
@@ -183,7 +178,7 @@ export const createUserService = async (
     throw new Error("No se pudo crear el usuario");
   }
   
-  // Crear el perfil en la tabla usuarios
+  // Create the profile in users table
   const { error: profileError } = await supabase
     .from('users')
     .insert({
@@ -191,10 +186,9 @@ export const createUserService = async (
       nombre: name.split(' ')[0], // Extract first name
       apellido: name.split(' ').slice(1).join(' '), // Extract last name
       email,
-      rol: role,
+      rol: validRole, // Use the validated role
       username: email.split('@')[0], // Use part of email as username
-      password: '**********', // Placeholder for password
-      created_at: new Date().toISOString()
+      password: '**********' // Placeholder for password
     });
   
   if (profileError) {
