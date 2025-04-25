@@ -1,146 +1,161 @@
 
 import { useState } from 'react';
-import { TransportContact } from '../models/transport.model';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { TransportContact } from '../models/transportContact.model';
+import { supabase } from '@/config/supabase';
 import { useToast } from '@/hooks/use-toast';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { 
-  getTransportContacts,
-  createTransportContact,
-  updateTransportContact,
-  deleteTransportContact
-} from '../services/transport-contact.service';
+import { mapTransportContactFromDB, mapTransportContactToDB } from '../models/transportContact.model';
 
-export const useTransportContacts = (transportId?: string) => {
-  const { toast } = useToast();
+export const useTransportContacts = (transportId: string | undefined) => {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const [selectedContacto, setSelectedContacto] = useState<TransportContact | null>(null);
   const [isContactoDialogOpen, setIsContactoDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedContacto, setSelectedContacto] = useState<TransportContact | null>(null);
-  
-  // Query to fetch contacts
-  const { 
-    data: contactos = [], 
-    isLoading: isLoadingContactos,
-    refetch
-  } = useQuery({
+
+  // Fetch contactos
+  const { data: contactos = [], isLoading: isLoadingContactos } = useQuery({
     queryKey: ['transportContacts', transportId],
-    queryFn: () => getTransportContacts(transportId as string),
+    queryFn: async () => {
+      if (!transportId) return [];
+
+      const { data, error } = await supabase
+        .from('contacto_transportes')
+        .select('*')
+        .eq('transporte_id', parseInt(transportId))
+        .order('nombre', { ascending: true });
+
+      if (error) {
+        throw new Error(`Error al cargar contactos: ${error.message}`);
+      }
+
+      return data.map(mapTransportContactFromDB);
+    },
     enabled: !!transportId
   });
-  
-  // Mutation to create a new contact
-  const createContactMutation = useMutation({
-    mutationFn: (contacto: Omit<TransportContact, 'id'>) => 
-      createTransportContact(contacto),
+
+  // Create contacto
+  const { mutateAsync: createContacto, isPending: isCreatingContacto } = useMutation({
+    mutationFn: async (contacto: Partial<TransportContact>) => {
+      if (!transportId) throw new Error('ID de transporte no válido');
+
+      const contactoToCreate = mapTransportContactToDB({
+        ...contacto,
+        transportId
+      });
+
+      const { data, error } = await supabase
+        .from('contacto_transportes')
+        .insert(contactoToCreate)
+        .select()
+        .single();
+
+      if (error) throw new Error(`Error al crear contacto: ${error.message}`);
+      return mapTransportContactFromDB(data);
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['transportContacts', transportId] });
+      queryClient.invalidateQueries({
+        queryKey: ['transportContacts', transportId]
+      });
+      toast({
+        title: 'Contacto creado',
+        description: 'El contacto ha sido creado exitosamente.',
+      });
+      setIsContactoDialogOpen(false);
     }
   });
-  
-  // Mutation to update an existing contact
-  const updateContactMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string, data: Partial<TransportContact> }) => 
-      updateTransportContact(id, data),
+
+  // Update contacto
+  const { mutateAsync: updateContacto, isPending: isUpdatingContacto } = useMutation({
+    mutationFn: async (contacto: Partial<TransportContact>) => {
+      if (!contacto.id) throw new Error('ID de contacto no válido');
+
+      const contactoToUpdate = mapTransportContactToDB(contacto);
+
+      const { error } = await supabase
+        .from('contacto_transportes')
+        .update(contactoToUpdate)
+        .eq('id', parseInt(contacto.id));
+
+      if (error) throw new Error(`Error al actualizar contacto: ${error.message}`);
+      return contacto;
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['transportContacts', transportId] });
+      queryClient.invalidateQueries({
+        queryKey: ['transportContacts', transportId]
+      });
+      toast({
+        title: 'Contacto actualizado',
+        description: 'El contacto ha sido actualizado exitosamente.',
+      });
+      setIsContactoDialogOpen(false);
     }
   });
-  
-  // Mutation to delete a contact
-  const deleteContactMutation = useMutation({
-    mutationFn: (id: string) => deleteTransportContact(id),
+
+  // Delete contacto
+  const { mutateAsync: deleteContacto, isPending: isDeletingContacto } = useMutation({
+    mutationFn: async () => {
+      if (!selectedContacto?.id) throw new Error('ID de contacto no válido');
+
+      const { error } = await supabase
+        .from('contacto_transportes')
+        .delete()
+        .eq('id', parseInt(selectedContacto.id));
+
+      if (error) throw new Error(`Error al eliminar contacto: ${error.message}`);
+      return selectedContacto;
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['transportContacts', transportId] });
+      queryClient.invalidateQueries({
+        queryKey: ['transportContacts', transportId]
+      });
+      toast({
+        title: 'Contacto eliminado',
+        description: 'El contacto ha sido eliminado exitosamente.',
+      });
+      setIsDeleteDialogOpen(false);
     }
   });
-  
+
+  // Handler functions
   const handleOpenAddContactoDialog = () => {
     setSelectedContacto(null);
     setIsContactoDialogOpen(true);
   };
-  
+
   const handleOpenEditContactoDialog = (contacto: TransportContact) => {
     setSelectedContacto(contacto);
     setIsContactoDialogOpen(true);
   };
-  
+
   const handleOpenDeleteContactoDialog = (contacto: TransportContact) => {
     setSelectedContacto(contacto);
     setIsDeleteDialogOpen(true);
   };
-  
+
   const handleContactoSubmit = async (data: Partial<TransportContact>) => {
-    try {
-      if (selectedContacto) {
-        // Update existing contact
-        await updateContactMutation.mutateAsync({
-          id: selectedContacto.id,
-          data: {
-            ...data,
-            transporte_id: transportId
-          }
-        });
-        toast({
-          title: "Contacto actualizado",
-          description: "El contacto ha sido actualizado exitosamente."
-        });
-      } else {
-        // Create new contact
-        await createContactMutation.mutateAsync({
-          ...data,
-          nombre: data.nombre || '',
-          estado: data.estado !== undefined ? data.estado : true,
-          transporte_id: transportId
-        } as Omit<TransportContact, 'id'>);
-        toast({
-          title: "Contacto creado",
-          description: "El contacto ha sido creado exitosamente."
-        });
-      }
-      
-      setIsContactoDialogOpen(false);
-      setSelectedContacto(null);
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error.message || "Ocurrió un error al guardar el contacto."
-      });
+    if (selectedContacto?.id) {
+      return updateContacto({ ...data, id: selectedContacto.id });
+    } else {
+      return createContacto(data);
     }
   };
-  
+
   const handleDeleteContacto = async () => {
-    if (!selectedContacto) return;
-    
-    try {
-      await deleteContactMutation.mutateAsync(selectedContacto.id);
-      toast({
-        title: "Contacto eliminado",
-        description: "El contacto ha sido eliminado exitosamente."
-      });
-      setIsDeleteDialogOpen(false);
-      setSelectedContacto(null);
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error al eliminar",
-        description: error.message || "No se pudo eliminar el contacto."
-      });
-    }
+    return deleteContacto();
   };
-  
+
   return {
     contactos,
     isLoadingContactos,
-    refetchContactos: refetch,
+    selectedContacto,
     isContactoDialogOpen,
     setIsContactoDialogOpen,
     isDeleteDialogOpen,
     setIsDeleteDialogOpen,
-    selectedContacto,
-    isCreatingContacto: createContactMutation.isPending,
-    isUpdatingContacto: updateContactMutation.isPending,
-    isDeletingContacto: deleteContactMutation.isPending,
+    isCreatingContacto,
+    isUpdatingContacto,
+    isDeletingContacto,
     handleOpenAddContactoDialog,
     handleOpenEditContactoDialog,
     handleOpenDeleteContactoDialog,

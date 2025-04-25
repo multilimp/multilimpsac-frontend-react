@@ -13,7 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import ContactosTransporteTab from '../components/ContactosTransporteTab';
 import DeleteContactoDialog from '../components/ContactoTransporteDeleteDialog';
-import ContactoTransporteDialog from '../components/ContactoTransporteDialog';
+import ContactoTransporteFormDialog from '../components/ContactoTransporteFormDialog';
 
 const TransportDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -212,12 +212,11 @@ const TransportDetailsPage: React.FC = () => {
         </TabsContent>
       </Tabs>
       
-      <ContactoTransporteDialog 
-        isOpen={isContactoDialogOpen}
-        onClose={() => setIsContactoDialogOpen(false)}
+      <ContactoTransporteFormDialog 
         contacto={selectedContacto}
         transporteId={transport.id}
         onSubmit={handleContactoSubmit}
+        onCancel={() => setIsContactoDialogOpen(false)}
         isSubmitting={isCreatingContacto || isUpdatingContacto}
       />
       

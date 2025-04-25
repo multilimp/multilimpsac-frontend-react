@@ -1,11 +1,11 @@
 
 import React from 'react';
+import { Card, CardContent } from '@/components/ui/card';
 import { DataTable, DataTableColumn } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
-import { TableEmptyState } from '@/components/common/TableEmptyState';
-import { useNavigate } from 'react-router-dom';
-import { Badge } from '@/components/ui/badge';
 import { Eye, FileText } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { useNavigate } from 'react-router-dom';
 import { formatDate, formatCurrency } from '@/utils/formatters';
 
 export interface Sale {
@@ -113,24 +113,19 @@ const SalesList: React.FC<SalesListProps> = ({ sales, isLoading, onRefresh }) =>
     },
   ];
   
-  if (sales.length === 0 && !isLoading) {
-    return (
-      <TableEmptyState 
-        title="No hay ventas registradas" 
-        description="Crea una nueva venta para comenzar."
-      />
-    );
-  }
-  
   return (
-    <DataTable
-      data={sales}
-      columns={columns}
-      onRowClick={handleRowClick}
-      isLoading={isLoading}
-      onReload={onRefresh}
-      searchPlaceholder="Buscar ventas..."
-    />
+    <Card>
+      <CardContent className="p-6">
+        <DataTable
+          data={sales}
+          columns={columns}
+          onRowClick={handleRowClick}
+          isLoading={isLoading}
+          onReload={onRefresh}
+          searchPlaceholder="Buscar ventas..."
+        />
+      </CardContent>
+    </Card>
   );
 };
 

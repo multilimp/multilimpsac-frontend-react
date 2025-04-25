@@ -1,5 +1,5 @@
 
-import { EntityBase, Address } from '@/features/shared/models';
+import { EntityBase, Address, mapStatusToBoolean } from '@/features/shared/models';
 
 /**
  * Transport domain model
@@ -7,7 +7,8 @@ import { EntityBase, Address } from '@/features/shared/models';
  */
 
 // Core transport domain entity
-export interface Transport extends EntityBase, Address {
+export interface Transport extends Omit<EntityBase, 'status'>, Address {
+  id: string;
   razon_social: string;
   ruc: string;
   direccion: string;

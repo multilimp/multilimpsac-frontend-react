@@ -54,7 +54,15 @@ function DataTable<T>({
         </TableHeader>
         <TableBody>
           {loading || data.length === 0 ? (
-            <TableEmptyState colSpan={totalColumns} loading={loading} />
+            <TableRow>
+              <TableCell colSpan={totalColumns}>
+                <TableEmptyState 
+                  title={loading ? "Cargando datos" : "No hay datos disponibles"} 
+                  colSpan={totalColumns} 
+                  loading={loading}
+                />
+              </TableCell>
+            </TableRow>
           ) : (
             data.map((row) => (
               <TableRow key={String(row[idField])}>

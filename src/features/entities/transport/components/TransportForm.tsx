@@ -130,15 +130,15 @@ export const TransportForm: React.FC<TransportFormProps> = ({
       
       <CardFooter className="flex justify-end space-x-2">
         {onCancel && (
-          <Button variant="outline" onClick={onCancel} disabled={isLoading}>
+          <Button variant="outline" onClick={onCancel} disabled={isSubmitting}>
             Cancelar
           </Button>
         )}
         <Button 
           onClick={form.handleSubmit(handleSubmit)} 
-          disabled={isLoading}
+          disabled={isSubmitting}
         >
-          {isLoading ? "Guardando..." : isEditMode ? "Actualizar" : "Crear"}
+          {isSubmitting ? "Guardando..." : isEditMode ? "Actualizar" : "Crear"}
         </Button>
       </CardFooter>
     </Card>

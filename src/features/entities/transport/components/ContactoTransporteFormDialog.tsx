@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { TransportContact } from '../models/transport.model';
+import { TransportContact } from '../models/transportContact.model';
 
 const contactSchema = z.object({
   nombre: z.string().min(1, { message: 'El nombre es requerido' }),
@@ -44,11 +44,11 @@ const ContactoTransporteFormDialog: React.FC<ContactoTransporteFormDialogProps> 
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(contactSchema),
     defaultValues: {
-      nombre: contacto?.nombre || '',
-      cargo: contacto?.cargo || '',
-      telefono: contacto?.telefono || '',
-      correo: contacto?.correo || '',
-      estado: contacto?.estado ?? true,
+      nombre: contacto?.name || '',
+      cargo: contacto?.position || '',
+      telefono: contacto?.phone || '',
+      correo: contacto?.email || '',
+      estado: contacto?.status === 'active',
     },
   });
 
@@ -56,8 +56,12 @@ const ContactoTransporteFormDialog: React.FC<ContactoTransporteFormDialogProps> 
     try {
       await onSubmit({
         id: contacto?.id,
-        ...values,
-        transporte_id: transporteId,
+        transportId: transporteId,
+        name: values.nombre,
+        position: values.cargo,
+        phone: values.telefono,
+        email: values.correo,
+        status: values.estado ? 'active' : 'inactive'
       });
       
       if (!contacto) {

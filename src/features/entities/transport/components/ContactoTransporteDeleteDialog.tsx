@@ -10,7 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { TransportContact } from "../models/transport.model";
+import { TransportContact } from "../models/transportContact.model";
 
 interface DeleteContactoDialogProps {
   isOpen: boolean;
@@ -37,7 +37,7 @@ const DeleteContactoDialog: React.FC<DeleteContactoDialogProps> = ({
         <AlertDialogHeader>
           <AlertDialogTitle>¿Está seguro?</AlertDialogTitle>
           <AlertDialogDescription>
-            Esta acción no se puede deshacer. Esto eliminará permanentemente el contacto {contacto?.nombre}.
+            Esta acción no se puede deshacer. Esto eliminará permanentemente el contacto {contacto?.name}.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
