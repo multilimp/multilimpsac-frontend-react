@@ -24,6 +24,11 @@ const TransportContactDialog: React.FC<TransportContactDialogProps> = ({
   onSubmit,
   isLoading = false
 }) => {
+  const handleSubmit = async (data: Partial<TransportContact>) => {
+    await onSubmit(data);
+    // Void the return value to match the expected void Promise
+  };
+  
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
@@ -35,7 +40,7 @@ const TransportContactDialog: React.FC<TransportContactDialogProps> = ({
         
         <TransportContactForm
           contact={contact}
-          onSubmit={onSubmit}
+          onSubmit={handleSubmit}
           onCancel={onClose}
           isLoading={isLoading}
         />

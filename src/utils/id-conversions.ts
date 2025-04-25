@@ -1,28 +1,18 @@
 
 /**
- * Converts a string ID to a number ID for database usage
+ * Converts a string ID to a number
+ * @param id String ID to convert
+ * @returns The numeric ID
  */
-export function stringIdToNumber(id: string): number {
-  // Remove any non-digit characters and convert to number
-  return Number(id.replace(/\D/g, ''));
-}
+export const stringToNumberId = (id: string): number => {
+  return parseInt(id, 10);
+};
 
 /**
- * Converts a number ID to a string ID for frontend usage
+ * Converts a number ID to a string
+ * @param id Numeric ID to convert
+ * @returns The string ID
  */
-export function numberToStringId(id: number): string {
+export const numberToStringId = (id: number): string => {
   return id.toString();
-}
-
-/**
- * Convert a string ID to a number ID
- */
-export function stringToNumberId(id: string): number {
-  if (!id) return 0;
-  return parseInt(id.replace(/\D/g, ''), 10);
-}
-
-/**
- * Convert a number ID to a string ID
- */
-export const toStringId = numberToStringId;
+};

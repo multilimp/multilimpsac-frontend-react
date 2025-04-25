@@ -1,36 +1,37 @@
 
 import React from "react";
-import {
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-} from "@/components/ui/sidebar";
-import SidebarMenu from "./SidebarMenu";
-
-interface MenuItem {
-  label: string;
-  path: string;
-  icon?: React.ComponentType<{ className?: string }>;
-  permission?: string;
-}
-
-interface MenuGroup {
-  label: string;
-  routes: MenuItem[];
-}
+import { useLocation } from "react-router-dom";
+import { NavigationLink } from "./NavigationLink";
+import { MenuItem, MenuGroup } from "../types/navigationTypes";
 
 interface SidebarSectionProps {
   group: MenuGroup;
 }
 
 const SidebarSection: React.FC<SidebarSectionProps> = ({ group }) => {
+  const location = useLocation();
+  const items = group.items || [];
+
   return (
-    <SidebarGroup>
-      <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
-      <SidebarGroupContent>
-        <SidebarMenu items={group.routes} />
-      </SidebarGroupContent>
-    </SidebarGroup>
+    <div className="py-2">
+      {group.label && (
+        <h2 className="px-2 mb-2 text-xs font-semibold text-white/70 uppercase">
+          {group.label}
+        </h2>
+      )}
+      <nav className="space-y-1">
+        {items.map((item) => (
+          <NavigationLink
+            key={item.path}
+            to={item.path}
+            icon={item.icon}
+            active={location.pathname === item.path}
+          >
+            {item.title}
+          </NavigationLink>
+        ))}
+      </nav>
+    </div>
   );
 };
 

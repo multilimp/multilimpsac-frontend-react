@@ -1,6 +1,8 @@
 
 import React from 'react';
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -10,16 +12,18 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/form';
 import { TransportContact } from '../models/transportContact.model';
-import { DialogFooter } from '@/components/ui/dialog';
+
+const contactSchema = z.object({
+  name: z.string().min(1, 'El nombre es requerido'),
+  position: z.string().optional(),
+  phone: z.string().optional(),
+  email: z.string().email('Correo electrónico inválido').optional().or(z.string().length(0)),
+  status: z.enum(['active', 'inactive']).default('active'),
+});
+
+type ContactFormValues = z.infer<typeof contactSchema>;
 
 interface TransportContactFormProps {
   contact: TransportContact | null;
@@ -32,24 +36,30 @@ const TransportContactForm: React.FC<TransportContactFormProps> = ({
   contact,
   onSubmit,
   onCancel,
-  isLoading = false
+  isLoading = false,
 }) => {
-  const isEditMode = !!contact?.id;
-  
-  const form = useForm<Partial<TransportContact>>({
+  const form = useForm<ContactFormValues>({
+    resolver: zodResolver(contactSchema),
     defaultValues: {
       name: contact?.name || '',
       position: contact?.position || '',
       phone: contact?.phone || '',
       email: contact?.email || '',
-      status: contact?.status || 'active'
+      status: contact?.status || 'active',
     }
   });
-  
-  const handleFormSubmit = async (data: Partial<TransportContact>) => {
-    await onSubmit(data);
+
+  const handleFormSubmit = async (values: ContactFormValues) => {
+    try {
+      await onSubmit({
+        ...contact,
+        ...values,
+      });
+    } catch (error) {
+      console.error('Error submitting contact form:', error);
+    }
   };
-  
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
@@ -60,7 +70,7 @@ const TransportContactForm: React.FC<TransportContactFormProps> = ({
             <FormItem>
               <FormLabel>Nombre</FormLabel>
               <FormControl>
-                <Input placeholder="Nombre del contacto" {...field} />
+                <Input {...field} autoFocus />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -74,7 +84,7 @@ const TransportContactForm: React.FC<TransportContactFormProps> = ({
             <FormItem>
               <FormLabel>Cargo</FormLabel>
               <FormControl>
-                <Input placeholder="Cargo del contacto" {...field} />
+                <Input {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -88,7 +98,7 @@ const TransportContactForm: React.FC<TransportContactFormProps> = ({
             <FormItem>
               <FormLabel>Teléfono</FormLabel>
               <FormControl>
-                <Input placeholder="Teléfono" {...field} />
+                <Input {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -100,61 +110,23 @@ const TransportContactForm: React.FC<TransportContactFormProps> = ({
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Correo</FormLabel>
+              <FormLabel>Correo Electrónico</FormLabel>
               <FormControl>
-                <Input 
-                  type="email" 
-                  placeholder="Correo electrónico" 
-                  {...field} 
-                />
+                <Input {...field} type="email" />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
         
-        {isEditMode && (
-          <FormField
-            control={form.control}
-            name="status"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Estado</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar estado" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="active">Activo</SelectItem>
-                    <SelectItem value="inactive">Inactivo</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
-        
-        <DialogFooter>
-          <Button 
-            type="button"
-            variant="outline"
-            onClick={onCancel}
-          >
+        <div className="flex justify-end space-x-2 pt-2">
+          <Button type="button" variant="outline" onClick={onCancel}>
             Cancelar
           </Button>
-          <Button 
-            type="submit"
-            disabled={isLoading}
-          >
-            {isLoading ? 'Guardando...' : isEditMode ? 'Actualizar' : 'Crear'}
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? 'Guardando...' : contact?.id ? 'Actualizar' : 'Crear'}
           </Button>
-        </DialogFooter>
+        </div>
       </form>
     </Form>
   );

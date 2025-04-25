@@ -1,5 +1,5 @@
 
-import { EntityBase, Address, mapStatusToBoolean } from '@/features/shared/models';
+import { EntityBase, Address, mapBooleanToStatus } from '@/features/shared/models';
 
 /**
  * Transport domain model
@@ -24,7 +24,7 @@ export interface Transport extends Omit<EntityBase, 'status'>, Address {
   name?: string;
   address?: string;
   coverage?: string;
-  status?: 'active' | 'inactive';
+  status: 'active' | 'inactive'; // Changed to required to match EntityBase
   department?: string;
   province?: string;
   district?: string;

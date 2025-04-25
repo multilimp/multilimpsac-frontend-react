@@ -1,57 +1,51 @@
 
-import React from 'react';
-import { 
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Control } from 'react-hook-form';
+import React from "react";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Control } from "react-hook-form";
 
 export interface AddressFormProps {
   control: Control<any>;
-  addressName?: string;
-  departmentName?: string;
-  provinceName?: string;
-  districtName?: string;
-  required?: boolean;
+  addressField?: string;
+  departmentField?: string;
+  provinceField?: string;
+  districtField?: string;
+  referenceField?: string;
 }
 
 const AddressForm: React.FC<AddressFormProps> = ({
   control,
-  addressName = 'address',
-  departmentName = 'department',
-  provinceName = 'province',
-  districtName = 'district',
-  required = false
+  addressField = "address",
+  departmentField = "department",
+  provinceField = "province",
+  districtField = "district",
+  referenceField
 }) => {
   return (
-    <>
+    <div className="space-y-4">
       <FormField
         control={control}
-        name={addressName}
+        name={addressField}
         render={({ field }) => (
           <FormItem>
-            <FormLabel>{required ? 'Dirección*' : 'Dirección'}</FormLabel>
+            <FormLabel>Dirección</FormLabel>
             <FormControl>
-              <Input {...field} placeholder="Av. Principal 123" />
+              <Input {...field} placeholder="Ej. Av. Principal 123" />
             </FormControl>
             <FormMessage />
           </FormItem>
         )}
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <FormField
           control={control}
-          name={departmentName}
+          name={departmentField}
           render={({ field }) => (
             <FormItem>
               <FormLabel>Departamento</FormLabel>
               <FormControl>
-                <Input {...field} placeholder="Lima" />
+                <Input {...field} placeholder="Ej. Lima" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -60,12 +54,12 @@ const AddressForm: React.FC<AddressFormProps> = ({
 
         <FormField
           control={control}
-          name={provinceName}
+          name={provinceField}
           render={({ field }) => (
             <FormItem>
               <FormLabel>Provincia</FormLabel>
               <FormControl>
-                <Input {...field} placeholder="Lima" />
+                <Input {...field} placeholder="Ej. Lima" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -74,19 +68,35 @@ const AddressForm: React.FC<AddressFormProps> = ({
 
         <FormField
           control={control}
-          name={districtName}
+          name={districtField}
           render={({ field }) => (
             <FormItem>
               <FormLabel>Distrito</FormLabel>
               <FormControl>
-                <Input {...field} placeholder="San Isidro" />
+                <Input {...field} placeholder="Ej. Miraflores" />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
       </div>
-    </>
+
+      {referenceField && (
+        <FormField
+          control={control}
+          name={referenceField}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Referencia</FormLabel>
+              <FormControl>
+                <Input {...field} placeholder="Ej. Cerca al parque" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      )}
+    </div>
   );
 };
 
