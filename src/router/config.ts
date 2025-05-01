@@ -16,6 +16,9 @@ const RecoveryPassword = Loadable(lazy(() => import('@/pages/public/RecoveryPass
 const Dashboard = Loadable(lazy(() => import('@/pages/private/Dashboard')));
 const Profile = Loadable(lazy(() => import('@/pages/private/Profile')));
 const Companies = Loadable(lazy(() => import('@/pages/private/Companies')));
+const Quotes = Loadable(lazy(() => import('@/pages/private/Quotes'))); 
+const Sales = Loadable(lazy(() => import('@/pages/private/Sales')));    
+const Orders = Loadable(lazy(() => import('@/pages/private/Orders')));  
 
 const routes: Array<PropsRoutes> = [
   {
@@ -65,6 +68,21 @@ const routes: Array<PropsRoutes> = [
       {
         path: 'companies',
         element: Companies,
+        roles: Object.values(RolesEnum),
+      },
+      {
+        path: 'quotes',  // Corregido typo (de 'quates' a 'quotes')
+        element: Quotes,  // Actualizado a PascalCase
+        roles: Object.values(RolesEnum),
+      },
+      {
+        path: 'sales',
+        element: Sales,   // Actualizado a PascalCase
+        roles: Object.values(RolesEnum),
+      },
+      {
+        path: 'orders',
+        element: Orders,  // Actualizado a PascalCase
         roles: Object.values(RolesEnum),
       },
       // EXCEPT
