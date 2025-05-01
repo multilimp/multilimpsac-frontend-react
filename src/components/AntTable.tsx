@@ -5,13 +5,14 @@ import type { FilterDropdownProps } from 'antd/es/table/interface';
 import Highlighter from 'react-highlight-words';
 import { Button, ButtonGroup, Stack, TextField } from '@mui/material';
 import { Search } from '@mui/icons-material';
+import { TableProps } from 'antd/lib';
 
-interface AntTableProps<T> {
+interface AntTableProps<T> extends Omit<TableProps, 'columns'> {
   data: Array<T>;
   columns: TableColumnsType<T>;
 }
 
-const AntTable = <T,>({ columns, data }: AntTableProps<T>) => {
+const AntTable = <T,>({ columns, data, ...rest }: AntTableProps<T>) => {
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
   const searchInput = useRef<InputRef>(null);
@@ -81,7 +82,7 @@ const AntTable = <T,>({ columns, data }: AntTableProps<T>) => {
 
   const auxColumns = columns.map((item) => ({ ...item, ...getColumnSearchProps('name') }));
 
-  return <Table<T> columns={auxColumns} dataSource={data} size="large" scroll={{ x: '100%' }} rowKey="_id" />;
+  return <Table<T> columns={auxColumns} dataSource={data} size="large" scroll={{ x: '100%' }} rowKey="_id" {...rest} />;
 };
 
 export default AntTable;
