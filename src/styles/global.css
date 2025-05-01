@@ -15,3 +15,7 @@ html {
 body {
   height: 100%;
 }
+
+.ant-upload-select {
+  width: 100%;
+}

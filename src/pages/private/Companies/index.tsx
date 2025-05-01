@@ -3,7 +3,7 @@ import CompaniesTable from './components/CompaniesTable';
 import { useEffect, useState } from 'react';
 import { CompanyProps } from '@/services/companies/company';
 import { notification } from 'antd';
-import { getCompanies } from '@/services/companies/company.reques';
+import { getCompanies } from '@/services/companies/company.requests';
 import { Button } from '@mui/material';
 import CompaniesModal from './components/CompaniesModal';
 import { ModalStateEnum } from '@/types/global.enum';
@@ -25,8 +25,24 @@ const Companies = () => {
   const obtainCompanies = async () => {
     try {
       setLoading(true);
-      const res = await getCompanies();
-      setData([...res]);
+      // const res = await getCompanies();
+      // setData([...res]);
+
+      setData([
+        {
+          departamento: 'Huancayo',
+          direccion: 'Av Huancavelica nro 438 - El Tambo',
+          distrito: 'El Tambo',
+          email: 'empresa@empresa.com',
+          id: 1,
+          logo: 'https://png.pngtree.com/png-clipart/20190613/original/pngtree-instagram-icon-logo-png-image_3560504.jpg',
+          provincia: 'Huancayo',
+          razon_social: 'Instagram INC',
+          ruc: '20243434332',
+          telefono: '904023423',
+          web: 'https://google.com',
+        },
+      ]);
     } catch (error) {
       notification.error({
         message: 'Ocurrió un error inesperado',

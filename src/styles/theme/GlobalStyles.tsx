@@ -21,11 +21,11 @@ export default function GlobalStyles() {
           width: '100%',
           height: '100%',
           '--MainNav-height': '56px',
-          '--MainNav-zIndex': 1000,
+          '--MainNav-zIndex': 999,
           '--SideNav-width': '280px',
-          '--SideNav-zIndex': 1100,
+          '--SideNav-zIndex': 999,
           '--MobileNav-width': '320px',
-          '--MobileNav-zIndex': 1100,
+          '--MobileNav-zIndex': 999,
         },
         '#root': {
           width: '100%',
@@ -89,14 +89,12 @@ export default function GlobalStyles() {
           borderRadius: '6px !important',
         },
         '.ant-table-cell': {
-          position: 'relative',
-          padding: '8px 16px !important',
           overflowWrap: 'break-word',
+          padding: '20px',
         },
         '.ant-table-cell-row-hover': {
           backgroundColor: '#d3d3d3 !important',
         },
-        //
         '.ant-notification-notice-success': {
           backgroundColor: '#52c41a !important',
           borderRadius: '5px !important',
@@ -127,9 +125,7 @@ export default function GlobalStyles() {
           background: `${theme.palette.primary.main} !important`,
           color: 'white !important',
           border: '1px solid rgba(200, 200, 200, 0.5)',
-        },
-        'table tr td': {
-          border: '1px solid rgba(200, 200, 200, 0.5)',
+          padding: '10px',
         },
         '.input-select-form .ant-select-single .ant-select-selector, .input-form input': {
           borderRadius: '6px !important',

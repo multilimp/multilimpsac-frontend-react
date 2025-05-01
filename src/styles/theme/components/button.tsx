@@ -14,5 +14,6 @@ export const MuiButton = {
   },
   defaultProps: {
     variant: 'contained',
+    size: 'large',
   },
 } satisfies Components<Theme>['MuiButton'];

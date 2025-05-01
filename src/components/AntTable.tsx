@@ -1,60 +1,65 @@
-import { useRef, useState } from 'react';
-import type { InputRef, TableColumnsType, TableColumnType } from 'antd';
+import React, { useRef, useState } from 'react';
+import type { InputRef, TableColumnType } from 'antd';
 import { Table } from 'antd';
-import type { FilterDropdownProps } from 'antd/es/table/interface';
 import Highlighter from 'react-highlight-words';
-import { Button, ButtonGroup, Stack, TextField } from '@mui/material';
-import { Search } from '@mui/icons-material';
-import { TableProps } from 'antd/lib';
+import { Box, IconButton, InputAdornment, TextField } from '@mui/material';
+import { Clear, Search } from '@mui/icons-material';
+import { ColumnType, TableProps } from 'antd/es/table';
 
-interface AntTableProps<T> extends Omit<TableProps, 'columns'> {
-  data: Array<T>;
-  columns: TableColumnsType<T>;
+export interface AntColumnType<T> extends ColumnType<T> {
+  filter?: boolean;
+  children?: AntColumnType<T>[];
+}
+
+interface AntTableProps<T> extends Omit<TableProps<T>, 'columns'> {
+  data: T[];
+  columns: AntColumnType<T>[];
 }
 
 const AntTable = <T,>({ columns, data, ...rest }: AntTableProps<T>) => {
-  const [searchText, setSearchText] = useState('');
+  const [searchText, setSearchText] = useState<React.Key>('');
   const [searchedColumn, setSearchedColumn] = useState('');
   const searchInput = useRef<InputRef>(null);
 
-  const handleSearch = (selectedKeys: string[], confirm: FilterDropdownProps['confirm'], dataIndex: string) => {
-    confirm();
-    setSearchText(selectedKeys[0]);
-    setSearchedColumn(dataIndex);
-  };
-
-  const getColumnSearchProps = (dataIndex: string): TableColumnType<any> => ({
-    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
-      <Stack direction="column" p={1.5}>
-        <TextField
-          size="small"
-          label="Ingrese texto para buscar"
-          placeholder={`Buscar por ${dataIndex}`}
-          slotProps={{ inputLabel: { shrink: true } }}
-          value={selectedKeys[0]}
-          onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
-          onKeyUp={(event) => event.code === 'Enter' && handleSearch(selectedKeys as string[], confirm, dataIndex)}
-          sx={{ mb: 1 }}
-        />
-
-        <ButtonGroup fullWidth size="small">
-          <Button onClick={() => handleSearch(selectedKeys as string[], confirm, dataIndex)}>Buscar</Button>
-          <Button
-            onClick={() => {
-              clearFilters?.();
-              handleSearch([], confirm, dataIndex);
-              setSearchText('');
-              setSelectedKeys([]);
-              close();
+  const getColumnSearchProps = (dataIndex: any): TableColumnType<any> => ({
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => {
+      return (
+        <Box p={1}>
+          <TextField
+            variant="outlined"
+            label="Buscar..."
+            size="small"
+            sx={{ maxWidth: 200 }}
+            value={selectedKeys[0] ?? ''}
+            onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                confirm();
+                setSearchText(selectedKeys[0]);
+                setSearchedColumn(dataIndex);
+              }
             }}
-            color="error"
-          >
-            Limpiar
-          </Button>
-        </ButtonGroup>
-      </Stack>
-    ),
-    filterIcon: (filtered: boolean) => <Search style={{ color: filtered ? '#1677ff' : undefined }} />,
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={() => {
+                      clearFilters?.();
+                      setSelectedKeys([]);
+                      confirm();
+                    }}
+                    color="error"
+                  >
+                    <Clear />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Box>
+      );
+    },
+    filterIcon: (filtered: boolean) => <Search style={{ color: filtered ? '#1677ff' : '#ffffff' }} />,
     onFilter: (value, record) =>
       record[dataIndex]
         .toString()
@@ -71,7 +76,7 @@ const AntTable = <T,>({ columns, data, ...rest }: AntTableProps<T>) => {
       searchedColumn === dataIndex ? (
         <Highlighter
           highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-          searchWords={[searchText]}
+          searchWords={[String(searchText)]}
           autoEscape
           textToHighlight={text ? text.toString() : ''}
         />
@@ -80,9 +85,12 @@ const AntTable = <T,>({ columns, data, ...rest }: AntTableProps<T>) => {
       ),
   });
 
-  const auxColumns = columns.map((item) => ({ ...item, ...getColumnSearchProps('name') }));
+  const auxColumns = columns.map((item) => {
+    if (!item.filter) return item;
+    return { ...item, ...getColumnSearchProps(item.dataIndex) };
+  });
 
-  return <Table<T> columns={auxColumns} dataSource={data} size="large" scroll={{ x: '100%' }} rowKey="_id" {...rest} />;
+  return <Table<T> columns={auxColumns} dataSource={data} size="small" scroll={{ x: '100%' }} bordered rowKey="id" {...rest} />;
 };
 
 export default AntTable;

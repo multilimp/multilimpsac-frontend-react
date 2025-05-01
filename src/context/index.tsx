@@ -1,5 +1,5 @@
+import { UserProps } from '@/services/users/user';
 import { RolesEnum } from '@/types/global.enum';
-import { UserProps } from '@/types/user';
 import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useMemo, useState } from 'react';
 
 interface ContextProps {
