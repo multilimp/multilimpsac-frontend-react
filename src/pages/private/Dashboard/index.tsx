@@ -1,19 +1,14 @@
-import AntTable from '@/components/AntTable';
-import PageContent from '@/components/PageContent';
-import { Button } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 
 const Dashboard = () => {
   return (
-    <PageContent title="Empresas" helper="DIRECTORIO > EMPRESAS" component={<Button>AGREGAR</Button>}>
-      <AntTable
-        columns={[
-          { title: 'FIRST', dataIndex: 'tite' },
-          { title: 'SECOND', dataIndex: '2' },
-          { title: 'THIRD', dataIndex: '33' },
-        ]}
-        data={[{ tite: 'ASD', ot: 'sadd' }]}
-      />
-    </PageContent>
+    <Box>
+      <Typography variant="h1">DASHBOARD</Typography>
+      <Typography variant="subtitle1">
+        Lorem ipsum, dolor sit amet consectetur adipisicing elit. Amet, velit voluptas accusantium officia aliquid fugiat eum, inventore culpa ipsa
+        sint adipisci sunt suscipit explicabo earum alias praesentium obcaecati tempora nihil!
+      </Typography>
+    </Box>
   );
 };
 

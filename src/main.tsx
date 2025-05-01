@@ -1,4 +1,3 @@
-import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App as AntApp } from 'antd';
 import App from './App';
@@ -12,9 +11,7 @@ import '@ant-design/v5-patch-for-react-19';
 import '@/styles/global.css';
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <AntApp>
-      <App />
-    </AntApp>
-  </StrictMode>
+  <AntApp>
+    <App />
+  </AntApp>
 );
