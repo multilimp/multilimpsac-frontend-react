@@ -1,18 +1,26 @@
-
-import { Suspense } from "react";
-import { AppProviders } from "@/app/providers/AppProviders";
-import { LoadingFallback } from "@/components/common/LoadingFallback";
-import { AppRoutes } from "./app/routes";
+import ThemeConfig from '@/styles/theme';
+import GlobalStyles from '@/styles/theme/GlobalStyles';
+import { BrowserRouter } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
+import { ConfigProvider } from 'antd';
+import es from 'antd/lib/locale/es_ES';
+import AppContextProvider from './context';
+import ConfigRoutes from './router';
 
 const App = () => {
   return (
-    <AppProviders>
-      <div className="app-container">
-        <Suspense fallback={<LoadingFallback />}>
-          <AppRoutes />
-        </Suspense>
-      </div>
-    </AppProviders>
+    <HelmetProvider>
+      <ConfigProvider locale={es}>
+        <ThemeConfig>
+          <GlobalStyles />
+          <BrowserRouter>
+            <AppContextProvider>
+              <ConfigRoutes />
+            </AppContextProvider>
+          </BrowserRouter>
+        </ThemeConfig>
+      </ConfigProvider>
+    </HelmetProvider>
   );
 };
 
