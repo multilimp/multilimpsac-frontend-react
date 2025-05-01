@@ -10,6 +10,7 @@ import InputFile from '../../../../components/InputFile';
 import { EMAIL_PATTERN, PHONE_PATTERN } from '@/utils/constants';
 import { useEffect, useState } from 'react';
 import { postCompany, putCompany } from '@/services/companies/company.requests';
+import { uploadFile } from '@/services/files/file.requests';
 
 interface CompaniesModalProps {
   data?: CompanyProps;
@@ -36,13 +37,12 @@ const CompaniesModal = ({ data, handleClose, handleReload }: CompaniesModalProps
     });
   }, [data]);
 
-  const handleSubmit = async (body: Record<string, string>) => {
+  const handleSubmit = async (body: Record<string, string | File>) => {
     try {
       setLoading(true);
 
       if (body.logo) {
-        console.log('LLAMAR A ENDPOINT PARA SUBIR IMAGEN Y OBTENER URL');
-        body.logo = 'https://png.pngtree.com/png-clipart/20190613/original/pngtree-instagram-icon-logo-png-image_3560504.jpg';
+        body.logo = await uploadFile(body.logo as File);
       }
 
       if (data) await putCompany(data.id, body);

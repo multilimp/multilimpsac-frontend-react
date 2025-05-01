@@ -67,7 +67,7 @@ const PageContent = ({ component, children }: PageContentProps) => {
         </Grid>
         {component && <Grid>{component}</Grid>}
         <Grid size={12}>
-          <Scrollbar sx={{ height: 'calc((100vh) - 175px)' }}>{children}</Scrollbar>
+          <Scrollbar sx={{ height: 'calc((100vh) - 190px)' }}>{children}</Scrollbar>
         </Grid>
       </Grid>
     </>

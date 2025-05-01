@@ -54,9 +54,7 @@ const Companies = () => {
     <PageContent component={<Button onClick={() => setModal({ mode: ModalStateEnum.BOX })}>Agregar</Button>}>
       <CompaniesTable data={data} loading={loading} onRecordAction={(mode, data) => setModal({ mode, data })} />
 
-      {modal?.mode === ModalStateEnum.BOX ? (
-        <CompaniesModal data={modal.data} handleReload={obtainData} handleClose={() => setModal(null)} />
-      ) : null}
+      {modal?.mode === ModalStateEnum.BOX ? <CompaniesModal data={modal.data} handleReload={obtainData} handleClose={() => setModal(null)} /> : null}
 
       {modal?.mode === ModalStateEnum.DELETE ? (
         <ConfirmDelete endpoint={`/companies/${modal.data?.id}`} handleClose={() => setModal(null)} handleReload={obtainData} />
