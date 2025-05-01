@@ -8,6 +8,8 @@ interface ScrollbarProps {
   sx: SxProps<Theme>;
 }
 
-const Scrollbar = ({ children, sx }: ScrollbarProps) => <CustomScrollBar sx={{ overflowY: 'auto', ...sx }}>{children}</CustomScrollBar>;
+const Scrollbar = ({ children, sx }: ScrollbarProps) => (
+  <CustomScrollBar sx={{ overflowY: 'auto', paddingRight: '2px', ...sx }}>{children}</CustomScrollBar>
+);
 
 export default Scrollbar;

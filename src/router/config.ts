@@ -16,6 +16,7 @@ const RecoveryPassword = Loadable(lazy(() => import('@/pages/public/RecoveryPass
 const Dashboard = Loadable(lazy(() => import('@/pages/private/Dashboard')));
 const Profile = Loadable(lazy(() => import('@/pages/private/Profile')));
 const Companies = Loadable(lazy(() => import('@/pages/private/Companies')));
+const Clients = Loadable(lazy(() => import('@/pages/private/Clients')));
 
 const routes: Array<PropsRoutes> = [
   {
@@ -65,6 +66,11 @@ const routes: Array<PropsRoutes> = [
       {
         path: 'companies',
         element: Companies,
+        roles: Object.values(RolesEnum),
+      },
+      {
+        path: 'clients',
+        element: Clients,
         roles: Object.values(RolesEnum),
       },
       // EXCEPT

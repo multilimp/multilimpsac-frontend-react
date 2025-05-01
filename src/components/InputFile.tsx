@@ -3,9 +3,11 @@ import { FormHelperText } from '@mui/material';
 
 interface InputFileProps {
   onChange: (file: File) => void;
+  label?: string;
+  disabled?: boolean;
 }
 
-const InputFile = ({ onChange }: InputFileProps) => (
+const InputFile = ({ onChange, label, disabled }: InputFileProps) => (
   <Upload
     multiple={false}
     listType="picture"
@@ -14,15 +16,13 @@ const InputFile = ({ onChange }: InputFileProps) => (
     accept="image/jpeg, image/png"
     beforeUpload={(file) => {
       const isImage = file.type.startsWith('image/');
-      if (!isImage) {
-        message.error('Solo puedes subir imágenes');
-        return;
-      }
-      onChange(file);
+      if (isImage) onChange(file);
+      else message.error('Solo puedes subir imágenes');
       return false;
     }}
+    style={disabled ? { pointerEvents: 'none', backgroundColor: '#eee', opacity: 0.75 } : {}}
   >
-    <FormHelperText sx={{ lineHeight: 1, textAlign: 'center' }}>Seleccione el archivo</FormHelperText>
+    <FormHelperText sx={{ lineHeight: 1, textAlign: 'center' }}>{label ?? 'Seleccione el archivo'} </FormHelperText>
   </Upload>
 );
 

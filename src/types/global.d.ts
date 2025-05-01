@@ -1,5 +1,5 @@
 import { Component, JSX } from 'react';
-import { RolesEnum } from './global.enum';
+import { ModalStateEnum, RolesEnum } from './global.enum';
 
 export interface PropsRoutes {
   path: string;
@@ -21,3 +21,8 @@ export interface SidebarItemProps {
   roles: Array<SystemRolesEnum>;
   path: string;
 }
+
+export type ModalStateProps<T> = null | {
+  mode: ModalStateEnum;
+  data?: T;
+};

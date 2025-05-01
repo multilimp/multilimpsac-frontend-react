@@ -17,7 +17,8 @@ const PrivateLayout = () => {
       <SideNavbar />
       <Box sx={{ display: 'flex', flex: '1 1 auto', flexDirection: 'column', pl: { lg: 'var(--SideNav-width)' } }}>
         <MainNav />
-        <Box m={1} p={1} borderRadius={1} border="1px solid #ddd">
+        {/* borderRadius={1} border="1px solid #ddd" */}
+        <Box m={1} p={1}>
           <Outlet />
         </Box>
       </Box>

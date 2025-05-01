@@ -5,9 +5,11 @@ import React from 'react';
 interface SubmitButtonProps {
   form: FormInstance;
   onClick?: VoidFunction;
+  disabled?: boolean;
+  loading?: boolean;
 }
 
-const SubmitButton: React.FC<React.PropsWithChildren<SubmitButtonProps>> = ({ form, children, onClick }) => {
+const SubmitButton: React.FC<React.PropsWithChildren<SubmitButtonProps>> = ({ form, children, disabled, loading, onClick }) => {
   const [submittable, setSubmittable] = React.useState<boolean>(false);
 
   // Watch all values
@@ -21,7 +23,7 @@ const SubmitButton: React.FC<React.PropsWithChildren<SubmitButtonProps>> = ({ fo
   }, [form, values]);
 
   return (
-    <Button type="submit" disabled={!submittable} onClick={onClick}>
+    <Button type="submit" disabled={!submittable || disabled} onClick={onClick} loading={loading}>
       {children}
     </Button>
   );

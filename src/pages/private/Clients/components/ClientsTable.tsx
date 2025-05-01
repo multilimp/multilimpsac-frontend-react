@@ -1,17 +1,17 @@
-import { Delete, Edit } from '@mui/icons-material';
-import { CompanyProps } from '@/services/companies/company';
+import { Delete, Edit, RadioButtonChecked, RadioButtonUnchecked } from '@mui/icons-material';
 import AntTable, { AntColumnType } from '@/components/AntTable';
-import { Avatar, Button, ButtonGroup, FormHelperText, Typography } from '@mui/material';
+import { Button, ButtonGroup, FormHelperText, Typography } from '@mui/material';
 import { ModalStateEnum } from '@/types/global.enum';
+import { ClientProps } from '@/services/clients/client';
 
-interface CompaniesTableProps {
-  data: Array<CompanyProps>;
+interface ClientsTableProps {
+  data: Array<ClientProps>;
   loading: boolean;
-  onRecordAction: (action: ModalStateEnum, data: CompanyProps) => void;
+  onRecordAction: (action: ModalStateEnum, data: ClientProps) => void;
 }
 
-const CompaniesTable = ({ data, loading, onRecordAction }: CompaniesTableProps) => {
-  const columns: Array<AntColumnType<CompanyProps>> = [
+const ClientsTable = ({ data, loading, onRecordAction }: ClientsTableProps) => {
+  const columns: Array<AntColumnType<ClientProps>> = [
     {
       title: 'Acciones',
       dataIndex: 'id',
@@ -26,16 +26,9 @@ const CompaniesTable = ({ data, loading, onRecordAction }: CompaniesTableProps) 
         </ButtonGroup>
       ),
     },
-    {
-      title: 'Logo',
-      dataIndex: 'logo',
-      minWidth: 75,
-      render: (value, record) => <Avatar src={value} alt={record.razon_social} />,
-    },
     { title: 'Razón social', dataIndex: 'razon_social', minWidth: 150, filter: true },
     { title: 'RUC', dataIndex: 'ruc', minWidth: 100, filter: true },
-    { title: 'Teléfono', dataIndex: 'telefono', minWidth: 100, filter: true },
-    { title: 'Correo electrónico', dataIndex: 'email', minWidth: 200, filter: true },
+    { title: 'Código unidad', dataIndex: 'cod_unidad', minWidth: 100, filter: true },
     {
       title: 'Dirección',
       dataIndex: 'departamento',
@@ -49,10 +42,14 @@ const CompaniesTable = ({ data, loading, onRecordAction }: CompaniesTableProps) 
         </>
       ),
     },
-    { title: 'Web', dataIndex: 'web' },
+    {
+      title: 'Estado',
+      dataIndex: 'estado',
+      render: (value) => (value ? <RadioButtonChecked color="success" /> : <RadioButtonUnchecked color="error" />),
+    },
   ];
 
   return <AntTable columns={columns} data={data} loading={loading} />;
 };
 
-export default CompaniesTable;
+export default ClientsTable;

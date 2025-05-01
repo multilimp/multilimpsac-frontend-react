@@ -1,6 +1,6 @@
 import { SidebarConfigProps } from '@/types/global';
 import { RolesEnum } from '@/types/global.enum';
-import { CompareArrows, Apps } from '@mui/icons-material';
+import { Apps, Apartment, People, Diversity3, LocalShipping } from '@mui/icons-material';
 
 const sidebarConfig: Array<SidebarConfigProps> = [
   {
@@ -22,25 +22,25 @@ const sidebarConfig: Array<SidebarConfigProps> = [
       {
         name: 'Empresas',
         path: '/companies',
-        icon: CompareArrows,
+        icon: Apartment,
         roles: [RolesEnum.ADMIN],
       },
       {
         name: 'Clientes',
         path: '/clients',
-        icon: Apps,
+        icon: People,
         roles: [RolesEnum.ADMIN],
       },
       {
         name: 'Proveedores',
         path: '/providers',
-        icon: Apps,
+        icon: Diversity3,
         roles: [RolesEnum.ADMIN],
       },
       {
         name: 'Transportes',
         path: '/transports',
-        icon: Apps,
+        icon: LocalShipping,
         roles: [RolesEnum.ADMIN],
       },
     ],

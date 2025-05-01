@@ -18,8 +18,6 @@ const InputAntd = ({ label, isFloating, isAddonBefore, hasError, size = 'large',
   labelClass += rest?.disabled ? ' disabled' : '';
   labelClass += isAddonBefore ? ` label-addon-before${focus ? '-focus' : ''}` : '';
 
-  console.log(rest);
-
   return (
     <div className={`input-form ${size}`}>
       <div className="float-label" onBlur={() => setFocus(false)} onFocus={() => setFocus(true)}>

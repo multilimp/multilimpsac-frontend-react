@@ -5,7 +5,6 @@ export interface CompanyProps {
   telefono: string;
   email: string;
   web: string;
-
   departamento: string;
   provincia: string;
   distrito: string;

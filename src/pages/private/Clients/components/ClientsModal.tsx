@@ -1,23 +1,21 @@
+import { useEffect, useState } from 'react';
 import { Form, notification, Spin } from 'antd';
 import InputAntd from '@/components/InputAntd';
 import SubmitButton from '@/components/SubmitButton';
-import { CompanyProps } from '@/services/companies/company';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid } from '@mui/material';
 import SelectRegions from '@/components/selects/SelectRegions';
 import SelectProvinces from '@/components/selects/SelectProvinces';
 import SelectDistricts from '@/components/selects/SelectDistricts';
-import InputFile from '../../../../components/InputFile';
-import { EMAIL_PATTERN, PHONE_PATTERN } from '@/utils/constants';
-import { useEffect, useState } from 'react';
-import { postCompany, putCompany } from '@/services/companies/company.requests';
+import { ClientProps } from '@/services/clients/client';
+import { postClient, putClient } from '@/services/clients/client.requests';
 
-interface CompaniesModalProps {
-  data?: CompanyProps;
+interface ClientsModalProps {
+  data?: ClientProps;
   handleClose: VoidFunction;
   handleReload: VoidFunction;
 }
 
-const CompaniesModal = ({ data, handleClose, handleReload }: CompaniesModalProps) => {
+const ClientsModal = ({ data, handleClose, handleReload }: ClientsModalProps) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
 
@@ -26,9 +24,7 @@ const CompaniesModal = ({ data, handleClose, handleReload }: CompaniesModalProps
     form.setFieldsValue({
       ruc: data.ruc,
       razon_social: data.razon_social,
-      telefono: data.telefono,
-      email: data.email,
-      web: data.web,
+      cod_unidad: data.cod_unidad,
       departamento: data.departamento,
       provincia: data.provincia,
       distrito: data.distrito,
@@ -40,18 +36,13 @@ const CompaniesModal = ({ data, handleClose, handleReload }: CompaniesModalProps
     try {
       setLoading(true);
 
-      if (body.logo) {
-        console.log('LLAMAR A ENDPOINT PARA SUBIR IMAGEN Y OBTENER URL');
-        body.logo = 'https://png.pngtree.com/png-clipart/20190613/original/pngtree-instagram-icon-logo-png-image_3560504.jpg';
-      }
-
-      if (data) await putCompany(data.id, body);
-      else await postCompany(body);
+      if (data) await putClient(data.id, body);
+      else await postClient(body);
 
       handleClose();
       handleReload();
     } catch (error) {
-      notification.error({ message: 'No se logró guardar la información de la empresa', description: String(error) });
+      notification.error({ message: 'No se logró guardar la información del cliente', description: String(error) });
     } finally {
       setLoading(false);
     }
@@ -60,7 +51,7 @@ const CompaniesModal = ({ data, handleClose, handleReload }: CompaniesModalProps
   return (
     <Dialog open fullWidth maxWidth="md">
       <DialogTitle variant="h5" textAlign="center">
-        {data ? 'Editar' : 'Agregar'} empresa
+        {data ? 'Editar' : 'Agregar'} cliente
       </DialogTitle>
       <DialogContent>
         <Spin spinning={loading}>
@@ -77,37 +68,14 @@ const CompaniesModal = ({ data, handleClose, handleReload }: CompaniesModalProps
                   <InputAntd label="RUC" />
                 </Form.Item>
               </Grid>
-              <Grid size={{ xs: 12, sm: 6, md: 8 }}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                 <Form.Item name="razon_social" rules={[{ required: true, message: 'La razón social es requerida' }]}>
                   <InputAntd label="Razón social" />
                 </Form.Item>
               </Grid>
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <Form.Item
-                  name="telefono"
-                  rules={[
-                    { required: true, message: 'El teléfono o celular es requerido' },
-                    { min: 6, max: 9, message: 'Ingrese un teléfeno o celular válido' },
-                    { pattern: PHONE_PATTERN, message: 'Ingrese un teléfono o celular válido' },
-                  ]}
-                >
-                  <InputAntd label="Tel / Cel" />
-                </Form.Item>
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <Form.Item
-                  name="email"
-                  rules={[
-                    { required: true, message: 'El correo electrónico es requerido' },
-                    { pattern: EMAIL_PATTERN, message: 'Ingrese un correo electrónico válido' },
-                  ]}
-                >
-                  <InputAntd label="Correo electrónico" />
-                </Form.Item>
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <Form.Item name="web">
-                  <InputAntd label="Dirección Web" />
+                <Form.Item name="cod_unidad" rules={[{ required: true, message: 'El código de unidad es requerido' }]}>
+                  <InputAntd label="Código de unidad" />
                 </Form.Item>
               </Grid>
 
@@ -141,21 +109,15 @@ const CompaniesModal = ({ data, handleClose, handleReload }: CompaniesModalProps
                   )}
                 </Form.Item>
               </Grid>
-
-              <Grid size={{ xs: 12, sm: 6, md: 6 }}>
+              <Grid size={{ xs: 12 }}>
                 <Form.Item name="direccion" rules={[{ required: true, message: 'La dirección es requerida' }]}>
                   <InputAntd label="Dirección" />
                 </Form.Item>
               </Grid>
-              <Grid size={{ xs: 12, sm: 6, md: 6 }}>
-                <Form.Item name="logo">
-                  <InputFile label="Seleccione el logo de la empresa" onChange={(file) => form.setFieldValue('logo', file)} />
-                </Form.Item>
-                <Button className="d-none" type="submit">
-                  SUBMIT
-                </Button>
-              </Grid>
             </Grid>
+            <Button className="d-none" type="submit">
+              SUBMIT
+            </Button>
           </Form>
         </Spin>
       </DialogContent>
@@ -171,4 +133,4 @@ const CompaniesModal = ({ data, handleClose, handleReload }: CompaniesModalProps
   );
 };
 
-export default CompaniesModal;
+export default ClientsModal;

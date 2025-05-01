@@ -1,3 +1,4 @@
+import Scrollbar from '@/components/Scrollbar';
 import { useAppContext } from '@/context';
 import useSidebarConfig from '@/hooks/useSidebarConfig';
 import { SidebarItemProps } from '@/types/global';
@@ -6,7 +7,7 @@ import { Box, Divider, FormHelperText, Stack, Typography } from '@mui/material';
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
-const HEADER_HEIGHT = 144;
+const HEADER_HEIGHT = 145;
 
 const NavigatorList = () => {
   const { pathname } = useLocation();
@@ -28,17 +29,19 @@ const NavigatorList = () => {
         </Stack>
       </Stack>
       <Divider sx={{ borderColor: 'var(--mui-palette-neutral-700)' }} />
-      <Box component="nav" sx={{ p: 1.5, height: `calc((100vh) - ${HEADER_HEIGHT + 1}px)`, overflow: 'auto' }}>
-        <Stack spacing={2}>
-          {sidebarList.map((item) => (
-            <Stack key={item.title} spacing={1}>
-              <FormHelperText sx={{ mb: 1 }}>{item.title.toUpperCase()}</FormHelperText>
-              {item.routes.map((record) => (
-                <NavItem key={record.path} pathname={pathname} {...record} />
-              ))}
-            </Stack>
-          ))}
-        </Stack>
+      <Box component="nav">
+        <Scrollbar sx={{ height: `calc((100vh) - ${HEADER_HEIGHT}px)`, p: 2 }}>
+          <Stack spacing={2}>
+            {sidebarList.map((item) => (
+              <Stack key={item.title} spacing={1}>
+                <FormHelperText sx={{ mb: 1 }}>{item.title.toUpperCase()}</FormHelperText>
+                {item.routes.map((record) => (
+                  <NavItem key={record.path} pathname={pathname} {...record} />
+                ))}
+              </Stack>
+            ))}
+          </Stack>
+        </Scrollbar>
       </Box>
     </Box>
   );

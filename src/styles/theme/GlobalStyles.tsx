@@ -125,38 +125,22 @@ export default function GlobalStyles() {
           background: `${theme.palette.primary.main} !important`,
           color: 'white !important',
           border: '1px solid rgba(200, 200, 200, 0.5)',
-          padding: '10px',
-        },
-        '.input-select-form .ant-select-single .ant-select-selector, .input-form input': {
-          borderRadius: '6px !important',
-          borderColor: '#aaa !important',
-          fontSize: '16px',
-          lineHeight: '24px',
+          paddingTop: '14px !important',
+          paddingBottom: '14px !important',
         },
         '.input-select-form.large .ant-select-single .ant-select-selector, .input-form.large input': {
-          height: '50px !important',
+          height: '50px',
         },
         '.input-select-form.small .ant-select-single .ant-select-selector, .input-form.small input': {
-          height: ' 40px !important',
+          height: '40px',
         },
         '.input-select-form.ant-form-item-has-error': {
           borderColor: `${theme.palette.error.main} !important`,
         },
-        '.input-select-form.large .ant-select-single.ant-select-show-arrow .ant-select-selection-item, .input-select-form.large .ant-select-single.ant-select-show-arrow .ant-select-selection-placeholder':
-          {
-            lineHeight: '55px !important',
-          },
-
-        '.input-select-form.small .ant-select-single.ant-select-show-arrow .ant-select-selection-item, .input-select-form.small .ant-select-single.ant-select-show-arrow .ant-select-selection-placeholder':
-          {
-            lineHeight: '40px !important',
-          },
-        '.input-select-form.large .ant-select-single.ant-select-show-arrow .ant-select-selection-search-input': {
-          lineHeight: '55px !important',
-          height: '55px !important',
+        '.ant-select-lg': {
+          height: '50px !important',
         },
-        '.input-select-form.small .ant-select-single.ant-select-show-arrow .ant-select-selection-search-input': {
-          lineHeight: '40px !important',
+        '.ant-select-sm': {
           height: '40px !important',
         },
         '.input-select-form .anticon-loading': {
@@ -222,14 +206,11 @@ export default function GlobalStyles() {
             backgroundColor: '#e6f7ff !important',
           },
         },
-        '.calendar_table_header': {
-          padding: '10px 0 !important',
-          a: {
-            color: '#ffffff',
-          },
-        },
         '.m-0': {
           margin: '0 !important',
+        },
+        '.d-none': {
+          display: 'none !important',
         },
       }}
     />
