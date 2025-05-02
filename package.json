@@ -19,6 +19,7 @@
     "@mui/material": "7.0.2",
     "antd": "5.24.9",
     "axios": "1.9.0",
+    "dayjs": "^1.11.10",
     "lovable-tagger": "^1.1.8",
     "react": "19.0.0",
     "react-dom": "19.0.0",
