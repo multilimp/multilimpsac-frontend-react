@@ -159,7 +159,7 @@ const SalesTable = ({ data, loading, onEdit, onRefresh }: SalesTableProps) => {
   ];
 
   return (
-    <AntTable<SaleProps> 
+    <AntTable 
       columns={columns}
       data={data}
       loading={loading}

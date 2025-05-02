@@ -14,15 +14,12 @@ export const formatCurrency = (value: number): string => {
 };
 
 // Filter function for Select components that enables searching by text
-// Updated to be compatible with Ant Design's FilterFunc type
 export const filterOptions = (input: string, option?: DefaultOptionType): boolean => {
   if (!option) return false;
   
-  // Using any here because DefaultOptionType doesn't explicitly have title or children properties
-  const optionData = option as any;
-  const titleMatch = optionData.title?.toLowerCase().includes(input.toLowerCase());
-  const childrenMatch = typeof optionData.children === 'string' && 
-    optionData.children.toLowerCase().includes(input.toLowerCase());
+  const label = option.label?.toString().toLowerCase();
+  const value = option.value?.toString().toLowerCase();
   
-  return !!titleMatch || !!childrenMatch;
+  return !!(label && label.includes(input.toLowerCase())) || 
+         !!(value && value.includes(input.toLowerCase()));
 };

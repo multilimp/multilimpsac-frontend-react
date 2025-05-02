@@ -2,7 +2,7 @@
 import AntTable from '@/components/AntTable';
 import { QuoteProps } from '@/services/quotes/quotes';
 import { TableColumnsType } from 'antd';
-import { Button, Space, Tag } from 'antd';
+import { Button, Space } from 'antd';
 import { Edit, Refresh } from '@mui/icons-material';
 import { Box } from '@mui/material';
 import { formatCurrency } from '@/utils/functions';
@@ -19,13 +19,15 @@ const QuotesTable = ({ data = [], loading, onEdit, onRefresh }: QuotesTableProps
     { 
       title: 'N° Cotización', 
       dataIndex: 'quoteNumber',
-      filter: true,
+      filters: [], // Changed from filter: true
+      filterSearch: true,
       sorter: (a, b) => a.quoteNumber.localeCompare(b.quoteNumber),
     },
     { 
       title: 'Cliente', 
       dataIndex: 'client',
-      filter: true,
+      filters: [], // Changed from filter: true
+      filterSearch: true,
       sorter: (a, b) => a.client.localeCompare(b.client),
     },
     { 

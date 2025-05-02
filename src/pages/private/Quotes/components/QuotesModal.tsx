@@ -62,7 +62,7 @@ const QuotesModal = ({ data, open, onClose, onSuccess }: QuotesModalProps) => {
       <DialogContent>
         <Form form={form} layout="vertical" initialValues={data || {}}>
           <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
+            <Grid xs={12} md={6}>
               <Form.Item 
                 name="quoteNumber" 
                 rules={[{ required: true, message: 'Este campo es obligatorio' }]}
@@ -70,7 +70,7 @@ const QuotesModal = ({ data, open, onClose, onSuccess }: QuotesModalProps) => {
                 <InputAntd label="N° Cotización" />
               </Form.Item>
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid xs={12} md={6}>
               <Form.Item 
                 name="date"
                 rules={[{ required: true, message: 'Este campo es obligatorio' }]}
@@ -78,7 +78,7 @@ const QuotesModal = ({ data, open, onClose, onSuccess }: QuotesModalProps) => {
                 <InputAntd label="Fecha" type="date" />
               </Form.Item>
             </Grid>
-            <Grid item xs={12}>
+            <Grid xs={12}>
               <Form.Item 
                 name="client"
                 rules={[{ required: true, message: 'Este campo es obligatorio' }]}
@@ -86,12 +86,12 @@ const QuotesModal = ({ data, open, onClose, onSuccess }: QuotesModalProps) => {
                 <InputAntd label="Cliente" />
               </Form.Item>
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid xs={12} md={6}>
               <Form.Item name="total">
                 <InputAntd label="Total" type="number" />
               </Form.Item>
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid xs={12} md={6}>
               <Form.Item name="status">
                 <InputAntd label="Estado" />
               </Form.Item>

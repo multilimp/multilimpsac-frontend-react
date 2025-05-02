@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from 'react';
 import { SaleProps } from '@/services/sales/sales';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, TextField, Typography, MenuItem, IconButton, Box } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, Typography, IconButton, Box } from '@mui/material';
 import { DatePicker, Select, Table, InputNumber, Form, notification } from 'antd';
 import { Delete as DeleteIcon, Add as AddIcon } from '@mui/icons-material';
 import { formatCurrency } from '@/utils/functions';
