@@ -1,8 +1,8 @@
+
 import PageContent from '@/components/PageContent';
 import OrdersTable from './components/OrdersTable';
 import { useEffect, useState } from 'react';
 import { OrderProps } from '@/services/orders/orders';
-import { notification } from 'antd';
 import { getOrders } from '@/services/orders/orders.request';
 import { Button } from '@mui/material';
 import OrdersModal from './components/OrdersModal';

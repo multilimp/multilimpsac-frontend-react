@@ -1,3 +1,4 @@
+
 import { ReactNode } from 'react';
 import { Grid, Typography, Breadcrumbs, Link as MuiLink } from '@mui/material';
 import { Helmet } from 'react-helmet-async';
@@ -9,9 +10,11 @@ import sidebarConfig from '@/layouts/PrivateLayout/sidebarConfig';
 interface PageContentProps {
   component?: ReactNode;
   children?: ReactNode;
+  title?: string;
+  helper?: string;
 }
 
-const PageContent = ({ component, children }: PageContentProps) => {
+const PageContent = ({ component, children, title, helper }: PageContentProps) => {
   const location = useLocation();
 
   const { Icon, group, module } = sidebarConfig.reduce(
@@ -30,7 +33,7 @@ const PageContent = ({ component, children }: PageContentProps) => {
   return (
     <>
       <Helmet>
-        <title>{module ? `${module} | ` : ''}MULTILIMPSAC</title>
+        <title>{title || (module ? `${module} | ` : '')}MULTILIMPSAC</title>
       </Helmet>
 
       <Grid container spacing={1.5} justifyContent="space-between" alignItems="center" component="main">
@@ -40,7 +43,7 @@ const PageContent = ({ component, children }: PageContentProps) => {
               <Apps sx={{ mr: 0.5 }} fontSize="inherit" />
               Dashboard
             </MuiLink>
-            {group ? <Typography color="inherit">{group}</Typography> : null}
+            {helper ? <Typography color="inherit">{helper}</Typography> : group ? <Typography color="inherit">{group}</Typography> : null}
             {module ? (
               <Typography sx={{ color: 'text.primary', display: 'flex', alignItems: 'center' }}>
                 <Icon sx={{ mr: 0.5 }} fontSize="inherit" />
@@ -62,7 +65,7 @@ const PageContent = ({ component, children }: PageContentProps) => {
               pb: 0.5,
             }}
           >
-            {module || 'Modulo no definido'}
+            {title || module || 'Modulo no definido'}
           </Typography>
         </Grid>
         {component && <Grid>{component}</Grid>}

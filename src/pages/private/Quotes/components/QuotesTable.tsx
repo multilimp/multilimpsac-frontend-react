@@ -1,3 +1,4 @@
+
 import AntTable from '@/components/AntTable';
 import { QuoteProps } from '@/services/quotes/quotes';
 import { TableColumnsType } from 'antd';
@@ -7,6 +8,7 @@ interface QuotesTableProps {
   data?: QuoteProps[];
   loading: boolean;
   onEdit?: (quote: QuoteProps) => void;
+  onRefresh?: () => void;
 }
 
 const QuotesTable = ({ data = [], loading, onEdit }: QuotesTableProps) => {

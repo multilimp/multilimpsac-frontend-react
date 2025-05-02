@@ -1,3 +1,4 @@
+
 import AntTable from '@/components/AntTable';
 import { SaleProps } from '@/services/sales/sales';
 import { TableColumnsType } from 'antd';
@@ -7,6 +8,7 @@ interface SalesTableProps {
   data?: SaleProps[];
   loading: boolean;
   onEdit?: (sale: SaleProps) => void;
+  onRefresh?: () => void;
 }
 
 const SalesTable = ({ data = [], loading, onEdit }: SalesTableProps) => {

@@ -1,9 +1,9 @@
+
 import PageContent from '@/components/PageContent';
 import CompaniesTable from './components/CompaniesTable';
 import { useEffect, useState } from 'react';
 import { CompanyProps } from '@/services/companies/company';
 import { notification } from 'antd';
-import { getCompanies } from '@/services/companies/company.requests';
 import { Button } from '@mui/material';
 import CompaniesModal from './components/CompaniesModal';
 import { ModalStateEnum } from '@/types/global.enum';
@@ -22,9 +22,7 @@ const Companies = () => {
   const obtainData = async () => {
     try {
       setLoading(true);
-      // const res = await getCompanies();
-      // setData([...res]);
-
+      // Datos generados para ejemplo
       const generatedData = Array.from(Array(500).keys()).map((id) => ({
         id,
         departamento: '04',
