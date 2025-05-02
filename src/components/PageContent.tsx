@@ -1,6 +1,6 @@
 
 import { ReactNode } from 'react';
-import { Grid, Typography, Breadcrumbs, Link as MuiLink, Box, Fade } from '@mui/material';
+import { Grid as MuiGrid, Typography, Breadcrumbs, Link as MuiLink, Box, Fade } from '@mui/material';
 import { Helmet } from 'react-helmet-async';
 import Scrollbar from './Scrollbar';
 import { Apps } from '@mui/icons-material';
@@ -37,8 +37,8 @@ const PageContent = ({ component, children, title, helper }: PageContentProps) =
       </Helmet>
 
       <Fade in={true} timeout={300}>
-        <Grid container spacing={2} justifyContent="space-between" alignItems="center">
-          <Grid xs={12} md={component ? 6 : 12}>
+        <MuiGrid container spacing={2} justifyContent="space-between" alignItems="center">
+          <MuiGrid item xs={12} md={component ? 6 : 12}>
             <Breadcrumbs
               sx={{
                 '& .MuiBreadcrumbs-ol': {
@@ -133,15 +133,15 @@ const PageContent = ({ component, children, title, helper }: PageContentProps) =
             >
               {title || module || 'Módulo no definido'}
             </Typography>
-          </Grid>
+          </MuiGrid>
           
           {component && (
-            <Grid xs={12} md={6} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <MuiGrid item xs={12} md={6} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
               {component}
-            </Grid>
+            </MuiGrid>
           )}
           
-          <Grid xs={12}>
+          <MuiGrid item xs={12}>
             <Box
               sx={{
                 borderRadius: 3,
@@ -158,8 +158,8 @@ const PageContent = ({ component, children, title, helper }: PageContentProps) =
                 {children}
               </Scrollbar>
             </Box>
-          </Grid>
-        </Grid>
+          </MuiGrid>
+        </MuiGrid>
       </Fade>
     </>
   );

@@ -1,3 +1,4 @@
+
 import PageContent from '@/components/PageContent';
 import SalesTable from './components/SalesTable';
 import { useEffect, useState } from 'react';

@@ -1,12 +1,12 @@
 
 import { SaleProps } from '@/services/sales/sales';
 import { useState } from 'react';
-import AntTable, { AntColumnType } from '@/components/AntTable';
+import AntTable from '@/components/AntTable';
 import { Button, Tooltip } from '@mui/material';
 import { generateInvoice } from '@/services/sales/sales.request';
 import { notification } from 'antd';
 import { formatCurrency } from '@/utils/functions';
-import { ReceiptText, Edit2, Trash } from 'lucide-react';
+import { Receipt as ReceiptIcon, Edit as EditIcon } from '@mui/icons-material';
 
 interface SalesTableProps {
   data: SaleProps[];
@@ -43,24 +43,26 @@ const SalesTable = ({ data, loading, onEdit, onRefresh }: SalesTableProps) => {
     }
   };
 
-  const columns: AntColumnType<SaleProps>[] = [
+  const columns = [
     {
       title: 'Número',
       dataIndex: 'saleNumber',
       key: 'saleNumber',
-      filter: true,
+      filters: [], 
+      filterSearch: true,
     },
     {
       title: 'Cliente',
       dataIndex: 'client',
       key: 'client',
-      filter: true,
+      filters: [],
+      filterSearch: true,
     },
     {
       title: 'Fecha',
       dataIndex: 'date',
       key: 'date',
-      sorter: (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+      sorter: (a: SaleProps, b: SaleProps) => new Date(a.date).getTime() - new Date(b.date).getTime(),
     },
     {
       title: 'Método de Pago',
@@ -71,7 +73,7 @@ const SalesTable = ({ data, loading, onEdit, onRefresh }: SalesTableProps) => {
         { text: 'Crédito', value: 'credit' },
         { text: 'Transferencia', value: 'transfer' },
       ],
-      onFilter: (value, record) => record.paymentMethod === value,
+      onFilter: (value: string, record: SaleProps) => record.paymentMethod === value,
       render: (paymentMethod: string) => {
         const methods: Record<string, string> = {
           cash: 'Efectivo',
@@ -90,7 +92,7 @@ const SalesTable = ({ data, loading, onEdit, onRefresh }: SalesTableProps) => {
         { text: 'Pendiente', value: 'pending' },
         { text: 'Reembolsado', value: 'refunded' },
       ],
-      onFilter: (value, record) => record.status === value,
+      onFilter: (value: string, record: SaleProps) => record.status === value,
       render: (status: string) => {
         const statusColors: Record<string, string> = {
           completed: '#04BA6B',
@@ -122,13 +124,13 @@ const SalesTable = ({ data, loading, onEdit, onRefresh }: SalesTableProps) => {
       title: 'Total',
       dataIndex: 'total',
       key: 'total',
-      sorter: (a, b) => a.total - b.total,
+      sorter: (a: SaleProps, b: SaleProps) => a.total - b.total,
       render: (total: number) => formatCurrency(total)
     },
     {
       title: 'Acciones',
       key: 'actions',
-      render: (_, record) => (
+      render: (_: any, record: SaleProps) => (
         <div style={{ display: 'flex', gap: '8px' }}>
           <Tooltip title="Editar">
             <Button
@@ -138,7 +140,7 @@ const SalesTable = ({ data, loading, onEdit, onRefresh }: SalesTableProps) => {
               onClick={() => onEdit(record)}
               sx={{ minWidth: 'unset', p: '4px' }}
             >
-              <Edit2 size={16} />
+              <EditIcon fontSize="small" />
             </Button>
           </Tooltip>
           <Tooltip title="Generar factura">
@@ -150,7 +152,7 @@ const SalesTable = ({ data, loading, onEdit, onRefresh }: SalesTableProps) => {
               disabled={generatingInvoice === record.id.toString()}
               sx={{ minWidth: 'unset', p: '4px' }}
             >
-              <ReceiptText size={16} />
+              <ReceiptIcon fontSize="small" />
             </Button>
           </Tooltip>
         </div>

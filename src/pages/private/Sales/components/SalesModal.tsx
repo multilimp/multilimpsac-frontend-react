@@ -1,6 +1,8 @@
+
 import { useState, useEffect } from 'react';
 import { SaleProps } from '@/services/sales/sales';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, Typography, IconButton, Box } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Box, Typography, IconButton } from '@mui/material';
+import { Grid as MuiGrid } from '@mui/material';
 import { DatePicker, Select, Table, InputNumber, Form, notification } from 'antd';
 import { Delete as DeleteIcon, Add as AddIcon } from '@mui/icons-material';
 import { formatCurrency } from '@/utils/functions';
@@ -243,8 +245,8 @@ const SalesModal = ({ data, open, onClose, onSuccess }: SalesModalProps) => {
       <DialogTitle>{data ? 'Editar' : 'Registrar'} venta</DialogTitle>
       <DialogContent>
         <Form form={form} layout="vertical" style={{ marginTop: '1rem' }}>
-          <Grid container spacing={2}>
-            <Grid xs={12} md={6}>
+          <MuiGrid container spacing={2}>
+            <MuiGrid item xs={12} md={6}>
               <Form.Item
                 name="client"
                 label="Cliente"
@@ -262,9 +264,9 @@ const SalesModal = ({ data, open, onClose, onSuccess }: SalesModalProps) => {
                   }))}
                 />
               </Form.Item>
-            </Grid>
+            </MuiGrid>
             
-            <Grid xs={12} md={6}>
+            <MuiGrid item xs={12} md={6}>
               <Form.Item
                 name="date"
                 label="Fecha"
@@ -273,9 +275,9 @@ const SalesModal = ({ data, open, onClose, onSuccess }: SalesModalProps) => {
               >
                 <DatePicker style={{ width: '100%' }} />
               </Form.Item>
-            </Grid>
+            </MuiGrid>
 
-            <Grid xs={12} md={6}>
+            <MuiGrid item xs={12} md={6}>
               <Form.Item
                 name="paymentMethod"
                 label="Método de Pago"
@@ -287,9 +289,9 @@ const SalesModal = ({ data, open, onClose, onSuccess }: SalesModalProps) => {
                   options={paymentMethods}
                 />
               </Form.Item>
-            </Grid>
+            </MuiGrid>
 
-            <Grid xs={12} md={6}>
+            <MuiGrid item xs={12} md={6}>
               <Form.Item
                 name="status"
                 label="Estado"
@@ -302,9 +304,9 @@ const SalesModal = ({ data, open, onClose, onSuccess }: SalesModalProps) => {
                   options={statusOptions}
                 />
               </Form.Item>
-            </Grid>
+            </MuiGrid>
 
-            <Grid xs={12}>
+            <MuiGrid item xs={12}>
               <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}>Productos</Typography>
               
               <Box sx={{ display: 'flex', mb: 2, gap: 1 }}>
@@ -351,8 +353,8 @@ const SalesModal = ({ data, open, onClose, onSuccess }: SalesModalProps) => {
                   Total: {formatCurrency(total)}
                 </Typography>
               </Box>
-            </Grid>
-          </Grid>
+            </MuiGrid>
+          </MuiGrid>
         </Form>
       </DialogContent>
       <DialogActions>

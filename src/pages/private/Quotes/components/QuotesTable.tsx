@@ -19,14 +19,14 @@ const QuotesTable = ({ data = [], loading, onEdit, onRefresh }: QuotesTableProps
     { 
       title: 'N° Cotización', 
       dataIndex: 'quoteNumber',
-      filters: [], // Changed from filter: true
+      filters: [], 
       filterSearch: true,
       sorter: (a, b) => a.quoteNumber.localeCompare(b.quoteNumber),
     },
     { 
       title: 'Cliente', 
       dataIndex: 'client',
-      filters: [], // Changed from filter: true
+      filters: [], 
       filterSearch: true,
       sorter: (a, b) => a.client.localeCompare(b.client),
     },
