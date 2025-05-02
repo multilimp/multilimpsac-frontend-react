@@ -1,3 +1,4 @@
+
 import React, { useRef, useState } from 'react';
 import type { InputRef, TableColumnType } from 'antd';
 import { Table } from 'antd';
@@ -16,7 +17,8 @@ interface AntTableProps<T> extends Omit<TableProps<T>, 'columns'> {
   columns: AntColumnType<T>[];
 }
 
-const AntTable = <T,>({ columns, data, ...rest }: AntTableProps<T>) => {
+const AntTable = <T extends Record<string, any>>(props: AntTableProps<T>) => {
+  const { columns, data, ...rest } = props;
   const [searchText, setSearchText] = useState<React.Key>('');
   const [searchedColumn, setSearchedColumn] = useState('');
   const searchInput = useRef<InputRef>(null);
@@ -90,7 +92,7 @@ const AntTable = <T,>({ columns, data, ...rest }: AntTableProps<T>) => {
     return { ...item, ...getColumnSearchProps(item.dataIndex) };
   });
 
-  return <Table<T> columns={auxColumns} dataSource={data} size="small" scroll={{ x: '100%' }} bordered rowKey="id" {...rest} />;
+  return <Table columns={auxColumns} dataSource={data} size="small" scroll={{ x: '100%' }} bordered rowKey="id" {...rest} />;
 };
 
 export default AntTable;
