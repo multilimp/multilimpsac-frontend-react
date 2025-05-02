@@ -22,8 +22,7 @@ const QuotesPage = () => {
     try {
       setLoading(true);
       const response = await getQuotes();
-      const quotesData = Array.isArray(response) ? response : response?.data;
-      setData(quotesData ?? []);
+      setData(response ?? []);
     } catch (error) {
       notification.error({
         message: 'Error al obtener cotizaciones',

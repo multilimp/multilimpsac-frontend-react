@@ -22,8 +22,7 @@ const OrdersPage = () => {
     try {
       setLoading(true);
       const response = await getOrders();
-      const ordersData = Array.isArray(response) ? response : response?.data;
-      setData(ordersData ?? []);
+      setData(response ?? []);
     } catch (error) {
       notification.error({
         message: 'Error al obtener órdenes',

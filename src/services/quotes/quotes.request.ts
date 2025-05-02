@@ -1,5 +1,6 @@
 import apiClient from '../apiClient';
 import { QuoteProps } from './quotes';
+import { OrderProps } from '../orders/orders';
 
 export const getQuotes = async (): Promise<QuoteProps[]> => {
   const response = await apiClient.get('/quotes');

@@ -22,8 +22,7 @@ const SalesPage = () => {
     try {
       setLoading(true);
       const response = await getSales();
-      const salesData = Array.isArray(response) ? response : response?.data;
-      setData(salesData ?? []);
+      setData(response ?? []);
     } catch (error) {
       notification.error({
         message: 'Error al obtener ventas',
