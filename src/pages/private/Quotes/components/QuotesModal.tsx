@@ -1,6 +1,6 @@
 
 import { QuoteProps } from '@/services/quotes/quotes';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Box, Typography, Grid, TextField, Divider } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Box, Typography, Grid, Divider } from '@mui/material';
 import { Close, Save } from '@mui/icons-material';
 import { useState } from 'react';
 import { Form } from 'antd';
@@ -113,7 +113,7 @@ const QuotesModal = ({ data, open, onClose, onSuccess }: QuotesModalProps) => {
           variant="contained" 
           color="primary" 
           onClick={handleSave}
-          loading={loading}
+          disabled={loading}
           startIcon={<Save />}
         >
           {data ? 'Actualizar' : 'Guardar'}

@@ -1,5 +1,6 @@
 
 import { SidebarItemProps } from '@/types/global';
+import { DefaultOptionType } from 'antd/es/select';
 
 export const isNavItemActive = ({ path, pathname = '' }: { path: string; pathname?: string }): boolean =>
   path === pathname || Boolean(path !== '/' && pathname.startsWith(path));
@@ -13,11 +14,15 @@ export const formatCurrency = (value: number): string => {
 };
 
 // Filter function for Select components that enables searching by text
-export const filterOptions = (input: string, option?: { title: string; children: string }): boolean => {
+// Updated to be compatible with Ant Design's FilterFunc type
+export const filterOptions = (input: string, option?: DefaultOptionType): boolean => {
   if (!option) return false;
   
-  const titleMatch = option.title?.toLowerCase().includes(input.toLowerCase());
-  const childrenMatch = option.children?.toString().toLowerCase().includes(input.toLowerCase());
+  // Using any here because DefaultOptionType doesn't explicitly have title or children properties
+  const optionData = option as any;
+  const titleMatch = optionData.title?.toLowerCase().includes(input.toLowerCase());
+  const childrenMatch = typeof optionData.children === 'string' && 
+    optionData.children.toLowerCase().includes(input.toLowerCase());
   
-  return titleMatch || childrenMatch;
+  return !!titleMatch || !!childrenMatch;
 };
