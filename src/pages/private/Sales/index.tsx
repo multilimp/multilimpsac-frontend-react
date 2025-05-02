@@ -15,19 +15,31 @@ type ModalStateType = null | {
 
 const SalesPage = () => {
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<Array<SaleProps>>([]);
+  const [data, setData] = useState<SaleProps[]>([]);
   const [modal, setModal] = useState<ModalStateType>(null);
 
   const fetchSales = async () => {
     try {
       setLoading(true);
       const response = await getSales();
-      setData(response ?? []);
+      // Verificar que la respuesta sea un array antes de asignarla
+      if (Array.isArray(response)) {
+        setData(response);
+      } else {
+        console.error('La respuesta de getSales no es un array:', response);
+        setData([]);
+        notification.error({
+          message: 'Error al obtener ventas',
+          description: 'El formato de datos recibido no es válido.',
+        });
+      }
     } catch (error) {
+      console.error('Error fetching sales:', error);
       notification.error({
         message: 'Error al obtener ventas',
         description: `Detalles: ${error instanceof Error ? error.message : String(error)}`,
       });
+      setData([]); // Garantizar que data siempre sea un array
     } finally {
       setLoading(false);
     }

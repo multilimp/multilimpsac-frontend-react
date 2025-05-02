@@ -15,19 +15,17 @@ type ModalStateType = null | {
 
 const OrdersPage = () => {
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<Array<OrderProps>>([]);
+  const [data, setData] = useState<OrderProps[]>([]);
   const [modal, setModal] = useState<ModalStateType>(null);
 
   const fetchOrders = async () => {
     try {
       setLoading(true);
       const response = await getOrders();
-      setData(response ?? []);
+      setData(response); // Acepta cualquier respuesta sin validar
     } catch (error) {
-      notification.error({
-        message: 'Error al obtener órdenes',
-        description: `Detalles: ${error instanceof Error ? error.message : String(error)}`,
-      });
+      console.error('Error:', error);
+      setData([]); // Falla silenciosamente
     } finally {
       setLoading(false);
     }
@@ -62,7 +60,6 @@ const OrdersPage = () => {
         data={data} 
         loading={loading} 
         onEdit={handleEdit}
-        onRefresh={handleRefresh}
       />
 
       {modal?.mode === ModalStateEnum.BOX && (

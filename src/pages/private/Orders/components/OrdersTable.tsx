@@ -4,13 +4,12 @@ import { TableColumnsType } from 'antd';
 import { Button, Space } from 'antd';
 
 interface OrdersTableProps {
-  data: OrderProps[];
+  data?: OrderProps[];
   loading: boolean;
   onEdit?: (order: OrderProps) => void;
-  onRefresh?: () => void;
 }
 
-const OrdersTable = ({ data, loading, onEdit, onRefresh }: OrdersTableProps) => {
+const OrdersTable = ({ data = [], loading, onEdit }: OrdersTableProps) => {
   const columns: TableColumnsType<OrderProps> = [
     { title: 'N° Orden', dataIndex: 'orderNumber' },
     { title: 'Cliente', dataIndex: 'client' },
@@ -21,7 +20,7 @@ const OrdersTable = ({ data, loading, onEdit, onRefresh }: OrdersTableProps) => 
       key: 'actions',
       render: (_, record) => (
         <Space size="middle">
-          <Button type="link" onClick={() => onEdit?.(record)}>
+          <Button type="link" onClick={() => onEdit?.(record)} disabled={!record.id}>
             Editar
           </Button>
         </Space>
@@ -31,12 +30,7 @@ const OrdersTable = ({ data, loading, onEdit, onRefresh }: OrdersTableProps) => 
 
   return (
     <div>
-      {onRefresh && (
-        <Button style={{ marginBottom: 16 }} onClick={onRefresh}>
-          Actualizar
-        </Button>
-      )}
-      <AntTable columns={columns} data={data} loading={loading} />
+      <AntTable columns={columns} data={data} loading={loading} rowKey="id" />
     </div>
   );
 };

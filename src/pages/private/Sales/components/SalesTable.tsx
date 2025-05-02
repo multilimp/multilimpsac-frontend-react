@@ -4,13 +4,12 @@ import { TableColumnsType } from 'antd';
 import { Button, Space } from 'antd';
 
 interface SalesTableProps {
-  data: SaleProps[];
+  data?: SaleProps[];
   loading: boolean;
   onEdit?: (sale: SaleProps) => void;
-  onRefresh?: () => void;
 }
 
-const SalesTable = ({ data, loading, onEdit, onRefresh }: SalesTableProps) => {
+const SalesTable = ({ data = [], loading, onEdit }: SalesTableProps) => {
   const columns: TableColumnsType<SaleProps> = [
     { title: 'N° Venta', dataIndex: 'saleNumber' },
     { title: 'Cliente', dataIndex: 'client' },
@@ -21,7 +20,7 @@ const SalesTable = ({ data, loading, onEdit, onRefresh }: SalesTableProps) => {
       key: 'actions',
       render: (_, record) => (
         <Space size="middle">
-          <Button type="link" onClick={() => onEdit?.(record)}>
+          <Button type="link" onClick={() => onEdit?.(record)} disabled={!record?.id}>
             Editar
           </Button>
         </Space>
@@ -31,12 +30,7 @@ const SalesTable = ({ data, loading, onEdit, onRefresh }: SalesTableProps) => {
 
   return (
     <div>
-      {onRefresh && (
-        <Button style={{ marginBottom: 16 }} onClick={onRefresh}>
-          Actualizar
-        </Button>
-      )}
-      <AntTable columns={columns} data={data} loading={loading} />
+      <AntTable columns={columns} data={data} loading={loading} rowKey="id" />
     </div>
   );
 };

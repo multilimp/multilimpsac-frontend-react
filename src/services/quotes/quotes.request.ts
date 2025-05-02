@@ -3,8 +3,15 @@ import { QuoteProps } from './quotes';
 import { OrderProps } from '../orders/orders';
 
 export const getQuotes = async (): Promise<QuoteProps[]> => {
-  const response = await apiClient.get('/quotes');
-  return response.data;
+  await new Promise(resolve => setTimeout(resolve, 1000)); // Simula delay de carga
+  try {
+    const response = await apiClient.get('/quotes');
+    // Aseguramos que siempre devolvemos un array
+    return Array.isArray(response?.data) ? response.data : [];
+  } catch (error) {
+    console.error('Error fetching quotes:', error);
+    return []; // Devuelve array vacío en caso de error
+  }
 };
 
 export const createQuote = async (quote: Omit<QuoteProps, 'id'>): Promise<QuoteProps> => {

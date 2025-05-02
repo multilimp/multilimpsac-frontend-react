@@ -4,13 +4,12 @@ import { TableColumnsType } from 'antd';
 import { Button, Space } from 'antd';
 
 interface QuotesTableProps {
-  data: QuoteProps[];
+  data?: QuoteProps[];
   loading: boolean;
   onEdit?: (quote: QuoteProps) => void;
-  onRefresh?: () => void;
 }
 
-const QuotesTable = ({ data, loading, onEdit, onRefresh }: QuotesTableProps) => {
+const QuotesTable = ({ data = [], loading, onEdit }: QuotesTableProps) => {
   const columns: TableColumnsType<QuoteProps> = [
     { title: 'N° Cotización', dataIndex: 'quoteNumber' },
     { title: 'Cliente', dataIndex: 'client' },
@@ -21,7 +20,7 @@ const QuotesTable = ({ data, loading, onEdit, onRefresh }: QuotesTableProps) => 
       key: 'actions',
       render: (_, record) => (
         <Space size="middle">
-          <Button type="link" onClick={() => onEdit?.(record)}>
+          <Button type="link" onClick={() => onEdit?.(record)} disabled={!record?.id}>
             Editar
           </Button>
         </Space>
@@ -31,12 +30,7 @@ const QuotesTable = ({ data, loading, onEdit, onRefresh }: QuotesTableProps) => 
 
   return (
     <div>
-      {onRefresh && (
-        <Button style={{ marginBottom: 16 }} onClick={onRefresh}>
-          Actualizar
-        </Button>
-      )}
-      <AntTable columns={columns} data={data} loading={loading} />
+      <AntTable columns={columns} data={data} loading={loading} rowKey="id" />
     </div>
   );
 };

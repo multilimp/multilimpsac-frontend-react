@@ -15,19 +15,31 @@ type ModalStateType = null | {
 
 const QuotesPage = () => {
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<Array<QuoteProps>>([]);
+  const [data, setData] = useState<QuoteProps[]>([]);
   const [modal, setModal] = useState<ModalStateType>(null);
 
   const fetchQuotes = async () => {
     try {
       setLoading(true);
       const response = await getQuotes();
-      setData(response ?? []);
+      // Verificar que la respuesta sea un array antes de asignarla
+      if (Array.isArray(response)) {
+        setData(response);
+      } else {
+        console.error('La respuesta de getQuotes no es un array:', response);
+        setData([]);
+        notification.error({
+          message: 'Error al obtener cotizaciones',
+          description: 'El formato de datos recibido no es válido.',
+        });
+      }
     } catch (error) {
+      console.error('Error fetching quotes:', error);
       notification.error({
         message: 'Error al obtener cotizaciones',
         description: `Detalles: ${error instanceof Error ? error.message : String(error)}`,
       });
+      setData([]); // Garantizar que data siempre sea un array
     } finally {
       setLoading(false);
     }
