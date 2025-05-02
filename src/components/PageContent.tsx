@@ -37,8 +37,8 @@ const PageContent = ({ component, children, title, helper }: PageContentProps) =
       </Helmet>
 
       <Fade in={true} timeout={300}>
-        <Grid container spacing={2} justifyContent="space-between" alignItems="center" component="main">
-          <Grid item xs={12} md={component ? 6 : 12}>
+        <Grid container spacing={2} justifyContent="space-between" alignItems="center">
+          <Grid xs={12} md={component ? 6 : 12}>
             <Breadcrumbs
               sx={{
                 '& .MuiBreadcrumbs-ol': {
@@ -136,12 +136,12 @@ const PageContent = ({ component, children, title, helper }: PageContentProps) =
           </Grid>
           
           {component && (
-            <Grid item xs={12} md={6} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <Grid xs={12} md={6} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
               {component}
             </Grid>
           )}
           
-          <Grid item xs={12}>
+          <Grid xs={12}>
             <Box
               sx={{
                 borderRadius: 3,

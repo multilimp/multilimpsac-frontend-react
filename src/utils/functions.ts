@@ -11,3 +11,13 @@ export const formatCurrency = (value: number): string => {
     minimumFractionDigits: 2
   }).format(value);
 };
+
+// Filter function for Select components that enables searching by text
+export const filterOptions = (input: string, option?: { title: string; children: string }): boolean => {
+  if (!option) return false;
+  
+  const titleMatch = option.title?.toLowerCase().includes(input.toLowerCase());
+  const childrenMatch = option.children?.toString().toLowerCase().includes(input.toLowerCase());
+  
+  return titleMatch || childrenMatch;
+};
