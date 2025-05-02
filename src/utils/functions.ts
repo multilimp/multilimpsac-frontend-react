@@ -1,14 +1,13 @@
-export function isNavItemActive({ path, pathname }: { pathname: string; path: string }): boolean {
-  return pathname === path;
-}
 
-export const removeAccents = (str: string): string => {
-  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+import { SidebarItemProps } from '@/types/global';
+
+export const isNavItemActive = ({ path, pathname = '' }: { path: string; pathname?: string }): boolean =>
+  path === pathname || Boolean(path !== '/' && pathname.startsWith(path));
+
+export const formatCurrency = (value: number): string => {
+  return new Intl.NumberFormat('es-PE', {
+    style: 'currency',
+    currency: 'PEN',
+    minimumFractionDigits: 2
+  }).format(value);
 };
-
-export const filterOptions = (inputValue: string, option: any) => {
-  const title = removeAccents(String(option?.title ?? option?.children).toLowerCase());
-  return title.includes(inputValue.toLowerCase());
-};
-
-export const sleep = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));

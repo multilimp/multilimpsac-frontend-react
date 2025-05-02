@@ -1,3 +1,4 @@
+
 import NavigatorList from './NavigatorList';
 import { Drawer } from '@mui/material';
 
@@ -12,15 +13,15 @@ const MobileNavigator = ({ open, onClose }: MobileNavProps) => {
       slotProps={{
         paper: {
           sx: {
-            '--MobileNav-background': 'var(--mui-palette-neutral-950)',
+            '--MobileNav-background': 'var(--mui-palette-secondary-main)', // Using multilimpBlue
             '--MobileNav-color': 'var(--mui-palette-common-white)',
             '--NavItem-color': 'var(--mui-palette-neutral-300)',
-            '--NavItem-hover-background': 'rgba(255, 255, 255, 0.04)',
-            '--NavItem-active-background': 'var(--mui-palette-primary-main)',
-            '--NavItem-active-color': 'var(--mui-palette-primary-contrastText)',
+            '--NavItem-hover-background': 'rgba(255, 255, 255, 0.08)',
+            '--NavItem-active-background': 'var(--mui-palette-primary-main)', // Using multilimpGreen
+            '--NavItem-active-color': 'var(--mui-palette-common-white)',
             '--NavItem-disabled-color': 'var(--mui-palette-neutral-500)',
             '--NavItem-icon-color': 'var(--mui-palette-neutral-400)',
-            '--NavItem-icon-active-color': 'var(--mui-palette-primary-contrastText)',
+            '--NavItem-icon-active-color': 'var(--mui-palette-common-white)',
             '--NavItem-icon-disabled-color': 'var(--mui-palette-neutral-600)',
             bgcolor: 'var(--MobileNav-background)',
             color: 'var(--MobileNav-color)',
@@ -30,6 +31,8 @@ const MobileNavigator = ({ open, onClose }: MobileNavProps) => {
             scrollbarWidth: 'none',
             width: 'var(--MobileNav-width)',
             zIndex: 'var(--MobileNav-zIndex)',
+            boxShadow: '0 0 20px rgba(0, 0, 0, 0.2)',
+            borderRadius: '0 16px 16px 0',
             '&::-webkit-scrollbar': { display: 'none' },
           },
         },

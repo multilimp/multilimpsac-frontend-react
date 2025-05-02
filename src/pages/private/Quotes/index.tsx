@@ -1,12 +1,14 @@
+
 import PageContent from '@/components/PageContent';
 import QuotesTable from './components/QuotesTable';
 import { useEffect, useState } from 'react';
 import { QuoteProps } from '@/services/quotes/quotes';
 import { notification } from 'antd';
 import { getQuotes } from '@/services/quotes/quotes.request';
-import { Button } from '@mui/material';
+import { Button, Box } from '@mui/material';
 import QuotesModal from './components/QuotesModal';
 import { ModalStateEnum } from '@/types/global.enum';
+import { Add, Refresh } from '@mui/icons-material';
 
 type ModalStateType = null | {
   mode: ModalStateEnum;
@@ -62,12 +64,30 @@ const QuotesPage = () => {
       title="Gestión de Cotizaciones"
       helper="DIRECTORIO / COTIZACIONES"
       component={
-        <Button 
-          variant="contained" 
-          onClick={() => setModal({ mode: ModalStateEnum.BOX, data: null })}
-        >
-          Nueva Cotización
-        </Button>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button 
+            variant="contained" 
+            color="primary"
+            startIcon={<Add />}
+            onClick={() => setModal({ mode: ModalStateEnum.BOX, data: null })}
+            sx={{
+              px: 3,
+              py: 1.25,
+              borderRadius: 2,
+              fontWeight: 600,
+            }}
+          >
+            Nueva Cotización
+          </Button>
+          <Button
+            variant="outlined"
+            startIcon={<Refresh />}
+            onClick={handleRefresh}
+            sx={{ borderRadius: 2 }}
+          >
+            Actualizar
+          </Button>
+        </Box>
       }
     >
       <QuotesTable 

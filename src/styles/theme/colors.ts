@@ -1,4 +1,35 @@
+
 import { PaletteRange } from '@mui/material';
+
+// Multilimp primary green
+export const multilimpGreen = {
+  50: '#e0f7ed',
+  100: '#b3ecd3',
+  200: '#80dfb6',
+  300: '#4dd299',
+  400: '#26c985',
+  500: '#04BA6B', // Main brand color
+  600: '#03a861',
+  700: '#039354',
+  800: '#027f47',
+  900: '#015c32',
+  950: '#003d21',
+} satisfies PaletteRange;
+
+// Multilimp secondary blue
+export const multilimpBlue = {
+  50: '#e9edf3',
+  100: '#c8d1e0',
+  200: '#a3b3cc',
+  300: '#7e94b7',
+  400: '#627da8',
+  500: '#4a6491',
+  600: '#3b5179',
+  700: '#2d3f60',
+  800: '#1E293B', // Main brand color
+  900: '#0f1a2b',
+  950: '#060c16',
+} satisfies PaletteRange;
 
 export const california = {
   50: '#fffaea',
