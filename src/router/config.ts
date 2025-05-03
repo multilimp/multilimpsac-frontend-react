@@ -22,6 +22,9 @@ const Orders = Loadable(lazy(() => import('@/pages/private/Orders')));
 const Clients = Loadable(lazy(() => import('@/pages/private/Clients')));  
 const Providers = Loadable(lazy(() => import('@/pages/private/Providers')));  
 const Transports = Loadable(lazy(() => import('@/pages/private/Transports')));  
+const Treasurys = Loadable(lazy(() => import('@/pages/private/Treasurys')));  
+const Billings = Loadable(lazy(() => import('@/pages/private/Billings')));  
+const Trackings = Loadable(lazy(() => import('@/pages/private/Trackings')));  
 
 const routes: Array<PropsRoutes> = [
   {
@@ -101,6 +104,21 @@ const routes: Array<PropsRoutes> = [
       {
         path: 'transports',
         element: Transports,  // Actualizado a PascalCase
+        roles: Object.values(RolesEnum),
+      },
+      {
+        path: 'treasury',
+        element: Treasurys,  // Actualizado a PascalCase
+        roles: Object.values(RolesEnum),
+      },
+      {
+        path: 'billing',
+        element: Billings,  // Actualizado a PascalCase
+        roles: Object.values(RolesEnum),
+      },
+      {
+        path: 'tracking',
+        element: Trackings,  // Actualizado a PascalCase
         roles: Object.values(RolesEnum),
       },
       // EXCEPT
