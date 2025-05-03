@@ -1,50 +1,79 @@
-import { useEffect, useState } from 'react';
-import { notification } from 'antd';
-import { Button } from '@mui/material';
 import PageContent from '@/components/PageContent';
-import { ClientProps } from '@/services/clients/client';
-import { getClients } from '@/services/clients/client.requests';
-import { ModalStateProps } from '@/types/global';
-import { ModalStateEnum } from '@/types/global.enum';
 import ClientsTable from './components/ClientsTable';
-import ConfirmDelete from '@/components/ConfirmDelete';
+import { useEffect, useState } from 'react';
+import { ClientProps } from '@/services/clients/clients';
+import { notification } from 'antd';
+import { getClients } from '@/services/clients/clients.request'; // Corregí el nombre del archivo
+import { Button } from '@mui/material';
 import ClientsModal from './components/ClientsModal';
+import { ModalStateEnum } from '@/types/global.enum';
 
-const Clients = () => {
+type ModalStateType = {
+  mode: ModalStateEnum;
+  data: ClientProps | null;
+} | null;
+
+const ClientsPage = () => {
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<Array<ClientProps>>([]);
-  const [modal, setModal] = useState<ModalStateProps<ClientProps>>(null);
+  const [clients, setClients] = useState<ClientProps[]>([]);
+  const [modalState, setModalState] = useState<ModalStateType>(null);
 
-  useEffect(() => {
-    obtainData();
-  }, []);
-
-  const obtainData = async () => {
+  const fetchClients = async () => {
     try {
       setLoading(true);
-      const res = await getClients();
-      setData([...res]);
+      const response = await getClients();
+      setClients(response);
     } catch (error) {
       notification.error({
-        message: 'Ocurrió un error inesperado',
-        description: `No se pudo obtener el listado de clientes. ${String(error)}`,
+        message: 'Error al obtener clientes',
+        description: error instanceof Error ? error.message : 'Error desconocido',
       });
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    fetchClients();
+  }, []);
+
+  const handleOpenModal = () => {
+    setModalState({
+      mode: ModalStateEnum.BOX,
+      data: null
+    });
+  };
+
+  const handleCloseModal = () => {
+    setModalState(null);
+  };
+
   return (
-    <PageContent component={<Button onClick={() => setModal({ mode: ModalStateEnum.BOX })}>Agregar cliente</Button>}>
-      <ClientsTable data={data} loading={loading} onRecordAction={(mode, data) => setModal({ mode, data })} />
-
-      {modal?.mode === ModalStateEnum.BOX ? <ClientsModal data={modal.data} handleReload={obtainData} handleClose={() => setModal(null)} /> : null}
-
-      {modal?.mode === ModalStateEnum.DELETE ? (
-        <ConfirmDelete endpoint={`/clients/${modal.data?.id}`} handleClose={() => setModal(null)} handleReload={obtainData} />
-      ) : null}
+    <PageContent
+      title="Clientes"
+      helper="DIRECTORIO / CLIENTES"
+      component={
+        <Button 
+          variant="contained" 
+          onClick={handleOpenModal}
+        >
+          Agregar Cliente
+        </Button>
+      }
+    >
+      <ClientsTable 
+        data={clients} 
+        loading={loading} 
+      />
+      
+      {modalState?.mode === ModalStateEnum.BOX && (
+        <ClientsModal 
+          data={modalState.data} 
+          handleClose={handleCloseModal} 
+        />
+      )}
     </PageContent>
   );
 };
 
-export default Clients;
+export default ClientsPage;

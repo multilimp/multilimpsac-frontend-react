@@ -1,55 +1,48 @@
-import { Delete, Edit, RadioButtonChecked, RadioButtonUnchecked } from '@mui/icons-material';
-import AntTable, { AntColumnType } from '@/components/AntTable';
-import { Button, ButtonGroup, FormHelperText, Typography } from '@mui/material';
-import { ModalStateEnum } from '@/types/global.enum';
-import { ClientProps } from '@/services/clients/client';
+import AntTable from '@/components/AntTable';
+import { ClientProps } from '@/services/clients/clients';
+import { TableColumnsType } from 'antd';
+import React from 'react';
 
 interface ClientsTableProps {
-  data: Array<ClientProps>;
-  loading: boolean;
-  onRecordAction: (action: ModalStateEnum, data: ClientProps) => void;
+  data?: ClientProps[] | null; // Acepta undefined o null
+  loading?: boolean;
 }
 
-const ClientsTable = ({ data, loading, onRecordAction }: ClientsTableProps) => {
-  const columns: Array<AntColumnType<ClientProps>> = [
-    {
-      title: 'Acciones',
-      dataIndex: 'id',
-      render: (_, record) => (
-        <ButtonGroup size="small">
-          <Button color="info" onClick={() => onRecordAction(ModalStateEnum.BOX, record)}>
-            <Edit />
-          </Button>
-          <Button color="error" onClick={() => onRecordAction(ModalStateEnum.DELETE, record)}>
-            <Delete />
-          </Button>
-        </ButtonGroup>
-      ),
-    },
-    { title: 'Razón social', dataIndex: 'razon_social', minWidth: 150, filter: true },
-    { title: 'RUC', dataIndex: 'ruc', minWidth: 100, filter: true },
-    { title: 'Código unidad', dataIndex: 'cod_unidad', minWidth: 100, filter: true },
-    {
-      title: 'Dirección',
-      dataIndex: 'departamento',
-      minWidth: 300,
-      render: (_, record) => (
-        <>
-          <Typography variant="body2">{record.direccion}</Typography>
-          <FormHelperText>
-            {record.departamento} - {record.provincia} - {record.distrito}
-          </FormHelperText>
-        </>
-      ),
-    },
-    {
-      title: 'Estado',
-      dataIndex: 'estado',
-      render: (value) => (value ? <RadioButtonChecked color="success" /> : <RadioButtonUnchecked color="error" />),
-    },
+const ClientsTable: React.FC<ClientsTableProps> = ({ 
+  data = [], 
+  loading = false 
+}) => {
+  // Columnas configuradas
+  const columns: TableColumnsType<ClientProps> = [
+    { title: 'RUC', dataIndex: 'ruc', key: 'ruc' },
+    { title: 'Razón Social', dataIndex: 'socialReason', key: 'socialReason' },
+    { title: 'Código Unidad', dataIndex: 'unitCode', key: 'unitCode', render: (text) => text || '-' },
+    { title: 'Contactos', dataIndex: 'contacts', key: 'contacts', render: (contacts) => contacts?.join(', ') || '-' },
+    { title: 'Departamento', dataIndex: 'department', key: 'department' },
+    { title: 'Provincia', dataIndex: 'province', key: 'province' },
+    { title: 'Distrito', dataIndex: 'district', key: 'district' },
+    { title: 'Dirección', dataIndex: 'address', key: 'address', ellipsis: true },
+    { title: 'Acciones', key: 'actions' }
   ];
 
-  return <AntTable columns={columns} data={data} loading={loading} />;
+  // Normalización de datos
+  const normalizedData = React.useMemo(() => {
+    if (!data) return [];
+    if (!Array.isArray(data)) return [];
+    return data.map(item => ({
+      ...item,
+      key: item.id || item.ruc || Math.random().toString(36).substr(2, 9)
+    }));
+  }, [data]);
+
+  return (
+    <AntTable 
+      data={normalizedData} // Datos normalizados
+      columns={columns}
+      loading={loading}
+      rowKey={(record) => record.key}
+    />
+  );
 };
 
 export default ClientsTable;
