@@ -23,7 +23,7 @@ const statusOptions = [
 const SaleFormHeader = ({ clients }: SaleFormHeaderProps) => {
   return (
     <MuiGrid container spacing={2}>
-      <MuiGrid item xs={12} md={6}>
+      <MuiGrid xs={12} md={6}>
         <Form.Item
           name="client"
           label="Cliente"
@@ -42,7 +42,7 @@ const SaleFormHeader = ({ clients }: SaleFormHeaderProps) => {
         </Form.Item>
       </MuiGrid>
       
-      <MuiGrid item xs={12} md={6}>
+      <MuiGrid xs={12} md={6}>
         <Form.Item
           name="date"
           label="Fecha"
@@ -53,7 +53,7 @@ const SaleFormHeader = ({ clients }: SaleFormHeaderProps) => {
         </Form.Item>
       </MuiGrid>
 
-      <MuiGrid item xs={12} md={6}>
+      <MuiGrid xs={12} md={6}>
         <Form.Item
           name="paymentMethod"
           label="Método de Pago"
@@ -67,7 +67,7 @@ const SaleFormHeader = ({ clients }: SaleFormHeaderProps) => {
         </Form.Item>
       </MuiGrid>
 
-      <MuiGrid item xs={12} md={6}>
+      <MuiGrid xs={12} md={6}>
         <Form.Item
           name="status"
           label="Estado"

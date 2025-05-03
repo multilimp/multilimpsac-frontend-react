@@ -38,7 +38,7 @@ const PageContent = ({ component, children, title, helper }: PageContentProps) =
 
       <Fade in={true} timeout={300}>
         <MuiGrid container spacing={2} justifyContent="space-between" alignItems="center">
-          <MuiGrid item xs={12} md={component ? 6 : 12}>
+          <MuiGrid xs={12} md={component ? 6 : 12}>
             <Breadcrumbs
               sx={{
                 '& .MuiBreadcrumbs-ol': {
@@ -136,12 +136,12 @@ const PageContent = ({ component, children, title, helper }: PageContentProps) =
           </MuiGrid>
           
           {component && (
-            <MuiGrid item xs={12} md={6} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <MuiGrid xs={12} md={6} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
               {component}
             </MuiGrid>
           )}
           
-          <MuiGrid item xs={12}>
+          <MuiGrid xs={12}>
             <Box
               sx={{
                 borderRadius: 3,
