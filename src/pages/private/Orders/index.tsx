@@ -2,7 +2,6 @@ import PageContent from '@/components/PageContent';
 import OrdersTable from './components/OrdersTable';
 import { useEffect, useState } from 'react';
 import { OrderProps } from '@/services/orders/orders';
-import { notification } from 'antd';
 import { getOrders } from '@/services/orders/orders.request';
 import { Button } from '@mui/material';
 import OrdersModal from './components/OrdersModal';
@@ -22,10 +21,10 @@ const OrdersPage = () => {
     try {
       setLoading(true);
       const response = await getOrders();
-      setData(response); // Acepta cualquier respuesta sin validar
+      setData(response);
     } catch (error) {
       console.error('Error:', error);
-      setData([]); // Falla silenciosamente
+      setData([]);
     } finally {
       setLoading(false);
     }
@@ -34,10 +33,6 @@ const OrdersPage = () => {
   useEffect(() => {
     fetchOrders();
   }, []);
-
-  const handleRefresh = () => {
-    fetchOrders();
-  };
 
   const handleEdit = (order: OrderProps) => {
     setModal({ mode: ModalStateEnum.BOX, data: order });
@@ -67,7 +62,7 @@ const OrdersPage = () => {
           data={modal.data} 
           open={true}
           onClose={() => setModal(null)}
-          onSuccess={handleRefresh}
+          onSuccess={fetchOrders}
         />
       )}
     </PageContent>
