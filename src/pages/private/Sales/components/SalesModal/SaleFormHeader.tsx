@@ -1,6 +1,6 @@
 
 import { Form, Select, DatePicker } from 'antd';
-import { Grid as MuiGrid } from '@mui/material';
+import { Grid } from '@mui/material';
 import { ClientProps } from '@/services/clients/client';
 import dayjs from 'dayjs';
 
@@ -22,8 +22,8 @@ const statusOptions = [
 
 const SaleFormHeader = ({ clients }: SaleFormHeaderProps) => {
   return (
-    <MuiGrid container spacing={2}>
-      <MuiGrid xs={12} md={6}>
+    <Grid container spacing={2}>
+      <Grid sm={12} md={6}>
         <Form.Item
           name="client"
           label="Cliente"
@@ -40,9 +40,9 @@ const SaleFormHeader = ({ clients }: SaleFormHeaderProps) => {
             }))}
           />
         </Form.Item>
-      </MuiGrid>
+      </Grid>
       
-      <MuiGrid xs={12} md={6}>
+      <Grid sm={12} md={6}>
         <Form.Item
           name="date"
           label="Fecha"
@@ -51,9 +51,9 @@ const SaleFormHeader = ({ clients }: SaleFormHeaderProps) => {
         >
           <DatePicker style={{ width: '100%' }} />
         </Form.Item>
-      </MuiGrid>
+      </Grid>
 
-      <MuiGrid xs={12} md={6}>
+      <Grid sm={12} md={6}>
         <Form.Item
           name="paymentMethod"
           label="Método de Pago"
@@ -65,9 +65,9 @@ const SaleFormHeader = ({ clients }: SaleFormHeaderProps) => {
             options={paymentMethods}
           />
         </Form.Item>
-      </MuiGrid>
+      </Grid>
 
-      <MuiGrid xs={12} md={6}>
+      <Grid sm={12} md={6}>
         <Form.Item
           name="status"
           label="Estado"
@@ -80,8 +80,8 @@ const SaleFormHeader = ({ clients }: SaleFormHeaderProps) => {
             options={statusOptions}
           />
         </Form.Item>
-      </MuiGrid>
-    </MuiGrid>
+      </Grid>
+    </Grid>
   );
 };
 
