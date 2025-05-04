@@ -1,10 +1,9 @@
-
 import type { Components } from '@mui/material/styles';
 import type { Theme } from '../types';
 
 export const MuiButton = {
   styleOverrides: {
-    root: ({ theme }) => ({
+    root: () => ({
       borderRadius: '8px',
       textTransform: 'none',
       boxShadow: 'none',

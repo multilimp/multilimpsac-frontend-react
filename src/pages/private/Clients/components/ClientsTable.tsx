@@ -1,18 +1,16 @@
+
 import AntTable from '@/components/AntTable';
 import { ClientProps } from '@/services/clients/clients';
 import { TableColumnsType } from 'antd';
 import React from 'react';
 
-// Import the ClientProps type and augment it with 'key' property
-import { ClientProps } from '@/services/clients/clients';
-
 // Define a new interface that extends ClientProps with the key property
 interface ClientTableProps extends ClientProps {
-  key: string;
+  key: string | number;
 }
 
 interface ClientsTableProps {
-  data?: ClientTableProps[] | null; // Acepta undefined o null
+  data?: ClientProps[] | null; // Acepta undefined o null
   loading?: boolean;
 }
 
@@ -40,7 +38,7 @@ const ClientsTable: React.FC<ClientsTableProps> = ({
     return data.map(item => ({
       ...item,
       key: item.id || item.ruc || Math.random().toString(36).substr(2, 9)
-    }));
+    })) as ClientTableProps[];
   }, [data]);
 
   return (
@@ -48,7 +46,7 @@ const ClientsTable: React.FC<ClientsTableProps> = ({
       data={normalizedData} // Datos normalizados
       columns={columns}
       loading={loading}
-      rowKey={(record) => record.key}
+      rowKey={(record) => String(record.key)}
     />
   );
 };

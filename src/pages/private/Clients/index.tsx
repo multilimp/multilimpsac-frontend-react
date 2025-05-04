@@ -1,9 +1,10 @@
+
 import PageContent from '@/components/PageContent';
 import ClientsTable from './components/ClientsTable';
 import { useEffect, useState } from 'react';
 import { ClientProps } from '@/services/clients/clients';
 import { notification } from 'antd';
-import { getClients } from '@/services/clients/clients.request'; // Corregí el nombre del archivo
+import { getClients } from '@/services/clients/clients.request'; 
 import { Button } from '@mui/material';
 import ClientsModal from './components/ClientsModal';
 import { ModalStateEnum } from '@/types/global.enum';
@@ -40,7 +41,7 @@ const ClientsPage = () => {
   const handleOpenModal = () => {
     setModalState({
       mode: ModalStateEnum.BOX,
-      data: undefined
+      data: null
     });
   };
 

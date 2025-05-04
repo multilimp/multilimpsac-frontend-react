@@ -1,6 +1,5 @@
-
 import { ReactNode } from 'react';
-import { Box, Breadcrumbs, Divider, Fade, Link as MuiLink, Typography } from '@mui/material';
+import { Box, Breadcrumbs, Fade, Link as MuiLink, Typography } from '@mui/material';
 import { Helmet } from 'react-helmet-async';
 import Scrollbar from './Scrollbar';
 import { Apps } from '@mui/icons-material';
