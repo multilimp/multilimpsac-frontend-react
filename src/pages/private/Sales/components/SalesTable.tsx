@@ -2,11 +2,21 @@
 import { SaleProps } from '@/services/sales/sales';
 import { useState } from 'react';
 import AntTable from '@/components/AntTable';
-import { Button, Tooltip } from '@mui/material';
+import { Box, Button, Tooltip } from '@mui/material';
 import { generateInvoice } from '@/services/sales/sales.request';
 import { notification } from 'antd';
 import { formatCurrency } from '@/utils/functions';
-import { Receipt as ReceiptIcon, Edit as EditIcon } from '@mui/icons-material';
+import { 
+  Receipt as ReceiptIcon, 
+  Edit as EditIcon,
+  Download as DownloadIcon, 
+  Search as SearchIcon,
+  FilterAlt as FilterIcon 
+} from '@mui/icons-material';
+import { Input, Select, DatePicker, Button as AntButton } from 'antd';
+import dayjs from 'dayjs';
+
+const { RangePicker } = DatePicker;
 
 interface SalesTableProps {
   data: SaleProps[];
@@ -17,6 +27,12 @@ interface SalesTableProps {
 
 const SalesTable = ({ data, loading, onEdit, onRefresh }: SalesTableProps) => {
   const [generatingInvoice, setGeneratingInvoice] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    status: '',
+    dateRange: [] as [dayjs.Dayjs | null, dayjs.Dayjs | null]
+  });
 
   const handleGenerateInvoice = async (saleId: string) => {
     try {
@@ -43,11 +59,53 @@ const SalesTable = ({ data, loading, onEdit, onRefresh }: SalesTableProps) => {
     }
   };
 
+  const handleSearch = (value: string) => {
+    setSearchTerm(value);
+  };
+
+  const handleFilterChange = (key: string, value: any) => {
+    setFilters({
+      ...filters,
+      [key]: value
+    });
+  };
+
+  // Filter data based on search term and filters
+  const filteredData = data.filter(sale => {
+    // Search term filtering
+    if (searchTerm && !Object.values(sale).some(val => 
+      val && String(val).toLowerCase().includes(searchTerm.toLowerCase())
+    )) {
+      return false;
+    }
+    
+    // Status filtering
+    if (filters.status && sale.status !== filters.status) {
+      return false;
+    }
+    
+    // Date range filtering
+    if (filters.dateRange?.length === 2 && filters.dateRange[0] && filters.dateRange[1]) {
+      const saleDate = dayjs(sale.date);
+      if (
+        !saleDate.isAfter(filters.dateRange[0], 'day') || 
+        !saleDate.isBefore(filters.dateRange[1], 'day')
+      ) {
+        return false;
+      }
+    }
+    
+    return true;
+  });
+
   const columns = [
     {
-      title: 'Número',
-      dataIndex: 'saleNumber',
-      key: 'saleNumber',
+      title: 'Código',
+      dataIndex: 'saleCode',
+      key: 'saleCode',
+      render: (saleCode: string | undefined, record: SaleProps) => {
+        return saleCode || record.saleNumber || '-';
+      },
       filters: [], 
       filterSearch: true,
     },
@@ -59,10 +117,44 @@ const SalesTable = ({ data, loading, onEdit, onRefresh }: SalesTableProps) => {
       filterSearch: true,
     },
     {
+      title: 'RUC Cliente',
+      dataIndex: 'clientRuc',
+      key: 'clientRuc',
+      render: (clientRuc: string | undefined) => clientRuc || '-',
+      filters: [],
+      filterSearch: true,
+    },
+    {
+      title: 'Empresa',
+      dataIndex: 'companyName',
+      key: 'companyName',
+      render: (companyName: string | undefined) => companyName || '-',
+      filters: [],
+      filterSearch: true,
+    },
+    {
+      title: 'RUC Empresa',
+      dataIndex: 'companyRuc',
+      key: 'companyRuc',
+      render: (companyRuc: string | undefined) => companyRuc || '-',
+      filters: [],
+      filterSearch: true,
+    },
+    {
       title: 'Fecha',
       dataIndex: 'date',
       key: 'date',
       sorter: (a: SaleProps, b: SaleProps) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+    },
+    {
+      title: 'Fecha Formal',
+      dataIndex: 'formalDate',
+      key: 'formalDate',
+      render: (formalDate: string | undefined) => formalDate || '-',
+      sorter: (a: SaleProps, b: SaleProps) => {
+        if (!a.formalDate || !b.formalDate) return 0;
+        return new Date(a.formalDate).getTime() - new Date(b.formalDate).getTime();
+      },
     },
     {
       title: 'Método de Pago',
@@ -131,7 +223,7 @@ const SalesTable = ({ data, loading, onEdit, onRefresh }: SalesTableProps) => {
       title: 'Acciones',
       key: 'actions',
       render: (_: any, record: SaleProps) => (
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <Box sx={{ display: 'flex', gap: '8px' }}>
           <Tooltip title="Editar">
             <Button
               size="small"
@@ -155,17 +247,104 @@ const SalesTable = ({ data, loading, onEdit, onRefresh }: SalesTableProps) => {
               <ReceiptIcon fontSize="small" />
             </Button>
           </Tooltip>
-        </div>
+          <Tooltip title="Descargar">
+            <Button
+              size="small"
+              variant="outlined"
+              color="info"
+              sx={{ minWidth: 'unset', p: '4px' }}
+            >
+              <DownloadIcon fontSize="small" />
+            </Button>
+          </Tooltip>
+        </Box>
       )
     }
   ];
 
   return (
-    <AntTable 
-      columns={columns}
-      data={data}
-      loading={loading}
-    />
+    <Box>
+      <Box sx={{ 
+        p: 2, 
+        bgcolor: 'background.paper', 
+        borderRadius: 2, 
+        boxShadow: '0 2px 8px rgba(0,0,0,0.05)', 
+        mb: 2,
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: 2,
+        alignItems: 'center'
+      }}>
+        <Input
+          placeholder="Buscar ventas..."
+          allowClear
+          onChange={e => handleSearch(e.target.value)}
+          style={{ maxWidth: '300px', flex: 1 }}
+          prefix={<SearchIcon sx={{ fontSize: '1rem', color: 'text.secondary' }} />}
+        />
+        
+        <AntButton 
+          type="default"
+          icon={<FilterIcon sx={{ fontSize: '1rem' }} />}
+          onClick={() => setShowFilters(!showFilters)}
+        >
+          Filtros
+        </AntButton>
+        
+        <AntButton
+          type="primary"
+          icon={<DownloadIcon sx={{ fontSize: '1rem' }} />}
+          style={{ marginLeft: 'auto' }}
+        >
+          Exportar
+        </AntButton>
+      </Box>
+
+      {showFilters && (
+        <Box sx={{ 
+          p: 2, 
+          bgcolor: 'background.paper', 
+          borderRadius: 2, 
+          boxShadow: '0 2px 8px rgba(0,0,0,0.05)', 
+          mb: 2,
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: 2
+        }}>
+          <Select
+            placeholder="Estado"
+            style={{ width: '200px' }}
+            allowClear
+            onChange={value => handleFilterChange('status', value)}
+            options={[
+              { value: 'completed', label: 'Completado' },
+              { value: 'pending', label: 'Pendiente' },
+              { value: 'refunded', label: 'Reembolsado' }
+            ]}
+          />
+          
+          <RangePicker 
+            style={{ width: '300px' }} 
+            onChange={dates => handleFilterChange('dateRange', dates)}
+          />
+          
+          <AntButton onClick={() => {
+            setFilters({
+              status: '',
+              dateRange: []
+            });
+          }}>
+            Limpiar filtros
+          </AntButton>
+        </Box>
+      )}
+      
+      <AntTable 
+        columns={columns}
+        data={filteredData}
+        loading={loading}
+      />
+    </Box>
   );
 };
 

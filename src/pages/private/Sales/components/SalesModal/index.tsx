@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { SaleProps } from '@/services/sales/sales';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Tab, Tabs, Typography } from '@mui/material';
 import { notification } from 'antd';
 import { Form } from 'antd';
 import { createSale } from '@/services/sales/sales.request';
@@ -12,7 +12,10 @@ import { getProducts } from '@/services/products/product.requests';
 import SaleFormHeader from './SaleFormHeader';
 import SaleItemsTable from './SaleItemsTable';
 import SaleTotals from './SaleTotals';
+import SaleCompanyInfo from './SaleCompanyInfo';
+import SaleAdditionalInfo from './SaleAdditionalInfo';
 import dayjs from 'dayjs';
+import { Close, Save } from '@mui/icons-material';
 
 interface SalesModalProps {
   data: SaleProps | null;
@@ -30,6 +33,29 @@ interface SaleItemProps {
   subtotal: number;
 }
 
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
+}
+
+function TabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`sale-tabpanel-${index}`}
+      aria-labelledby={`sale-tab-${index}`}
+      {...other}
+      style={{ padding: '16px 0' }}
+    >
+      {value === index && <Box>{children}</Box>}
+    </div>
+  );
+}
+
 const SalesModal = ({ data, open, onClose, onSuccess }: SalesModalProps) => {
   const [form] = Form.useForm();
   const [items, setItems] = useState<SaleItemProps[]>([]);
@@ -39,6 +65,7 @@ const SalesModal = ({ data, open, onClose, onSuccess }: SalesModalProps) => {
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
   const [tax, setTax] = useState(0);
+  const [tabValue, setTabValue] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -54,9 +81,17 @@ const SalesModal = ({ data, open, onClose, onSuccess }: SalesModalProps) => {
           // Populate form with existing data
           form.setFieldsValue({
             client: data.client,
+            clientRuc: data.clientRuc,
             date: dayjs(data.date),
+            formalDate: data.formalDate ? dayjs(data.formalDate) : undefined,
             paymentMethod: data.paymentMethod,
-            status: data.status
+            status: data.status,
+            companyName: data.companyName,
+            companyRuc: data.companyRuc,
+            contact: data.contact,
+            catalog: data.catalog,
+            deliveryDate: data.deliveryDate ? dayjs(data.deliveryDate) : undefined,
+            observations: data.observations
           });
 
           // Populate items table
@@ -132,6 +167,10 @@ const SalesModal = ({ data, open, onClose, onSuccess }: SalesModalProps) => {
     setItems(items.filter(item => item.key !== key));
   };
 
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setTabValue(newValue);
+  };
+
   const handleSave = async () => {
     try {
       await form.validateFields();
@@ -147,10 +186,15 @@ const SalesModal = ({ data, open, onClose, onSuccess }: SalesModalProps) => {
 
       setLoading(true);
 
+      const saleCode = data?.saleCode || `OC-GRU-${String(Date.now()).slice(-4)}`;
+      
       const saleData: Omit<SaleProps, 'id'> = {
         saleNumber: data?.saleNumber || `V-${Date.now()}`,
+        saleCode,
         client: values.client,
+        clientRuc: values.clientRuc,
         date: values.date.format('YYYY-MM-DD'),
+        formalDate: values.formalDate ? values.formalDate.format('YYYY-MM-DD') : undefined,
         paymentMethod: values.paymentMethod,
         status: values.status,
         items: items.map(item => ({
@@ -159,7 +203,13 @@ const SalesModal = ({ data, open, onClose, onSuccess }: SalesModalProps) => {
           unitPrice: item.unitPrice
         })),
         total,
-        tax
+        tax,
+        companyName: values.companyName,
+        companyRuc: values.companyRuc,
+        contact: values.contact,
+        catalog: values.catalog,
+        deliveryDate: values.deliveryDate ? values.deliveryDate.format('YYYY-MM-DD') : undefined,
+        observations: values.observations
       };
 
       await createSale(saleData);
@@ -183,27 +233,84 @@ const SalesModal = ({ data, open, onClose, onSuccess }: SalesModalProps) => {
   };
 
   return (
-    <Dialog open={open} fullWidth maxWidth="md" onClose={onClose}>
-      <DialogTitle>{data ? 'Editar' : 'Registrar'} venta</DialogTitle>
+    <Dialog 
+      open={open} 
+      fullWidth 
+      maxWidth="lg" 
+      onClose={onClose}
+      PaperProps={{
+        sx: {
+          borderRadius: 3,
+          boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',
+        }
+      }}
+    >
+      <DialogTitle>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Typography variant="h5" fontWeight={600} color="primary">
+            {data ? 'Editar Venta' : 'Registrar Nueva Venta'}
+          </Typography>
+          <Button variant="text" color="inherit" onClick={onClose} sx={{ minWidth: 'auto', p: 1 }}>
+            <Close />
+          </Button>
+        </Box>
+      </DialogTitle>
+      <Divider />
+      
+      <Box sx={{ borderBottom: 1, borderColor: 'divider', px: 3 }}>
+        <Tabs 
+          value={tabValue} 
+          onChange={handleTabChange} 
+          aria-label="sales form tabs"
+          sx={{
+            '.MuiTab-root': {
+              fontWeight: 600,
+              textTransform: 'none'
+            }
+          }}
+        >
+          <Tab label="Información Principal" id="sale-tab-0" aria-controls="sale-tabpanel-0" />
+          <Tab label="Productos" id="sale-tab-1" aria-controls="sale-tabpanel-1" />
+          <Tab label="Información Adicional" id="sale-tab-2" aria-controls="sale-tabpanel-2" />
+        </Tabs>
+      </Box>
+      
       <DialogContent>
         <Form form={form} layout="vertical" style={{ marginTop: '1rem' }}>
-          <SaleFormHeader clients={clients} />
+          <TabPanel value={tabValue} index={0}>
+            <SaleFormHeader clients={clients} />
+            <Divider sx={{ my: 2 }} />
+            <SaleCompanyInfo />
+          </TabPanel>
           
-          <SaleItemsTable 
-            items={items}
-            products={products}
-            selectedProduct={selectedProduct}
-            setSelectedProduct={setSelectedProduct}
-            onAddItem={handleAddItem}
-            onQuantityChange={handleQuantityChange}
-            onDeleteItem={handleDeleteItem}
-          />
+          <TabPanel value={tabValue} index={1}>
+            <SaleItemsTable 
+              items={items}
+              products={products}
+              selectedProduct={selectedProduct}
+              setSelectedProduct={setSelectedProduct}
+              onAddItem={handleAddItem}
+              onQuantityChange={handleQuantityChange}
+              onDeleteItem={handleDeleteItem}
+            />
+            
+            <SaleTotals total={total} tax={tax} />
+          </TabPanel>
           
-          <SaleTotals total={total} tax={tax} />
+          <TabPanel value={tabValue} index={2}>
+            <SaleAdditionalInfo />
+          </TabPanel>
         </Form>
       </DialogContent>
-      <DialogActions>
-        <Button variant="outlined" color="error" onClick={onClose}>
+      
+      <DialogActions sx={{ px: 3, pb: 3, pt: 1 }}>
+        <Button 
+          variant="outlined" 
+          color="inherit" 
+          onClick={onClose} 
+          disabled={loading}
+          startIcon={<Close />}
+        >
           Cancelar
         </Button>
         <Button 
@@ -211,8 +318,9 @@ const SalesModal = ({ data, open, onClose, onSuccess }: SalesModalProps) => {
           color="primary" 
           onClick={handleSave}
           disabled={loading || items.length === 0}
+          startIcon={<Save />}
         >
-          {loading ? 'Guardando...' : `Guardar${data ? ' cambios' : ''}`}
+          {loading ? 'Guardando...' : `${data ? 'Actualizar' : 'Registrar'} Venta`}
         </Button>
       </DialogActions>
     </Dialog>

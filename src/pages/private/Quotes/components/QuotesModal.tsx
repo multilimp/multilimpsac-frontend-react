@@ -1,6 +1,6 @@
 
 import { QuoteProps } from '@/services/quotes/quotes';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Box, Typography, Grid, Divider } from '@mui/material';
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Typography } from '@mui/material';
 import { Close, Save } from '@mui/icons-material';
 import { useState } from 'react';
 import { Form } from 'antd';
@@ -61,42 +61,42 @@ const QuotesModal = ({ data, open, onClose, onSuccess }: QuotesModalProps) => {
       <Divider />
       <DialogContent>
         <Form form={form} layout="vertical" initialValues={data || {}}>
-          <Grid container spacing={3}>
-            <Grid sm={12} md={6}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
+            <Box>
               <Form.Item 
                 name="quoteNumber" 
                 rules={[{ required: true, message: 'Este campo es obligatorio' }]}
               >
                 <InputAntd label="N° Cotización" />
               </Form.Item>
-            </Grid>
-            <Grid sm={12} md={6}>
+            </Box>
+            <Box>
               <Form.Item 
                 name="date"
                 rules={[{ required: true, message: 'Este campo es obligatorio' }]}
               >
                 <InputAntd label="Fecha" type="date" />
               </Form.Item>
-            </Grid>
-            <Grid sm={12}>
+            </Box>
+            <Box sx={{ gridColumn: '1 / -1' }}>
               <Form.Item 
                 name="client"
                 rules={[{ required: true, message: 'Este campo es obligatorio' }]}
               >
                 <InputAntd label="Cliente" />
               </Form.Item>
-            </Grid>
-            <Grid sm={12} md={6}>
+            </Box>
+            <Box>
               <Form.Item name="total">
                 <InputAntd label="Total" type="number" />
               </Form.Item>
-            </Grid>
-            <Grid sm={12} md={6}>
+            </Box>
+            <Box>
               <Form.Item name="status">
                 <InputAntd label="Estado" />
               </Form.Item>
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
         </Form>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 3, pt: 1 }}>
