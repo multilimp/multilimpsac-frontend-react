@@ -3,7 +3,7 @@ import { Form, Select, DatePicker, Input } from 'antd';
 import { Box, Typography } from '@mui/material';
 import { ClientProps } from '@/services/clients/client';
 import dayjs from 'dayjs';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 interface SaleFormHeaderProps {
   clients: ClientProps[];
@@ -22,7 +22,6 @@ const statusOptions = [
 ];
 
 const SaleFormHeader = ({ clients }: SaleFormHeaderProps) => {
-  const [form] = Form.useForm();
   const [selectedClient, setSelectedClient] = useState<ClientProps | null>(null);
 
   // Get form instance from context
