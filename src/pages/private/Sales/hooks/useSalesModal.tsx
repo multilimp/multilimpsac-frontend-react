@@ -37,8 +37,9 @@ export const useSalesModal = (data: SaleProps | null, onClose: () => void, onSuc
         const clientsData = await getClients();
         const productsData = await getProducts();
         
-        setClients(clientsData);
-        setProducts(productsData);
+        // Ensure both are arrays
+        setClients(Array.isArray(clientsData) ? clientsData : []);
+        setProducts(Array.isArray(productsData) ? productsData : []);
         
         if (data) {
           // Populate form with existing data

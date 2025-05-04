@@ -11,7 +11,7 @@ import { ModalStateEnum } from '@/types/global.enum';
 
 type ModalStateType = {
   mode: ModalStateEnum;
-  data: ClientProps | null;
+  data: ClientProps | undefined;
 } | null;
 
 const ClientsPage = () => {
@@ -41,7 +41,7 @@ const ClientsPage = () => {
   const handleOpenModal = () => {
     setModalState({
       mode: ModalStateEnum.BOX,
-      data: null
+      data: undefined
     });
   };
 
@@ -70,7 +70,8 @@ const ClientsPage = () => {
       {modalState?.mode === ModalStateEnum.BOX && (
         <ClientsModal 
           data={modalState.data} 
-          handleClose={handleCloseModal} 
+          handleClose={handleCloseModal}
+          handleReload={fetchClients}
         />
       )}
     </PageContent>

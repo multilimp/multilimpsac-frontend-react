@@ -20,13 +20,16 @@ const statusOptions = [
   { value: 'refunded', label: 'Reembolsado' }
 ];
 
-const SaleFormHeader = ({ clients }: SaleFormHeaderProps) => {
+const SaleFormHeader = ({ clients = [] }: SaleFormHeaderProps) => {
   // Get form instance from context
   const formInstance = Form.useFormInstance();
   
+  // Ensure clients is an array before using map
+  const clientsArray = Array.isArray(clients) ? clients : [];
+  
   // Listen to client selection changes
   const handleClientChange = (value: string) => {
-    const client = clients.find(c => c.razon_social === value);
+    const client = clientsArray.find(c => c.razon_social === value);
     
     // Set RUC automatically when client changes
     if (client) {
@@ -55,7 +58,7 @@ const SaleFormHeader = ({ clients }: SaleFormHeaderProps) => {
               showSearch
               optionFilterProp="children"
               onChange={handleClientChange}
-              options={clients.map(client => ({
+              options={clientsArray.map(client => ({
                 value: client.razon_social,
                 label: `${client.razon_social} (${client.ruc})`
               }))}
