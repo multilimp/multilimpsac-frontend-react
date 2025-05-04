@@ -22,10 +22,10 @@ const OrdersPage = () => {
     try {
       setLoading(true);
       const response = await getOrders();
-      setData(response); // Acepta cualquier respuesta sin validar
+      setData(response);
     } catch (error) {
       console.error('Error:', error);
-      setData([]); // Falla silenciosamente
+      setData([]);
     } finally {
       setLoading(false);
     }
@@ -34,10 +34,6 @@ const OrdersPage = () => {
   useEffect(() => {
     fetchOrders();
   }, []);
-
-  const handleRefresh = () => {
-    fetchOrders();
-  };
 
   const handleEdit = (order: OrderProps) => {
     setModal({ mode: ModalStateEnum.BOX, data: order });
@@ -67,7 +63,7 @@ const OrdersPage = () => {
           data={modal.data} 
           open={true}
           onClose={() => setModal(null)}
-          onSuccess={handleRefresh}
+          onSuccess={fetchOrders}
         />
       )}
     </PageContent>

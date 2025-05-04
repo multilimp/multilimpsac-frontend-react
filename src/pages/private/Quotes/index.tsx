@@ -94,7 +94,6 @@ const QuotesPage = () => {
         data={data} 
         loading={loading} 
         onEdit={handleEdit}
-        onRefresh={handleRefresh}
       />
 
       {modal?.mode === ModalStateEnum.BOX && (
