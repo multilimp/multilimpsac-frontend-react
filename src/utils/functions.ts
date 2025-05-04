@@ -1,5 +1,4 @@
 
-import { SidebarItemProps } from '@/types/global';
 import { DefaultOptionType } from 'antd/es/select';
 
 export const isNavItemActive = ({ path, pathname = '' }: { path: string; pathname?: string }): boolean =>

@@ -3,8 +3,16 @@ import { ClientProps } from '@/services/clients/clients';
 import { TableColumnsType } from 'antd';
 import React from 'react';
 
+// Import the ClientProps type and augment it with 'key' property
+import { ClientProps } from '@/services/clients/clients';
+
+// Define a new interface that extends ClientProps with the key property
+interface ClientTableProps extends ClientProps {
+  key: string;
+}
+
 interface ClientsTableProps {
-  data?: ClientProps[] | null; // Acepta undefined o null
+  data?: ClientTableProps[] | null; // Acepta undefined o null
   loading?: boolean;
 }
 
@@ -13,7 +21,7 @@ const ClientsTable: React.FC<ClientsTableProps> = ({
   loading = false 
 }) => {
   // Columnas configuradas
-  const columns: TableColumnsType<ClientProps> = [
+  const columns: TableColumnsType<ClientTableProps> = [
     { title: 'RUC', dataIndex: 'ruc', key: 'ruc' },
     { title: 'Razón Social', dataIndex: 'socialReason', key: 'socialReason' },
     { title: 'Código Unidad', dataIndex: 'unitCode', key: 'unitCode', render: (text) => text || '-' },

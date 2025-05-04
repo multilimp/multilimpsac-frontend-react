@@ -1,11 +1,9 @@
-
 import React, { useState } from 'react';
 import { Box, Button, Chip } from '@mui/material';
 import { DatePicker, Space, Tooltip } from 'antd';
 import { SaleProps, SaleFilter } from '@/services/sales/sales';
 import { Delete, Edit, Loop, VisibilityOutlined } from '@mui/icons-material';
 import AntTable, { AntColumnType } from '@/components/AntTable';
-import dayjs, { Dayjs } from 'dayjs';
 import { formatCurrency } from '@/utils/functions';
 
 const { RangePicker } = DatePicker;
@@ -31,10 +29,10 @@ const getStatusColor = (status: string) => {
 };
 
 const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onEdit, onRefresh }) => {
-  const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null]>([null, null]);
+  const [dateRange, setDateRange] = useState<any>([null, null]);
   const [filter, setFilter] = useState<SaleFilter>({});
 
-  const handleDateRangeChange = (dates: [Dayjs | null, Dayjs | null] | null) => {
+  const handleDateRangeChange = (dates: any) => {
     if (!dates || dates.length < 2) {
       setDateRange([null, null]);
       setFilter({ ...filter, dateFrom: undefined, dateTo: undefined });
@@ -196,8 +194,8 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onEdit, onRefres
       <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
         <Box>
           <RangePicker 
-            value={dateRange as any} 
-            onChange={(dates) => handleDateRangeChange(dates as any)}
+            value={dateRange} 
+            onChange={handleDateRangeChange}
             style={{ marginRight: '1rem' }} 
           />
         </Box>

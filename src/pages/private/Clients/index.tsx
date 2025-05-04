@@ -40,7 +40,7 @@ const ClientsPage = () => {
   const handleOpenModal = () => {
     setModalState({
       mode: ModalStateEnum.BOX,
-      data: null
+      data: undefined
     });
   };
 

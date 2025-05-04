@@ -3,7 +3,6 @@ import { Form, Select, DatePicker, Input } from 'antd';
 import { Box, Typography } from '@mui/material';
 import { ClientProps } from '@/services/clients/client';
 import dayjs from 'dayjs';
-import { useState } from 'react';
 
 interface SaleFormHeaderProps {
   clients: ClientProps[];
@@ -22,15 +21,12 @@ const statusOptions = [
 ];
 
 const SaleFormHeader = ({ clients }: SaleFormHeaderProps) => {
-  const [selectedClient, setSelectedClient] = useState<ClientProps | null>(null);
-
   // Get form instance from context
   const formInstance = Form.useFormInstance();
   
   // Listen to client selection changes
   const handleClientChange = (value: string) => {
     const client = clients.find(c => c.razon_social === value);
-    setSelectedClient(client || null);
     
     // Set RUC automatically when client changes
     if (client) {
