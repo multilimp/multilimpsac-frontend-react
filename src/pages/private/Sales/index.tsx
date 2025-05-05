@@ -7,6 +7,7 @@ import { notification } from 'antd';
 import { getSales } from '@/services/sales/sales.request';
 import { Box, Button, Typography } from '@mui/material';
 import SalesModal from './components/SalesModal';
+import OcrSalesModal from './components/OcrSalesModal';
 import { ModalStateEnum } from '@/types/global.enum';
 import { Add, SmartToy } from '@mui/icons-material';
 
@@ -19,6 +20,8 @@ const SalesPage = () => {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<SaleProps[]>([]);
   const [modal, setModal] = useState<ModalStateType>(null);
+  const [ocrModal, setOcrModal] = useState(false);
+  const [ocrData, setOcrData] = useState<Partial<SaleProps> | undefined>(undefined);
 
   const fetchSales = async () => {
     try {
@@ -58,6 +61,19 @@ const SalesPage = () => {
   const handleEdit = (sale: SaleProps) => {
     setModal({ mode: ModalStateEnum.BOX, data: sale });
   };
+  
+  const handleOcrSuccess = (extractedData: Partial<SaleProps>) => {
+    setOcrModal(false);
+    setOcrData(extractedData);
+    // Abre el modal de ventas con los datos pre-cargados
+    setModal({ mode: ModalStateEnum.BOX, data: null });
+  };
+  
+  const handleCloseModal = () => {
+    setModal(null);
+    // También limpia los datos de OCR cuando cerramos el modal
+    setOcrData(undefined);
+  };
 
   return (
     <PageContent
@@ -69,7 +85,10 @@ const SalesPage = () => {
             variant="contained" 
             color="primary"
             startIcon={<Add />}
-            onClick={() => setModal({ mode: ModalStateEnum.BOX, data: null })}
+            onClick={() => {
+              setOcrData(undefined);
+              setModal({ mode: ModalStateEnum.BOX, data: null });
+            }}
             sx={{
               px: 3,
               py: 1.25,
@@ -83,6 +102,7 @@ const SalesPage = () => {
             variant="outlined" 
             color="secondary"
             startIcon={<SmartToy />}
+            onClick={() => setOcrModal(true)}
             sx={{
               px: 3,
               py: 1.25,
@@ -138,10 +158,17 @@ const SalesPage = () => {
         <SalesModal 
           data={modal.data} 
           open={true}
-          onClose={() => setModal(null)}
+          onClose={handleCloseModal}
           onSuccess={handleRefresh}
+          initialData={ocrData}
         />
       )}
+      
+      <OcrSalesModal
+        open={ocrModal}
+        onClose={() => setOcrModal(false)}
+        onSuccess={handleOcrSuccess}
+      />
     </PageContent>
   );
 };

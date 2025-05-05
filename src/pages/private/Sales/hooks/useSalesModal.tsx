@@ -19,9 +19,20 @@ export interface SaleItemProps {
   subtotal: number;
 }
 
-export const useSalesModal = (data: SaleProps | null, onClose: () => void, onSuccess?: () => void) => {
+export interface TextItemProps {
+  key: string;
+  text: string;
+}
+
+export const useSalesModal = (
+  data: SaleProps | null, 
+  onClose: () => void, 
+  onSuccess?: () => void,
+  initialData?: Partial<SaleProps>
+) => {
   const [form] = Form.useForm();
   const [items, setItems] = useState<SaleItemProps[]>([]);
+  const [textItems, setTextItems] = useState<TextItemProps[]>([]);
   const [clients, setClients] = useState<ClientProps[]>([]);
   const [products, setProducts] = useState<ProductProps[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
@@ -73,6 +84,35 @@ export const useSalesModal = (data: SaleProps | null, onClose: () => void, onSuc
             });
             setItems(itemsWithDetails);
           }
+        } else if (initialData) {
+          // Populate form with OCR-extracted data
+          form.setFieldsValue({
+            client: initialData.client,
+            clientRuc: initialData.clientRuc,
+            companyName: initialData.companyName,
+            companyRuc: initialData.companyRuc,
+            contact: initialData.contact,
+            // Default values for other fields
+            date: dayjs(),
+            paymentMethod: 'credit',
+            status: 'pending'
+          });
+
+          // Populate items table with OCR-extracted items
+          if (initialData.items) {
+            const itemsWithDetails = initialData.items.map((item, index) => {
+              const product = productsData.find(p => p.id === item.productId);
+              return {
+                key: index.toString(),
+                productId: item.productId,
+                productName: product?.name || 'Producto no encontrado',
+                quantity: item.quantity,
+                unitPrice: item.unitPrice,
+                subtotal: item.quantity * item.unitPrice
+              };
+            });
+            setItems(itemsWithDetails);
+          }
         }
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -86,7 +126,7 @@ export const useSalesModal = (data: SaleProps | null, onClose: () => void, onSuc
     };
 
     fetchData();
-  }, [data, form]);
+  }, [data, form, initialData]);
 
   // Recalculate total when items change
   useEffect(() => {
@@ -129,6 +169,26 @@ export const useSalesModal = (data: SaleProps | null, onClose: () => void, onSuc
 
   const handleDeleteItem = (key: string) => {
     setItems(items.filter(item => item.key !== key));
+  };
+  
+  const handleAddTextItem = (text: string) => {
+    const newTextItem: TextItemProps = {
+      key: Date.now().toString(),
+      text
+    };
+    setTextItems([...textItems, newTextItem]);
+  };
+  
+  const handleDeleteTextItem = (key: string) => {
+    setTextItems(textItems.filter(item => item.key !== key));
+  };
+  
+  const handleCopyTextItem = (text: string) => {
+    navigator.clipboard.writeText(text);
+    notification.info({
+      message: 'Copiado',
+      description: 'Texto copiado al portapapeles',
+    });
   };
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
@@ -173,7 +233,8 @@ export const useSalesModal = (data: SaleProps | null, onClose: () => void, onSuc
         contact: values.contact,
         catalog: values.catalog,
         deliveryDate: values.deliveryDate ? values.deliveryDate.format('YYYY-MM-DD') : undefined,
-        observations: values.observations
+        observations: values.observations + 
+          (textItems.length > 0 ? `\n\nNotas adicionales:\n${textItems.map(item => `- ${item.text}`).join('\n')}` : '')
       };
 
       await createSale(saleData);
@@ -199,6 +260,7 @@ export const useSalesModal = (data: SaleProps | null, onClose: () => void, onSuc
   return {
     form,
     items,
+    textItems,
     clients,
     products,
     selectedProduct,
@@ -210,6 +272,9 @@ export const useSalesModal = (data: SaleProps | null, onClose: () => void, onSuc
     handleAddItem,
     handleQuantityChange,
     handleDeleteItem,
+    handleAddTextItem,
+    handleDeleteTextItem,
+    handleCopyTextItem,
     handleTabChange,
     handleSave
   };

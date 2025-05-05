@@ -17,12 +17,14 @@ interface SalesModalProps {
   open: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+  initialData?: Partial<SaleProps>;
 }
 
-const SalesModal = ({ data, open, onClose, onSuccess }: SalesModalProps) => {
+const SalesModal = ({ data, open, onClose, onSuccess, initialData }: SalesModalProps) => {
   const {
     form,
     items,
+    textItems,
     clients,
     products,
     selectedProduct,
@@ -34,9 +36,12 @@ const SalesModal = ({ data, open, onClose, onSuccess }: SalesModalProps) => {
     handleAddItem,
     handleQuantityChange,
     handleDeleteItem,
+    handleAddTextItem,
+    handleDeleteTextItem,
+    handleCopyTextItem,
     handleTabChange,
     handleSave
-  } = useSalesModal(data, onClose, onSuccess);
+  } = useSalesModal(data, onClose, onSuccess, initialData);
 
   return (
     <Dialog 
@@ -92,12 +97,16 @@ const SalesModal = ({ data, open, onClose, onSuccess }: SalesModalProps) => {
           <TabPanel value={tabValue} index={1}>
             <SaleItemsTable 
               items={items}
+              textItems={textItems}
               products={products}
               selectedProduct={selectedProduct}
               setSelectedProduct={setSelectedProduct}
               onAddItem={handleAddItem}
               onQuantityChange={handleQuantityChange}
               onDeleteItem={handleDeleteItem}
+              onAddTextItem={handleAddTextItem}
+              onDeleteTextItem={handleDeleteTextItem}
+              onCopyTextItem={handleCopyTextItem}
             />
             
             <SaleTotals total={total} tax={tax} />
