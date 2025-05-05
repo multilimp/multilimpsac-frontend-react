@@ -32,8 +32,8 @@ const OcrSalesModal = ({ open, onClose, onSuccess }: OcrSalesModalProps) => {
 
     setLoading(true);
     try {
-      // Subir el archivo al servidor
-      const fileUrl = await uploadFile(selectedFile);
+      // Subir el archivo al servidor - utilizamos fileUrl en una API real
+      await uploadFile(selectedFile);
       
       // Simular el procesamiento OCR (en un caso real, llamaríamos a una API de OCR)
       await new Promise(resolve => setTimeout(resolve, 1500));

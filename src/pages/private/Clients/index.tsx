@@ -2,7 +2,7 @@
 import PageContent from '@/components/PageContent';
 import ClientsTable from './components/ClientsTable';
 import { useEffect, useState } from 'react';
-import { ClientProps } from '@/services/clients/clients';
+import { ClientProps } from '@/services/clients/client';
 import { notification } from 'antd';
 import { getClients } from '@/services/clients/clients.request'; 
 import { Button } from '@mui/material';
@@ -23,7 +23,7 @@ const ClientsPage = () => {
     try {
       setLoading(true);
       const response = await getClients();
-      setClients(response);
+      setClients(response as unknown as ClientProps[]);
     } catch (error) {
       notification.error({
         message: 'Error al obtener clientes',
