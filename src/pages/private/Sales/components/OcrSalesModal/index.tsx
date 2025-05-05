@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Button, Box, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Typography } from '@mui/material';
 import { Close, Save } from '@mui/icons-material';
-import { Form, notification, Spin } from 'antd';
+import { notification, Spin } from 'antd';
 import InputFile from '@/components/InputFile';
 import { uploadFile } from '@/services/files/file.requests';
 import { SaleProps } from '@/services/sales/sales';
