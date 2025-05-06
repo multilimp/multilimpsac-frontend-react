@@ -1,6 +1,13 @@
-import React, { useEffect } from 'react'; // Importar useEffect
-import { Modal, Form, Input, Button, Space } from 'antd';
+import { Form, notification, Spin } from 'antd';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid } from '@mui/material';
+import { useEffect, useState } from 'react';
+import InputAntd from '@/components/InputAntd';
+import SubmitButton from '@/components/SubmitButton';
+import SelectRegions from '@/components/selects/SelectRegions';
+import SelectProvinces from '@/components/selects/SelectProvinces';
+import SelectDistricts from '@/components/selects/SelectDistricts';
 import { ProviderProps } from '@/services/providers/providers';
+import { createProvider, updateProvider } from '@/services/providers/providers.request';
 
 interface ProviderModalProps {
   visible: boolean;
@@ -9,76 +16,141 @@ interface ProviderModalProps {
   provider?: ProviderProps | null;
 }
 
-const ProviderModal: React.FC<ProviderModalProps> = ({
-  visible,
-  onCancel,
-  onSuccess,
-  provider
-}) => {
+const ProviderModal = ({ visible, onCancel, onSuccess, provider }: ProviderModalProps) => {
   const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
 
-  // Efecto para inicializar el formulario
   useEffect(() => {
+    if (!provider) return;
     form.setFieldsValue({
-      ruc: provider?.ruc || '',
-      socialReason: provider?.socialReason || '',
-      contacts: provider?.contacts?.join(', ') || '',
-      department: provider?.department || '',
-      province: provider?.province || '',
-      district: provider?.district || '',
-      address: provider?.address || ''
+      ruc: provider.ruc,
+      razon_social: provider.socialReason,
+      departamento: provider.department,
+      provincia: provider.province,
+      distrito: provider.district,
+      direccion: provider.address,
+      contactos: provider.contacts?.join(', ')
     });
   }, [provider, form]);
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (body: Record<string, any>) => {
     try {
-      const values = await form.validateFields();
-      console.log('Submit:', values);
+      setLoading(true);
+
+      // Preparar datos para la API - transformar nombres de campo
+      const providerData = {
+        ruc: body.ruc,
+        socialReason: body.razon_social,
+        department: body.departamento,
+        province: body.provincia,
+        district: body.distrito,
+        address: body.direccion,
+        // Si hay contactos como string, convertirlos a array
+        contacts: body.contactos ? body.contactos.split(',').map((contact: string) => contact.trim()) : []
+      };
+
+      if (provider && provider.id) {
+        await updateProvider(provider.id, providerData);
+      } else {
+        await createProvider(providerData as Omit<ProviderProps, 'id'>);
+      }
+
       onSuccess();
+      onCancel();
+      notification.success({ 
+        message: `Proveedor ${provider ? 'actualizado' : 'creado'} correctamente` 
+      });
     } catch (error) {
-      console.error('Validation failed:', error);
+      notification.error({ 
+        message: 'No se logró guardar la información del proveedor', 
+        description: String(error) 
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <Modal
-      title={provider ? 'Editar Proveedor' : 'Nuevo Proveedor'}
-      open={visible}
-      onCancel={onCancel}
-      footer={(
-        <Space>
-          <Button onClick={onCancel}>Cancelar</Button>
-          <Button type="primary" onClick={handleSubmit}>
-            Guardar
-          </Button>
-        </Space>
-      )}
-      width={800}
-    >
-      <Form form={form} layout="vertical">
-        <Form.Item label="RUC" name="ruc" rules={[{ required: true, message: 'El RUC es requerido' }]}>
-          <Input />
-        </Form.Item>
-        <Form.Item label="Razón Social" name="socialReason" rules={[{ required: true, message: 'La razón social es requerida' }]}>
-          <Input />
-        </Form.Item>
-        <Form.Item label="Contactos (separados por coma)" name="contacts">
-          <Input />
-        </Form.Item>
-        <Form.Item label="Departamento" name="department">
-          <Input />
-        </Form.Item>
-        <Form.Item label="Provincia" name="province">
-          <Input />
-        </Form.Item>
-        <Form.Item label="Distrito" name="district">
-          <Input />
-        </Form.Item>
-        <Form.Item label="Dirección" name="address">
-          <Input.TextArea />
-        </Form.Item>
-      </Form>
-    </Modal>
+    <Dialog open={visible} fullWidth maxWidth="md">
+      <DialogTitle variant="h5" textAlign="center">
+        {provider ? 'Editar' : 'Agregar'} proveedor
+      </DialogTitle>
+      <DialogContent>
+        <Spin spinning={loading}>
+          <Form form={form} onFinish={handleSubmit} layout="vertical" style={{ marginTop: 8 }} autoComplete="off">
+            <Grid container columnSpacing={2}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                <Form.Item
+                  name="ruc"
+                  rules={[
+                    { required: true, message: 'El RUC es requerido' },
+                    { len: 11, message: 'Ingrese un RUC válido' },
+                  ]}
+                >
+                  <InputAntd label="RUC" />
+                </Form.Item>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6, md: 8 }}>
+                <Form.Item name="razon_social" rules={[{ required: true, message: 'La razón social es requerida' }]}>
+                  <InputAntd label="Razón social" />
+                </Form.Item>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6, md: 8 }}>
+                <Form.Item name="contactos">
+                  <InputAntd label="Contactos (separados por coma)" />
+                </Form.Item>
+              </Grid>
+
+
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                <Form.Item name="departamento" rules={[{ required: true, message: 'El departamento es requerido' }]}>
+                  <SelectRegions
+                    label="Departamento"
+                    onChange={(value) => form.setFieldsValue({ departamento: value, provincia: null, distrito: null })}
+                  />
+                </Form.Item>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                <Form.Item noStyle shouldUpdate>
+                  {({ getFieldValue }) => (
+                    <Form.Item name="provincia" rules={[{ required: true, message: 'La provincia es requerida' }]}>
+                      <SelectProvinces
+                        label="Provincia"
+                        regionId={getFieldValue('departamento')}
+                        onChange={(value) => form.setFieldsValue({ provincia: value, distrito: null })}
+                      />
+                    </Form.Item>
+                  )}
+                </Form.Item>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                <Form.Item noStyle shouldUpdate>
+                  {({ getFieldValue }) => (
+                    <Form.Item name="distrito" rules={[{ required: true, message: 'El distrito es requerido' }]}>
+                      <SelectDistricts label="Distrito" provinceId={getFieldValue('provincia')} />
+                    </Form.Item>
+                  )}
+                </Form.Item>
+              </Grid>
+
+              <Grid size={{ xs: 12 }}>
+                <Form.Item name="direccion" rules={[{ required: true, message: 'La dirección es requerida' }]}>
+                  <InputAntd label="Dirección" />
+                </Form.Item>
+              </Grid>
+            </Grid>
+          </Form>
+        </Spin>
+      </DialogContent>
+      <DialogActions>
+        <Button variant="outlined" color="error" onClick={onCancel} disabled={loading}>
+          Cancelar
+        </Button>
+        <SubmitButton form={form} onClick={() => form.submit()} loading={loading}>
+          Guardar{provider ? ' cambios' : ''}
+        </SubmitButton>
+      </DialogActions>
+    </Dialog>
   );
 };
 

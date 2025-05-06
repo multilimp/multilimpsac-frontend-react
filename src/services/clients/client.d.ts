@@ -1,11 +1,11 @@
 export interface ClientProps {
   id: number;
   ruc: string;
-  razon_social: string;
-  cod_unidad: string;
-  departamento: string;
-  provincia: string;
-  distrito: string;
-  direccion: string;
-  estado: boolean;
+  socialReason: string;
+  unitCode: string;
+  contacts: string;
+  department: string;
+  province: string;
+  district: string;
+  address: string;
 }
