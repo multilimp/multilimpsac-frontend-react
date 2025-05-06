@@ -1,16 +1,17 @@
+
 import PageContent from '@/components/PageContent';
 import ClientsTable from './components/ClientsTable';
 import { useEffect, useState } from 'react';
-import { ClientProps } from '@/services/clients/clients';
+import { ClientProps } from '@/services/clients/client';
 import { notification } from 'antd';
-import { getClients } from '@/services/clients/clients.request'; // Corregí el nombre del archivo
+import { getClients } from '@/services/clients/clients.request'; 
 import { Button } from '@mui/material';
 import ClientsModal from './components/ClientsModal';
 import { ModalStateEnum } from '@/types/global.enum';
 
 type ModalStateType = {
   mode: ModalStateEnum;
-  data: ClientProps | null;
+  data: ClientProps | undefined;
 } | null;
 
 const ClientsPage = () => {
@@ -22,7 +23,7 @@ const ClientsPage = () => {
     try {
       setLoading(true);
       const response = await getClients();
-      setClients(response);
+      setClients(response as unknown as ClientProps[]);
     } catch (error) {
       notification.error({
         message: 'Error al obtener clientes',
@@ -40,7 +41,7 @@ const ClientsPage = () => {
   const handleOpenModal = () => {
     setModalState({
       mode: ModalStateEnum.BOX,
-      data: null
+      data: undefined
     });
   };
 
@@ -69,7 +70,8 @@ const ClientsPage = () => {
       {modalState?.mode === ModalStateEnum.BOX && (
         <ClientsModal 
           data={modalState.data} 
-          handleClose={handleCloseModal} 
+          handleClose={handleCloseModal}
+          handleReload={fetchClients}
         />
       )}
     </PageContent>

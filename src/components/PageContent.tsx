@@ -1,6 +1,5 @@
-
 import { ReactNode } from 'react';
-import { Grid, Typography, Breadcrumbs, Link as MuiLink } from '@mui/material';
+import { Box, Breadcrumbs, Fade, Link as MuiLink, Typography } from '@mui/material';
 import { Helmet } from 'react-helmet-async';
 import Scrollbar from './Scrollbar';
 import { Apps } from '@mui/icons-material';
@@ -33,46 +32,136 @@ const PageContent = ({ component, children, title, helper }: PageContentProps) =
   return (
     <>
       <Helmet>
-        <title>{title || (module ? `${module} | ` : '')}MULTILIMPSAC</title>
+        <title>{title || (module ? `${module} | ` : '')}MULTILIMP</title>
       </Helmet>
 
-      <Grid container spacing={1.5} justifyContent="space-between" alignItems="center" component="main">
-        <Grid>
-          <Breadcrumbs>
-            <MuiLink underline="hover" component={Link} color="inherit" to="/" sx={{ display: 'flex', alignItems: 'center' }}>
-              <Apps sx={{ mr: 0.5 }} fontSize="inherit" />
-              Dashboard
-            </MuiLink>
-            {helper ? <Typography color="inherit">{helper}</Typography> : group ? <Typography color="inherit">{group}</Typography> : null}
-            {module ? (
-              <Typography sx={{ color: 'text.primary', display: 'flex', alignItems: 'center' }}>
-                <Icon sx={{ mr: 0.5 }} fontSize="inherit" />
-                {module}
-              </Typography>
-            ) : null}
-          </Breadcrumbs>
+      <Fade in={true} timeout={300}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' }}>
+            <Box sx={{ width: { xs: '100%', md: component ? '50%' : '100%' } }}>
+              <Breadcrumbs
+                sx={{
+                  '& .MuiBreadcrumbs-ol': {
+                    alignItems: 'center',
+                  },
+                  mb: 2
+                }}
+              >
+                <MuiLink 
+                  underline="hover" 
+                  component={Link} 
+                  color="inherit" 
+                  to="/" 
+                  sx={{ 
+                    display: 'flex',
+                    alignItems: 'center',
+                    color: 'text.secondary',
+                    fontSize: '0.85rem',
+                    fontWeight: 500,
+                  }}
+                >
+                  <Apps sx={{ mr: 0.5, fontSize: '1rem' }} />
+                  Dashboard
+                </MuiLink>
+                {helper ? (
+                  <Typography 
+                    color="inherit"
+                    sx={{ 
+                      color: 'text.secondary',
+                      fontSize: '0.85rem',
+                      fontWeight: 500,
+                    }}
+                  >
+                    {helper}
+                  </Typography>
+                ) : group ? (
+                  <Typography 
+                    color="inherit"
+                    sx={{ 
+                      color: 'text.secondary',
+                      fontSize: '0.85rem',
+                      fontWeight: 500,
+                    }}
+                  >
+                    {group}
+                  </Typography>
+                ) : null}
+                {module ? (
+                  <Typography 
+                    sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center',
+                      color: 'primary.main',
+                      fontSize: '0.85rem',
+                      fontWeight: 600,
+                    }}
+                  >
+                    <Icon sx={{ mr: 0.5, fontSize: '1rem' }} />
+                    {module}
+                  </Typography>
+                ) : null}
+              </Breadcrumbs>
 
-          <Typography
-            mt={1}
-            variant="h4"
-            fontWeight={700}
-            sx={{
-              borderLeft: '5px solid',
-              borderBottom: '1px solid',
-              borderColor: 'primary.main',
-              pl: 1,
-              pr: 5,
-              pb: 0.5,
-            }}
-          >
-            {title || module || 'Modulo no definido'}
-          </Typography>
-        </Grid>
-        {component && <Grid>{component}</Grid>}
-        <Grid size={12}>
-          <Scrollbar sx={{ height: 'calc((100vh) - 190px)' }}>{children}</Scrollbar>
-        </Grid>
-      </Grid>
+              <Typography
+                variant="h4"
+                fontWeight={700}
+                sx={{
+                  position: 'relative',
+                  pl: 2,
+                  pb: 1,
+                  mb: 3,
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                    bottom: 0,
+                    width: '4px',
+                    borderRadius: '4px',
+                    backgroundColor: 'primary.main',
+                  },
+                  '&::after': {
+                    content: '""',
+                    position: 'absolute',
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    height: '1px',
+                    background: 'linear-gradient(90deg, var(--mui-palette-primary-main) 0%, transparent 100%)',
+                  },
+                }}
+              >
+                {title || module || 'Módulo no definido'}
+              </Typography>
+            </Box>
+            
+            {component && (
+              <Box sx={{ width: { xs: '100%', md: '50%' }, display: 'flex', justifyContent: 'flex-end' }}>
+                {component}
+              </Box>
+            )}
+          </Box>
+          
+          <Box sx={{ width: '100%' }}>
+            <Box
+              sx={{
+                borderRadius: 3,
+                overflow: 'hidden',
+                bgcolor: 'background.level1',
+                transition: 'all 0.3s ease',
+                minHeight: '60vh',
+              }}
+            >
+              <Scrollbar sx={{ 
+                height: { xs: 'calc((100vh) - 250px)', lg: 'calc((100vh) - 190px)' },
+                p: { xs: 1, sm: 2 }
+              }}>
+                {children}
+              </Scrollbar>
+            </Box>
+          </Box>
+        </Box>
+      </Fade>
     </>
   );
 };

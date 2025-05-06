@@ -1,6 +1,6 @@
 import type { ColorSystemOptions } from '@mui/material/styles';
 
-import { california, kepple, neonBlue, nevada, redOrange, shakespeare, stormGrey } from './colors';
+import { california, kepple, multilimpGreen, multilimpBlue, redOrange, shakespeare, stormGrey } from './colors';
 import type { ColorScheme } from './types';
 
 export const colorSchemes = {
@@ -33,20 +33,20 @@ export const colorSchemes = {
         dark: shakespeare[500],
         contrastText: 'var(--mui-palette-common-black)',
       },
-      neutral: { ...nevada },
+      neutral: { ...multilimpBlue },
       primary: {
-        ...neonBlue,
-        light: neonBlue[300],
-        main: neonBlue[400],
-        dark: neonBlue[500],
-        contrastText: 'var(--mui-palette-common-black)',
+        ...multilimpGreen,
+        light: multilimpGreen[300],
+        main: multilimpGreen[500],
+        dark: multilimpGreen[700],
+        contrastText: 'var(--mui-palette-common-white)',
       },
       secondary: {
-        ...nevada,
-        light: nevada[100],
-        main: nevada[200],
-        dark: nevada[300],
-        contrastText: 'var(--mui-palette-common-black)',
+        ...multilimpBlue,
+        light: multilimpBlue[600],
+        main: multilimpBlue[800],
+        dark: multilimpBlue[900],
+        contrastText: 'var(--mui-palette-common-white)',
       },
       success: {
         ...kepple,
@@ -75,8 +75,8 @@ export const colorSchemes = {
     palette: {
       action: { disabledBackground: 'rgba(0, 0, 0, 0.06)' },
       background: {
-        default: 'var(--mui-palette-common-white)',
-        defaultChannel: '255 255 255',
+        default: '#f8fafc', // Lighter background for better contrast
+        defaultChannel: '248 250 252',
         paper: 'var(--mui-palette-common-white)',
         paperChannel: '255 255 255',
         level1: 'var(--mui-palette-neutral-50)',
@@ -84,8 +84,8 @@ export const colorSchemes = {
         level3: 'var(--mui-palette-neutral-200)',
       },
       common: { black: '#000000', white: '#ffffff' },
-      divider: 'var(--mui-palette-neutral-200)',
-      dividerChannel: '220 223 228',
+      divider: '#e2e8f0', // Softer divider
+      dividerChannel: '226 232 240',
       error: {
         ...redOrange,
         light: redOrange[400],
@@ -102,17 +102,17 @@ export const colorSchemes = {
       },
       neutral: { ...stormGrey },
       primary: {
-        ...neonBlue,
-        light: neonBlue[400],
-        main: neonBlue[500],
-        dark: neonBlue[600],
+        ...multilimpGreen,
+        light: multilimpGreen[400],
+        main: multilimpGreen[500], // #04BA6B - brand color
+        dark: multilimpGreen[700],
         contrastText: 'var(--mui-palette-common-white)',
       },
       secondary: {
-        ...nevada,
-        light: nevada[600],
-        main: nevada[700],
-        dark: nevada[800],
+        ...multilimpBlue,
+        light: multilimpBlue[700],
+        main: multilimpBlue[800], // #1E293B - brand color
+        dark: multilimpBlue[900],
         contrastText: 'var(--mui-palette-common-white)',
       },
       success: {
@@ -123,8 +123,8 @@ export const colorSchemes = {
         contrastText: 'var(--mui-palette-common-white)',
       },
       text: {
-        primary: 'var(--mui-palette-neutral-900)',
-        primaryChannel: '33 38 54',
+        primary: multilimpBlue[800], // Using brand blue for text
+        primaryChannel: '30 41 59',
         secondary: 'var(--mui-palette-neutral-500)',
         secondaryChannel: '102 112 133',
         disabled: 'var(--mui-palette-neutral-400)',

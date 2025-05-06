@@ -1,5 +1,10 @@
+
 import { QuoteProps } from '@/services/quotes/quotes';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Typography } from '@mui/material';
+import { Close, Save } from '@mui/icons-material';
+import { useState } from 'react';
+import { Form } from 'antd';
+import InputAntd from '@/components/InputAntd';
 
 interface QuotesModalProps {
   data: QuoteProps | null;
@@ -9,25 +14,109 @@ interface QuotesModalProps {
 }
 
 const QuotesModal = ({ data, open, onClose, onSuccess }: QuotesModalProps) => {
-  const handleSave = () => {
-    // Lógica para guardar
-    onSuccess?.();
-    onClose();
+  const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
+
+  const handleSave = async () => {
+    try {
+      setLoading(true);
+      await form.validateFields();
+      // Logic to save would go here
+      
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      onSuccess?.();
+      onClose();
+    } catch (error) {
+      console.error('Validation error:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <Dialog open={open} fullWidth maxWidth="md" onClose={onClose}>
-      <DialogTitle>{data ? 'Editar' : 'Agregar'} cotización</DialogTitle>
+    <Dialog 
+      open={open} 
+      fullWidth 
+      maxWidth="md" 
+      onClose={onClose}
+      PaperProps={{
+        sx: {
+          borderRadius: 3,
+          boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',
+        }
+      }}
+    >
+      <DialogTitle>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Typography variant="h5" fontWeight={600}>
+            {data ? 'Editar Cotización' : 'Nueva Cotización'}
+          </Typography>
+          <Button variant="text" color="inherit" onClick={onClose} sx={{ minWidth: 'auto', p: 1 }}>
+            <Close />
+          </Button>
+        </Box>
+      </DialogTitle>
+      <Divider />
       <DialogContent>
-        {/* Formulario de cotizaciones */}
-        Formulario para {data ? 'editar' : 'crear'} una cotización
+        <Form form={form} layout="vertical" initialValues={data || {}}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
+            <Box>
+              <Form.Item 
+                name="quoteNumber" 
+                rules={[{ required: true, message: 'Este campo es obligatorio' }]}
+              >
+                <InputAntd label="N° Cotización" />
+              </Form.Item>
+            </Box>
+            <Box>
+              <Form.Item 
+                name="date"
+                rules={[{ required: true, message: 'Este campo es obligatorio' }]}
+              >
+                <InputAntd label="Fecha" type="date" />
+              </Form.Item>
+            </Box>
+            <Box sx={{ gridColumn: '1 / -1' }}>
+              <Form.Item 
+                name="client"
+                rules={[{ required: true, message: 'Este campo es obligatorio' }]}
+              >
+                <InputAntd label="Cliente" />
+              </Form.Item>
+            </Box>
+            <Box>
+              <Form.Item name="total">
+                <InputAntd label="Total" type="number" />
+              </Form.Item>
+            </Box>
+            <Box>
+              <Form.Item name="status">
+                <InputAntd label="Estado" />
+              </Form.Item>
+            </Box>
+          </Box>
+        </Form>
       </DialogContent>
-      <DialogActions>
-        <Button variant="outlined" color="error" onClick={onClose}>
+      <DialogActions sx={{ px: 3, pb: 3, pt: 1 }}>
+        <Button 
+          variant="outlined" 
+          color="inherit" 
+          onClick={onClose} 
+          disabled={loading}
+          startIcon={<Close />}
+        >
           Cancelar
         </Button>
-        <Button variant="contained" color="primary" onClick={handleSave}>
-          Guardar{data ? ' cambios' : ''}
+        <Button 
+          variant="contained" 
+          color="primary" 
+          onClick={handleSave}
+          disabled={loading}
+          startIcon={<Save />}
+        >
+          {data ? 'Actualizar' : 'Guardar'}
         </Button>
       </DialogActions>
     </Dialog>
