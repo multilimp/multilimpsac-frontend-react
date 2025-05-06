@@ -1,110 +1,58 @@
-import { Table, Tag, Button, Space } from 'antd';
+import { Delete, Edit, RadioButtonChecked, RadioButtonUnchecked } from '@mui/icons-material';
+import AntTable, { AntColumnType } from '@/components/AntTable';
+import { Button, ButtonGroup, FormHelperText, Typography } from '@mui/material';
+import { ModalStateEnum } from '@/types/global.enum';
 import { TransportProps } from '@/services/transports/transports';
-import { ColumnsType } from 'antd/es/table';
-import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 
 interface TransportsTableProps {
-  data: TransportProps[];
+  data: Array<TransportProps>;
   loading: boolean;
-  onEdit: (transport: TransportProps) => void;
-  onDelete: (transport: TransportProps) => void;
+  onRecordAction: (action: ModalStateEnum, data: TransportProps) => void;
 }
 
-const TransportsTable = ({ data, loading, onEdit, onDelete }: TransportsTableProps) => {
-  const columns: ColumnsType<TransportProps> = [
-    {
-      title: 'RUC',
-      dataIndex: 'ruc',
-      key: 'ruc',
-      width: 120,
-      fixed: 'left',
-    },
-    {
-      title: 'Razón Social',
-      dataIndex: 'socialReason',
-      key: 'socialReason',
-      width: 200,
-    },
-    {
-      title: 'Contactos',
-      dataIndex: 'contacts',
-      key: 'contacts',
-      render: (contacts: string[]) => (
-        <span>{contacts?.join(', ') || '-'}</span>
-      ),
-    },
-    {
-      title: 'Cobertura',
-      dataIndex: 'coverage',
-      key: 'coverage',
-      render: (coverage: string[]) => (
-        <Space size="small">
-          {coverage?.map((item) => (
-            <Tag color="blue" key={item}>
-              {item}
-            </Tag>
-          ))}
-        </Space>
-      ),
-    },
-    {
-      title: 'Departamento',
-      dataIndex: 'department',
-      key: 'department',
-    },
-    {
-      title: 'Provincia',
-      dataIndex: 'province',
-      key: 'province',
-    },
-    {
-      title: 'Distrito',
-      dataIndex: 'district',
-      key: 'district',
-    },
+const TransportsTable = ({ data, loading, onRecordAction }: TransportsTableProps) => {
+  const columns: Array<AntColumnType<TransportProps>> = [
+    { title: 'Razón social', dataIndex: 'razonSocial', width: 250, filter: true },
+    { title: 'RUC', dataIndex: 'ruc', width: 150, filter: true },
     {
       title: 'Dirección',
-      dataIndex: 'address',
-      key: 'address',
-      ellipsis: true,
+      dataIndex: 'departamento',
+      width: 300,
+      render: (_, record) => (
+        <>
+          <Typography variant="body2">{record.direccion}</Typography>
+          <FormHelperText>{[record.departamento?.name, record.provincia?.name, record.distrito?.name].filter(Boolean).join(' - ')}</FormHelperText>
+        </>
+      ),
     },
     {
+      title: 'Estado',
+      dataIndex: 'estado',
+      width: 100,
+      render: (value) => (value ? <RadioButtonChecked color="success" /> : <RadioButtonUnchecked color="error" />),
+    },
+    { title: 'Correo electrónico', dataIndex: 'email', width: 200, filter: true },
+    { title: 'Teléfono', dataIndex: 'telefono', width: 150, filter: true },
+    { title: 'Cobertura', dataIndex: 'cobertura', width: 150, filter: true },
+    {
       title: 'Acciones',
-      key: 'actions',
+      dataIndex: 'id',
       fixed: 'right',
-      width: 120,
+      width: 140,
       render: (_, record) => (
-        <Space size="small">
-          <Button
-            type="text"
-            icon={<EditOutlined />}
-            onClick={() => onEdit(record)}
-          />
-          <Button
-            type="text"
-            danger
-            icon={<DeleteOutlined />}
-            onClick={() => onDelete(record)}
-          />
-        </Space>
+        <ButtonGroup size="small">
+          <Button color="info" onClick={() => onRecordAction(ModalStateEnum.BOX, record)}>
+            <Edit />
+          </Button>
+          <Button color="error" onClick={() => onRecordAction(ModalStateEnum.DELETE, record)}>
+            <Delete />
+          </Button>
+        </ButtonGroup>
       ),
     },
   ];
 
-  return (
-    <Table
-      columns={columns}
-      dataSource={data}
-      loading={loading}
-      scroll={{ x: 1500 }}
-      pagination={{
-        pageSize: 10,
-        showSizeChanger: true,
-        pageSizeOptions: ['10', '20', '50'],
-      }}
-      rowKey="id"
-    />
-  );
+  return <AntTable columns={columns} data={data} loading={loading} />;
 };
 
 export default TransportsTable;

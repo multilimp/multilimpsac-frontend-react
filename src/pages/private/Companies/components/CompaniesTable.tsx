@@ -30,9 +30,9 @@ const CompaniesTable = ({ data, loading, onRecordAction }: CompaniesTableProps) 
       title: 'Logo',
       dataIndex: 'logo',
       minWidth: 75,
-      render: (value, record) => <Avatar src={value} alt={record.razon_social} />,
+      render: (value, record) => <Avatar src={value} alt={record.razonSocial} />,
     },
-    { title: 'Razón social', dataIndex: 'razon_social', minWidth: 150, filter: true },
+    { title: 'Razón social', dataIndex: 'razonSocial', minWidth: 150, filter: true },
     { title: 'RUC', dataIndex: 'ruc', minWidth: 100, filter: true },
     { title: 'Teléfono', dataIndex: 'telefono', minWidth: 100, filter: true },
     { title: 'Correo electrónico', dataIndex: 'email', minWidth: 200, filter: true },
@@ -43,13 +43,11 @@ const CompaniesTable = ({ data, loading, onRecordAction }: CompaniesTableProps) 
       render: (_, record) => (
         <>
           <Typography variant="body2">{record.direccion}</Typography>
-          <FormHelperText>
-            {record.departamento} - {record.provincia} - {record.distrito}
-          </FormHelperText>
+          <FormHelperText>{[record.departamento?.name, record.provincia?.name, record.distrito?.name].filter(Boolean).join(' - ')}</FormHelperText>
         </>
       ),
     },
-    { title: 'Web', dataIndex: 'web' },
+    { title: 'Web', dataIndex: 'web', minWidth: 250 },
   ];
 
   return <AntTable columns={columns} data={data} loading={loading} />;

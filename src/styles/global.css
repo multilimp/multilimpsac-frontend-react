@@ -1,4 +1,3 @@
-
 :root {
   --icon-fontSize-sm: 1rem;
   --icon-fontSize-md: 1.25rem;
@@ -21,98 +20,13 @@ body {
   width: 100%;
 }
 
-/* Modernized table styles */
-.modern-table .ant-table-thead > tr > th {
-  background-color: #f8fafc !important;
-  color: #1E293B !important;
-  font-weight: 600;
-  border-bottom: 2px solid rgba(0, 0, 0, 0.08);
-  padding: 16px !important;
-  transition: all 0.2s;
+.ant-input:hover,
+.ant-select-selector:hover {
+  border-color: #04ba6b !important;
 }
 
-.modern-table .ant-table-tbody > tr > td {
-  padding: 16px !important;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  transition: all 0.2s;
-}
-
-.modern-table .ant-table-tbody > tr:hover > td {
-  background-color: rgba(4, 186, 107, 0.04) !important;
-}
-
-.modern-table .ant-table-tbody > tr.ant-table-row-selected > td {
-  background-color: rgba(4, 186, 107, 0.08) !important;
-}
-
-.modern-table .ant-table {
-  border-radius: 12px;
-}
-
-.modern-table .ant-table-content {
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-/* Button styling */
-.ant-btn {
-  border-radius: 8px;
-  transition: all 0.3s ease;
-  font-weight: 500;
-}
-
-.ant-btn-primary {
-  background-color: #04BA6B;
-}
-
-.ant-btn-primary:hover {
-  background-color: #039354;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(4, 186, 107, 0.2);
-}
-
-.ant-btn-default:hover {
-  transform: translateY(-1px);
-  border-color: #04BA6B;
-  color: #04BA6B;
-}
-
-/* Notification styling */
-.ant-notification-notice {
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-/* Form controls */
-.ant-input, .ant-select-selector {
-  border-radius: 8px !important;
-  transition: all 0.2s ease;
-}
-
-.ant-input:hover, .ant-select-selector:hover {
-  border-color: #04BA6B !important;
-}
-
-.ant-input:focus, .ant-select-selector:focus {
-  border-color: #04BA6B !important;
+.ant-input:focus,
+.ant-select-selector:focus {
+  border-color: #04ba6b !important;
   box-shadow: 0 0 0 2px rgba(4, 186, 107, 0.2) !important;
-}
-
-/* Animation utilities */
-.fade-in {
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.scale-in {
-  animation: scaleIn 0.3s ease-in-out;
-}
-
-@keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
 }

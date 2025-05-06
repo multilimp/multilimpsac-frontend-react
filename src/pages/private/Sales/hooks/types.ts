@@ -1,5 +1,4 @@
-
-import { ClientProps } from '@/services/clients/client';
+import { ClientProps } from '@/services/clients/clients';
 import { ProductProps } from '@/services/products/product';
 import { FormInstance } from 'antd';
 

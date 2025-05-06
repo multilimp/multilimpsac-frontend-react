@@ -26,24 +26,38 @@ const CompaniesModal = ({ data, handleClose, handleReload }: CompaniesModalProps
     if (!data) return;
     form.setFieldsValue({
       ruc: data.ruc,
-      razon_social: data.razon_social,
+      razon_social: data.razonSocial,
       telefono: data.telefono,
       email: data.email,
       web: data.web,
-      departamento: data.departamento,
-      provincia: data.provincia,
-      distrito: data.distrito,
+      departamentoComplete: data.departamento,
+      departamento: data.departamento?.id,
+      provinciaComplete: data.provincia,
+      provincia: data.provincia?.id,
+      distritoComplete: data.distrito,
+      distrito: data.distrito?.id,
       direccion: data.direccion,
     });
   }, [data]);
 
-  const handleSubmit = async (body: Record<string, string | File>) => {
+  const handleSubmit = async (raw: Record<string, string | File>) => {
     try {
       setLoading(true);
 
-      if (body.logo) {
+      const body: Record<string, string | undefined | File> = {
+        ...raw,
+        departamento: raw.departamento ? JSON.stringify(raw.departamentoComplete) : undefined,
+        provincia: raw.provincia ? JSON.stringify(raw.provinciaComplete) : undefined,
+        distrito: raw.distrito ? JSON.stringify(raw.distritoComplete) : undefined,
+      };
+
+      if (raw.logo) {
         body.logo = await uploadFile(body.logo as File);
       }
+
+      delete body.departamentoComplete;
+      delete body.provinciaComplete;
+      delete body.distritoComplete;
 
       if (data) await putCompany(data.id, body);
       else await postCompany(body);
@@ -112,31 +126,59 @@ const CompaniesModal = ({ data, handleClose, handleReload }: CompaniesModalProps
               </Grid>
 
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <Form.Item name="departamento" rules={[{ required: true, message: 'El departamento es requerido' }]}>
+                <Form.Item name="departamentoComplete" noStyle />
+                <Form.Item name="departamento">
                   <SelectRegions
                     label="Departamento"
-                    onChange={(value) => form.setFieldsValue({ departamento: value, provincia: null, distrito: null })}
+                    onChange={(value, record: any) =>
+                      form.setFieldsValue({
+                        departamento: value,
+                        departamentoComplete: record?.optiondata,
+                        provincia: null,
+                        provinciaComplete: null,
+                        distrito: null,
+                        distritoComplete: null,
+                      })
+                    }
                   />
                 </Form.Item>
               </Grid>
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                <Form.Item name="provinciaComplete" noStyle />
                 <Form.Item noStyle shouldUpdate>
                   {({ getFieldValue }) => (
-                    <Form.Item name="provincia" rules={[{ required: true, message: 'La provincia es requerida' }]}>
+                    <Form.Item name="provincia">
                       <SelectProvinces
                         label="Provincia"
                         regionId={getFieldValue('departamento')}
-                        onChange={(value) => form.setFieldsValue({ provincia: value, distrito: null })}
+                        onChange={(value, record: any) =>
+                          form.setFieldsValue({
+                            provincia: value,
+                            provinciaComplete: record?.optiondata,
+                            distrito: null,
+                            distritoComplete: null,
+                          })
+                        }
                       />
                     </Form.Item>
                   )}
                 </Form.Item>
               </Grid>
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                <Form.Item name="distritoComplete" noStyle />
                 <Form.Item noStyle shouldUpdate>
                   {({ getFieldValue }) => (
-                    <Form.Item name="distrito" rules={[{ required: true, message: 'El distrito es requerido' }]}>
-                      <SelectDistricts label="Distrito" provinceId={getFieldValue('provincia')} />
+                    <Form.Item name="distrito">
+                      <SelectDistricts
+                        label="Distrito"
+                        provinceId={getFieldValue('provincia')}
+                        onChange={(value, record: any) =>
+                          form.setFieldsValue({
+                            distrito: value,
+                            distritoComplete: record?.optiondata,
+                          })
+                        }
+                      />
                     </Form.Item>
                   )}
                 </Form.Item>

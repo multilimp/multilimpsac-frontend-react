@@ -1,9 +1,8 @@
-
 import React, { useRef, useState } from 'react';
 import type { InputRef, TableColumnType } from 'antd';
 import { Table } from 'antd';
 import Highlighter from 'react-highlight-words';
-import { Box, IconButton, InputAdornment, TextField } from '@mui/material';
+import { Box, Button, IconButton, InputAdornment, Stack, TextField } from '@mui/material';
 import { Clear, Search } from '@mui/icons-material';
 import { ColumnType, TableProps } from 'antd/es/table';
 import { useTheme } from '@mui/material/styles';
@@ -33,12 +32,12 @@ const AntTable = <T extends Record<string, any>>(props: AntTableProps<T>) => {
             variant="outlined"
             placeholder="Buscar..."
             size="small"
-            sx={{ 
+            sx={{
               width: '100%',
               mb: 1,
               '& .MuiOutlinedInput-root': {
                 borderRadius: 1.5,
-              }
+              },
             }}
             value={selectedKeys[0] ?? ''}
             onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
@@ -67,20 +66,11 @@ const AntTable = <T extends Record<string, any>>(props: AntTableProps<T>) => {
               ),
             }}
           />
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
-            <Box
-              component="button"
-              sx={{
-                bgcolor: theme.palette.error.main,
-                color: '#fff',
-                border: 'none',
-                borderRadius: 1,
-                px: 2,
-                py: 0.5,
-                fontSize: '0.75rem',
-                cursor: 'pointer',
-                '&:hover': { bgcolor: theme.palette.error.dark },
-              }}
+          <Stack direction="row" spacing={2}>
+            <Button
+              fullWidth
+              color="error"
+              size="small"
               onClick={() => {
                 clearFilters?.();
                 setSelectedKeys([]);
@@ -88,20 +78,11 @@ const AntTable = <T extends Record<string, any>>(props: AntTableProps<T>) => {
               }}
             >
               Limpiar
-            </Box>
-            <Box
-              component="button"
-              sx={{
-                bgcolor: theme.palette.primary.main,
-                color: '#fff',
-                border: 'none',
-                borderRadius: 1,
-                px: 2,
-                py: 0.5,
-                fontSize: '0.75rem',
-                cursor: 'pointer',
-                '&:hover': { bgcolor: theme.palette.primary.dark },
-              }}
+            </Button>
+            <Button
+              fullWidth
+              color="success"
+              size="small"
               onClick={() => {
                 confirm();
                 setSearchText(selectedKeys[0]);
@@ -109,17 +90,17 @@ const AntTable = <T extends Record<string, any>>(props: AntTableProps<T>) => {
               }}
             >
               Buscar
-            </Box>
-          </Box>
+            </Button>
+          </Stack>
         </Box>
       );
     },
     filterIcon: (filtered: boolean) => (
-      <Search 
-        style={{ 
+      <Search
+        style={{
           color: filtered ? theme.palette.primary.main : undefined,
-          fontSize: '1.1rem'
-        }} 
+          fontSize: '1.1rem',
+        }}
       />
     ),
     onFilter: (value, record) =>
@@ -153,20 +134,15 @@ const AntTable = <T extends Record<string, any>>(props: AntTableProps<T>) => {
   });
 
   return (
-    <Table 
+    <Table
       columns={auxColumns}
       dataSource={data}
       size="small"
       scroll={{ x: '100%' }}
       bordered
       rowKey="id"
+      style={{ boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)' }}
       {...rest}
-      style={{
-        borderRadius: '12px',
-        overflow: 'hidden',
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-      }}
-      className="modern-table"
     />
   );
 };

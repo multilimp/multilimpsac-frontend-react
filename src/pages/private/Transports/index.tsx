@@ -1,109 +1,50 @@
 import PageContent from '@/components/PageContent';
-import TransportsTable from './components/TransportsTable';
-import TransportModal from './components/TransportsModal';
-import { Button } from 'antd';
-import { TransportProps } from '@/services/transports/transports';
-import { getTransports, createTransport, updateTransport, deleteTransport } from '@/services/transports/transports.request';
+import { useEffect, useState } from 'react';
 import { notification } from 'antd';
-import { useState, useEffect } from 'react';
+import { Button } from '@mui/material';
+import { ModalStateEnum } from '@/types/global.enum';
+import { ModalStateProps } from '@/types/global';
+import ConfirmDelete from '@/components/ConfirmDelete';
+import { getTransports } from '@/services/transports/transports.request';
+import TransportsTable from './components/TransportsTable';
+import TransportsModal from './components/TransportsModal';
+import { TransportProps } from '@/services/transports/transports';
 
-const TransportsPage = () => {
+const Transports = () => {
   const [loading, setLoading] = useState(false);
-  const [transports, setTransports] = useState<TransportProps[]>([]);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [currentTransport, setCurrentTransport] = useState<TransportProps | null>(null);
+  const [data, setData] = useState<Array<TransportProps>>([]);
+  const [modal, setModal] = useState<ModalStateProps<TransportProps>>(null);
 
-  const fetchTransports = async () => {
+  useEffect(() => {
+    obtainData();
+  }, []);
+
+  const obtainData = async () => {
     try {
       setLoading(true);
-      const data = await getTransports();
-      setTransports(data);
+      const res = await getTransports();
+      setData([...res]);
     } catch (error) {
       notification.error({
-        message: 'Error al obtener transportes',
-        description: 'No se pudieron cargar los transportes',
+        message: 'Ocurrió un error inesperado',
+        description: `No se pudo obtener el listado de empresas. ${String(error)}`,
       });
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchTransports();
-  }, []);
-
-  const handleCreate = () => {
-    setCurrentTransport(null);
-    setModalVisible(true);
-  };
-
-  const handleSave = async (values: TransportProps) => {
-    try {
-      if (values.id) {
-        await updateTransport(values.id, values);
-        notification.success({
-          message: 'Transporte actualizado',
-          description: `${values.socialReason} fue actualizado correctamente`,
-        });
-      } else {
-        await createTransport(values);
-        notification.success({
-          message: 'Transporte creado',
-          description: `${values.socialReason} fue registrado correctamente`,
-        });
-      }
-      fetchTransports();
-      setModalVisible(false);
-    } catch (error) {
-      notification.error({
-        message: 'Error al guardar',
-        description: 'No se pudo guardar el transporte',
-      });
-    }
-  };
-
   return (
-    <PageContent
-      title="Transportes"
-      helper="DIRECTORIO / TRANSPORTES"
-      component={
-        <Button type="primary" onClick={handleCreate}>
-          Nuevo Transporte
-        </Button>
-      }
-    >
-      <TransportsTable
-        data={transports}
-        loading={loading}
-        onEdit={(transport) => {
-          setCurrentTransport(transport);
-          setModalVisible(true);
-        }}
-        onDelete={async (transport) => {
-          try {
-            await deleteTransport(transport.id);
-            notification.success({
-              message: 'Transporte eliminado',
-              description: `${transport.socialReason} fue eliminado correctamente`,
-            });
-            fetchTransports();
-          } catch (error) {
-            notification.error({
-              message: 'Error al eliminar',
-              description: 'No se pudo eliminar el transporte',
-            });
-          }
-        }}
-      />
+    <PageContent component={<Button onClick={() => setModal({ mode: ModalStateEnum.BOX })}>Agregar</Button>}>
+      <TransportsTable data={data} loading={loading} onRecordAction={(mode, data) => setModal({ mode, data })} />
 
-      <TransportModal
-        visible={modalVisible}
-        onCancel={() => setModalVisible(false)}
-        onSave={handleSave}
-        transport={currentTransport}
-      />
+      {modal?.mode === ModalStateEnum.BOX ? <TransportsModal data={modal.data} handleReload={obtainData} handleClose={() => setModal(null)} /> : null}
+
+      {modal?.mode === ModalStateEnum.DELETE ? (
+        <ConfirmDelete endpoint={`/transports/${modal.data?.id}`} handleClose={() => setModal(null)} handleReload={obtainData} />
+      ) : null}
     </PageContent>
   );
 };
 
-export default TransportsPage;
+export default Transports;

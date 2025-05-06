@@ -1,13 +1,23 @@
 export interface CompanyProps {
   id: number;
-  razon_social: string;
+  razonSocial: string;
   ruc: string;
   telefono: string;
   email: string;
   web: string;
-  departamento: string;
-  provincia: string;
-  distrito: string;
+
+  departamento?: {
+    id: string;
+    name: string;
+  };
+  provincia?: {
+    id: string;
+    name: string;
+  };
+  distrito?: {
+    id: string;
+    name: string;
+  };
   direccion: string;
   logo: string;
 }

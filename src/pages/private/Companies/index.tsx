@@ -1,4 +1,3 @@
-
 import PageContent from '@/components/PageContent';
 import CompaniesTable from './components/CompaniesTable';
 import { useEffect, useState } from 'react';
@@ -9,6 +8,7 @@ import CompaniesModal from './components/CompaniesModal';
 import { ModalStateEnum } from '@/types/global.enum';
 import { ModalStateProps } from '@/types/global';
 import ConfirmDelete from '@/components/ConfirmDelete';
+import { getCompanies } from '@/services/companies/company.requests';
 
 const Companies = () => {
   const [loading, setLoading] = useState(false);
@@ -22,22 +22,8 @@ const Companies = () => {
   const obtainData = async () => {
     try {
       setLoading(true);
-      // Datos generados para ejemplo
-      const generatedData = Array.from(Array(500).keys()).map((id) => ({
-        id,
-        departamento: '04',
-        direccion: 'Av Tacna nro 438',
-        distrito: '040504',
-        email: 'empresa@empresa.com',
-        logo: 'https://png.pngtree.com/png-clipart/20190613/original/pngtree-instagram-icon-logo-png-image_3560504.jpg',
-        provincia: '0405',
-        razon_social: `Instagram INC ${id}`,
-        ruc: '20243434332',
-        telefono: '904023423',
-        web: 'https://google.com',
-      }));
-
-      setData([...generatedData]);
+      const res = await getCompanies();
+      setData([...res]);
     } catch (error) {
       notification.error({
         message: 'Ocurrió un error inesperado',

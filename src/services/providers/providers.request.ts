@@ -2,19 +2,26 @@ import apiClient from '../apiClient';
 import { ProviderProps } from './providers';
 
 export const getProviders = async (): Promise<ProviderProps[]> => {
-  await new Promise(resolve => setTimeout(resolve, 1000)); // Delay de 1 segundo para simulación
-  
   try {
     const response = await apiClient.get('/providers');
-    // Asegura que siempre retorne un array
-    return Array.isArray(response?.data) ? response.data : [];
+
+    const arr = Array.isArray(response?.data) ? response.data : [];
+
+    const data = arr.map((item) => ({
+      ...item,
+      departamento: item.departamento ? JSON.parse(item.departamento) : null,
+      provincia: item.provincia ? JSON.parse(item.provincia) : null,
+      distrito: item.distrito ? JSON.parse(item.distrito) : null,
+    }));
+
+    return data;
   } catch (error) {
     console.error('Error fetching providers:', error);
-    return []; // Retorna array vacío en caso de error
+    return [];
   }
 };
 
-export const createProvider = async (provider: Omit<ProviderProps, 'id'>): Promise<ProviderProps> => {
+export const createProvider = async (provider: Record<string, string | undefined>): Promise<ProviderProps> => {
   try {
     const response = await apiClient.post('/providers', provider);
     return response.data;
@@ -24,9 +31,9 @@ export const createProvider = async (provider: Omit<ProviderProps, 'id'>): Promi
   }
 };
 
-export const updateProvider = async (id: string, updates: Partial<ProviderProps>): Promise<ProviderProps> => {
+export const updateProvider = async (id: number, updates: Partial<ProviderProps>): Promise<ProviderProps> => {
   try {
-    const response = await apiClient.patch(`/providers/${id}`, updates);
+    const response = await apiClient.put(`/providers/${id}`, updates);
     return response.data;
   } catch (error) {
     console.error('Error updating provider:', error);
@@ -34,7 +41,7 @@ export const updateProvider = async (id: string, updates: Partial<ProviderProps>
   }
 };
 
-export const deleteProvider = async (id: string): Promise<void> => {
+export const deleteProvider = async (id: number): Promise<void> => {
   try {
     await apiClient.delete(`/providers/${id}`);
   } catch (error) {
@@ -43,11 +50,10 @@ export const deleteProvider = async (id: string): Promise<void> => {
   }
 };
 
-// Búsqueda especializada por RUC
 export const searchProviderByRuc = async (ruc: string): Promise<ProviderProps | null> => {
   try {
     const response = await apiClient.get(`/providers/search?ruc=${ruc}`);
-    return response.data || null;
+    return response.data ?? null;
   } catch (error) {
     console.error('Error searching provider:', error);
     return null;

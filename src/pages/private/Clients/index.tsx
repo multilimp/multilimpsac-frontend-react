@@ -1,13 +1,12 @@
-
 import PageContent from '@/components/PageContent';
 import ClientsTable from './components/ClientsTable';
 import { useEffect, useState } from 'react';
-import { ClientProps } from '@/services/clients/client';
 import { notification } from 'antd';
-import { getClients } from '@/services/clients/clients.request'; 
+import { getClients } from '@/services/clients/clients.request';
 import { Button } from '@mui/material';
 import ClientsModal from './components/ClientsModal';
 import { ModalStateEnum } from '@/types/global.enum';
+import { ClientProps } from '@/services/clients/clients';
 
 type ModalStateType = {
   mode: ModalStateEnum;
@@ -16,14 +15,14 @@ type ModalStateType = {
 
 const ClientsPage = () => {
   const [loading, setLoading] = useState(false);
-  const [clients, setClients] = useState<ClientProps[]>([]);
+  const [clients, setClients] = useState<Array<ClientProps>>([]);
   const [modalState, setModalState] = useState<ModalStateType>(null);
 
   const fetchClients = async () => {
     try {
       setLoading(true);
-      const response = await getClients();
-      setClients(response as unknown as ClientProps[]);
+      const res = await getClients();
+      setClients([...res]);
     } catch (error) {
       notification.error({
         message: 'Error al obtener clientes',
@@ -41,7 +40,7 @@ const ClientsPage = () => {
   const handleOpenModal = () => {
     setModalState({
       mode: ModalStateEnum.BOX,
-      data: undefined
+      data: undefined,
     });
   };
 
@@ -51,29 +50,15 @@ const ClientsPage = () => {
 
   return (
     <PageContent
-      title="Clientes"
-      helper="DIRECTORIO / CLIENTES"
       component={
-        <Button 
-          variant="contained" 
-          onClick={handleOpenModal}
-        >
+        <Button variant="contained" onClick={handleOpenModal}>
           Agregar Cliente
         </Button>
       }
     >
-      <ClientsTable 
-        data={clients} 
-        loading={loading} 
-      />
-      
-      {modalState?.mode === ModalStateEnum.BOX && (
-        <ClientsModal 
-          data={modalState.data} 
-          handleClose={handleCloseModal}
-          handleReload={fetchClients}
-        />
-      )}
+      <ClientsTable data={clients} loading={loading} />
+
+      {modalState?.mode === ModalStateEnum.BOX && <ClientsModal data={modalState.data} handleClose={handleCloseModal} handleReload={fetchClients} />}
     </PageContent>
   );
 };

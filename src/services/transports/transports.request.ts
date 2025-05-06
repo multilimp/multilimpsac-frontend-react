@@ -11,16 +11,16 @@ export const getTransports = async (): Promise<TransportProps[]> => {
   }
 };
 
-export const createTransport = async (transport: Omit<TransportProps, 'id'>): Promise<TransportProps> => {
+export const createTransport = async (transport: Record<string, string | undefined>): Promise<TransportProps> => {
   const response = await apiClient.post('/transports', transport);
   return response.data;
 };
 
-export const updateTransport = async (id: string, updates: Partial<TransportProps>): Promise<TransportProps> => {
-  const response = await apiClient.patch(`/transports/${id}`, updates);
+export const updateTransport = async (id: number, updates: Partial<TransportProps>): Promise<TransportProps> => {
+  const response = await apiClient.put(`/transports/${id}`, updates);
   return response.data;
 };
 
-export const deleteTransport = async (id: string): Promise<void> => {
+export const deleteTransport = async (id: number): Promise<void> => {
   await apiClient.delete(`/transports/${id}`);
 };

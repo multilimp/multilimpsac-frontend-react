@@ -93,7 +93,14 @@ export default function GlobalStyles() {
           padding: '20px',
         },
         '.ant-table-cell-row-hover': {
-          backgroundColor: '#d3d3d3 !important',
+          backgroundColor: 'rgba(4, 186, 107, 0.04) !important',
+        },
+        'table tr th': {
+          padding: '16px !important',
+        },
+        '.ant-notification-notice': {
+          borderRadius: '12px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
         },
         '.ant-notification-notice-success': {
           backgroundColor: '#52c41a !important',
@@ -120,13 +127,6 @@ export default function GlobalStyles() {
         },
         '.MuiModal-root': {
           zIndex: '999 !important',
-        },
-        'table tr th': {
-          background: `${theme.palette.primary.main} !important`,
-          color: 'white !important',
-          border: '1px solid rgba(200, 200, 200, 0.5)',
-          paddingTop: '14px !important',
-          paddingBottom: '14px !important',
         },
         '.input-select-form.large .ant-select-single .ant-select-selector, .input-form.large input': {
           height: '50px',

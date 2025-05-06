@@ -6,8 +6,8 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid } from 
 import SelectRegions from '@/components/selects/SelectRegions';
 import SelectProvinces from '@/components/selects/SelectProvinces';
 import SelectDistricts from '@/components/selects/SelectDistricts';
-import { ClientProps } from '@/services/clients/client';
 import { postClient, putClient } from '@/services/clients/client.requests';
+import { ClientProps } from '@/services/clients/clients';
 
 interface ClientsModalProps {
   data?: ClientProps;
@@ -23,18 +23,32 @@ const ClientsModal = ({ data, handleClose, handleReload }: ClientsModalProps) =>
     if (!data) return;
     form.setFieldsValue({
       ruc: data.ruc,
-      razon_social: data.razon_social,
-      cod_unidad: data.cod_unidad,
-      departamento: data.departamento,
-      provincia: data.provincia,
-      distrito: data.distrito,
+      razon_social: data.razonSocial,
+      cod_unidad: data.codigoUnidadEjecutora,
+      departamentoComplete: data.departamento,
+      departamento: data.departamento?.id,
+      provinciaComplete: data.provincia,
+      provincia: data.provincia?.id,
+      distritoComplete: data.distrito,
+      distrito: data.distrito?.id,
       direccion: data.direccion,
     });
   }, [data]);
 
-  const handleSubmit = async (body: Record<string, string>) => {
+  const handleSubmit = async (raw: Record<string, string>) => {
     try {
       setLoading(true);
+
+      const body: Record<string, string | undefined> = {
+        ...raw,
+        departamento: raw.departamento ? JSON.stringify(raw.departamentoComplete) : undefined,
+        provincia: raw.provincia ? JSON.stringify(raw.provinciaComplete) : undefined,
+        distrito: raw.distrito ? JSON.stringify(raw.distritoComplete) : undefined,
+      };
+
+      delete body.departamentoComplete;
+      delete body.provinciaComplete;
+      delete body.distritoComplete;
 
       if (data) await putClient(data.id, body);
       else await postClient(body);
@@ -80,35 +94,64 @@ const ClientsModal = ({ data, handleClose, handleReload }: ClientsModalProps) =>
               </Grid>
 
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <Form.Item name="departamento" rules={[{ required: true, message: 'El departamento es requerido' }]}>
+                <Form.Item name="departamentoComplete" noStyle />
+                <Form.Item name="departamento">
                   <SelectRegions
                     label="Departamento"
-                    onChange={(value) => form.setFieldsValue({ departamento: value, provincia: null, distrito: null })}
+                    onChange={(value, record: any) =>
+                      form.setFieldsValue({
+                        departamento: value,
+                        departamentoComplete: record?.optiondata,
+                        provincia: null,
+                        provinciaComplete: null,
+                        distrito: null,
+                        distritoComplete: null,
+                      })
+                    }
                   />
                 </Form.Item>
               </Grid>
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                <Form.Item name="provinciaComplete" noStyle />
                 <Form.Item noStyle shouldUpdate>
                   {({ getFieldValue }) => (
-                    <Form.Item name="provincia" rules={[{ required: true, message: 'La provincia es requerida' }]}>
+                    <Form.Item name="provincia">
                       <SelectProvinces
                         label="Provincia"
                         regionId={getFieldValue('departamento')}
-                        onChange={(value) => form.setFieldsValue({ provincia: value, distrito: null })}
+                        onChange={(value, record: any) =>
+                          form.setFieldsValue({
+                            provincia: value,
+                            provinciaComplete: record?.optiondata,
+                            distrito: null,
+                            distritoComplete: null,
+                          })
+                        }
                       />
                     </Form.Item>
                   )}
                 </Form.Item>
               </Grid>
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                <Form.Item name="distritoComplete" noStyle />
                 <Form.Item noStyle shouldUpdate>
                   {({ getFieldValue }) => (
-                    <Form.Item name="distrito" rules={[{ required: true, message: 'El distrito es requerido' }]}>
-                      <SelectDistricts label="Distrito" provinceId={getFieldValue('provincia')} />
+                    <Form.Item name="distrito">
+                      <SelectDistricts
+                        label="Distrito"
+                        provinceId={getFieldValue('provincia')}
+                        onChange={(value, record: any) =>
+                          form.setFieldsValue({
+                            distrito: value,
+                            distritoComplete: record?.optiondata,
+                          })
+                        }
+                      />
                     </Form.Item>
                   )}
                 </Form.Item>
               </Grid>
+
               <Grid size={{ xs: 12 }}>
                 <Form.Item name="direccion" rules={[{ required: true, message: 'La dirección es requerida' }]}>
                   <InputAntd label="Dirección" />
