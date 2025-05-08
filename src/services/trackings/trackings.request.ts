@@ -1,41 +1,32 @@
+// src/services/trackings/trackings.request.ts
 import apiClient from '../apiClient';
 import { TrackingProps } from './trackings.d';
 
-export const getTrackings = async (): Promise<Array<TrackingProps>> => {
+export const getTrackings = async (): Promise<TrackingProps[]> => {
   try {
-    const response = await apiClient.get('/trackings');
-    return Array.isArray(response.data) ? response.data : [];
-  } catch (error) {
-    console.error('Error fetching trackings:', error);
+    const res = await apiClient.get('/trackings');
+    return Array.isArray(res.data) ? res.data : [];
+  } catch (e) {
+    console.error('Error fetching trackings:', e);
     return [];
   }
 };
 
-export const createTracking = async (trackingData: Omit<TrackingProps, 'id'>): Promise<TrackingProps> => {
-  try {
-    const response = await apiClient.post('/trackings', trackingData);
-    return response.data;
-  } catch (error) {
-    console.error('Error creating tracking:', error);
-    throw error;
-  }
+export const createTracking = async (
+  payload: Omit<TrackingProps, 'id'>
+): Promise<TrackingProps> => {
+  const res = await apiClient.post('/trackings', payload);
+  return res.data;
 };
 
-export const updateTracking = async (id: number, trackingData: Partial<TrackingProps>): Promise<TrackingProps> => {
-  try {
-    const response = await apiClient.patch(`/trackings/${id}`, trackingData);
-    return response.data;
-  } catch (error) {
-    console.error('Error updating tracking:', error);
-    throw error;
-  }
+export const updateTracking = async (
+  id: number,
+  payload: Partial<TrackingProps>
+): Promise<TrackingProps> => {
+  const res = await apiClient.patch(`/trackings/${id}`, payload);
+  return res.data;
 };
 
 export const deleteTracking = async (id: number): Promise<void> => {
-  try {
-    await apiClient.delete(`/trackings/${id}`);
-  } catch (error) {
-    console.error('Error deleting tracking:', error);
-    throw error;
-  }
+  await apiClient.delete(`/trackings/${id}`);
 };

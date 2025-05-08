@@ -1,7 +1,8 @@
+// src/services/billings/billings.requests.ts
 import apiClient from '../apiClient';
 import { BillingProps } from './billings.d';
 
-export const getBillings = async (): Promise<Array<BillingProps>> => {
+export const getBillings = async (): Promise<BillingProps[]> => {
   try {
     const response = await apiClient.get('/billings');
     return Array.isArray(response.data) ? response.data : [];

@@ -1,27 +1,50 @@
-import AntTable from '@/components/AntTable';
-import { TreasurysProps } from '@/services/treasurys/treasurys';
-import { TableColumnsType } from 'antd';
+// src/components/treasurys/TreasurysTable.tsx
+import { Delete, Edit } from '@mui/icons-material';
+import { Button, ButtonGroup } from '@mui/material';
+import AntTable, { AntColumnType } from '@/components/AntTable';
+import { TreasurysProps } from '@/services/treasurys/treasurys.d';
+import { ModalStateEnum } from '@/types/global.enum';
 
 interface TreasurysTableProps {
-  data?: Array<TreasurysProps>; // Hacer data opcional
+  data: TreasurysProps[];
   loading: boolean;
+  onRecordAction: (action: ModalStateEnum, data: TreasurysProps) => void;
 }
 
-const TreasurysTable = ({ data = [], loading }: TreasurysTableProps) => {
-  // Verificación adicional para TypeScript
-  const safeData = Array.isArray(data) ? data : [];
-  
-  const columns: TableColumnsType<TreasurysProps> = [
-    { title: 'Código Venta', dataIndex: 'saleCode' },
-    { title: 'Razón Social Cliente', dataIndex: 'clientBusinessName' },
-    { title: 'RUC Cliente', dataIndex: 'clientRuc' },
-    { title: 'RUC Empresa', dataIndex: 'companyRuc' },
-    { title: 'Razón Social Empresa', dataIndex: 'companyBusinessName' },
-    { title: 'Contacto', dataIndex: 'contact' },
-    { title: 'Estado', dataIndex: 'status' }
+export default function TreasurysTable({
+  data,
+  loading,
+  onRecordAction,
+}: TreasurysTableProps) {
+  const columns: AntColumnType<TreasurysProps>[] = [
+    {
+      title: 'Acciones',
+      dataIndex: 'id',
+      render: (_, record) => (
+        <ButtonGroup size="small">
+          <Button
+            color="info"
+            onClick={() => onRecordAction(ModalStateEnum.BOX, record)}
+          >
+            <Edit />
+          </Button>
+          <Button
+            color="error"
+            onClick={() => onRecordAction(ModalStateEnum.DELETE, record)}
+          >
+            <Delete />
+          </Button>
+        </ButtonGroup>
+      ),
+    },
+    { title: 'Código Venta', dataIndex: 'saleCode', filter: true },
+    { title: 'Razón Social Cliente', dataIndex: 'clientBusinessName', filter: true },
+    { title: 'RUC Cliente', dataIndex: 'clientRuc', filter: true },
+    { title: 'RUC Empresa', dataIndex: 'companyRuc', filter: true },
+    { title: 'Razón Social Empresa', dataIndex: 'companyBusinessName', filter: true },
+    { title: 'Contacto', dataIndex: 'contact', filter: true },
+    { title: 'Estado', dataIndex: 'status', filter: true },
   ];
 
-  return <AntTable columns={columns} data={safeData} loading={loading} rowKey="id" />;
-};
-
-export default TreasurysTable;
+  return <AntTable columns={columns} data={data} loading={loading} />;
+}

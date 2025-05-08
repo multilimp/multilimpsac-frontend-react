@@ -1,60 +1,122 @@
-import AntTable from '@/components/AntTable';
+// src/pages/components/BillingsTable.tsx
+import React from 'react';
+import AntTable, { AntColumnType } from '@/components/AntTable';
 import { BillingProps } from '@/services/billings/billings.d';
-import { TableColumnsType } from 'antd';
 import dayjs from 'dayjs';
 
 interface BillingsTableProps {
-  data?: Array<BillingProps>;
+  data: BillingProps[];
   loading: boolean;
 }
 
-const statusMap: Record<NonNullable<BillingProps['status']>, string> = {
+const statusMap: Record<BillingProps['status'], string> = {
   pending: 'Pendiente',
   paid: 'Pagado',
   canceled: 'Cancelado',
-  processing: 'Procesando'
+  processing: 'Procesando',
 };
 
-const BillingsTable = ({ data = [], loading }: BillingsTableProps) => {
-  const columns: TableColumnsType<BillingProps> = [
-    { title: 'ID', dataIndex: 'id', width: 80 },
-    { title: 'ID Venta', dataIndex: 'saleId', width: 100 },
-    { title: 'Razón Social Cliente', dataIndex: 'clientBusinessName', width: 200 },
-    { title: 'RUC Cliente', dataIndex: 'clientRuc', width: 120 },
-    { title: 'RUC Empresa', dataIndex: 'companyRuc', width: 120 },
-    { title: 'Razón Social Empresa', dataIndex: 'companyBusinessName', width: 200 },
-    { title: 'Contacto', dataIndex: 'contact', width: 150 },
-    { 
-      title: 'Fecha Registro', 
-      dataIndex: 'registerDate', 
-      render: (date: string) => dayjs(date).format('DD/MM/YYYY'),
-      width: 120
+const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading }) => {
+  const columns: AntColumnType<BillingProps>[] = [
+    { title: 'ID', dataIndex: 'id', minWidth: 60, filter: true },
+    { title: 'ID Venta', dataIndex: 'saleId', minWidth: 100, filter: true },
+    { title: 'Razón Social Cliente', dataIndex: 'clientBusinessName', minWidth: 200, filter: true },
+    { title: 'RUC Cliente', dataIndex: 'clientRuc', minWidth: 120, filter: true },
+    { title: 'RUC Empresa', dataIndex: 'companyRuc', minWidth: 120, filter: true },
+    { title: 'Razón Social Empresa', dataIndex: 'companyBusinessName', minWidth: 200, filter: true },
+    { title: 'Contacto', dataIndex: 'contact', minWidth: 150, filter: true },
+
+    {
+      title: 'Fecha Registro',
+      dataIndex: 'registerDate',
+      minWidth: 120,
+      render: (d: string) => dayjs(d).format('DD/MM/YYYY'),
     },
-    { 
-      title: 'Monto Venta', 
-      dataIndex: 'saleAmount', 
-      render: (amount: number) => `S/ ${amount.toFixed(2)}`,
-      width: 120 
+    {
+      title: 'Fecha Máx. Entrega',
+      dataIndex: 'maxDeliveryDate',
+      minWidth: 120,
+      render: (d: string) => dayjs(d).format('DD/MM/YYYY'),
     },
-    { title: 'OCE', dataIndex: 'oce', width: 100 },
-    { title: 'OCF', dataIndex: 'ocf', width: 100 },
-    { 
-      title: 'Factura', 
+    {
+      title: 'Fecha Entrega OC',
+      dataIndex: 'deliveryDateOC',
+      minWidth: 120,
+      render: (d: string) => dayjs(d).format('DD/MM/YYYY'),
+    },
+
+    {
+      title: 'Monto Venta',
+      dataIndex: 'saleAmount',
+      minWidth: 120,
+      render: (amt: number) => `S/ ${amt.toFixed(2)}`,
+    },
+
+    {
+      title: 'OCE',
+      dataIndex: 'oce',
+      minWidth: 120,
+      render: (url?: string) =>
+        url ? <a href={url} target="_blank" rel="noopener noreferrer">Descargar OCE</a> : '-',
+    },
+    {
+      title: 'OCF',
+      dataIndex: 'ocf',
+      minWidth: 120,
+      render: (url?: string) =>
+        url ? <a href={url} target="_blank" rel="noopener noreferrer">Descargar OCF</a> : '-',
+    },
+
+    {
+      title: 'Fecha Recepción',
+      dataIndex: 'receptionDate',
+      minWidth: 120,
+      render: (d: string) => dayjs(d).format('DD/MM/YYYY'),
+    },
+    {
+      title: 'Fecha Programación',
+      dataIndex: 'programmingDate',
+      minWidth: 120,
+      render: (d: string) => dayjs(d).format('DD/MM/YYYY'),
+    },
+
+    {
+      title: 'N° Factura',
       dataIndex: 'invoiceNumber',
-      render: (invoice: string | undefined) => invoice || '-',
-      width: 100 
+      minWidth: 100,
+      render: inv => inv || '-',
     },
-    { 
-      title: 'Estado', 
+    {
+      title: 'Fecha Factura',
+      dataIndex: 'invoiceDate',
+      minWidth: 120,
+      render: d => (d ? dayjs(d).format('DD/MM/YYYY') : '-'),
+    },
+
+    { title: 'GRR', dataIndex: 'grr', minWidth: 100, filter: true },
+    {
+      title: 'Refact',
+      dataIndex: 'isRefact',
+      minWidth: 80,
+      render: v => (v ? 'Sí' : 'No'),
+    },
+    {
+      title: 'Estado',
       dataIndex: 'status',
-      render: (status: BillingProps['status']) => (
-        status ? statusMap[status] : 'Desconocido'
-      ),
-      width: 120
-    }
+      minWidth: 120,
+      render: (_, rec) => statusMap[rec.status],
+    },
   ];
 
-  return <AntTable columns={columns} data={data} loading={loading} rowKey="id" scroll={{ x: 2000 }} />;
+  return (
+    <AntTable
+      columns={columns}
+      data={data}
+      loading={loading}
+      rowKey="id"
+      scroll={{ x: 2400 }}
+    />
+  );
 };
 
 export default BillingsTable;

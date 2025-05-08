@@ -1,5 +1,4 @@
-import apiClient from '../apiClient';
-
+// src/services/treasurys/treasurys.d.ts
 export interface TreasurysProps {
   id: number;
   saleCode: string;
