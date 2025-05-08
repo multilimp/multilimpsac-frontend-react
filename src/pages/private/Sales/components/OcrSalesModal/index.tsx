@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button, Box, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Typography } from '@mui/material';
 import { Close, Save } from '@mui/icons-material';
@@ -34,21 +33,21 @@ const OcrSalesModal = ({ open, onClose, onSuccess }: OcrSalesModalProps) => {
     try {
       // Subir el archivo al servidor - utilizamos fileUrl en una API real
       await uploadFile(selectedFile);
-      
+
       // Simular el procesamiento OCR (en un caso real, llamaríamos a una API de OCR)
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
       // Datos simulados extraídos por OCR
       const extractedData: Partial<SaleProps> = {
-        client: "Empresa Extraída por OCR",
-        clientRuc: "20123456789",
-        companyName: "MULTILIMP SAC",
-        companyRuc: "20987654321",
-        contact: "Juan Pérez",
+        client: 'Empresa Extraída por OCR',
+        clientRuc: '20123456789',
+        companyName: 'MULTILIMP SAC',
+        companyRuc: '20987654321',
+        contact: 'Juan Pérez',
         items: [
-          { productId: "P001", quantity: 3, unitPrice: 45.90 },
-          { productId: "P002", quantity: 5, unitPrice: 32.50 }
-        ]
+          { productId: 'P001', quantity: 3, unitPrice: 45.9 },
+          { productId: 'P002', quantity: 5, unitPrice: 32.5 },
+        ],
       };
 
       notification.success({
@@ -92,27 +91,22 @@ const OcrSalesModal = ({ open, onClose, onSuccess }: OcrSalesModalProps) => {
         </Box>
       </DialogTitle>
       <Divider />
-      
+
       <DialogContent>
         <Box sx={{ p: 2 }}>
-          <Typography variant="body1" paragraph>
-            Suba una imagen o documento PDF de su orden de compra. 
-            Nuestro sistema de IA extraerá automáticamente la información relevante.
+          <Typography variant="body1">
+            Suba una imagen o documento PDF de su orden de compra. Nuestro sistema de IA extraerá automáticamente la información relevante.
           </Typography>
-          
+
           <Box sx={{ my: 3, p: 4, border: '2px dashed #ccc', borderRadius: 2, backgroundColor: '#f9f9f9' }}>
-            <InputFile
-              onChange={handleFileChange}
-              label="Arrastre aquí su orden de compra o haga clic para seleccionar"
-              disabled={loading}
-            />
-            
+            <InputFile onChange={handleFileChange} label="Arrastre aquí su orden de compra o haga clic para seleccionar" disabled={loading} />
+
             {selectedFile && (
               <Typography variant="body2" sx={{ mt: 2, textAlign: 'center' }}>
                 Archivo seleccionado: {selectedFile.name}
               </Typography>
             )}
-            
+
             {loading && (
               <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
                 <Spin tip="Procesando documento..." size="large" />
@@ -121,24 +115,12 @@ const OcrSalesModal = ({ open, onClose, onSuccess }: OcrSalesModalProps) => {
           </Box>
         </Box>
       </DialogContent>
-      
+
       <DialogActions sx={{ px: 3, pb: 3, pt: 1 }}>
-        <Button
-          variant="outlined"
-          color="inherit"
-          onClick={onClose}
-          disabled={loading}
-          startIcon={<Close />}
-        >
+        <Button variant="outlined" color="inherit" onClick={onClose} disabled={loading} startIcon={<Close />}>
           Cancelar
         </Button>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleProcess}
-          disabled={loading || !selectedFile}
-          startIcon={<Save />}
-        >
+        <Button variant="contained" color="primary" onClick={handleProcess} disabled={loading || !selectedFile} startIcon={<Save />}>
           {loading ? 'Procesando...' : 'Procesar Documento'}
         </Button>
       </DialogActions>

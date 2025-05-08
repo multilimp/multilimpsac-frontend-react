@@ -1,41 +1,17 @@
+import { useState } from 'react';
 import PageContent from '@/components/PageContent';
 import ClientsTable from './components/ClientsTable';
-import { useEffect, useState } from 'react';
-import { notification } from 'antd';
-import { getClients } from '@/services/clients/clients.request';
 import { Button } from '@mui/material';
 import ClientsModal from './components/ClientsModal';
 import { ModalStateEnum } from '@/types/global.enum';
 import { ClientProps } from '@/services/clients/clients';
-
-type ModalStateType = {
-  mode: ModalStateEnum;
-  data: ClientProps | undefined;
-} | null;
+import { ModalStateProps } from '@/types/global';
+import ConfirmDelete from '@/components/ConfirmDelete';
+import useClients from '@/hooks/useClients';
 
 const ClientsPage = () => {
-  const [loading, setLoading] = useState(false);
-  const [clients, setClients] = useState<Array<ClientProps>>([]);
-  const [modalState, setModalState] = useState<ModalStateType>(null);
-
-  const fetchClients = async () => {
-    try {
-      setLoading(true);
-      const res = await getClients();
-      setClients([...res]);
-    } catch (error) {
-      notification.error({
-        message: 'Error al obtener clientes',
-        description: error instanceof Error ? error.message : 'Error desconocido',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchClients();
-  }, []);
+  const [modalState, setModalState] = useState<ModalStateProps<ClientProps>>(null);
+  const { clients, loadingClients, obtainClients } = useClients();
 
   const handleOpenModal = () => {
     setModalState({
@@ -56,9 +32,13 @@ const ClientsPage = () => {
         </Button>
       }
     >
-      <ClientsTable data={clients} loading={loading} />
+      <ClientsTable data={clients} loading={loadingClients} onRecordAction={(mode, data) => setModalState({ mode, data })} />
 
-      {modalState?.mode === ModalStateEnum.BOX && <ClientsModal data={modalState.data} handleClose={handleCloseModal} handleReload={fetchClients} />}
+      {modalState?.mode === ModalStateEnum.BOX && <ClientsModal data={modalState.data} handleClose={handleCloseModal} handleReload={obtainClients} />}
+
+      {modalState?.mode === ModalStateEnum.DELETE ? (
+        <ConfirmDelete endpoint={`/clients/${modalState.data?.id}`} handleClose={handleCloseModal} handleReload={obtainClients} />
+      ) : null}
     </PageContent>
   );
 };

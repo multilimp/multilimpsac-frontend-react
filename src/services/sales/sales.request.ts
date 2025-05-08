@@ -2,14 +2,8 @@ import apiClient from '../apiClient';
 import { SaleProps } from './sales';
 
 export const getSales = async (): Promise<SaleProps[]> => {
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  try {
-    const response = await apiClient.get('/sales');
-    return Array.isArray(response?.data) ? response.data : [];
-  } catch (error) {
-    console.error('Error fetching sales:', error);
-    return [];
-  }
+  const response = await apiClient.get('/sales');
+  return Array.isArray(response?.data) ? response.data : [];
 };
 
 export const createSale = async (sale: Omit<SaleProps, 'id'>): Promise<SaleProps> => {

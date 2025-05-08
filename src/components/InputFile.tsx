@@ -22,7 +22,9 @@ const InputFile = ({ onChange, label, disabled }: InputFileProps) => (
     }}
     style={disabled ? { pointerEvents: 'none', backgroundColor: '#eee', opacity: 0.75 } : {}}
   >
-    <FormHelperText sx={{ lineHeight: 1, textAlign: 'center' }}>{label ?? 'Seleccione el archivo'} </FormHelperText>
+    <FormHelperText sx={{ lineHeight: 1, textAlign: 'center', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+      {label ?? 'Seleccione el archivo'}{' '}
+    </FormHelperText>
   </Upload>
 );
 
