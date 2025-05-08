@@ -18,87 +18,93 @@ const statusMap: Record<BillingProps['status'], string> = {
 
 const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading }) => {
   const columns: AntColumnType<BillingProps>[] = [
-    { title: 'ID', dataIndex: 'id', width: 60 },
-
-    { title: 'ID Venta', dataIndex: 'saleId', width: 100 },
-
-    { title: 'Razón Social Cliente', dataIndex: 'clientBusinessName', width: 200 },
-    { title: 'RUC Cliente', dataIndex: 'clientRuc', width: 120 },
-
-    { title: 'RUC Empresa', dataIndex: 'companyRuc', width: 120 },
-    { title: 'Razón Social Empresa', dataIndex: 'companyBusinessName', width: 200 },
-
-    { title: 'Cliente', dataIndex: 'contact', width: 150 },
+    { title: 'ID', dataIndex: 'id', minWidth: 60, filter: true },
+    { title: 'ID Venta', dataIndex: 'saleId', minWidth: 100, filter: true },
+    { title: 'Razón Social Cliente', dataIndex: 'clientBusinessName', minWidth: 200, filter: true },
+    { title: 'RUC Cliente', dataIndex: 'clientRuc', minWidth: 120, filter: true },
+    { title: 'RUC Empresa', dataIndex: 'companyRuc', minWidth: 120, filter: true },
+    { title: 'Razón Social Empresa', dataIndex: 'companyBusinessName', minWidth: 200, filter: true },
+    { title: 'Contacto', dataIndex: 'contact', minWidth: 150, filter: true },
 
     {
       title: 'Fecha Registro',
       dataIndex: 'registerDate',
+      minWidth: 120,
       render: (d: string) => dayjs(d).format('DD/MM/YYYY'),
-      width: 120,
     },
     {
-      title: 'Fecha Máx. Ent',
+      title: 'Fecha Máx. Entrega',
       dataIndex: 'maxDeliveryDate',
+      minWidth: 120,
       render: (d: string) => dayjs(d).format('DD/MM/YYYY'),
-      width: 120,
     },
     {
       title: 'Fecha Entrega OC',
       dataIndex: 'deliveryDateOC',
+      minWidth: 120,
       render: (d: string) => dayjs(d).format('DD/MM/YYYY'),
-      width: 120,
     },
 
     {
       title: 'Monto Venta',
       dataIndex: 'saleAmount',
+      minWidth: 120,
       render: (amt: number) => `S/ ${amt.toFixed(2)}`,
-      width: 120,
     },
 
-    { title: 'OCE', dataIndex: 'oce', width: 100 },
-    { title: 'OCF', dataIndex: 'ocf', width: 100 },
+    {
+      title: 'OCE',
+      dataIndex: 'oce',
+      minWidth: 120,
+      render: (url?: string) =>
+        url ? <a href={url} target="_blank" rel="noopener noreferrer">Descargar OCE</a> : '-',
+    },
+    {
+      title: 'OCF',
+      dataIndex: 'ocf',
+      minWidth: 120,
+      render: (url?: string) =>
+        url ? <a href={url} target="_blank" rel="noopener noreferrer">Descargar OCF</a> : '-',
+    },
 
     {
       title: 'Fecha Recepción',
       dataIndex: 'receptionDate',
+      minWidth: 120,
       render: (d: string) => dayjs(d).format('DD/MM/YYYY'),
-      width: 120,
     },
     {
       title: 'Fecha Programación',
       dataIndex: 'programmingDate',
+      minWidth: 120,
       render: (d: string) => dayjs(d).format('DD/MM/YYYY'),
-      width: 120,
     },
 
     {
-      title: 'Factura',
+      title: 'N° Factura',
       dataIndex: 'invoiceNumber',
-      render: (inv?: string) => inv || '-',
-      width: 100,
+      minWidth: 100,
+      render: inv => inv || '-',
     },
     {
       title: 'Fecha Factura',
       dataIndex: 'invoiceDate',
-      render: (d?: string) => (d ? dayjs(d).format('DD/MM/YYYY') : '-'),
-      width: 120,
+      minWidth: 120,
+      render: d => (d ? dayjs(d).format('DD/MM/YYYY') : '-'),
     },
 
-    { title: 'GRR', dataIndex: 'grr', width: 100 },
-
+    { title: 'GRR', dataIndex: 'grr', minWidth: 100, filter: true },
     {
       title: 'Refact',
       dataIndex: 'isRefact',
-      render: (v: boolean) => (v ? 'Sí' : 'No'),
-      width: 80,
+      minWidth: 80,
+      render: v => (v ? 'Sí' : 'No'),
     },
-
     {
       title: 'Estado',
       dataIndex: 'status',
-      render: (_: any, record: BillingProps) => statusMap[record.status],
-      width: 120,
+      minWidth: 120,
+      render: (_, rec) => statusMap[rec.status],
     },
   ];
 

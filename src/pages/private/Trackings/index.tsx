@@ -1,38 +1,71 @@
+// src/pages/TrackingsPage.tsx
+import React, { useEffect, useState } from 'react';
 import PageContent from '@/components/PageContent';
 import { Button } from '@mui/material';
 import { notification } from 'antd';
-import { useEffect, useState } from 'react';
-import { getTrackings } from '@/services/trackings/trackings.request';
+import {
+  getTrackings,
+  createTracking,
+  updateTracking,
+  deleteTracking,
+} from '@/services/trackings/trackings.request';
+import { TrackingProps } from '@/services/trackings/trackings.d';
 import { ModalStateEnum } from '@/types/global.enum';
-import { TrackingProps } from '@/services/trackings/trackings.d'; // Importación añadida
 import TrackingsTable from './components/TrackingsTable';
 import TrackingsModal from './components/TrackingsModal';
 
-type ModalStateType = null | {
-  mode: ModalStateEnum;
-  data: null | TrackingProps;
-};
+type ModalStateType =
+  | null
+  | { mode: ModalStateEnum; data: TrackingProps | null };
 
-const TrackingsPage = () => {
+const TrackingsPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<TrackingProps[]>([]);
   const [modal, setModal] = useState<ModalStateType>(null);
 
-  useEffect(() => {
-    fetchTrackings();
-  }, []);
-
-  const fetchTrackings = async () => {
+  const fetch = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
       const res = await getTrackings();
       setData(res);
-    } catch (error) {
-      notification.error({
-        message: 'Error al cargar seguimientos',
-        description: String(error),
-      });
-      setData([]);
+    } catch (err) {
+      notification.error({ message: 'Error al cargar seguimientos', description: String(err) });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetch();
+  }, []);
+
+  const handleSave = async (values: Omit<TrackingProps, 'id'>, id?: number) => {
+    setLoading(true);
+    try {
+      if (id != null) {
+        await updateTracking(id, values);
+        notification.success({ message: 'Seguimiento actualizado' });
+      } else {
+        await createTracking(values);
+        notification.success({ message: 'Seguimiento creado' });
+      }
+      await fetch();
+      setModal(null);
+    } catch (err) {
+      notification.error({ message: 'Error al guardar', description: String(err) });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (row: TrackingProps) => {
+    setLoading(true);
+    try {
+      await deleteTracking(row.id);
+      notification.success({ message: 'Seguimiento eliminado' });
+      await fetch();
+    } catch (err) {
+      notification.error({ message: 'Error al eliminar', description: String(err) });
     } finally {
       setLoading(false);
     }
@@ -40,17 +73,29 @@ const TrackingsPage = () => {
 
   return (
     <PageContent
-      title="Seguimientos"
-      helper="DIRECTORIO / SEGUIMIENTOS"
-      component={<Button onClick={() => setModal({ data: null, mode: ModalStateEnum.BOX })}>Nuevo Seguimiento</Button>}
+      component={
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => setModal({ data: null, mode: ModalStateEnum.BOX })}
+        >
+          Nuevo Seguimiento
+        </Button>
+      }
     >
-      <TrackingsTable data={data} loading={loading} />
+      <TrackingsTable
+        data={data}
+        loading={loading}
+        onEdit={(row) => setModal({ data: row, mode: ModalStateEnum.BOX })}
+        onDelete={handleDelete}
+      />
 
       {modal?.mode === ModalStateEnum.BOX && (
-        <TrackingsModal 
-          data={modal.data} 
-          open={true}
+        <TrackingsModal
+          data={modal.data}
+          open
           onClose={() => setModal(null)}
+          onSave={handleSave}
         />
       )}
     </PageContent>
