@@ -1,8 +1,13 @@
+// src/pages/BillingsPage.tsx
+import React, { useEffect, useState } from 'react';
 import PageContent from '@/components/PageContent';
 import { Button } from '@mui/material';
 import { notification } from 'antd';
-import { useEffect, useState } from 'react';
-import { getBillings } from '@/services/billings/billings.request';
+import {
+  getBillings,
+  createBilling,
+  updateBilling,
+} from '@/services/billings/billings.request';
 import { BillingProps } from '@/services/billings/billings.d';
 import { ModalStateEnum } from '@/types/global.enum';
 import BillingsTable from './components/BillingsTable';
@@ -10,29 +15,47 @@ import BillingsModal from './components/BillingsModal';
 
 type ModalStateType = null | {
   mode: ModalStateEnum;
-  data: null | BillingProps;
+  data: BillingProps | null;
 };
 
-const BillingsPage = () => {
-  const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<Array<BillingProps>>([]);
+const BillingsPage: React.FC = () => {
+  const [loading, setLoading] = useState<boolean>(false);
+  const [data, setData] = useState<BillingProps[]>([]);
   const [modal, setModal] = useState<ModalStateType>(null);
 
-  useEffect(() => {
-    fetchBillings();
-  }, []);
-
   const fetchBillings = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
       const res = await getBillings();
-      setData(Array.isArray(res) ? res : []);
+      setData(res);
     } catch (error) {
       notification.error({
         message: 'Error al cargar facturas',
         description: String(error),
       });
-      setData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchBillings();
+  }, []);
+
+  const handleSave = async (values: Omit<BillingProps, 'id'>, id?: number) => {
+    setLoading(true);
+    try {
+      if (id !== undefined) {
+        await updateBilling(id, values);
+        notification.success({ message: 'Factura actualizada' });
+      } else {
+        await createBilling(values);
+        notification.success({ message: 'Factura creada' });
+      }
+      await fetchBillings();
+      setModal(null);
+    } catch (error) {
+      notification.error({ message: 'Error al guardar', description: String(error) });
     } finally {
       setLoading(false);
     }
@@ -40,17 +63,24 @@ const BillingsPage = () => {
 
   return (
     <PageContent
-      title="Facturación"
-      helper="DIRECTORIO / FACTURACIÓN"
-      component={<Button onClick={() => setModal({ data: null, mode: ModalStateEnum.BOX })}>Nueva Factura</Button>}
+      component={
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => setModal({ data: null, mode: ModalStateEnum.BOX })}
+        >
+          Nueva Factura
+        </Button>
+      }
     >
       <BillingsTable data={data} loading={loading} />
 
       {modal?.mode === ModalStateEnum.BOX && (
-        <BillingsModal 
-          data={modal.data} 
-          open={true}
+        <BillingsModal
+          data={modal.data}
+          open
           onClose={() => setModal(null)}
+          onSave={handleSave}
         />
       )}
     </PageContent>
