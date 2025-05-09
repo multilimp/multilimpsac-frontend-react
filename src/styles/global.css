@@ -30,3 +30,17 @@ body {
   border-color: #04ba6b !important;
   box-shadow: 0 0 0 2px rgba(4, 186, 107, 0.2) !important;
 }
+
+.zoom-in {
+  animation: zoomIn 5s forwards;
+}
+@keyframes zoomIn {
+  from {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

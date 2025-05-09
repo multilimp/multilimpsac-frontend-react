@@ -17,7 +17,7 @@ const InputsThirdStep = ({ form, ...controlProps }: InputsThirdStepProps) => {
   return (
     <StepItemContent title="DATOS GENERALES" subtitle="Ingresa la información solicitada">
       <Grid container columnSpacing={2}>
-        <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+        <Grid size={{ xs: 12, sm: 12, md: 4, lg: 3 }}>
           <Form.Item name="catalogo" rules={[requiredField]}>
             <SelectGeneric label="Catálogo" />
           </Form.Item>
@@ -32,27 +32,27 @@ const InputsThirdStep = ({ form, ...controlProps }: InputsThirdStepProps) => {
             <DatePickerAntd label="Fecha máxima de entrega" />
           </Form.Item>
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+        <Grid size={{ xs: 12, sm: 6, md: 6, lg: 3 }}>
           <Form.Item name="montoVenta" rules={[requiredField]}>
             <InputAntd label="Monto de venta" type="number" />
           </Form.Item>
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+        {/* <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
           <Form.Item name="codigoUE" rules={[requiredField]}>
             <InputAntd label="Código UE" />
           </Form.Item>
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+        </Grid> */}
+        <Grid size={{ xs: 12, sm: 6, md: 6, lg: 4 }}>
           <Form.Item name="numeroSIAF" rules={[requiredField]}>
             <InputAntd label="Número de SIAF" />
           </Form.Item>
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 6, lg: 3 }}>
+        <Grid size={{ xs: 12, sm: 6, md: 6, lg: 4 }}>
           <Form.Item name="etapaSIAF" rules={[requiredField]}>
             <SelectGeneric label="Etapa SIAF" options={etapaSIAFOptions} />
           </Form.Item>
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 6, lg: 3 }}>
+        <Grid size={{ xs: 12, sm: 6, md: 6, lg: 4 }}>
           <Form.Item name="fechaSIAF" rules={[requiredField]}>
             <DatePickerAntd label="Fecha de SIAF" />
           </Form.Item>

@@ -31,7 +31,7 @@ export const StepItemContent = ({ children, title, subtitle, customTitle }: Step
   <Fragment>
     {customTitle}
     {title ? <StepLabel optional={subtitle}>{title}</StepLabel> : null}
-    <StepContent>
+    <StepContent slotProps={{ transition: { unmountOnExit: false } }}>
       <Card>
         <CardContent>{children}</CardContent>
       </Card>

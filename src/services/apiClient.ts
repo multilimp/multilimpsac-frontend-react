@@ -1,4 +1,6 @@
 import axios, { InternalAxiosRequestConfig } from 'axios';
+import StorageService from './storageService';
+import { STORAGE_KEY } from '@/utils/constants';
 
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_APP_API_HOST_URL,
@@ -9,6 +11,12 @@ const apiClient = axios.create({
 
 const interceptor = async (config: InternalAxiosRequestConfig<any>) => {
   let token;
+
+  const rawToken = StorageService.get(STORAGE_KEY);
+  if (rawToken) {
+    token = `Bearer ${rawToken}`;
+  }
+
   const newConfig = config;
   newConfig.headers.Authorization = token;
   return newConfig;

@@ -28,6 +28,37 @@ const SalesModal = ({ data, onClose, onSuccess, initialData }: SalesModalProps) 
   const handleNext = (qty?: number) => setStep(step + (qty ?? 1));
   const handleBack = (qty?: number) => setStep(step - (qty ?? 1));
 
+  const handleFinish = async (values: Record<string, any>) => {
+    console.log(values);
+
+    const body = {
+      empresaId: null,
+      ventaPrivada: false,
+
+      clienteId: null,
+      departamentoEntrega: null,
+      provinciaEntrega: null,
+      distritoEntrega: null,
+      direccionEntrega: null,
+      referenciaEntrega: null,
+      fechaEntrega: null,
+
+      catalogoEmpresaId: null,
+      fechaForm: null,
+      fechaMaxForm: null,
+      montoVenta: null,
+      siaf: null,
+      etapaSiaf: null,
+      fechaSiaf: null,
+      documentoOce: null,
+      documentoOcf: null,
+
+      contactoClienteId: null,
+
+      productos: null,
+    };
+  };
+
   return (
     <Dialog open fullScreen>
       <DialogTitle>
@@ -42,7 +73,7 @@ const SalesModal = ({ data, onClose, onSuccess, initialData }: SalesModalProps) 
       </DialogTitle>
 
       <DialogContent>
-        <Form form={form}>
+        <Form form={form} onFinish={handleFinish}>
           <Stepper activeStep={step} orientation="vertical">
             <Step active={step === 1}>
               <InputsFirstStep form={form} dback next={handleNext} />

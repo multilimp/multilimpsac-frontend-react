@@ -1,6 +1,9 @@
+import LoaderPage from '@/pages/public/LoaderPage';
+import StorageService from '@/services/storageService';
 import { UserProps } from '@/services/users/user';
-import { RolesEnum } from '@/types/global.enum';
-import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useMemo, useState } from 'react';
+import { validateSession } from '@/services/users/user.requests';
+import { STORAGE_KEY } from '@/utils/constants';
+import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useEffect, useMemo, useState } from 'react';
 
 interface ContextProps {
   user: UserProps;
@@ -12,15 +15,30 @@ const AppContext = createContext({} as ContextProps);
 export const useAppContext = () => useContext(AppContext);
 
 const AppContextProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<UserProps>({
-    id: 1,
-    name: 'ALDO',
-    rol: RolesEnum.ADMIN,
-  });
+  const [user, setUser] = useState<UserProps>({} as UserProps);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    handleValidateUser();
+  }, []);
+
+  const handleValidateUser = async () => {
+    try {
+      setLoading(true);
+      const token = StorageService.get(STORAGE_KEY);
+      if (!token) return;
+      const res = await validateSession();
+      setUser({ ...res });
+    } catch (error) {
+      StorageService.delete(STORAGE_KEY);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const values = useMemo(() => ({ user, setUser }), [user]);
 
-  return <AppContext.Provider value={values}>{children}</AppContext.Provider>;
+  return <AppContext.Provider value={values}>{loading ? <LoaderPage /> : children}</AppContext.Provider>;
 };
 
 export default AppContextProvider;

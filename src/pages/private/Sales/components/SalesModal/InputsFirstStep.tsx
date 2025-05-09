@@ -9,6 +9,7 @@ import InputAntd from '@/components/InputAntd';
 import { Delete } from '@mui/icons-material';
 import { formatCurrency } from '@/utils/functions';
 import DatePickerAntd from '@/components/DatePickerAnt';
+import { useEffect, useState } from 'react';
 
 interface InputsFirstStepProps extends ControlsProps {
   form: FormInstance;
@@ -33,13 +34,35 @@ const statusOptions = [
   { label: 'Inactivo', value: 'inactivo' },
 ];
 
-const InputsFirstStep = ({ form, ...controlProps }: InputsFirstStepProps) => {
+const InputsFirstStep = ({ form, next, ...controlProps }: InputsFirstStepProps) => {
+  const [hasErros, setHasErrors] = useState(false);
+  // TODO: remove this useEffect
+  useEffect(() => {
+    form.setFieldValue('tipoVenta', 'directa');
+  }, []);
+
+  const handleNext = async () => {
+    try {
+      setHasErrors(false);
+      console.log(1);
+      await form.validateFields({ validateOnly: true });
+      console.log(2);
+
+      // next()
+    } catch (error) {
+      const hasErrors = form.getFieldsError(['tipoVenta', 'enterprise']);
+      console.log('here', hasErrors);
+      console.log(error);
+      setHasErrors(true);
+    }
+  };
+
   return (
     <StepItemContent
       customTitle={
         <Form.Item shouldUpdate noStyle>
           {({ getFieldValue }) => {
-            const privateSale = getFieldValue('saleType') === 'privada';
+            const privateSale = getFieldValue('tipoVenta') === 'privada';
             const aux = getFieldValue('enterpriseComplete');
             return (
               <StepLabel optional={privateSale !== undefined && (privateSale ? 'VENTA PRIVADA' : 'VENTA DIRECTA')}>
@@ -61,18 +84,18 @@ const InputsFirstStep = ({ form, ...controlProps }: InputsFirstStepProps) => {
           </Form.Item>
         </Grid>
         <Grid size={{ xs: 12, md: 6 }}>
-          <Form.Item name="saleType" rules={[requiredField]}>
-            <SelectGeneric label="Tipo de venta" options={saleTypeOptions} />
+          <Form.Item name="tipoVenta" rules={[requiredField]}>
+            <SelectGeneric label="Tipo de venta" options={saleTypeOptions} disabled />
           </Form.Item>
         </Grid>
       </Grid>
 
       <Form.Item shouldUpdate noStyle>
         {({ getFieldValue }) => {
-          const allow = getFieldValue('saleType') === 'privada';
+          const allow = getFieldValue('tipoVenta') === 'privada';
 
           return (
-            <Collapse in={allow}>
+            <Collapse in={allow} unmountOnExit>
               <Divider>VENTA PRIVADA</Divider>
 
               <Form.Item name="privateClientComplete" noStyle />
@@ -145,7 +168,7 @@ const InputsFirstStep = ({ form, ...controlProps }: InputsFirstStepProps) => {
         }}
       </Form.Item>
 
-      <Controls {...controlProps} />
+      <Controls next={handleNext} {...controlProps} />
     </StepItemContent>
   );
 };
