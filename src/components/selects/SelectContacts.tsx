@@ -2,16 +2,16 @@ import { notification, Select, SelectProps } from 'antd';
 import SelectContainer from './SelectContainer';
 import { filterOptions } from '@/utils/functions';
 import { useEffect, useState } from 'react';
-import { getRegions } from '@/services/ubigeo/ubigeo.requests';
-import { RegionProps } from '@/services/ubigeo/ubigeo';
+import { ContactProps } from '@/services/contacts/contacts';
+import { getContacts } from '@/services/contacts/contacts.requests';
 
-interface SelectRegionsProps extends SelectProps {
+interface SelectContactsProps extends SelectProps {
   label: string;
 }
 
-const SelectRegions = ({ label, size = 'large', ...props }: SelectRegionsProps) => {
+const SelectContacts = ({ label, size = 'large', ...props }: SelectContactsProps) => {
   const [loading, setLoading] = useState(false);
-  const [regions, setRegions] = useState<Array<RegionProps>>([]);
+  const [contacts, setContacts] = useState<Array<ContactProps>>([]);
 
   useEffect(() => {
     obtainData();
@@ -20,10 +20,10 @@ const SelectRegions = ({ label, size = 'large', ...props }: SelectRegionsProps) 
   const obtainData = async () => {
     try {
       setLoading(true);
-      const data = await getRegions();
-      setRegions([...data]);
+      const data = await getContacts();
+      setContacts([...data]);
     } catch (error) {
-      notification.error({ message: `No se pudo obtener las regiones. ${String(error)}` });
+      notification.error({ message: `No se pudo obtener los contactos. ${String(error)}` });
     } finally {
       setLoading(false);
     }
@@ -32,9 +32,9 @@ const SelectRegions = ({ label, size = 'large', ...props }: SelectRegionsProps) 
   return (
     <SelectContainer label={label}>
       <Select showSearch filterOption={filterOptions} size={size} style={{ width: '100%' }} loading={loading} disabled={loading} {...props}>
-        {regions.map((item) => (
-          <Select.Option key={item.id} value={item.id} optiondata={item} title={item.name}>
-            {item.name}
+        {contacts.map((item) => (
+          <Select.Option key={item.id} value={item.id} optiondata={item} title={`${item.nombre} ${item.cargo}`}>
+            {item.cargo} - {item.nombre}
           </Select.Option>
         ))}
       </Select>
@@ -42,4 +42,4 @@ const SelectRegions = ({ label, size = 'large', ...props }: SelectRegionsProps) 
   );
 };
 
-export default SelectRegions;
+export default SelectContacts;

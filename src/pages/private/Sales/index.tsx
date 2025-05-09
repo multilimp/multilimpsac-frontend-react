@@ -12,10 +12,12 @@ import { Add, Loop, SmartToy } from '@mui/icons-material';
 import { ModalStateProps } from '@/types/global';
 import { formatCurrency } from '@/utils/functions';
 
+type ModalStateType = ModalStateProps<SaleProps> & { processed?: boolean };
+
 const SalesPage = () => {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<SaleProps[]>([]);
-  const [modal, setModal] = useState<ModalStateProps<SaleProps>>(null);
+  const [modal, setModal] = useState<ModalStateType>();
 
   const fetchSales = async () => {
     try {
@@ -98,10 +100,12 @@ const SalesPage = () => {
 
       <SalesTable data={data} loading={loading} onEdit={handleEdit} />
 
-      {modal?.mode === ModalStateEnum.BOX && <SalesModal data={modal.data} handleClose={() => setModal(null)} handleReload={handleRefresh} />}
+      {modal?.mode === ModalStateEnum.BOX && (
+        <SalesModal data={modal.data} processed={!!modal.processed} handleClose={() => setModal(undefined)} handleReload={handleRefresh} />
+      )}
 
       {modal?.mode === ModalStateEnum.SECOND_BOX && (
-        <OcrSalesModal onClose={() => setModal(null)} onSuccess={(aux) => setModal({ mode: ModalStateEnum.BOX, data: aux })} />
+        <OcrSalesModal onClose={() => setModal(undefined)} onSuccess={(aux) => setModal({ mode: ModalStateEnum.BOX, data: aux, processed: true })} />
       )}
     </PageContent>
   );

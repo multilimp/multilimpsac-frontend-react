@@ -6,6 +6,7 @@ import { requiredField } from './InputsFirstStep';
 import DatePickerAntd from '@/components/DatePickerAnt';
 import InputAntd from '@/components/InputAntd';
 import InputFile from '@/components/InputFile';
+import SelectCatalogs from '@/components/selects/SelectCatalogs';
 
 interface InputsThirdStepProps extends ControlActionsProps {}
 
@@ -16,8 +17,12 @@ const InputsThirdStep = ({ form, ...controlProps }: InputsThirdStepProps) => {
     <StepItemContent title="DATOS GENERALES" subtitle="Ingresa la información solicitada">
       <Grid container columnSpacing={2}>
         <Grid size={{ xs: 12, sm: 12, md: 4, lg: 3 }}>
+          <Form.Item name="catalogoComplete" noStyle />
           <Form.Item name="catalogo" rules={[requiredField]}>
-            <SelectGeneric label="Catálogo" options={[{ label: 'Catálogo estático de prueba', value: 1 }]} />
+            <SelectCatalogs
+              label="Catálogo"
+              onChange={(value, record: any) => form.setFieldsValue({ catalogo: value, catalogoComplete: record?.optiondata })}
+            />
           </Form.Item>
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>

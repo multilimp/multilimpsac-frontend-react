@@ -2,16 +2,16 @@ import { notification, Select, SelectProps } from 'antd';
 import SelectContainer from './SelectContainer';
 import { filterOptions } from '@/utils/functions';
 import { useEffect, useState } from 'react';
-import { getRegions } from '@/services/ubigeo/ubigeo.requests';
-import { RegionProps } from '@/services/ubigeo/ubigeo';
+import { CatalogProps } from '@/services/catalogs/catalogs';
+import { getCatalogs } from '@/services/catalogs/catalogs.requests';
 
-interface SelectRegionsProps extends SelectProps {
+interface SelectCatalogsProps extends SelectProps {
   label: string;
 }
 
-const SelectRegions = ({ label, size = 'large', ...props }: SelectRegionsProps) => {
+const SelectCatalogs = ({ label, size = 'large', ...props }: SelectCatalogsProps) => {
   const [loading, setLoading] = useState(false);
-  const [regions, setRegions] = useState<Array<RegionProps>>([]);
+  const [catalogs, setCatalogs] = useState<Array<CatalogProps>>([]);
 
   useEffect(() => {
     obtainData();
@@ -20,10 +20,10 @@ const SelectRegions = ({ label, size = 'large', ...props }: SelectRegionsProps) 
   const obtainData = async () => {
     try {
       setLoading(true);
-      const data = await getRegions();
-      setRegions([...data]);
+      const data = await getCatalogs();
+      setCatalogs([...data]);
     } catch (error) {
-      notification.error({ message: `No se pudo obtener las regiones. ${String(error)}` });
+      notification.error({ message: `No se pudo obtener los catálogos. ${String(error)}` });
     } finally {
       setLoading(false);
     }
@@ -32,9 +32,9 @@ const SelectRegions = ({ label, size = 'large', ...props }: SelectRegionsProps) 
   return (
     <SelectContainer label={label}>
       <Select showSearch filterOption={filterOptions} size={size} style={{ width: '100%' }} loading={loading} disabled={loading} {...props}>
-        {regions.map((item) => (
-          <Select.Option key={item.id} value={item.id} optiondata={item} title={item.name}>
-            {item.name}
+        {catalogs.map((item) => (
+          <Select.Option key={item.id} value={item.id} optiondata={item} title={`${item.nombre} ${item.descripcion}`}>
+            {item.nombre} - {item.descripcion}
           </Select.Option>
         ))}
       </Select>
@@ -42,4 +42,4 @@ const SelectRegions = ({ label, size = 'large', ...props }: SelectRegionsProps) 
   );
 };
 
-export default SelectRegions;
+export default SelectCatalogs;
