@@ -16,8 +16,6 @@ const SalesPage = () => {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<SaleProps[]>([]);
   const [modal, setModal] = useState<ModalStateProps<SaleProps>>(null);
-  const [ocrModal, setOcrModal] = useState(false);
-  const [ocrData, setOcrData] = useState<Partial<SaleProps> | undefined>(undefined);
 
   const fetchSales = async () => {
     try {
@@ -47,35 +45,14 @@ const SalesPage = () => {
     setModal({ mode: ModalStateEnum.BOX, data: sale });
   };
 
-  const handleOcrSuccess = (extractedData: Partial<SaleProps>) => {
-    setOcrModal(false);
-    setOcrData(extractedData);
-    // Abre el modal de ventas con los datos pre-cargados
-    setModal({ mode: ModalStateEnum.BOX });
-  };
-
-  const handleCloseModal = () => {
-    setModal(null);
-    // También limpia los datos de OCR cuando cerramos el modal
-    setOcrData(undefined);
-  };
-
   return (
     <PageContent
       component={
         <Stack direction="row" spacing={2}>
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<Add />}
-            onClick={() => {
-              setOcrData(undefined);
-              setModal({ mode: ModalStateEnum.BOX });
-            }}
-          >
+          <Button variant="contained" color="primary" startIcon={<Add />} onClick={() => setModal({ mode: ModalStateEnum.BOX })}>
             Agregar Venta
           </Button>
-          <Button variant="outlined" color="secondary" startIcon={<SmartToy />} onClick={() => setOcrModal(true)}>
+          <Button variant="outlined" color="secondary" startIcon={<SmartToy />} onClick={() => setModal({ mode: ModalStateEnum.SECOND_BOX })}>
             Agregar OC con IA
           </Button>
         </Stack>
@@ -100,19 +77,19 @@ const SalesPage = () => {
           </Box>
           <Box sx={{ bgcolor: 'secondary.main', p: 2, borderRadius: 2, color: 'white' }}>
             <Typography variant="h5" fontWeight={700}>
-              {formatCurrency(data.reduce((sum, sale) => sum + sale.total, 0))}
+              {formatCurrency(data.reduce((sum, sale) => sum + parseInt(sale.montoVenta ?? '0', 10), 0))}
             </Typography>
             <Typography variant="body2">Monto Total</Typography>
           </Box>
           <Box sx={{ bgcolor: '#fb9c0c', p: 2, borderRadius: 2, color: 'white' }}>
             <Typography variant="h5" fontWeight={700}>
-              {data.filter((sale) => sale.status === 'pending').length}
+              {data.filter((sale) => sale.etapaActual === 'pending').length}
             </Typography>
             <Typography variant="body2">Ventas Pendientes</Typography>
           </Box>
           <Box sx={{ bgcolor: '#04BA6B', p: 2, borderRadius: 2, color: 'white' }}>
             <Typography variant="h5" fontWeight={700}>
-              {data.filter((sale) => sale.status === 'completed').length}
+              {data.filter((sale) => sale.etapaActual === 'completed').length}
             </Typography>
             <Typography variant="body2">Ventas Completadas</Typography>
           </Box>
@@ -121,11 +98,11 @@ const SalesPage = () => {
 
       <SalesTable data={data} loading={loading} onEdit={handleEdit} />
 
-      {modal?.mode === ModalStateEnum.BOX && (
-        <SalesModal data={modal.data} onClose={handleCloseModal} onSuccess={handleRefresh} initialData={ocrData} />
-      )}
+      {modal?.mode === ModalStateEnum.BOX && <SalesModal data={modal.data} handleClose={() => setModal(null)} handleReload={handleRefresh} />}
 
-      <OcrSalesModal open={ocrModal} onClose={() => setOcrModal(false)} onSuccess={handleOcrSuccess} />
+      {modal?.mode === ModalStateEnum.SECOND_BOX && (
+        <OcrSalesModal onClose={() => setModal(null)} onSuccess={(aux) => setModal({ mode: ModalStateEnum.BOX, data: aux })} />
+      )}
     </PageContent>
   );
 };

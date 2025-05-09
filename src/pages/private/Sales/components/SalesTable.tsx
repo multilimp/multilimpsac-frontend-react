@@ -5,6 +5,7 @@ import { SaleProps } from '@/services/sales/sales';
 import { Delete, Edit, VisibilityOutlined } from '@mui/icons-material';
 import AntTable, { AntColumnType } from '@/components/AntTable';
 import { formatCurrency } from '@/utils/functions';
+import dayjs from 'dayjs';
 
 interface SalesTableProps {
   data: SaleProps[];
@@ -29,85 +30,51 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onEdit }) => {
   const columns: AntColumnType<SaleProps>[] = [
     {
       title: 'Código Venta',
-      dataIndex: 'saleCode',
-      key: 'saleCode',
+      dataIndex: 'codigoVenta',
+      key: 'codigoVenta',
       filter: true,
       width: 150,
-      render: (saleCode: string | undefined, record: SaleProps) => saleCode ?? record.saleNumber,
-      // filters: [],
-      // filterSearch: true,
     },
     {
       title: 'Cliente',
-      dataIndex: 'client',
-      key: 'client',
-      filter: true,
+      dataIndex: 'cliente',
+      key: 'cliente',
       width: 125,
-      // filters: [],
-      // filterSearch: true,
+      render: (_, record) => record.cliente?.razonSocial ?? '-',
     },
     {
       title: 'RUC Cliente',
-      dataIndex: 'clientRuc',
-      key: 'clientRuc',
-      filter: true,
+      dataIndex: 'cliente',
+      key: 'cliente',
       width: 150,
-      // filters: [],
-      // filterSearch: true,
+      render: (_, record) => record.cliente?.ruc ?? '-',
     },
     {
       title: 'Empresa',
-      dataIndex: 'companyName',
-      key: 'companyName',
-      filter: true,
+      dataIndex: 'empresa',
+      key: 'empresa',
       width: 150,
-      // filters: [],
-      // filterSearch: true,
-      render: (companyName: string) => companyName || '-',
+      render: (_, record) => record.empresa?.razonSocial ?? '-',
     },
     {
-      title: 'Fecha',
-      dataIndex: 'date',
-      key: 'date',
-      width: 100,
-      // sorter: (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-    },
-    {
-      title: 'Forma de Pago',
-      dataIndex: 'paymentMethod',
-      key: 'paymentMethod',
+      title: 'Fecha de emisión',
+      dataIndex: 'fechaEmision',
+      key: 'fechaEmision',
       width: 150,
-      // filters: [
-      //   { text: 'Efectivo', value: 'cash' },
-      //   { text: 'Crédito', value: 'credit' },
-      //   { text: 'Transferencia', value: 'transfer' },
-      // ],
-      // onFilter: (value: any, record: SaleProps) => record.paymentMethod === value,
-      // render: (paymentMethod: string) => {
-      //   switch (paymentMethod) {
-      //     case 'cash':
-      //       return 'Efectivo';
-      //     case 'credit':
-      //       return 'Crédito';
-      //     case 'transfer':
-      //       return 'Transferencia';
-      //     default:
-      //       return paymentMethod;
-      //   }
-      // },
+      render: (value) => (value ? dayjs(value).format('DD/MM/YYYY') : ''),
     },
     {
       title: 'Estado',
-      dataIndex: 'status',
-      key: 'status',
+      dataIndex: 'etapaSiaf',
+      key: 'etapaSiaf',
       width: 150,
       filters: [
         { text: 'Completado', value: 'completed' },
         { text: 'Pendiente', value: 'pending' },
         { text: 'Reembolsado', value: 'refunded' },
       ],
-      onFilter: (value: any, record: SaleProps) => record.status === value,
-      render: (status: string) => {
+      onFilter: (value: any, record: SaleProps) => record.etapaSiaf === value,
+      render: (etapaSiaf: string) => {
         const statusTranslations: Record<string, string> = {
           completed: 'Completado',
           pending: 'Pendiente',
@@ -116,8 +83,8 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onEdit }) => {
 
         return (
           <Chip
-            label={statusTranslations[status] || status}
-            color={getStatusColor(status) as any}
+            label={statusTranslations[etapaSiaf] || etapaSiaf}
+            color={getStatusColor(etapaSiaf) as any}
             size="small"
             variant="filled"
             sx={{ fontWeight: 500 }}
@@ -127,11 +94,10 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onEdit }) => {
     },
     {
       title: 'Total',
-      dataIndex: 'total',
-      key: 'total',
+      dataIndex: 'montoVenta',
+      key: 'montoVenta',
       width: 150,
-      sorter: (a, b) => a.total - b.total,
-      render: (total: number) => formatCurrency(total),
+      render: (montoVenta: number) => formatCurrency(montoVenta),
     },
     {
       title: 'Acciones',

@@ -1,26 +1,55 @@
+import { ClientProps } from '../clients/clients';
+import { CompanyProps } from '../companies/company';
+
 export interface SaleProps {
-  id: string | number;
-  saleNumber: string;
-  saleCode?: string; // New field for sale code in format like "OC-GRU-XXXX"
-  client: string;
-  clientRuc?: string; // New field for client RUC
-  date: string;
-  formalDate?: string; // New field for formal date
-  paymentMethod: 'cash' | 'credit' | 'transfer';
-  status: 'completed' | 'pending' | 'refunded';
-  items: Array<{
-    productId: string;
-    quantity: number;
-    unitPrice: number;
-  }>;
-  total: number;
-  tax?: number;
-  companyRuc?: string; // New field for company RUC
-  companyName?: string; // New field for company name
-  contact?: string; // New field for contact person
-  catalog?: string; // New field for catalog
-  deliveryDate?: string; // New field for delivery date
-  observations?: string; // New field for observations
+  id: 5;
+  codigoVenta: string;
+  fechaEmision?: string;
+  archivoOc?: string;
+  empresaId: number;
+  clienteId: number;
+  contactoClienteId?: number;
+  catalogoEmpresaId?: number;
+  ventaPrivada: boolean;
+  provinciaEntrega?: {
+    id: string;
+    name: string;
+  };
+  distritoEntrega?: {
+    id: string;
+    name: string;
+  };
+  departamentoEntrega?: {
+    id: string;
+    name: string;
+  };
+  direccionEntrega?: string;
+  referenciaEntrega?: string;
+  fechaEntrega?: string;
+  montoVenta?: string;
+  fechaForm?: string;
+  fechaMaxForm?: string;
+  productos: Array<string>;
+  documentoOce?: string;
+  documentoOcf?: string;
+  siaf?: string;
+  etapaSiaf?: string;
+  fechaSiaf?: string;
+  documentoPeruCompras?: string;
+  fechaPeruCompras?: string;
+  fechaEntregaOc?: string;
+  penalidad?: string;
+  netoCobrado?: string;
+  estadoCobranza?: string;
+  fechaEstadoCobranza?: string;
+  fechaProximaGestion?: string;
+  etapaActual: 'creacion' | 'pending' | 'completed';
+  estadoActivo: boolean;
+  empresa: CompanyProps;
+  cliente: ClientProps;
+  contactoCliente?: string;
+  catalogoEmpresa?: string;
+  ordenesProveedor: [];
 }
 
 export interface SaleFilter {

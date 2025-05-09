@@ -1,13 +1,11 @@
 import { Grid } from '@mui/material';
-import { Form, FormInstance } from 'antd';
-import { Controls, ControlsProps, StepItemContent } from './smallcomponents';
+import { Form } from 'antd';
+import { Controls, ControlActionsProps, StepItemContent } from './smallcomponents';
 import SelectGeneric from '@/components/selects/SelectGeneric';
 import { requiredField } from './InputsFirstStep';
 import InputAntd from '@/components/InputAntd';
 
-interface InputsFourthStepProps extends ControlsProps {
-  form: FormInstance;
-}
+interface InputsFourthStepProps extends ControlActionsProps {}
 
 const InputsFourthStep = ({ form, ...controlProps }: InputsFourthStepProps) => {
   return (
@@ -15,7 +13,7 @@ const InputsFourthStep = ({ form, ...controlProps }: InputsFourthStepProps) => {
       <Grid container columnSpacing={2}>
         <Grid size={{ xs: 12, sm: 6, md: 4 }}>
           <Form.Item name="cargoContacto" rules={[requiredField]}>
-            <SelectGeneric label="Cargo" />
+            <SelectGeneric label="Cargo" options={[{ label: 'Cargo estático de prueba', value: 1 }]} />
           </Form.Item>
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 4 }}>
@@ -30,7 +28,7 @@ const InputsFourthStep = ({ form, ...controlProps }: InputsFourthStepProps) => {
         </Grid>
       </Grid>
 
-      <Controls {...controlProps} />
+      <Controls fieldsToValidate={['cargoContacto', 'nombreContacto', 'celularContacto']} form={form} {...controlProps} />
     </StepItemContent>
   );
 };

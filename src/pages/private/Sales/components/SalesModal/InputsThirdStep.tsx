@@ -1,5 +1,5 @@
-import { Form, FormInstance } from 'antd';
-import { Controls, ControlsProps, StepItemContent } from './smallcomponents';
+import { Form } from 'antd';
+import { Controls, ControlActionsProps, StepItemContent } from './smallcomponents';
 import { Grid } from '@mui/material';
 import SelectGeneric from '@/components/selects/SelectGeneric';
 import { requiredField } from './InputsFirstStep';
@@ -7,9 +7,7 @@ import DatePickerAntd from '@/components/DatePickerAnt';
 import InputAntd from '@/components/InputAntd';
 import InputFile from '@/components/InputFile';
 
-interface InputsThirdStepProps extends ControlsProps {
-  form: FormInstance;
-}
+interface InputsThirdStepProps extends ControlActionsProps {}
 
 const etapaSIAFOptions = ['COM', 'DEV', 'PAG', 'SSIAF', 'RES', 'GIR', 'GIR-F', 'GIR-V', 'GIR-A', 'GIR-R'].map((value) => ({ label: value, value }));
 
@@ -19,7 +17,7 @@ const InputsThirdStep = ({ form, ...controlProps }: InputsThirdStepProps) => {
       <Grid container columnSpacing={2}>
         <Grid size={{ xs: 12, sm: 12, md: 4, lg: 3 }}>
           <Form.Item name="catalogo" rules={[requiredField]}>
-            <SelectGeneric label="Catálogo" />
+            <SelectGeneric label="Catálogo" options={[{ label: 'Catálogo estático de prueba', value: 1 }]} />
           </Form.Item>
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
@@ -37,11 +35,6 @@ const InputsThirdStep = ({ form, ...controlProps }: InputsThirdStepProps) => {
             <InputAntd label="Monto de venta" type="number" />
           </Form.Item>
         </Grid>
-        {/* <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-          <Form.Item name="codigoUE" rules={[requiredField]}>
-            <InputAntd label="Código UE" />
-          </Form.Item>
-        </Grid> */}
         <Grid size={{ xs: 12, sm: 6, md: 6, lg: 4 }}>
           <Form.Item name="numeroSIAF" rules={[requiredField]}>
             <InputAntd label="Número de SIAF" />
@@ -59,17 +52,31 @@ const InputsThirdStep = ({ form, ...controlProps }: InputsThirdStepProps) => {
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 6, lg: 6 }}>
           <Form.Item name="ordenCompraElectronica" rules={[requiredField]}>
-            <InputFile onChange={(file) => form.setFieldValue('ordenCompraElectronica', file)} label="Órden de compra electrónica" />
+            <InputFile onChange={(file) => form.setFieldValue('ordenCompraElectronica', file)} label="Órden de compra electrónica" accept="pdf" />
           </Form.Item>
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 6, lg: 6 }}>
           <Form.Item name="ordenCompraFisica" rules={[requiredField]}>
-            <InputFile onChange={(file) => form.setFieldValue('ordenCompraFisica', file)} label="Órden de compra física" />
+            <InputFile onChange={(file) => form.setFieldValue('ordenCompraFisica', file)} label="Órden de compra física" accept="pdf" />
           </Form.Item>
         </Grid>
       </Grid>
 
-      <Controls {...controlProps} />
+      <Controls
+        fieldsToValidate={[
+          'catalogo',
+          'fechaFormalizacion',
+          'fechaMaxEntrega',
+          'montoVenta',
+          'numeroSIAF',
+          'etapaSIAF',
+          'fechaSIAF',
+          'ordenCompraElectronica',
+          'ordenCompraFisica',
+        ]}
+        form={form}
+        {...controlProps}
+      />
     </StepItemContent>
   );
 };

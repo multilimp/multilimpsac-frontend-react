@@ -1,62 +1,97 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button, Dialog, DialogContent, DialogTitle, Fab, Stack, Step, Stepper, Typography } from '@mui/material';
-import { Form } from 'antd';
+import { Form, notification } from 'antd';
 import { Close } from '@mui/icons-material';
-import { SaleProps } from '@/services/sales/sales';
 import InputsFirstStep from './InputsFirstStep';
 import InputsSecondStep from './InputsSecondStep';
 import InputsThirdStep from './InputsThirdStep';
 import InputsFourthStep from './InputsFourthStep';
 import InputsFifthStep from './InputsFifthStep';
+import { uploadFile } from '@/services/files/file.requests';
+import { createSale } from '@/services/sales/sales.request';
+import { SaleProps } from '@/services/sales/sales';
+import dayjs from 'dayjs';
 
 interface SalesModalProps {
+  handleClose: VoidFunction;
+  handleReload: VoidFunction;
   data?: SaleProps;
-  onClose: () => void;
-  onSuccess: () => void;
-  initialData?: Partial<SaleProps>;
 }
 
-// const subtotal = items.reduce((sum, item) => sum + item.subtotal, 0);
-// const calculatedTax = subtotal * 0.18; // 18% IGV
-// const tax = calculatedTax
-// const total = subtotal + calculatedTax
-
-const SalesModal = ({ data, onClose, onSuccess, initialData }: SalesModalProps) => {
+const SalesModal = ({ handleClose, handleReload, data }: SalesModalProps) => {
   const [form] = Form.useForm();
   const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
 
-  const handleNext = (qty?: number) => setStep(step + (qty ?? 1));
-  const handleBack = (qty?: number) => setStep(step - (qty ?? 1));
+  useEffect(() => {
+    if (!data) return;
+
+    form.setFieldsValue({
+      direccionEntrega: data.direccionEntrega ?? '',
+      etapaSIAF: data.etapaSiaf,
+      fechaEntrega: data.fechaEntrega ? dayjs(data.fechaEntrega) : null,
+      fechaFormalizacion: data.fechaForm ? dayjs(data.fechaForm) : null,
+      fechaMaxEntrega: data.fechaMaxForm ? dayjs(data.fechaMaxForm) : null,
+      fechaSIAF: data.fechaSiaf ? dayjs(data.fechaSiaf) : null,
+      montoVenta: data.montoVenta,
+      productos: Array.isArray(data.productos) ? data.productos : [],
+      referenciaEntrega: data.referenciaEntrega,
+      numeroSIAF: data.siaf,
+      tipoVenta: data.ventaPrivada ? 'privada' : 'directa',
+    });
+  }, [data]);
+
+  const handleNext = () => setStep(step + 1);
+  const handleBack = () => setStep(step - 1);
 
   const handleFinish = async (values: Record<string, any>) => {
-    console.log(values);
+    try {
+      setLoading(true);
 
-    const body = {
-      empresaId: null,
-      ventaPrivada: false,
+      console.log(values);
 
-      clienteId: null,
-      departamentoEntrega: null,
-      provinciaEntrega: null,
-      distritoEntrega: null,
-      direccionEntrega: null,
-      referenciaEntrega: null,
-      fechaEntrega: null,
+      // const [urlOCE, urlOCF] = await Promise.all([uploadFile(values.ordenCompraElectronica), uploadFile(values.ordenCompraFisica)]);
 
-      catalogoEmpresaId: null,
-      fechaForm: null,
-      fechaMaxForm: null,
-      montoVenta: null,
-      siaf: null,
-      etapaSiaf: null,
-      fechaSiaf: null,
-      documentoOce: null,
-      documentoOcf: null,
+      // const body = {
+      //   empresaId: values.empresa,
+      //   ventaPrivada: values.tipoVenta === 'privada',
 
-      contactoClienteId: null,
+      //   clienteId: values.cliente,
+      //   departamentoEntrega: JSON.stringify(values.regionEntregaComplete),
+      //   provinciaEntrega: JSON.stringify(values.provinciaEntregaComplete),
+      //   distritoEntrega: JSON.stringify(values.distritoEntregaComplete),
+      //   direccionEntrega: values.direccionEntrega,
+      //   referenciaEntrega: values.referenciaEntrega,
+      //   fechaEntrega: values.fechaEntrega.toISOString(),
 
-      productos: null,
-    };
+      //   catalogoEmpresaId: values.catalogo,
+      //   fechaForm: values.fechaFormalizacion.toISOString(),
+      //   fechaMaxForm: values.fechaMaxEntrega.toISOString(),
+      //   montoVenta: values.montoVenta,
+      //   siaf: values.numeroSIAF,
+      //   etapaSiaf: values.etapaSIAF,
+      //   fechaSiaf: values.fechaSIAF.toISOString(),
+      //   // documentoOce: 'https://www.sammobile.com/wp-content/uploads/2023/12/Files-By-Google.jpg',
+      //   // documentoOcf: 'https://www.sammobile.com/wp-content/uploads/2023/12/Files-By-Google.jpg',
+      //   documentoOce: urlOCE,
+      //   documentoOcf: urlOCF,
+
+      //   contactoClienteId: values.cargoContacto,
+
+      //   productos: values.productos,
+      // };
+
+      // await createSale(body);
+
+      // handleClose();
+      // handleReload();
+
+      notification.success({ message: 'La venta fue registrada correctamente' });
+    } catch (error) {
+      notification.error({ message: 'No se logró registrar la venta', description: `Intente mas tarde. ${error}` });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -66,7 +101,7 @@ const SalesModal = ({ data, onClose, onSuccess, initialData }: SalesModalProps) 
           <Typography variant="h5" color="primary">
             REGISTRAR NUEVA VENTA
           </Typography>
-          <Fab onClick={onClose} size="small">
+          <Fab onClick={handleClose} size="small" disabled={loading}>
             <Close />
           </Fab>
         </Stack>
@@ -100,10 +135,12 @@ const SalesModal = ({ data, onClose, onSuccess, initialData }: SalesModalProps) 
             <Stack alignItems="center" justifyContent="center" my={5}>
               <Typography variant="h5">Completaste todos los pasos correctamante</Typography>
               <Stack direction="row" mt={3} spacing={2}>
-                <Button variant="outlined" onClick={() => handleBack()}>
+                <Button variant="outlined" onClick={() => handleBack()} disabled={loading}>
                   Volver al último paso
                 </Button>
-                <Button type="submit">Finalizar y registrar venta</Button>
+                <Button loading={loading} type="submit">
+                  Finalizar y registrar venta
+                </Button>
               </Stack>
             </Stack>
           )}

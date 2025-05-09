@@ -11,7 +11,7 @@ interface PageContentProps {
   children?: ReactNode;
 }
 
-const appName = 'NAP PAWN MANAGER';
+const appName = 'MULTILIMP';
 
 const PageContent = ({ component, children }: PageContentProps) => {
   const location = useLocation();

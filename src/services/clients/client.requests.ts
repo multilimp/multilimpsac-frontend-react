@@ -1,3 +1,4 @@
+import { parseJSON } from '@/utils/functions';
 import apiClient from '../apiClient';
 import { ClientProps } from './clients';
 
@@ -8,9 +9,9 @@ export const getClients = async (): Promise<Array<ClientProps>> => {
 
   const data = arr.map((item) => ({
     ...item,
-    departamento: item.departamento ? JSON.parse(item.departamento) : null,
-    provincia: item.provincia ? JSON.parse(item.provincia) : null,
-    distrito: item.distrito ? JSON.parse(item.distrito) : null,
+    departamento: parseJSON(item.departamento),
+    provincia: parseJSON(item.provincia),
+    distrito: parseJSON(item.distrito),
   }));
 
   return data;

@@ -1,5 +1,5 @@
-import { Form, FormInstance } from 'antd';
-import { Controls, ControlsProps, StepItemContent } from './smallcomponents';
+import { Form } from 'antd';
+import { Controls, ControlActionsProps, StepItemContent } from './smallcomponents';
 import { Card, CardContent, CardHeader, Grid } from '@mui/material';
 import SelectClients from '@/components/selects/SelectClients';
 import { requiredField } from './InputsFirstStep';
@@ -7,19 +7,18 @@ import SelectRegions from '@/components/selects/SelectRegions';
 import SelectProvinces from '@/components/selects/SelectProvinces';
 import SelectDistricts from '@/components/selects/SelectDistricts';
 import InputAntd from '@/components/InputAntd';
+import DatePickerAntd from '@/components/DatePickerAnt';
 
-interface InputsSecondStepProps extends ControlsProps {
-  form: FormInstance;
-}
+interface InputsSecondStepProps extends ControlActionsProps {}
 
 const InputsSecondStep = ({ form, ...controlProps }: InputsSecondStepProps) => {
   return (
     <StepItemContent title="DATOS DEL CLIENTE Y LUGAR DE ENTREGA" subtitle="Ingresa la información solicitada">
-      <Form.Item name="clientComplete" noStyle />
-      <Form.Item name="client" rules={[requiredField]}>
+      <Form.Item name="clienteComplete" noStyle />
+      <Form.Item name="cliente" rules={[requiredField]}>
         <SelectClients
           label="Cliente"
-          onChange={(value, record: any) => form.setFieldsValue({ privateClient: value, privateClientComplete: record.optiondata })}
+          onChange={(value, record: any) => form.setFieldsValue({ cliente: value, clienteComplete: record.optiondata })}
         />
       </Form.Item>
 
@@ -80,12 +79,17 @@ const InputsSecondStep = ({ form, ...controlProps }: InputsSecondStepProps) => {
                 )}
               </Form.Item>
             </Grid>
-            <Grid size={{ xs: 12, md: 6 }}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+              <Form.Item name="fechaEntrega" rules={[requiredField]}>
+                <DatePickerAntd label="Fecha de entrega" />
+              </Form.Item>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
               <Form.Item name="direccionEntrega" rules={[requiredField]}>
                 <InputAntd label="Dirección" />
               </Form.Item>
             </Grid>
-            <Grid size={{ xs: 12, md: 6 }}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
               <Form.Item name="referenciaEntrega" rules={[requiredField]}>
                 <InputAntd label="Referencia" />
               </Form.Item>
@@ -94,7 +98,11 @@ const InputsSecondStep = ({ form, ...controlProps }: InputsSecondStepProps) => {
         </CardContent>
       </Card>
 
-      <Controls {...controlProps} />
+      <Controls
+        fieldsToValidate={['cliente', 'regionEntrega', 'provinciaEntrega', 'distritoEntrega', 'direccionEntrega', 'referenciaEntrega']}
+        form={form}
+        {...controlProps}
+      />
     </StepItemContent>
   );
 };

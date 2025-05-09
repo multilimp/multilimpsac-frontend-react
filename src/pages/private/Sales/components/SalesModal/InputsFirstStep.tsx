@@ -1,7 +1,7 @@
-import { Divider, Form, FormInstance } from 'antd';
+import { Divider, Form } from 'antd';
 import { Button, Collapse, Grid, IconButton, Stack, StepLabel, Typography } from '@mui/material';
 import SelectCompanies from '@/components/selects/SelectCompanies';
-import { Controls, ControlsProps, StepItemContent } from './smallcomponents';
+import { ControlActionsProps, Controls, StepItemContent } from './smallcomponents';
 import SelectClients from '@/components/selects/SelectClients';
 import SelectGeneric from '@/components/selects/SelectGeneric';
 import InputFile from '@/components/InputFile';
@@ -9,11 +9,8 @@ import InputAntd from '@/components/InputAntd';
 import { Delete } from '@mui/icons-material';
 import { formatCurrency } from '@/utils/functions';
 import DatePickerAntd from '@/components/DatePickerAnt';
-import { useEffect, useState } from 'react';
 
-interface InputsFirstStepProps extends ControlsProps {
-  form: FormInstance;
-}
+interface InputsFirstStepProps extends ControlActionsProps {}
 
 export const requiredField = { required: true, message: 'Campo requerido' };
 
@@ -34,36 +31,14 @@ const statusOptions = [
   { label: 'Inactivo', value: 'inactivo' },
 ];
 
-const InputsFirstStep = ({ form, next, ...controlProps }: InputsFirstStepProps) => {
-  const [hasErros, setHasErrors] = useState(false);
-  // TODO: remove this useEffect
-  useEffect(() => {
-    form.setFieldValue('tipoVenta', 'directa');
-  }, []);
-
-  const handleNext = async () => {
-    try {
-      setHasErrors(false);
-      console.log(1);
-      await form.validateFields({ validateOnly: true });
-      console.log(2);
-
-      // next()
-    } catch (error) {
-      const hasErrors = form.getFieldsError(['tipoVenta', 'enterprise']);
-      console.log('here', hasErrors);
-      console.log(error);
-      setHasErrors(true);
-    }
-  };
-
+const InputsFirstStep = ({ form, ...controlProps }: InputsFirstStepProps) => {
   return (
     <StepItemContent
       customTitle={
         <Form.Item shouldUpdate noStyle>
           {({ getFieldValue }) => {
             const privateSale = getFieldValue('tipoVenta') === 'privada';
-            const aux = getFieldValue('enterpriseComplete');
+            const aux = getFieldValue('empresaComplete');
             return (
               <StepLabel optional={privateSale !== undefined && (privateSale ? 'VENTA PRIVADA' : 'VENTA DIRECTA')}>
                 {aux ? `${aux.razonSocial} — RUC: ${aux.ruc}` : 'SELECCIONAR EMPRESA'}
@@ -75,16 +50,16 @@ const InputsFirstStep = ({ form, next, ...controlProps }: InputsFirstStepProps) 
     >
       <Grid container columnSpacing={2}>
         <Grid size={{ xs: 12, md: 6 }}>
-          <Form.Item name="enterpriseComplete" noStyle />
-          <Form.Item name="enterprise" rules={[requiredField]}>
+          <Form.Item name="empresaComplete" noStyle />
+          <Form.Item name="empresa" rules={[requiredField]}>
             <SelectCompanies
               label="Empresa"
-              onChange={(value, record: any) => form.setFieldsValue({ enterprise: value, enterpriseComplete: record.optiondata })}
+              onChange={(value, record: any) => form.setFieldsValue({ empresa: value, empresaComplete: record.optiondata })}
             />
           </Form.Item>
         </Grid>
         <Grid size={{ xs: 12, md: 6 }}>
-          <Form.Item name="tipoVenta" rules={[requiredField]}>
+          <Form.Item name="tipoVenta" rules={[requiredField]} initialValue="directa">
             <SelectGeneric label="Tipo de venta" options={saleTypeOptions} disabled />
           </Form.Item>
         </Grid>
@@ -119,7 +94,7 @@ const InputsFirstStep = ({ form, next, ...controlProps }: InputsFirstStepProps) 
                 </Grid>
                 <Grid size={{ xs: 12, sm: 12, md: 4 }}>
                   <Form.Item name="documentoFactura" rules={[requiredField]}>
-                    <InputFile onChange={(file) => form.setFieldValue('documentoFactura', file)} />
+                    <InputFile onChange={(file) => form.setFieldValue('documentoFactura', file)} accept="pdf" />
                   </Form.Item>
                 </Grid>
                 <Grid size={12}>
@@ -137,7 +112,7 @@ const InputsFirstStep = ({ form, next, ...controlProps }: InputsFirstStepProps) 
                         <InputAntd label="Descripción" />
                       </Form.Item>
                       <Form.Item name="file" rules={[requiredField]} className="flex-1">
-                        <InputFile onChange={(file) => form.setFieldValue('file', file)} />
+                        <InputFile onChange={(file) => form.setFieldValue('file', file)} accept="pdf" />
                       </Form.Item>
                       <Form.Item name="amount" rules={[requiredField]} className="flex-1">
                         <InputAntd label="Monto" type="number" />
@@ -168,7 +143,7 @@ const InputsFirstStep = ({ form, next, ...controlProps }: InputsFirstStepProps) 
         }}
       </Form.Item>
 
-      <Controls next={handleNext} {...controlProps} />
+      <Controls fieldsToValidate={['empresa', 'tipoVenta']} form={form} {...controlProps} />
     </StepItemContent>
   );
 };
