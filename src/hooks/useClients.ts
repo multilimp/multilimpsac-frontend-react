@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { notification } from 'antd';
 import { getClients } from '@/services/clients/client.requests';
@@ -15,7 +16,24 @@ const useClients = () => {
     try {
       setLoadingClients(true);
       const res = await getClients();
-      setClients([...res]);
+      // Map API response to match the ClientProps type expected in the component
+      const mappedClients = res.map(client => ({
+        codigoUnidadEjecutora: client.codigoUnidadEjecutora || '',
+        createdAt: client.createdAt,
+        direccion: client.direccion,
+        departamento: client.departamento,
+        provincia: client.provincia,
+        distrito: client.distrito,
+        email: client.email,
+        estado: client.estado,
+        id: client.id,
+        razonSocial: client.razonSocial,
+        ruc: client.ruc,
+        telefono: client.telefono,
+        updatedAt: client.updatedAt,
+      })) as ClientProps[];
+      
+      setClients(mappedClients);
     } catch (error) {
       notification.error({
         message: 'Error al obtener clientes',
