@@ -1,3 +1,4 @@
+
 import { ArrowLeft } from '@mui/icons-material';
 import { Grid, Card, CardContent, Stack, Typography, Button, FormHelperText, Container } from '@mui/material';
 
@@ -8,7 +9,7 @@ const Page404 = () => {
 
   return (
     <Grid container justifyContent="center" alignItems="center" sx={{ minHeight: 'calc((100vh) - 200px)' }}>
-      <Grid textAlign="center">
+      <Grid item textAlign="center">
         <Container maxWidth="xs">
           <Card elevation={0}>
             <CardContent>
