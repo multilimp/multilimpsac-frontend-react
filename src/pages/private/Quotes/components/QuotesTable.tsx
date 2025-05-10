@@ -1,3 +1,4 @@
+
 import AntTable from '@/components/AntTable';
 import { QuoteProps } from '@/services/quotes/quotes';
 import { TableColumnsType } from 'antd';
@@ -43,7 +44,7 @@ const QuotesTable = ({ data, loading, onEdit }: QuotesTableProps) => {
 
   return (
     <Box position="relative">
-      <AntTable<QuoteProps>
+      <AntTable
         columns={columns}
         data={data}
         loading={loading}

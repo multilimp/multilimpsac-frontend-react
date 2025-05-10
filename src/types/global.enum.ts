@@ -1,5 +1,8 @@
+
 export enum ModalStateEnum {
-  BOX = 'box',
-  DELETE = 'delete',
-  SECOND_BOX = 'second_box',
+  BOX = 'BOX',
+  MODAL = 'MODAL',
+  DRAWER = 'DRAWER',
+  DELETE = 'DELETE',
+  NONE = 'NONE'
 }
