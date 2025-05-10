@@ -1,3 +1,4 @@
+
 import { QuoteProps } from '@/services/quotes/quotes';
 import {
   Box,

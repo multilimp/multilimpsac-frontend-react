@@ -78,32 +78,32 @@ const ContactsModal: React.FC<ContactsModalProps> = ({ data, handleClose, handle
         <Spin spinning={loading}>
           <Form form={form} onFinish={handleSubmit} layout="vertical" style={{ marginTop: 16 }}>
             <Grid container spacing={2}>
-              <Grid xs={12} sm={6}>
+              <Grid item xs={12} sm={6}>
                 <Form.Item name="nombre" rules={[{ required: true, message: 'El nombre es requerido' }]}>
                   <InputAntd label="Nombre" />
                 </Form.Item>
               </Grid>
-              <Grid xs={12} sm={6}>
+              <Grid item xs={12} sm={6}>
                 <Form.Item name="cargo" rules={[{ required: true, message: 'El cargo es requerido' }]}>
                   <InputAntd label="Cargo" />
                 </Form.Item>
               </Grid>
-              <Grid xs={12} sm={6}>
+              <Grid item xs={12} sm={6}>
                 <Form.Item name="telefono" rules={[{ required: true, message: 'El teléfono es requerido' }]}>
                   <InputAntd label="Teléfono" />
                 </Form.Item>
               </Grid>
-              <Grid xs={12} sm={6}>
+              <Grid item xs={12} sm={6}>
                 <Form.Item name="email" rules={[{ required: true, message: 'El email es requerido' }]}>
                   <InputAntd label="Email" />
                 </Form.Item>
               </Grid>
-              <Grid xs={12} sm={6}>
+              <Grid item xs={12} sm={6}>
                 <Form.Item name="cumpleanos">
                   <InputAntd label="Fecha de Cumpleaños" type="date" />
                 </Form.Item>
               </Grid>
-              <Grid xs={12}>
+              <Grid item xs={12}>
                 <Form.Item name="nota">
                   <InputAntd label="Nota" type="textarea" />
                 </Form.Item>

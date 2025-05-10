@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Form, notification, Spin } from 'antd';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, Box } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid } from '@mui/material';
 import InputAntd from '@/components/InputAntd';
 import SubmitButton from '@/components/SubmitButton';
 import { createCatalog, updateCatalog } from '@/services/catalogs/catalogs.requests';
@@ -63,12 +63,12 @@ const CatalogsModal: React.FC<CatalogsModalProps> = ({ data, handleClose, handle
         <Spin spinning={loading}>
           <Form form={form} onFinish={handleSubmit} layout="vertical" style={{ marginTop: 16 }}>
             <Grid container spacing={2}>
-              <Grid xs={12}>
+              <Grid item xs={12}>
                 <Form.Item name="nombre" rules={[{ required: true, message: 'El nombre es requerido' }]}>
                   <InputAntd label="Nombre del Catálogo" />
                 </Form.Item>
               </Grid>
-              <Grid xs={12}>
+              <Grid item xs={12}>
                 <Form.Item name="descripcion" rules={[{ required: true, message: 'La descripción es requerida' }]}>
                   <InputAntd label="Descripción" type="textarea" />
                 </Form.Item>
