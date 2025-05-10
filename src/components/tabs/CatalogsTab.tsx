@@ -33,7 +33,7 @@ const CatalogsTab: React.FC<CatalogsTabProps> = ({ companyId }) => {
     {
       title: 'Acciones',
       key: 'actions',
-      render: (_, record: CatalogProps) => (
+      render: (_: any, record: CatalogProps) => (
         <Stack direction="row" spacing={1}>
           <Button
             size="small"

@@ -43,7 +43,7 @@ const ContactsTab: React.FC<ContactsTabProps> = ({ entityType, entityId }) => {
     {
       title: 'Acciones',
       key: 'actions',
-      render: (_, record: ContactProps) => (
+      render: (_: any, record: ContactProps) => (
         <Stack direction="row" spacing={1}>
           <Button
             size="small"

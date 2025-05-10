@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Form, notification, Spin } from 'antd';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid } from '@mui/material';
 import InputAntd from '@/components/InputAntd';
 import SubmitButton from '@/components/SubmitButton';
 import { createContact, updateContact } from '@/services/contacts/contacts.requests';
@@ -77,34 +77,34 @@ const ContactsModal: React.FC<ContactsModalProps> = ({ data, handleClose, handle
         <Spin spinning={loading}>
           <Form form={form} onFinish={handleSubmit} layout="vertical" style={{ marginTop: 16 }}>
             <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
+              <Grid xs={12} sm={6}>
                 <Form.Item name="nombre" rules={[{ required: true, message: 'El nombre es requerido' }]}>
                   <InputAntd label="Nombre" />
                 </Form.Item>
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid xs={12} sm={6}>
                 <Form.Item name="cargo" rules={[{ required: true, message: 'El cargo es requerido' }]}>
                   <InputAntd label="Cargo" />
                 </Form.Item>
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid xs={12} sm={6}>
                 <Form.Item name="telefono" rules={[{ required: true, message: 'El teléfono es requerido' }]}>
                   <InputAntd label="Teléfono" />
                 </Form.Item>
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid xs={12} sm={6}>
                 <Form.Item name="email" rules={[{ required: true, message: 'El email es requerido' }]}>
                   <InputAntd label="Email" />
                 </Form.Item>
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid xs={12} sm={6}>
                 <Form.Item name="cumpleanos">
                   <InputAntd label="Fecha de Cumpleaños" type="date" />
                 </Form.Item>
               </Grid>
-              <Grid item xs={12}>
+              <Grid xs={12}>
                 <Form.Item name="nota">
-                  <InputAntd label="Nota" multiline rows={3} />
+                  <InputAntd label="Nota" rows={3} />
                 </Form.Item>
               </Grid>
             </Grid>
