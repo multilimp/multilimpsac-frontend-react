@@ -1,5 +1,5 @@
 
-import { Input, InputProps, InputNumber, InputNumberProps } from 'antd';
+import { Input, InputProps, InputNumber } from 'antd';
 import { useState } from 'react';
 
 interface InputAntdProps extends Omit<InputProps, 'type'> {

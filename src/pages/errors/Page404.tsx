@@ -9,7 +9,7 @@ const Page404 = () => {
 
   return (
     <Grid container justifyContent="center" alignItems="center" sx={{ minHeight: 'calc((100vh) - 200px)' }}>
-      <Grid item textAlign="center">
+      <Grid xs={12} textAlign="center">
         <Container maxWidth="xs">
           <Card elevation={0}>
             <CardContent>
