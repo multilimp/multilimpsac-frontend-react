@@ -1,4 +1,5 @@
-import { Delete, Edit } from '@mui/icons-material';
+
+import { Delete, Edit, ViewList } from '@mui/icons-material';
 import { CompanyProps } from '@/services/companies/company';
 import AntTable, { AntColumnType } from '@/components/AntTable';
 import { Avatar, Button, ButtonGroup, FormHelperText, Typography } from '@mui/material';
@@ -8,9 +9,10 @@ interface CompaniesTableProps {
   data: Array<CompanyProps>;
   loading: boolean;
   onRecordAction: (action: ModalStateEnum, data: CompanyProps) => void;
+  onSelectCompany?: (company: CompanyProps) => void;
 }
 
-const CompaniesTable = ({ data, loading, onRecordAction }: CompaniesTableProps) => {
+const CompaniesTable = ({ data, loading, onRecordAction, onSelectCompany }: CompaniesTableProps) => {
   const columns: Array<AntColumnType<CompanyProps>> = [
     {
       title: 'Logo',
@@ -38,9 +40,14 @@ const CompaniesTable = ({ data, loading, onRecordAction }: CompaniesTableProps) 
       title: 'Acciones',
       dataIndex: 'id',
       fixed: 'right',
-      width: 150,
+      width: 200,
       render: (_, record) => (
         <ButtonGroup size="small">
+          {onSelectCompany && (
+            <Button color="primary" onClick={() => onSelectCompany(record)}>
+              <ViewList />
+            </Button>
+          )}
           <Button color="info" onClick={() => onRecordAction(ModalStateEnum.BOX, record)}>
             <Edit />
           </Button>

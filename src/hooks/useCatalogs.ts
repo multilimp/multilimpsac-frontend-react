@@ -1,8 +1,8 @@
 
 import { useEffect, useState } from 'react';
 import { notification } from 'antd';
-import { getCatalogsByCompany } from '@/services/catalogs/catalogs.requests';
 import { CatalogProps } from '@/services/catalogs/catalogs';
+import { getCatalogsByCompany } from '@/services/catalogs/catalogs.requests';
 
 const useCatalogs = (companyId: number) => {
   const [loadingCatalogs, setLoadingCatalogs] = useState(false);
@@ -15,10 +15,15 @@ const useCatalogs = (companyId: number) => {
   }, [companyId]);
 
   const obtainCatalogs = async () => {
+    if (!companyId) {
+      setCatalogs([]);
+      return;
+    }
+    
     try {
       setLoadingCatalogs(true);
       const res = await getCatalogsByCompany(companyId);
-      setCatalogs([...res]);
+      setCatalogs(res);
     } catch (error) {
       notification.error({
         message: 'Error al obtener los catálogos',

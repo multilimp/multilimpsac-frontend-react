@@ -8,7 +8,7 @@ import { ModalStateEnum } from '@/types/global.enum';
 import { ModalStateProps } from '@/types/global';
 import ContactsModal from '../modals/ContactsModal';
 import ConfirmDelete from '@/components/ConfirmDelete';
-import useContacts from '@/hooks/useContacts';
+import useContactsByEntity from '@/hooks/useContactsByEntity';
 
 interface ContactsTabProps {
   entityType: 'cliente' | 'proveedor' | 'transporte';
@@ -16,7 +16,7 @@ interface ContactsTabProps {
 }
 
 const ContactsTab: React.FC<ContactsTabProps> = ({ entityType, entityId }) => {
-  const { contacts, loadingContacts, obtainContacts } = useContacts({ entityType, entityId });
+  const { contacts, loadingContacts, obtainContacts } = useContactsByEntity(entityType, entityId);
   const [modal, setModal] = useState<ModalStateProps<ContactProps>>(null);
 
   const columns = [
@@ -31,19 +31,19 @@ const ContactsTab: React.FC<ContactsTabProps> = ({ entityType, entityId }) => {
       key: 'cargo',
     },
     {
-      title: 'Teléfono',
-      dataIndex: 'telefono',
-      key: 'telefono',
-    },
-    {
       title: 'Email',
       dataIndex: 'email',
       key: 'email',
     },
     {
+      title: 'Teléfono',
+      dataIndex: 'telefono',
+      key: 'telefono',
+    },
+    {
       title: 'Acciones',
       key: 'actions',
-      render: (_: any, record: ContactProps) => (
+      render: (_: unknown, record: ContactProps) => (
         <Stack direction="row" spacing={1}>
           <Button
             size="small"
