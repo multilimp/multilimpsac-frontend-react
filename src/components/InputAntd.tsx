@@ -1,8 +1,8 @@
 
-import { Input, InputProps, InputNumber } from 'antd';
+import { Input, InputProps, InputNumber, InputNumberProps } from 'antd';
 import { useState } from 'react';
 
-interface InputAntdProps extends InputProps {
+interface InputAntdProps extends Omit<InputProps, 'type'> {
   label: string;
   isFloating?: boolean;
   hasError?: boolean;
@@ -24,9 +24,9 @@ const InputAntd = ({ label, isFloating, isAddonBefore, hasError, size = 'large',
     <div className={`input-form ${size}`}>
       <div className="float-label" onBlur={() => setFocus(false)} onFocus={() => setFocus(true)}>
         {type === 'textarea' ? (
-          <Input.TextArea {...rest} size={size} rows={4} />
+          <Input.TextArea {...(rest as any)} size={size} rows={4} />
         ) : type === 'number' ? (
-          <InputNumber {...rest} size={size} style={{ width: '100%' }} />
+          <InputNumber {...(rest as InputNumberProps)} size={size} style={{ width: '100%' }} />
         ) : (
           <Input {...rest} size={size} type={type} />
         )}

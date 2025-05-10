@@ -49,8 +49,8 @@ const InputsFirstStep = ({ form, ...controlProps }: InputsFirstStepProps) => {
         </Form.Item>
       }
     >
-      <Grid container columnSpacing={2}>
-        <Grid size={{ xs: 12, md: 6 }}>
+      <Grid container spacing={2}>
+        <Grid xs={12} md={6}>
           <Form.Item name="empresaComplete" noStyle />
           <Form.Item name="empresa" rules={[requiredField]}>
             <SelectCompanies
@@ -59,7 +59,7 @@ const InputsFirstStep = ({ form, ...controlProps }: InputsFirstStepProps) => {
             />
           </Form.Item>
         </Grid>
-        <Grid size={{ xs: 12, md: 6 }}>
+        <Grid xs={12} md={6}>
           <Form.Item name="tipoVenta" rules={[requiredField]} initialValue="directa">
             <SelectGeneric label="Tipo de venta" options={saleTypeOptions} disabled />
           </Form.Item>
@@ -82,23 +82,23 @@ const InputsFirstStep = ({ form, ...controlProps }: InputsFirstStepProps) => {
                 />
               </Form.Item>
 
-              <Grid container columnSpacing={2} mt={2}>
-                <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+              <Grid container spacing={2} sx={{ mt: 2 }}>
+                <Grid xs={12} sm={6} md={4}>
                   <Form.Item name="facturaStatus" rules={[requiredField]}>
                     <SelectGeneric label="Estado de Factura" options={facturaStatusOptions} />
                   </Form.Item>
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                <Grid xs={12} sm={6} md={4}>
                   <Form.Item name="dateFactura" rules={[requiredField]}>
                     <DatePickerAntd label="Fecha factura" />
                   </Form.Item>
                 </Grid>
-                <Grid size={{ xs: 12, sm: 12, md: 4 }}>
+                <Grid xs={12} sm={12} md={4}>
                   <Form.Item name="documentoFactura" rules={[requiredField]}>
                     <InputFile onChange={(file) => form.setFieldValue('documentoFactura', file)} accept="pdf" />
                   </Form.Item>
                 </Grid>
-                <Grid size={12}>
+                <Grid xs={12}>
                   <Divider dashed>Pagos Recibidos</Divider>
 
                   {[1, 2, 3, 4].map((item) => (
