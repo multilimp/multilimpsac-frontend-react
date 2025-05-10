@@ -1,5 +1,6 @@
 export enum RolesEnum {
   ADMIN = 'admin',
+  USER  = 'user', 
 }
 
 export enum ModalStateEnum {

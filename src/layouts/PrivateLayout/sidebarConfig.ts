@@ -1,6 +1,13 @@
 import { SidebarConfigProps } from '@/types/global';
 import { RolesEnum } from '@/types/global.enum';
-import { Apps, Apartment, People, Diversity3, LocalShipping } from '@mui/icons-material';
+import {
+  Apps,
+  Apartment,
+  People,
+  Diversity3,
+  LocalShipping,
+  Person,       
+} from '@mui/icons-material';
 
 const sidebarConfig: Array<SidebarConfigProps> = [
   {
@@ -101,6 +108,12 @@ const sidebarConfig: Array<SidebarConfigProps> = [
         name: 'Configuración',
         path: '/settings',
         icon: Apps,
+        roles: [RolesEnum.ADMIN],
+      },
+      {
+        name: 'Usuarios',        
+        path: '/users',        
+        icon: Person,            
         roles: [RolesEnum.ADMIN],
       },
     ],

@@ -25,6 +25,7 @@ const Transports = Loadable(lazy(() => import('@/pages/private/Transports')));
 const Treasurys = Loadable(lazy(() => import('@/pages/private/Treasurys')));  
 const Billings = Loadable(lazy(() => import('@/pages/private/Billings')));  
 const Trackings = Loadable(lazy(() => import('@/pages/private/Trackings')));  
+const Users = Loadable(lazy(() => import('@/pages/private/Users')));  
 
 const routes: Array<PropsRoutes> = [
   {
@@ -119,6 +120,11 @@ const routes: Array<PropsRoutes> = [
       {
         path: 'tracking',
         element: Trackings,  // Actualizado a PascalCase
+        roles: Object.values(RolesEnum),
+      },
+            {
+        path: 'users',
+        element: Users,  // Actualizado a PascalCase
         roles: Object.values(RolesEnum),
       },
       // EXCEPT
