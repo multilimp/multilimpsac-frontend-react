@@ -1,11 +1,10 @@
 
-// src/pages/Orders/components/OrdersModal.tsx
 import { useEffect, useState } from 'react';
 import { Form, notification, Spin } from 'antd';
 import InputAntd from '@/components/InputAntd';
 import SubmitButton from '@/components/SubmitButton';
 import { OrderProps } from '@/services/orders/orders';
-import { createOrder, updateOrder } from '@/services/orders/orders.request'; // <–– orders.request.ts
+import { createOrder, updateOrder } from '@/services/orders/orders.request';
 import {
   Button,
   Dialog,
@@ -86,12 +85,12 @@ const OrdersModal = ({ data, open, onClose, onSuccess }: OrdersModalProps) => {
             autoComplete="off"
           >
             <Grid container spacing={2}>
-              <Grid xs={12} sm={6} md={4}>
+              <Grid container item xs={12} sm={6} md={4}>
                 <Form.Item name="codigoVento" rules={required('Ingrese Código Vento')}>
                   <InputAntd label="Código Vento" />
                 </Form.Item>
               </Grid>
-              <Grid xs={12} sm={6} md={4}>
+              <Grid container item xs={12} sm={6} md={4}>
                 <Form.Item
                   name="razonSocialCliente"
                   rules={required('Ingrese razón social cliente')}
@@ -99,17 +98,19 @@ const OrdersModal = ({ data, open, onClose, onSuccess }: OrdersModalProps) => {
                   <InputAntd label="Razón social cliente" />
                 </Form.Item>
               </Grid>
-              <Grid xs={12} sm={6} md={4}>
+              <Grid container item xs={12} sm={6} md={4}>
                 <Form.Item name="rucCliente" rules={required('Ingrese RUC cliente')}>
                   <InputAntd label="RUC cliente" />
                 </Form.Item>
               </Grid>
-              <Grid xs={12} sm={6} md={4}>
+              
+              {/* Continue updating the remaining Grid components */}
+              <Grid container item xs={12} sm={6} md={4}>
                 <Form.Item name="rucEmpresa" rules={required('Ingrese RUC empresa')}>
                   <InputAntd label="RUC empresa" />
                 </Form.Item>
               </Grid>
-              <Grid xs={12} sm={6} md={4}>
+              <Grid container item xs={12} sm={6} md={4}>
                 <Form.Item
                   name="razonSocialEmpresa"
                   rules={required('Ingrese razón social empresa')}
@@ -117,17 +118,17 @@ const OrdersModal = ({ data, open, onClose, onSuccess }: OrdersModalProps) => {
                   <InputAntd label="Razón social empresa" />
                 </Form.Item>
               </Grid>
-              <Grid xs={12} sm={6} md={4}>
+              <Grid container item xs={12} sm={6} md={4}>
                 <Form.Item name="contacto" rules={required('Ingrese contacto')}>
                   <InputAntd label="Contacto" />
                 </Form.Item>
               </Grid>
-              <Grid xs={12} sm={6} md={4}>
+              <Grid container item xs={12} sm={6} md={4}>
                 <Form.Item name="catalogo" rules={required('Ingrese catálogo')}>
                   <InputAntd label="Catálogo" />
                 </Form.Item>
               </Grid>
-              <Grid xs={12} sm={6} md={4}>
+              <Grid container item xs={12} sm={6} md={4}>
                 <Form.Item
                   name="fechaRegistro"
                   rules={required('Seleccione fecha de registro')}
@@ -135,7 +136,7 @@ const OrdersModal = ({ data, open, onClose, onSuccess }: OrdersModalProps) => {
                   <InputAntd label="Fecha registro" type="date" />
                 </Form.Item>
               </Grid>
-              <Grid xs={12} sm={6} md={4}>
+              <Grid container item xs={12} sm={6} md={4}>
                 <Form.Item
                   name="fechaMaximaEntrega"
                   rules={required('Seleccione fecha máxima entrega')}
@@ -143,32 +144,32 @@ const OrdersModal = ({ data, open, onClose, onSuccess }: OrdersModalProps) => {
                   <InputAntd label="Fecha máxima entrega" type="date" />
                 </Form.Item>
               </Grid>
-              <Grid xs={12} sm={6} md={4}>
+              <Grid container item xs={12} sm={6} md={4}>
                 <Form.Item name="montoVenta" rules={required('Ingrese monto de venta')}>
                   <InputAntd label="Monto venta" type="number" />
                 </Form.Item>
               </Grid>
-              <Grid xs={12} sm={6} md={4}>
+              <Grid container item xs={12} sm={6} md={4}>
                 <Form.Item name="cue" rules={required('Ingrese CUE')}>
                   <InputAntd label="CUE" />
                 </Form.Item>
               </Grid>
-              <Grid xs={12} sm={6} md={4}>
+              <Grid container item xs={12} sm={6} md={4}>
                 <Form.Item name="departamento" rules={required('Ingrese departamento')}>
                   <InputAntd label="Departamento" />
                 </Form.Item>
               </Grid>
-              <Grid xs={12} sm={6} md={4}>
+              <Grid container item xs={12} sm={6} md={4}>
                 <Form.Item name="oce" rules={required('Ingrese OCE')}>
                   <InputAntd label="OCE" />
                 </Form.Item>
               </Grid>
-              <Grid xs={12} sm={6} md={4}>
+              <Grid container item xs={12} sm={6} md={4}>
                 <Form.Item name="ocf" rules={required('Ingrese OCF')}>
                   <InputAntd label="OCF" />
                 </Form.Item>
               </Grid>
-              <Grid xs={12} sm={6} md={4}>
+              <Grid container item xs={12} sm={6} md={4}>
                 <Form.Item
                   name="fechaEntregaOC"
                   rules={required('Seleccione fecha de entrega OC')}

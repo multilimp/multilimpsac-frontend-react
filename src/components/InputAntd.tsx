@@ -24,9 +24,9 @@ const InputAntd = ({ label, isFloating, isAddonBefore, hasError, size = 'large',
     <div className={`input-form ${size}`}>
       <div className="float-label" onBlur={() => setFocus(false)} onFocus={() => setFocus(true)}>
         {type === 'textarea' ? (
-          <Input.TextArea {...rest as any} size={size} rows={4} />
+          <Input.TextArea {...rest} size={size} rows={4} />
         ) : type === 'number' ? (
-          <InputNumber {...rest as any} size={size} style={{ width: '100%' }} />
+          <InputNumber {...rest} size={size} style={{ width: '100%' }} />
         ) : (
           <Input {...rest} size={size} type={type} />
         )}
