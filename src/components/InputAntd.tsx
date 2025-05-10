@@ -1,3 +1,4 @@
+
 import { Input, InputProps } from 'antd';
 import { useState } from 'react';
 
@@ -6,9 +7,10 @@ interface InputAntdProps extends InputProps {
   isFloating?: boolean;
   hasError?: boolean;
   isAddonBefore?: boolean;
+  type?: 'text' | 'password' | 'textarea' | 'date';
 }
 
-const InputAntd = ({ label, isFloating, isAddonBefore, hasError, size = 'large', ...rest }: InputAntdProps) => {
+const InputAntd = ({ label, isFloating, isAddonBefore, hasError, size = 'large', type, ...rest }: InputAntdProps) => {
   const [focus, setFocus] = useState(false);
   const isFloatingAux = focus || (rest?.value && String(rest?.value).length !== 0);
   let labelClass = isFloatingAux || isFloating ? 'label label-float' : 'label';
@@ -21,7 +23,11 @@ const InputAntd = ({ label, isFloating, isAddonBefore, hasError, size = 'large',
   return (
     <div className={`input-form ${size}`}>
       <div className="float-label" onBlur={() => setFocus(false)} onFocus={() => setFocus(true)}>
-        <Input {...rest} size={size} />
+        {type === 'textarea' ? (
+          <Input.TextArea rows={4} {...rest} size={size} />
+        ) : (
+          <Input {...rest} size={size} type={type} />
+        )}
         <label htmlFor={label} className={labelClass}>
           {label}
         </label>
@@ -30,6 +36,11 @@ const InputAntd = ({ label, isFloating, isAddonBefore, hasError, size = 'large',
   );
 };
 
-InputAntd.defaultProps = { hasError: false, isFloating: false, isAddonBefore: false };
+InputAntd.defaultProps = { 
+  hasError: false, 
+  isFloating: false, 
+  isAddonBefore: false,
+  type: 'text'
+};
 
 export default InputAntd;
