@@ -3,16 +3,14 @@ import StorageService from '@/services/storageService';
 import { UserProps } from '@/services/users/user';
 import { validateSession } from '@/services/users/user.requests';
 import { STORAGE_KEY } from '@/utils/constants';
-import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, Dispatch, ReactNode, SetStateAction, useEffect, useMemo, useState } from 'react';
 
 interface ContextProps {
   user: UserProps;
   setUser: Dispatch<SetStateAction<UserProps>>;
 }
 
-const AppContext = createContext({} as ContextProps);
-
-export const useAppContext = () => useContext(AppContext);
+export const AppContext = createContext({} as ContextProps);
 
 const AppContextProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<UserProps>({} as UserProps);
@@ -30,6 +28,7 @@ const AppContextProvider = ({ children }: { children: ReactNode }) => {
       const res = await validateSession();
       setUser({ ...res });
     } catch (error) {
+      console.error('Error validating user session:', error);
       StorageService.delete(STORAGE_KEY);
     } finally {
       setLoading(false);

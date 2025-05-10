@@ -3,7 +3,7 @@ import StorageService from './storageService';
 import { STORAGE_KEY } from '@/utils/constants';
 
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_APP_API_HOST_URL,
+  baseURL: import.meta.env.VITE_APP_API_HOST_URL ?? 'https://multilimpsac.onrender.com/api',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -17,9 +17,11 @@ const interceptor = async (config: InternalAxiosRequestConfig<any>) => {
     token = `Bearer ${rawToken}`;
   }
 
-  const newConfig = config;
-  newConfig.headers.Authorization = token;
-  return newConfig;
+  if (config.headers) {
+    (config.headers as Record<string, string>)['Authorization'] = token;
+  }
+  
+  return config;
 };
 
 apiClient.interceptors.request.use(interceptor);
