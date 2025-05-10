@@ -71,8 +71,8 @@ const ClientsModal = ({ data, handleClose, handleReload }: ClientsModalProps) =>
       <DialogContent>
         <Spin spinning={loading}>
           <Form form={form} onFinish={handleSubmit} layout="vertical" style={{ marginTop: 8 }} autoComplete="off">
-            <Grid container columnSpacing={2}>
-              <Grid container item xs={12} sm={6} md={4}>
+            <Grid container spacing={2}>
+              <Grid xs={12} sm={6} md={4}>
                 <Form.Item
                   name="ruc"
                   rules={[
@@ -83,18 +83,18 @@ const ClientsModal = ({ data, handleClose, handleReload }: ClientsModalProps) =>
                   <InputAntd label="RUC" />
                 </Form.Item>
               </Grid>
-              <Grid container item xs={12} sm={6} md={4}>
+              <Grid xs={12} sm={6} md={4}>
                 <Form.Item name="razon_social" rules={[{ required: true, message: 'La razón social es requerida' }]}>
                   <InputAntd label="Razón social" />
                 </Form.Item>
               </Grid>
-              <Grid container item xs={12} sm={6} md={4}>
+              <Grid xs={12} sm={6} md={4}>
                 <Form.Item name="cod_unidad" rules={[{ required: true, message: 'El código de unidad es requerido' }]}>
                   <InputAntd label="Código de unidad" />
                 </Form.Item>
               </Grid>
 
-              <Grid container item xs={12} sm={6} md={4}>
+              <Grid xs={12} sm={6} md={4}>
                 <Form.Item name="departamentoComplete" noStyle />
                 <Form.Item name="departamento">
                   <SelectRegions
@@ -112,7 +112,7 @@ const ClientsModal = ({ data, handleClose, handleReload }: ClientsModalProps) =>
                   />
                 </Form.Item>
               </Grid>
-              <Grid container item xs={12} sm={6} md={4}>
+              <Grid xs={12} sm={6} md={4}>
                 <Form.Item name="provinciaComplete" noStyle />
                 <Form.Item noStyle shouldUpdate>
                   {({ getFieldValue }) => (
@@ -133,7 +133,7 @@ const ClientsModal = ({ data, handleClose, handleReload }: ClientsModalProps) =>
                   )}
                 </Form.Item>
               </Grid>
-              <Grid container item xs={12} sm={6} md={4}>
+              <Grid xs={12} sm={6} md={4}>
                 <Form.Item name="distritoComplete" noStyle />
                 <Form.Item noStyle shouldUpdate>
                   {({ getFieldValue }) => (
@@ -153,7 +153,7 @@ const ClientsModal = ({ data, handleClose, handleReload }: ClientsModalProps) =>
                 </Form.Item>
               </Grid>
 
-              <Grid container item xs={12}>
+              <Grid xs={12}>
                 <Form.Item name="direccion" rules={[{ required: true, message: 'La dirección es requerida' }]}>
                   <InputAntd label="Dirección" />
                 </Form.Item>
