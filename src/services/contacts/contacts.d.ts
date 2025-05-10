@@ -1,3 +1,4 @@
+
 export interface ContactProps {
   id: number;
   nombre: string;
@@ -8,8 +9,8 @@ export interface ContactProps {
   nota?: string;
   usuarioDestacado?: string;
   tipo: string;
-  referenciaId: 4;
-  clienteId: 4;
+  referenciaId: number;
+  clienteId?: number;
   proveedorId?: number;
   transporteId?: number;
 }
