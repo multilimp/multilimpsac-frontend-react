@@ -1,3 +1,4 @@
+
 import axios, { InternalAxiosRequestConfig } from 'axios';
 import StorageService from './storageService';
 import { STORAGE_KEY } from '@/utils/constants';
@@ -10,7 +11,7 @@ const apiClient = axios.create({
 });
 
 const interceptor = async (config: InternalAxiosRequestConfig<any>) => {
-  let token;
+  let token = '';
 
   const rawToken = StorageService.get(STORAGE_KEY);
   if (rawToken) {

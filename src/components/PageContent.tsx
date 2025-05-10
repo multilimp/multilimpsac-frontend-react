@@ -1,3 +1,4 @@
+
 import { ReactNode, useEffect } from 'react';
 import { Box, Breadcrumbs, Fade, Link as MuiLink, Typography } from '@mui/material';
 
@@ -9,19 +10,21 @@ import sidebarConfig from '@/layouts/PrivateLayout/sidebarConfig';
 interface PageContentProps {
   component?: ReactNode;
   children?: ReactNode;
+  title?: string;
+  helper?: string;
 }
 
 const appName = 'MULTILIMP';
 
-const PageContent = ({ component, children }: PageContentProps) => {
+const PageContent = ({ component, children, title, helper }: PageContentProps) => {
   const location = useLocation();
 
   useEffect(() => {
-    document.title = `${module ? `${module} | ` : ''}${appName}`;
+    document.title = `${title || module ? `${title || module} | ` : ''}${appName}`;
     return () => {
       document.title = appName;
     };
-  }, []);
+  }, [title]);
 
   const { Icon, group, module } = sidebarConfig.reduce(
     (acum, next) => {
@@ -35,6 +38,9 @@ const PageContent = ({ component, children }: PageContentProps) => {
     },
     { group: '', module: '', Icon: Apps }
   );
+
+  const displayTitle = title || module || 'Módulo no definido';
+  const displayHelper = helper || '';
 
   return (
     <Fade in={true} timeout={300}>
@@ -70,7 +76,7 @@ const PageContent = ({ component, children }: PageContentProps) => {
                   {group}
                 </Typography>
               ) : null}
-              {module ? (
+              {displayTitle ? (
                 <Typography
                   sx={{
                     display: 'flex',
@@ -81,7 +87,7 @@ const PageContent = ({ component, children }: PageContentProps) => {
                   }}
                 >
                   <Icon sx={{ mr: 0.5, fontSize: '1rem' }} />
-                  {module}
+                  {displayTitle}
                 </Typography>
               ) : null}
             </Breadcrumbs>
@@ -115,8 +121,14 @@ const PageContent = ({ component, children }: PageContentProps) => {
                 },
               }}
             >
-              {module || 'Módulo no definido'}
+              {displayTitle}
             </Typography>
+            
+            {displayHelper && (
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                {displayHelper}
+              </Typography>
+            )}
           </Box>
 
           {<Box sx={{ width: { xs: '100%', md: '50%' }, display: 'flex', justifyContent: 'flex-end' }}>{component}</Box>}

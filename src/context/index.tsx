@@ -1,9 +1,10 @@
+
 import LoaderPage from '@/pages/public/LoaderPage';
 import StorageService from '@/services/storageService';
 import { UserProps } from '@/services/users/user';
 import { validateSession } from '@/services/users/user.requests';
 import { STORAGE_KEY } from '@/utils/constants';
-import { createContext, Dispatch, ReactNode, SetStateAction, useEffect, useMemo, useState } from 'react';
+import { createContext, Dispatch, ReactNode, SetStateAction, useEffect, useMemo, useState, useContext } from 'react';
 
 interface ContextProps {
   user: UserProps;
@@ -11,6 +12,14 @@ interface ContextProps {
 }
 
 export const AppContext = createContext({} as ContextProps);
+
+export const useAppContext = () => {
+  const context = useContext(AppContext);
+  if (context === undefined) {
+    throw new Error('useAppContext must be used within an AppContextProvider');
+  }
+  return context;
+};
 
 const AppContextProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<UserProps>({} as UserProps);

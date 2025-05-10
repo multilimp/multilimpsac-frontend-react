@@ -1,3 +1,4 @@
+
 import { useContext } from 'react';
 import { AppContext } from '../context'; // Ajusta la ruta si es necesario, apuntando a donde se exporta AppContext
 
