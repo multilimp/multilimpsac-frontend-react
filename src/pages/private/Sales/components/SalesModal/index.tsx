@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { Button, Dialog, DialogContent, DialogTitle, Fab, Stack, Step, Stepper, Typography } from '@mui/material';
 import { Form, notification } from 'antd';
@@ -8,39 +7,92 @@ import InputsSecondStep from './InputsSecondStep';
 import InputsThirdStep from './InputsThirdStep';
 import InputsFourthStep from './InputsFourthStep';
 import InputsFifthStep from './InputsFifthStep';
-import { createSale } from '@/services/sales/sales.request';
-import { SaleProps } from '@/services/sales/sales';
+import { createSale, updateSale } from '@/services/sales/sales.request';
+import { SaleProcessedProps, SaleProps } from '@/services/sales/sales';
 import dayjs from 'dayjs';
+import { uploadFile } from '@/services/files/file.requests';
+import { removeAccents } from '@/utils/functions';
+import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 
 interface SalesModalProps {
   handleClose: VoidFunction;
   handleReload: VoidFunction;
   data?: SaleProps;
-  processed?: boolean;
+  processed?: SaleProcessedProps;
 }
 
-const SalesModal = ({ handleClose, handleReload, data }: SalesModalProps) => {
+const SalesModal = ({ handleClose, handleReload, data, processed }: SalesModalProps) => {
+  const isEdit = !!data && !processed;
+  const { regions, companies, clients } = useGlobalInformation();
+
   const [form] = Form.useForm();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!data) return;
+    if (processed) {
+      const findCompany = companies.find((item) => item.ruc === processed.empresaRuc);
+      const findClient = clients.find((item) => item.ruc === processed.clienteRuc);
+      const findRegion = regions.find(
+        (item) => removeAccents(item.name).toLowerCase() === removeAccents(processed.departamentoEntrega).toLowerCase()
+      );
 
-    form.setFieldsValue({
-      direccionEntrega: data.direccionEntrega ?? '',
-      etapaSIAF: data.etapaSiaf,
-      fechaEntrega: data.fechaEntrega ? dayjs(data.fechaEntrega) : null,
-      fechaFormalizacion: data.fechaForm ? dayjs(data.fechaForm) : null,
-      fechaMaxEntrega: data.fechaMaxForm ? dayjs(data.fechaMaxForm) : null,
-      fechaSIAF: data.fechaSiaf ? dayjs(data.fechaSiaf) : null,
-      montoVenta: data.montoVenta,
-      productos: Array.isArray(data.productos) ? data.productos : [],
-      referenciaEntrega: data.referenciaEntrega,
-      numeroSIAF: data.siaf,
-      tipoVenta: data.ventaPrivada ? 'privada' : 'directa',
-    });
-  }, [data]);
+      form.setFieldsValue({
+        tipoVenta: processed.ventaPrivada ? 'privada' : 'directa',
+        empresa: findCompany?.id,
+        empresaComplete: findCompany,
+        cliente: findClient?.id,
+        clienteComplete: findClient,
+        regionEntregaComplete: findRegion,
+        regionEntrega: findRegion?.id,
+        direccionEntrega: processed.direccionEntrega,
+        referenciaEntrega: processed.referenciaEntrega,
+        fechaEntrega: dayjs(processed.fechaEntrega).isValid() ? dayjs(processed.fechaEntrega) : null,
+        fechaFormalizacion: dayjs(processed.fechaForm).isValid() ? dayjs(processed.fechaForm) : null,
+        fechaMaxEntrega: dayjs(processed.fechaMaxEntrega ?? processed.fechaMaxForm).isValid()
+          ? dayjs(processed.fechaMaxEntrega ?? processed.fechaMaxForm)
+          : null,
+        montoVenta: processed.montoVenta,
+        productos: processed.productos,
+        numeroSIAF: processed.siaf,
+        fechaSIAF: dayjs(processed.fechaSiaf).isValid() ? dayjs(processed.fechaSiaf) : null,
+      });
+
+      return;
+    }
+
+    if (data) {
+      form.setFieldsValue({
+        etapaSIAF: data.etapaSiaf,
+        fechaSIAF: dayjs(data.fechaSiaf),
+        empresa: data.empresaId,
+        empresaComplete: data.empresa,
+        tipoVenta: data.ventaPrivada ? 'privada' : 'directa',
+        cliente: data.clienteId,
+        clienteComplete: data.cliente,
+        regionEntregaComplete: data.departamentoEntrega,
+        regionEntrega: data.departamentoEntrega?.id,
+        provinciaEntregaComplete: data.provinciaEntrega,
+        provinciaEntrega: data.provinciaEntrega?.id,
+        distritoEntregaComplete: data.distritoEntrega,
+        distritoEntrega: data.distritoEntrega?.id,
+        fechaEntrega: dayjs(data.fechaEntrega),
+        direccionEntrega: data.direccionEntrega,
+        referenciaEntrega: data.referenciaEntrega,
+        catalogoComplete: data.catalogoEmpresa,
+        catalogo: data.catalogoEmpresaId,
+        fechaFormalizacion: dayjs(data.fechaForm),
+        fechaMaxEntrega: dayjs(data.fechaMaxForm),
+        montoVenta: data.montoVenta,
+        numeroSIAF: data.siaf,
+        cargoContactoComplete: data.contactoCliente,
+        cargoContacto: data.contactoClienteId,
+        nombreContacto: data.contactoCliente?.nombre,
+        celularContacto: data.contactoCliente?.telefono,
+        productos: data.productos,
+      });
+    }
+  }, [data, companies, clients, regions]);
 
   const handleNext = () => setStep(step + 1);
   const handleBack = () => setStep(step - 1);
@@ -49,43 +101,48 @@ const SalesModal = ({ handleClose, handleReload, data }: SalesModalProps) => {
     try {
       setLoading(true);
 
+      let OCE_DOC;
+      let OCF_DOC;
+      if (values.ordenCompraElectronica) {
+        OCE_DOC = await uploadFile(values.ordenCompraElectronica);
+      }
+      if (values.ordenCompraFisica) {
+        OCF_DOC = await uploadFile(values.ordenCompraFisica);
+      }
+
       const body = {
-        empresaId: values.empresa,
+        empresa: { connect: { id: values.empresa } },
+        cliente: { connect: { id: values.cliente } },
+        contactoCliente: { connect: { id: values.cargoContacto } },
+        catalogoEmpresa: { connect: { id: values.catalogo } },
+
         ventaPrivada: values.tipoVenta === 'privada',
-
-        fechaEmision: new Date().toISOString(),
-
-        clienteId: values.cliente,
         departamentoEntrega: JSON.stringify(values.regionEntregaComplete),
         provinciaEntrega: JSON.stringify(values.provinciaEntregaComplete),
         distritoEntrega: JSON.stringify(values.distritoEntregaComplete),
         direccionEntrega: values.direccionEntrega,
         referenciaEntrega: values.referenciaEntrega,
         fechaEntrega: values.fechaEntrega.toISOString(),
-
-        catalogoEmpresaId: values.catalogo,
         fechaForm: values.fechaFormalizacion.toISOString(),
         fechaMaxForm: values.fechaMaxEntrega.toISOString(),
         montoVenta: Number(values.montoVenta),
         siaf: values.numeroSIAF,
         etapaSiaf: values.etapaSIAF,
         fechaSiaf: values.fechaSIAF.toISOString(),
-        documentoOce: 'https://www.sammobile.com/wp-content/uploads/2023/12/Files-By-Google.jpg',
-        documentoOcf: 'https://www.sammobile.com/wp-content/uploads/2023/12/Files-By-Google.jpg',
-
-        contactoClienteId: values.cargoContacto,
-
+        documentoOce: OCE_DOC,
+        documentoOcf: OCF_DOC,
         productos: values.productos,
       };
 
-      await createSale(body);
+      if (isEdit) await updateSale(data.id, body);
+      else await createSale(body);
 
       handleClose();
       handleReload();
 
-      notification.success({ message: 'La venta fue registrada correctamente' });
+      notification.success({ message: `La venta fue ${isEdit ? 'actualizada' : 'registrada'} correctamente` });
     } catch (error) {
-      notification.error({ message: 'No se logró registrar la venta', description: `Intente mas tarde. ${error}` });
+      notification.error({ message: 'No se logró completa la transacción', description: `Intente mas tarde. ${error}` });
     } finally {
       setLoading(false);
     }
@@ -95,8 +152,8 @@ const SalesModal = ({ handleClose, handleReload, data }: SalesModalProps) => {
     <Dialog open fullScreen>
       <DialogTitle>
         <Stack direction="row" alignItems="center" justifyContent="space-between" mb={2}>
-          <Typography variant="h5" color="primary">
-            REGISTRAR NUEVA VENTA
+          <Typography variant="h5" color="primary" fontWeight={700}>
+            {isEdit ? 'EDITAR' : 'REGISTRAR NUEVA'} VENTA
           </Typography>
           <Fab onClick={handleClose} size="small" disabled={loading}>
             <Close />
@@ -116,7 +173,7 @@ const SalesModal = ({ handleClose, handleReload, data }: SalesModalProps) => {
             </Step>
 
             <Step active={step === 3}>
-              <InputsThirdStep form={form} back={handleBack} next={handleNext} />
+              <InputsThirdStep form={form} back={handleBack} next={handleNext} omitFiles={isEdit} />
             </Step>
 
             <Step active={step === 4}>
@@ -136,7 +193,7 @@ const SalesModal = ({ handleClose, handleReload, data }: SalesModalProps) => {
                   Volver al último paso
                 </Button>
                 <Button loading={loading} type="submit">
-                  Finalizar y registrar venta
+                  Finalizar y {isEdit ? 'actualizar' : 'registrar'} venta
                 </Button>
               </Stack>
             </Stack>

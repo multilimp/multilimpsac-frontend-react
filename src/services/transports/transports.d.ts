@@ -1,3 +1,5 @@
+import { DistrictProps, ProvinceProps, RegionProps } from '../ubigeo/ubigeo';
+
 export interface TransportProps {
   id: number;
   ruc: string;
@@ -8,17 +10,8 @@ export interface TransportProps {
   estado: boolean;
   cobertura: string;
 
-  departamento?: {
-    id: string;
-    name: string;
-  };
-  provincia?: {
-    id: string;
-    name: string;
-  };
-  distrito?: {
-    id: string;
-    name: string;
-  };
+  departamento?: RegionProps;
+  provincia?: ProvinceProps;
+  distrito?: DistrictProps;
   direccion?: string;
 }

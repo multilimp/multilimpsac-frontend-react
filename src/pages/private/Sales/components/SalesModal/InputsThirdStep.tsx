@@ -8,11 +8,18 @@ import InputAntd from '@/components/InputAntd';
 import InputFile from '@/components/InputFile';
 import SelectCatalogs from '@/components/selects/SelectCatalogs';
 
-interface InputsThirdStepProps extends ControlActionsProps {}
+interface InputsThirdStepProps extends ControlActionsProps {
+  omitFiles: boolean;
+}
 
 const etapaSIAFOptions = ['COM', 'DEV', 'PAG', 'SSIAF', 'RES', 'GIR', 'GIR-F', 'GIR-V', 'GIR-A', 'GIR-R'].map((value) => ({ label: value, value }));
 
-const InputsThirdStep = ({ form, ...controlProps }: InputsThirdStepProps) => {
+const InputsThirdStep = ({ form, omitFiles, ...controlProps }: InputsThirdStepProps) => {
+  const validateFields = ['catalogo', 'fechaFormalizacion', 'fechaMaxEntrega', 'montoVenta', 'numeroSIAF', 'etapaSIAF', 'fechaSIAF'];
+  if (!omitFiles) {
+    validateFields.push(...['ordenCompraElectronica', 'ordenCompraFisica']);
+  }
+
   return (
     <StepItemContent title="DATOS GENERALES" subtitle="Ingresa la información solicitada">
       <Grid container spacing={2}>
@@ -20,6 +27,7 @@ const InputsThirdStep = ({ form, ...controlProps }: InputsThirdStepProps) => {
           <Form.Item name="catalogoComplete" noStyle />
           <Form.Item name="catalogo" rules={[requiredField]}>
             <SelectCatalogs
+              companyId={form.getFieldValue('empresa')}
               label="Catálogo"
               onChange={(value, record: any) => form.setFieldsValue({ catalogo: value, catalogoComplete: record?.optiondata })}
             />
@@ -56,32 +64,18 @@ const InputsThirdStep = ({ form, ...controlProps }: InputsThirdStepProps) => {
           </Form.Item>
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 6, lg: 6 }}>
-          <Form.Item name="ordenCompraElectronica" rules={[requiredField]}>
+          <Form.Item name="ordenCompraElectronica" rules={omitFiles ? [] : [requiredField]}>
             <InputFile onChange={(file) => form.setFieldValue('ordenCompraElectronica', file)} label="Órden de compra electrónica" accept="pdf" />
           </Form.Item>
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 6, lg: 6 }}>
-          <Form.Item name="ordenCompraFisica" rules={[requiredField]}>
+          <Form.Item name="ordenCompraFisica" rules={omitFiles ? [] : [requiredField]}>
             <InputFile onChange={(file) => form.setFieldValue('ordenCompraFisica', file)} label="Órden de compra física" accept="pdf" />
           </Form.Item>
         </Grid>
       </Grid>
 
-      <Controls
-        fieldsToValidate={[
-          'catalogo',
-          'fechaFormalizacion',
-          'fechaMaxEntrega',
-          'montoVenta',
-          'numeroSIAF',
-          'etapaSIAF',
-          'fechaSIAF',
-          'ordenCompraElectronica',
-          'ordenCompraFisica',
-        ]}
-        form={form}
-        {...controlProps}
-      />
+      <Controls fieldsToValidate={validateFields} form={form} {...controlProps} />
     </StepItemContent>
   );
 };

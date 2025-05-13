@@ -1,3 +1,5 @@
+import { DistrictProps, ProvinceProps, RegionProps } from '../ubigeo/ubigeo';
+
 export interface CompanyProps {
   id: number;
   razonSocial: string;
@@ -5,19 +7,9 @@ export interface CompanyProps {
   telefono: string;
   email: string;
   web: string;
-
-  departamento?: {
-    id: string;
-    name: string;
-  };
-  provincia?: {
-    id: string;
-    name: string;
-  };
-  distrito?: {
-    id: string;
-    name: string;
-  };
+  departamento?: RegionProps;
+  provincia?: ProvinceProps;
+  distrito?: DistrictProps;
   direccion: string;
   logo: string;
 }

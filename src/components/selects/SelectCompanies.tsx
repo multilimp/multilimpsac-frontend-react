@@ -1,14 +1,14 @@
-import useCompanies from '@/hooks/useCompanies';
 import SelectContainer from './SelectContainer';
 import { Select, SelectProps } from 'antd';
 import { filterOptions } from '@/utils/functions';
+import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 
 interface SelectCompaniesProps extends SelectProps {
   label: string;
 }
 
 const SelectCompanies = ({ label, ...rest }: SelectCompaniesProps) => {
-  const { companies, loadingCompanies } = useCompanies();
+  const { companies, loadingCompanies } = useGlobalInformation();
 
   return (
     <SelectContainer label={label}>

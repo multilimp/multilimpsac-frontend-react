@@ -3,12 +3,12 @@ import { Button, Box, Dialog, DialogActions, DialogContent, DialogTitle, Divider
 import { Close, Save } from '@mui/icons-material';
 import { notification, Spin } from 'antd';
 import InputFile from '@/components/InputFile';
-import { SaleProps } from '@/services/sales/sales';
+import { SaleProcessedProps } from '@/services/sales/sales';
 import { processPdfSales } from '@/services/sales/sales.request';
 
 interface OcrSalesModalProps {
   onClose: () => void;
-  onSuccess: (data: SaleProps) => void;
+  onSuccess: (data: SaleProcessedProps) => void;
 }
 
 const OcrSalesModal = ({ onClose, onSuccess }: OcrSalesModalProps) => {
@@ -21,11 +21,6 @@ const OcrSalesModal = ({ onClose, onSuccess }: OcrSalesModalProps) => {
       setLoading(true);
 
       const response = await processPdfSales(selectedFile);
-
-      notification.success({
-        message: 'Éxito',
-        description: 'Documento procesado correctamente',
-      });
 
       onSuccess(response);
     } catch (error) {

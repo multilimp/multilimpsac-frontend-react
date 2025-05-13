@@ -10,15 +10,9 @@ interface ContextProps {
   setUser: Dispatch<SetStateAction<UserProps>>;
 }
 
-export const AppContext = createContext({} as ContextProps);
+const AppContext = createContext({} as ContextProps);
 
-export const useAppContext = () => {
-  const context = useContext(AppContext);
-  if (context === undefined) {
-    throw new Error('useAppContext must be used within an AppContextProvider');
-  }
-  return context;
-};
+export const useAppContext = () => useContext(AppContext);
 
 const AppContextProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<UserProps>({} as UserProps);

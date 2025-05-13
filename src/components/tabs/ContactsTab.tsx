@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Box, Button, Stack, Typography } from '@mui/material';
 import { Table } from 'antd';
@@ -45,20 +44,10 @@ const ContactsTab: React.FC<ContactsTabProps> = ({ entityType, entityId }) => {
       key: 'actions',
       render: (_: unknown, record: ContactProps) => (
         <Stack direction="row" spacing={1}>
-          <Button
-            size="small"
-            color="primary"
-            startIcon={<Edit />}
-            onClick={() => setModal({ mode: ModalStateEnum.BOX, data: record })}
-          >
+          <Button size="small" color="primary" startIcon={<Edit />} onClick={() => setModal({ mode: ModalStateEnum.BOX, data: record })}>
             Editar
           </Button>
-          <Button
-            size="small"
-            color="error"
-            startIcon={<Delete />}
-            onClick={() => setModal({ mode: ModalStateEnum.DELETE, data: record })}
-          >
+          <Button size="small" color="error" startIcon={<Delete />} onClick={() => setModal({ mode: ModalStateEnum.DELETE, data: record })}>
             Eliminar
           </Button>
         </Stack>
@@ -70,23 +59,12 @@ const ContactsTab: React.FC<ContactsTabProps> = ({ entityType, entityId }) => {
     <Box sx={{ mt: 2 }}>
       <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
         <Typography variant="h6">Contactos</Typography>
-        <Button 
-          variant="contained" 
-          color="primary" 
-          startIcon={<Add />} 
-          onClick={() => setModal({ mode: ModalStateEnum.BOX })}
-        >
+        <Button variant="contained" color="primary" startIcon={<Add />} onClick={() => setModal({ mode: ModalStateEnum.BOX })}>
           Agregar Contacto
         </Button>
       </Stack>
-      
-      <Table 
-        dataSource={contacts} 
-        columns={columns} 
-        loading={loadingContacts} 
-        rowKey="id"
-        pagination={{ pageSize: 5 }}
-      />
+
+      <Table dataSource={contacts} columns={columns} loading={loadingContacts} rowKey="id" pagination={{ pageSize: 5 }} />
 
       {modal?.mode === ModalStateEnum.BOX && (
         <ContactsModal
@@ -99,11 +77,7 @@ const ContactsTab: React.FC<ContactsTabProps> = ({ entityType, entityId }) => {
       )}
 
       {modal?.mode === ModalStateEnum.DELETE && (
-        <ConfirmDelete
-          endpoint={`/contacts/${modal.data?.id}`}
-          handleClose={() => setModal(null)}
-          handleReload={obtainContacts}
-        />
+        <ConfirmDelete endpoint={`/contacts/${modal.data?.id}`} handleClose={() => setModal(null)} handleReload={obtainContacts} />
       )}
     </Box>
   );

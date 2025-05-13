@@ -1,7 +1,7 @@
 import PageContent from '@/components/PageContent';
 import SalesTable from './components/SalesTable';
 import { useEffect, useState } from 'react';
-import { SaleProps } from '@/services/sales/sales';
+import { SaleProcessedProps, SaleProps } from '@/services/sales/sales';
 import { notification } from 'antd';
 import { getSales } from '@/services/sales/sales.request';
 import { Box, Button, Stack, Typography } from '@mui/material';
@@ -12,7 +12,7 @@ import { Add, Loop, SmartToy } from '@mui/icons-material';
 import { ModalStateProps } from '@/types/global';
 import { formatCurrency } from '@/utils/functions';
 
-type ModalStateType = ModalStateProps<SaleProps> & { processed?: boolean };
+type ModalStateType = ModalStateProps<SaleProps> & { processed?: SaleProcessedProps };
 
 const SalesPage = () => {
   const [loading, setLoading] = useState(false);
@@ -101,11 +101,11 @@ const SalesPage = () => {
       <SalesTable data={data} loading={loading} onEdit={handleEdit} />
 
       {modal?.mode === ModalStateEnum.BOX && (
-        <SalesModal data={modal.data} processed={!!modal.processed} handleClose={() => setModal(undefined)} handleReload={handleRefresh} />
+        <SalesModal data={modal.data} processed={modal.processed} handleClose={() => setModal(undefined)} handleReload={handleRefresh} />
       )}
 
       {modal?.mode === ModalStateEnum.SECOND_BOX && (
-        <OcrSalesModal onClose={() => setModal(undefined)} onSuccess={(aux) => setModal({ mode: ModalStateEnum.BOX, data: aux, processed: true })} />
+        <OcrSalesModal onClose={() => setModal(undefined)} onSuccess={(aux) => setModal({ mode: ModalStateEnum.BOX, processed: aux })} />
       )}
     </PageContent>
   );

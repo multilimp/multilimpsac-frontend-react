@@ -1,19 +1,12 @@
+import { DistrictProps, ProvinceProps, RegionProps } from '../ubigeo/ubigeo';
+
 export interface ClientProps {
   codigoUnidadEjecutora: string;
   createdAt: string;
   direccion: string;
-  departamento?: {
-    id: string;
-    name: string;
-  };
-  provincia?: {
-    id: string;
-    name: string;
-  };
-  distrito?: {
-    id: string;
-    name: string;
-  };
+  departamento?: RegionProps;
+  provincia?: ProvinceProps;
+  distrito?: DistrictProps;
   email?: string;
   estado: true;
   id: number;

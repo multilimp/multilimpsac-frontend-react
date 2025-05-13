@@ -1,4 +1,3 @@
-
 import { Fragment } from 'react';
 import { Form, Input } from 'antd';
 import { ControlActionsProps, Controls, StepItemContent } from './smallcomponents';
@@ -51,7 +50,7 @@ const InputsFifthStep = ({ form, next, ...controlProps }: InputsFifthStepProps) 
         )}
       </Form.List>
 
-      <Controls fieldsToValidate={[]} next={handleFinalValidation} form={form} {...controlProps} />
+      <Controls fieldsToValidate={['productos']} next={handleFinalValidation} form={form} {...controlProps} />
     </StepItemContent>
   );
 };
