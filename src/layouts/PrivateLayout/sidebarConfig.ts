@@ -1,6 +1,6 @@
 import { RolesEnum } from '@/services/users/user.enum';
 import { SidebarConfigProps } from '@/types/global';
-import { Apps, Apartment, People, Diversity3, LocalShipping } from '@mui/icons-material';
+import { Person, Apps, Apartment, People, Diversity3, LocalShipping } from '@mui/icons-material';
 
 const rolesArr = Object.values(RolesEnum);
 
@@ -104,6 +104,12 @@ const sidebarConfig: Array<SidebarConfigProps> = [
         path: '/settings',
         icon: Apps,
         roles: rolesArr,
+      },
+      {
+        name: 'Usuarios',
+        path: '/users',
+        icon: Person,
+        roles: [RolesEnum.ADMIN],
       },
     ],
   },

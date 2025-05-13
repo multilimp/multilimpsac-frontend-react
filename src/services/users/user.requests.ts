@@ -1,5 +1,5 @@
 import apiClient from '../apiClient';
-import { UserProps } from './user';
+import { UserProps } from './users';
 
 export const authUser = async (body: Record<string, string>): Promise<{ token: string; user: UserProps }> => {
   const res = await apiClient.post('/auth/login', body);

@@ -1,6 +1,6 @@
 import { useAppContext } from '@/context';
 import StorageService from '@/services/storageService';
-import { UserProps } from '@/services/users/user';
+import { UserProps } from '@/services/users/users';
 import { STORAGE_KEY } from '@/utils/constants';
 import { Menu } from '@mui/icons-material';
 import { Box, Divider, ListItemIcon, MenuItem, MenuList, Popover, Typography } from '@mui/material';

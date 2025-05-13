@@ -16,6 +16,7 @@ const RecoveryPassword = Loadable(lazy(() => import('@/pages/public/RecoveryPass
 const Dashboard = Loadable(lazy(() => import('@/pages/private/Dashboard')));
 const Profile = Loadable(lazy(() => import('@/pages/private/Profile')));
 const Companies = Loadable(lazy(() => import('@/pages/private/Companies')));
+const Users = Loadable(lazy(() => import('@/pages/private/Users')));
 const Quotes = Loadable(lazy(() => import('@/pages/private/Quotes')));
 const Sales = Loadable(lazy(() => import('@/pages/private/Sales')));
 const Orders = Loadable(lazy(() => import('@/pages/private/Orders')));
@@ -122,6 +123,11 @@ const routes: Array<PropsRoutes> = [
         path: 'tracking',
         element: Trackings, // Actualizado a PascalCase
         roles: rolesArr,
+      },
+      {
+        path: 'users',
+        element: Users, // Actualizado a PascalCase
+        roles: Object.values(RolesEnum),
       },
       // EXCEPT
       {

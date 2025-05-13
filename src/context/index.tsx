@@ -1,8 +1,7 @@
-
 import LoaderPage from '@/pages/public/LoaderPage';
 import StorageService from '@/services/storageService';
-import { UserProps } from '@/services/users/user';
 import { validateSession } from '@/services/users/user.requests';
+import { UserProps } from '@/services/users/users';
 import { STORAGE_KEY } from '@/utils/constants';
 import { createContext, Dispatch, ReactNode, SetStateAction, useEffect, useMemo, useState, useContext } from 'react';
 
