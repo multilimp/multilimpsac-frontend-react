@@ -1,21 +1,16 @@
+import { RolesEnum } from '@/services/users/user.enum';
 import { SidebarConfigProps } from '@/types/global';
-import { RolesEnum } from '@/types/global.enum';
-import {
-  Apps,
-  Apartment,
-  People,
-  Diversity3,
-  LocalShipping,
-  Person,       
-} from '@mui/icons-material';
+import { Person, Apps, Apartment, People, Diversity3, LocalShipping } from '@mui/icons-material';
+
+const rolesArr = Object.values(RolesEnum);
 
 const sidebarConfig: Array<SidebarConfigProps> = [
   {
     title: 'Principal',
-    roles: [RolesEnum.ADMIN],
+    roles: rolesArr,
     routes: [
       {
-        roles: [RolesEnum.ADMIN],
+        roles: rolesArr,
         path: '/',
         icon: Apps,
         name: 'Dashboard',
@@ -24,96 +19,96 @@ const sidebarConfig: Array<SidebarConfigProps> = [
   },
   {
     title: 'Directorio',
-    roles: [RolesEnum.ADMIN],
+    roles: rolesArr,
     routes: [
       {
         name: 'Empresas',
         path: '/companies',
         icon: Apartment,
-        roles: [RolesEnum.ADMIN],
+        roles: rolesArr,
       },
       {
         name: 'Clientes',
         path: '/clients',
         icon: People,
-        roles: [RolesEnum.ADMIN],
+        roles: rolesArr,
       },
       {
         name: 'Proveedores',
         path: '/providers',
         icon: Diversity3,
-        roles: [RolesEnum.ADMIN],
+        roles: rolesArr,
       },
       {
         name: 'Transportes',
         path: '/transports',
         icon: LocalShipping,
-        roles: [RolesEnum.ADMIN],
+        roles: rolesArr,
       },
     ],
   },
   {
     title: 'Procesos',
-    roles: [RolesEnum.ADMIN],
+    roles: rolesArr,
     routes: [
       {
         name: 'Cotizaciones',
         path: '/quotes',
         icon: Apps,
-        roles: [RolesEnum.ADMIN],
+        roles: rolesArr,
       },
       {
         name: 'Ventas',
         path: '/sales',
         icon: Apps,
-        roles: [RolesEnum.ADMIN],
+        roles: rolesArr,
       },
       {
         name: 'Órdenes',
         path: '/orders',
         icon: Apps,
-        roles: [RolesEnum.ADMIN],
+        roles: rolesArr,
       },
       {
         name: 'Seguimiento',
         path: '/tracking',
         icon: Apps,
-        roles: [RolesEnum.ADMIN],
+        roles: rolesArr,
       },
       {
         name: 'Tesorería',
         path: '/treasury',
         icon: Apps,
-        roles: [RolesEnum.ADMIN],
+        roles: rolesArr,
       },
       {
         name: 'Facturación',
         path: '/billing',
         icon: Apps,
-        roles: [RolesEnum.ADMIN],
+        roles: rolesArr,
       },
     ],
   },
   {
     title: 'Usuario',
-    roles: [RolesEnum.ADMIN],
+    roles: rolesArr,
     routes: [
       {
         name: 'Perfil',
         path: '/profile',
         icon: Apps,
-        roles: [RolesEnum.ADMIN],
+        roles: rolesArr,
       },
       {
         name: 'Configuración',
         path: '/settings',
         icon: Apps,
-        roles: [RolesEnum.ADMIN],
+        roles: rolesArr,
       },
       {
-        name: 'Usuarios',        
-        path: '/users',        
-        icon: Person,            
+        name: 'Usuarios',
+        path: '/users',
+        icon: Person,
         roles: [RolesEnum.ADMIN],
       },
     ],

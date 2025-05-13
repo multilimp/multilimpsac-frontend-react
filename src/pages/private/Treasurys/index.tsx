@@ -1,10 +1,11 @@
+
 // src/pages/treasurys/TreasurysPage.tsx
 import PageContent from '@/components/PageContent';
 import TreasurysTable from './components/TreasurysTable';
 import TreasurysModal from './components/TreasurysModal';
 import ConfirmDelete from '@/components/ConfirmDelete';
 import { Button } from '@mui/material';
-import { notification, Modal } from 'antd'; // Asegúrate de importar Modal correctamente
+import { notification, Modal } from 'antd';
 import { useEffect, useState } from 'react';
 import {
   getTreasurys,
@@ -18,7 +19,10 @@ const TreasurysPage = () => {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<TreasurysProps[]>([]);
   // Inicializamos modal con un valor vacío para evitar errores con 'null'
-  const [modal, setModal] = useState<ModalStateProps<TreasurysProps> | null>(null);
+  const [modal, setModal] = useState<ModalStateProps<TreasurysProps>>({
+    mode: ModalStateEnum.NONE,
+    data: undefined
+  });
 
   useEffect(() => {
     obtainData();
@@ -73,7 +77,7 @@ const TreasurysPage = () => {
         <Button
           variant="contained"
           color="primary"
-          onClick={() => setModal({ mode: ModalStateEnum.BOX, data: null })}
+          onClick={() => setModal({ mode: ModalStateEnum.BOX, data: undefined })}
         >
           Agregar
         </Button>
@@ -90,7 +94,7 @@ const TreasurysPage = () => {
         <TreasurysModal
           data={modal.data}
           open={true}
-          onClose={() => setModal(null)}
+          onClose={() => setModal({ mode: ModalStateEnum.NONE, data: undefined })}
           onReload={obtainData}
         />
       )}
@@ -99,7 +103,7 @@ const TreasurysPage = () => {
       {modal?.mode === ModalStateEnum.DELETE && modal.data && (
         <ConfirmDelete
           endpoint={`/treasurys/${modal.data.id}`}
-          handleClose={() => setModal(null)}
+          handleClose={() => setModal({ mode: ModalStateEnum.NONE, data: undefined })}
           handleReload={obtainData}
         />
       )}

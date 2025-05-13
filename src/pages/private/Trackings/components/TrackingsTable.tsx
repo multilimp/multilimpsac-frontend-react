@@ -1,12 +1,17 @@
+
 // src/pages/components/TrackingsTable.tsx
 import React from 'react';
 import AntTable, { AntColumnType } from '@/components/AntTable';
 import { TrackingProps } from '@/services/trackings/trackings.d';
 import dayjs from 'dayjs';
+import { Button, ButtonGroup } from '@mui/material';
+import { Delete, Edit } from '@mui/icons-material';
 
 interface TrackingsTableProps {
   data: TrackingProps[];
   loading: boolean;
+  onEdit: (row: TrackingProps) => void;
+  onDelete: (row: TrackingProps) => void;
 }
 
 const statusLabels: Record<TrackingProps['status'], string> = {
@@ -16,8 +21,23 @@ const statusLabels: Record<TrackingProps['status'], string> = {
   canceled: 'Cancelado',
 };
 
-const TrackingsTable: React.FC<TrackingsTableProps> = ({ data, loading }) => {
+const TrackingsTable: React.FC<TrackingsTableProps> = ({ data, loading, onEdit, onDelete }) => {
   const columns: AntColumnType<TrackingProps>[] = [
+    {
+      title: 'Acciones',
+      key: 'actions',
+      width: 120,
+      render: (_, record) => (
+        <ButtonGroup size="small">
+          <Button color="info" onClick={() => onEdit(record)}>
+            <Edit fontSize="small" />
+          </Button>
+          <Button color="error" onClick={() => onDelete(record)}>
+            <Delete fontSize="small" />
+          </Button>
+        </ButtonGroup>
+      ),
+    },
     { title: 'ID', dataIndex: 'id', minWidth: 70, filter: true },
     { title: 'ID Venta', dataIndex: 'saleId', minWidth: 100, filter: true },
     { title: 'RUC Cliente', dataIndex: 'clientRuc', minWidth: 120, filter: true },

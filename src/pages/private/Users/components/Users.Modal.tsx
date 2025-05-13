@@ -5,9 +5,9 @@ import SubmitButton from '@/components/SubmitButton';
 import { UserProps } from '@/services/users/users';
 import { postUser, putUser } from '@/services/users/users.request';
 import { uploadFile } from '@/services/files/file.requests';
-import { RolesEnum } from '@/types/global.enum';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid } from '@mui/material';
 import { useEffect, useState } from 'react';
+import { RolesEnum } from '@/services/users/user.enum';
 
 interface UsersModalProps {
   data?: UserProps;
@@ -63,19 +63,14 @@ const UsersModal = ({ data, handleClose, handleReload }: UsersModalProps) => {
 
   return (
     <Dialog open fullWidth maxWidth="sm">
-      <DialogTitle textAlign="center">
-        {data ? 'Editar usuario' : 'Agregar usuario'}
-      </DialogTitle>
+      <DialogTitle textAlign="center">{data ? 'Editar usuario' : 'Agregar usuario'}</DialogTitle>
       <DialogContent>
         <Spin spinning={loading}>
           <Form form={form} onFinish={handleSubmit} layout="vertical" style={{ marginTop: 8 }}>
             <Grid container columnSpacing={2}>
               {/* Nombre */}
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <Form.Item
-                  name="nombre"
-                  rules={[{ required: true, message: 'El nombre es requerido' }]}
-                >
+                <Form.Item name="nombre" rules={[{ required: true, message: 'El nombre es requerido' }]}>
                   <InputAntd label="Nombre" />
                 </Form.Item>
               </Grid>
@@ -95,25 +90,14 @@ const UsersModal = ({ data, handleClose, handleReload }: UsersModalProps) => {
 
               {/* Contraseña */}
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <Form.Item
-                  name="password"
-                  rules={
-                    !data
-                      ? [{ required: true, message: 'La contraseña es requerida' }]
-                      : []
-                  }
-                >
+                <Form.Item name="password" rules={!data ? [{ required: true, message: 'La contraseña es requerida' }] : []}>
                   <InputAntd label="Contraseña" type="password" />
                 </Form.Item>
               </Grid>
 
               {/* Rol */}
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <Form.Item
-                  name="role"
-                  label="Rol"
-                  rules={[{ required: true, message: 'El rol es requerido' }]}
-                >
+                <Form.Item name="role" label="Rol" rules={[{ required: true, message: 'El rol es requerido' }]}>
                   <Select placeholder="Selecciona un rol">
                     {Object.values(RolesEnum).map((r) => (
                       <Select.Option key={r} value={r}>
@@ -126,11 +110,7 @@ const UsersModal = ({ data, handleClose, handleReload }: UsersModalProps) => {
 
               {/* Estado */}
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <Form.Item
-                  name="estado"
-                  label="Estado"
-                  rules={[{ required: true, message: 'El estado es requerido' }]}
-                >
+                <Form.Item name="estado" label="Estado" rules={[{ required: true, message: 'El estado es requerido' }]}>
                   <Select placeholder="Selecciona estado">
                     <Select.Option value={true}>Activo</Select.Option>
                     <Select.Option value={false}>Inactivo</Select.Option>
@@ -141,16 +121,15 @@ const UsersModal = ({ data, handleClose, handleReload }: UsersModalProps) => {
               {/* Foto de perfil */}
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                 <Form.Item name="foto">
-                  <InputFile
-                    label="Foto de perfil"
-                    onChange={(file) => form.setFieldValue('foto', file)}
-                  />
+                  <InputFile label="Foto de perfil" onChange={(file) => form.setFieldValue('foto', file)} />
                 </Form.Item>
               </Grid>
 
               {/* Submit oculto */}
               <Grid size={{ xs: 12, sm: 12, md: 12 }}>
-                <Button className="d-none" type="submit">SUBMIT</Button>
+                <Button className="d-none" type="submit">
+                  SUBMIT
+                </Button>
               </Grid>
             </Grid>
           </Form>

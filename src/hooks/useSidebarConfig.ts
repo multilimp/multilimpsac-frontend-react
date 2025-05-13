@@ -1,6 +1,6 @@
-import { RolesEnum } from '@/types/global.enum';
 import { SidebarConfigProps } from '@/types/global';
 import sidebarConfig from '@/layouts/PrivateLayout/sidebarConfig';
+import { RolesEnum } from '@/services/users/user.enum';
 
 const useSidebarConfig = (rol: RolesEnum) => {
   const listSidebar: Array<SidebarConfigProps> = [];
