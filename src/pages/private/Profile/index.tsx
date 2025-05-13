@@ -29,14 +29,12 @@ const Profile: React.FC<ProfileProps> = ({ user = defaultUser }) => (
   <div className="profile-container">
     <div className="profile-wrapper">
 
-      {/* FOTO + NOMBRE + ROL */}
       <div className="card card-photo">
         <img src={user.foto} alt={user.nombre} />
         <div className="name">{user.nombre}</div>
         <div className="role">{user.role.toLowerCase()}</div>
       </div>
 
-      {/* DETALLES DE PERFIL */}
       <div className="card card-info">
         <h3>Detalles de Perfil</h3>
         <ul className="info-list">
@@ -58,7 +56,6 @@ const Profile: React.FC<ProfileProps> = ({ user = defaultUser }) => (
         </ul>
       </div>
 
-      {/* MANTENIMIENTO */}
       <div className="maintenance-wrapper">
         <div className="card-maintenance">
           <p>Por el momento<br/>en mantenimiento</p>

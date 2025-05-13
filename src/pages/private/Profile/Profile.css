@@ -1,12 +1,10 @@
 /* Profile.css */
 
-/* Fondo suave */
 .profile-container {
   background-color: #f0f4f8;
   padding: 2rem;
 }
 
-/* Wrapper blanco con grid de 3 columnas */
 .profile-wrapper {
   max-width: 1200px;
   margin: 0 auto;
@@ -28,7 +26,6 @@
   padding: 1.5rem;
 }
 
-/* === FOTO + NOMBRE + ROL === */
 .card-photo {
   display: flex;
   flex-direction: column;
@@ -57,7 +54,6 @@
   color: #4a5568;
 }
 
-/* === DETALLES DE PERFIL === */
 .card-info {
   background: #fafafa;
 }
@@ -92,7 +88,6 @@
   color: #4a5568;
 }
 
-/* === MANTENIMIENTO apilado === */
 .maintenance-wrapper {
   display: flex;
   flex-direction: column;
