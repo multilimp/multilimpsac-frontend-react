@@ -118,15 +118,13 @@ const AntTable = <T extends Record<string, any>>(props: AntTableProps<T>) => {
     render: (text) => (
       <Fragment>
         {searchedColumn === dataIndex ? (
-          <Fragment>
-            <Highlighter
-              highlightStyle={{ backgroundColor: '#ffd54f', padding: 0 }}
-              searchWords={[String(searchText)]}
-              autoEscape
-              textToHighlight={text ? text.toString() : ''}
-            />
-            <p></p>
-          </Fragment>
+          // @ts-expect-error
+          <Highlighter
+            highlightStyle={{ backgroundColor: '#ffd54f', padding: 0 }}
+            searchWords={[String(searchText)]}
+            autoEscape
+            textToHighlight={text ? text.toString() : ''}
+          />
         ) : (
           text
         )}
