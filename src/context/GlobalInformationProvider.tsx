@@ -6,6 +6,8 @@ import { getRegions } from '@/services/ubigeo/ubigeo.requests';
 import { notification } from 'antd';
 import { getClients } from '@/services/clients/client.requests';
 import { getCompanies } from '@/services/companies/company.requests';
+import StorageService from '@/services/storageService';
+import { STORAGE_KEY } from '@/utils/constants';
 
 interface ContextProps {
   loadingRegions: boolean;
@@ -34,6 +36,9 @@ const GlobalInformationProvider = ({ children }: { children: ReactNode }) => {
   const [companies, setCompanies] = useState<Array<CompanyProps>>([]);
 
   useEffect(() => {
+    const token = StorageService.get(STORAGE_KEY);
+    if (!token) return;
+
     obtainRegions();
     obtainClients();
     obtainCompanies();
