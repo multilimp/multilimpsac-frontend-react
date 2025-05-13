@@ -1,4 +1,3 @@
-
 import { Form } from 'antd';
 import { Controls, ControlActionsProps, StepItemContent } from './smallcomponents';
 import { Card, CardContent, CardHeader, Grid } from '@mui/material';
@@ -27,7 +26,7 @@ const InputsSecondStep = ({ form, ...controlProps }: InputsSecondStepProps) => {
         <CardHeader title="Lugar de entrega" />
         <CardContent sx={{ pb: '0 !important', pt: 1 }}>
           <Grid container spacing={2}>
-            <Grid xs={12} sm={6} md={4}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
               <Form.Item name="regionEntregaComplete" noStyle />
               <Form.Item name="regionEntrega" rules={[requiredField]}>
                 <SelectRegions
@@ -45,7 +44,7 @@ const InputsSecondStep = ({ form, ...controlProps }: InputsSecondStepProps) => {
                 />
               </Form.Item>
             </Grid>
-            <Grid xs={12} sm={6} md={4}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
               <Form.Item name="provinciaEntregaComplete" noStyle />
               <Form.Item noStyle shouldUpdate>
                 {({ getFieldValue }) => (
@@ -66,7 +65,7 @@ const InputsSecondStep = ({ form, ...controlProps }: InputsSecondStepProps) => {
                 )}
               </Form.Item>
             </Grid>
-            <Grid xs={12} sm={6} md={4}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
               <Form.Item name="distritoEntregaComplete" noStyle />
               <Form.Item noStyle shouldUpdate>
                 {({ getFieldValue }) => (
@@ -80,17 +79,17 @@ const InputsSecondStep = ({ form, ...controlProps }: InputsSecondStepProps) => {
                 )}
               </Form.Item>
             </Grid>
-            <Grid xs={12} sm={6} md={4}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
               <Form.Item name="fechaEntrega" rules={[requiredField]}>
                 <DatePickerAntd label="Fecha de entrega" />
               </Form.Item>
             </Grid>
-            <Grid xs={12} sm={6} md={4}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
               <Form.Item name="direccionEntrega" rules={[requiredField]}>
                 <InputAntd label="Dirección" />
               </Form.Item>
             </Grid>
-            <Grid xs={12} sm={6} md={4}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
               <Form.Item name="referenciaEntrega" rules={[requiredField]}>
                 <InputAntd label="Referencia" />
               </Form.Item>

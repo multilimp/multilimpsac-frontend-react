@@ -90,26 +90,14 @@ const sidebarConfig: Array<SidebarConfigProps> = [
     ],
   },
   {
-    title: 'Usuario',
+    title: 'Configuraciones',
     roles: rolesArr,
     routes: [
-      {
-        name: 'Perfil',
-        path: '/profile',
-        icon: Apps,
-        roles: rolesArr,
-      },
-      {
-        name: 'Configuración',
-        path: '/settings',
-        icon: Apps,
-        roles: rolesArr,
-      },
       {
         name: 'Usuarios',
         path: '/users',
         icon: Person,
-        roles: [RolesEnum.ADMIN],
+        roles: rolesArr,
       },
     ],
   },

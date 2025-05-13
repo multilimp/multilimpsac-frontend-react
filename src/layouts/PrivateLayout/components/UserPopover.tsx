@@ -2,7 +2,7 @@ import { useAppContext } from '@/context';
 import StorageService from '@/services/storageService';
 import { UserProps } from '@/services/users/users';
 import { STORAGE_KEY } from '@/utils/constants';
-import { Menu } from '@mui/icons-material';
+import { AccountBox, Logout } from '@mui/icons-material';
 import { Box, Divider, ListItemIcon, MenuItem, MenuList, Popover, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
@@ -22,6 +22,10 @@ export function UserPopover({ anchorEl, onClose, open }: Readonly<UserPopoverPro
     navigate('/login');
   };
 
+  const handleRedirect = () => {
+    navigate('/profile');
+  };
+
   return (
     <Popover
       anchorEl={anchorEl}
@@ -38,21 +42,15 @@ export function UserPopover({ anchorEl, onClose, open }: Readonly<UserPopoverPro
       </Box>
       <Divider />
       <MenuList disablePadding sx={{ p: '8px', '& .MuiMenuItem-root': { borderRadius: 1 } }}>
-        <MenuItem onClick={onClose}>
+        <MenuItem onClick={handleRedirect}>
           <ListItemIcon>
-            <Menu />
-          </ListItemIcon>
-          Settings
-        </MenuItem>
-        <MenuItem onClick={onClose}>
-          <ListItemIcon>
-            <Menu />
+            <AccountBox />
           </ListItemIcon>
           Profile
         </MenuItem>
         <MenuItem onClick={handleLogout}>
           <ListItemIcon>
-            <Menu />
+            <Logout />
           </ListItemIcon>
           Cerrar sesión
         </MenuItem>
