@@ -1,5 +1,4 @@
-
-import { Input, InputNumber, InputNumberProps, InputProps } from 'antd';
+import { Input, InputNumber, InputProps } from 'antd';
 import { useState } from 'react';
 
 type CommonProps = {
@@ -38,12 +37,12 @@ type InputAntdProps = TextInputProps | TextAreaInputProps | NumberInputProps;
 const InputAntd = (props: InputAntdProps) => {
   const { label, isFloating, isAddonBefore, hasError, size = 'large' } = props;
   const [focus, setFocus] = useState(false);
-  
+
   let value = '';
   if ('value' in props && props.value !== undefined) {
     value = String(props.value);
   }
-  
+
   const isFloatingAux = focus || (value && value.length !== 0);
   let labelClass = isFloatingAux || isFloating ? 'label label-float' : 'label';
   labelClass += size ? ` ${size}` : ' middle';
@@ -56,23 +55,11 @@ const InputAntd = (props: InputAntdProps) => {
     <div className={`input-form ${size}`}>
       <div className="float-label" onBlur={() => setFocus(false)} onFocus={() => setFocus(true)}>
         {props.type === 'textarea' ? (
-          <Input.TextArea 
-            {...(props as TextAreaInputProps)} 
-            size={size} 
-            rows={4} 
-          />
+          <Input.TextArea {...(props as TextAreaInputProps)} size={size} rows={4} />
         ) : props.type === 'number' ? (
-          <InputNumber 
-            {...(props as NumberInputProps)} 
-            size={size} 
-            style={{ width: '100%' }} 
-          />
+          <InputNumber {...(props as NumberInputProps)} size={size} style={{ width: '100%' }} />
         ) : (
-          <Input 
-            {...(props as TextInputProps)} 
-            size={size} 
-            type={props.type || 'text'} 
-          />
+          <Input {...(props as TextInputProps)} size={size} type={props.type || 'text'} />
         )}
         <label htmlFor={label} className={labelClass}>
           {label}
@@ -82,11 +69,11 @@ const InputAntd = (props: InputAntdProps) => {
   );
 };
 
-InputAntd.defaultProps = { 
-  hasError: false, 
-  isFloating: false, 
+InputAntd.defaultProps = {
+  hasError: false,
+  isFloating: false,
   isAddonBefore: false,
-  type: 'text'
+  type: 'text',
 };
 
 export default InputAntd;

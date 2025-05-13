@@ -1,4 +1,4 @@
-import { DistrictProps, RegionProps } from '../ubigeo/ubigeo';
+import { DistrictProps, ProvinceProps, RegionProps } from '../ubigeo/ubigeo';
 
 export interface ProviderProps {
   id: number;
@@ -6,7 +6,7 @@ export interface ProviderProps {
   ruc: string;
 
   departamento?: RegionProps;
-  provincia?: ProviderProps;
+  provincia?: ProvinceProps;
   distrito?: DistrictProps;
   direccion?: string;
 
