@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react'; // Importar useEffect
+
+import React, { useEffect, useState } from 'react';
 import { Form, notification, Spin } from 'antd';
 import { ProviderProps } from '@/services/providers/providers';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid } from '@mui/material';
@@ -73,8 +74,8 @@ const ProvidersModal: React.FC<ProvidersModalProps> = ({ data, handleClose, hand
       <DialogContent>
         <Spin spinning={loading}>
           <Form form={form} onFinish={handleSubmit} layout="vertical" style={{ marginTop: 8 }} autoComplete="off">
-            <Grid container columnSpacing={2}>
-              <Grid size={{ xs: 12, sm: 6 }}>
+            <Grid container spacing={2}>
+              <Grid xs={12} sm={6}>
                 <Form.Item
                   name="ruc"
                   rules={[
@@ -85,13 +86,13 @@ const ProvidersModal: React.FC<ProvidersModalProps> = ({ data, handleClose, hand
                   <InputAntd label="RUC" />
                 </Form.Item>
               </Grid>
-              <Grid size={{ xs: 12, sm: 6 }}>
+              <Grid xs={12} sm={6}>
                 <Form.Item name="razonSocial" rules={[{ required: true, message: 'La razón social es requerida' }]}>
                   <InputAntd label="Razón social" />
                 </Form.Item>
               </Grid>
 
-              <Grid size={{ xs: 12, sm: 6 }}>
+              <Grid xs={12} sm={6}>
                 <Form.Item
                   name="telefono"
                   rules={[
@@ -102,13 +103,13 @@ const ProvidersModal: React.FC<ProvidersModalProps> = ({ data, handleClose, hand
                   <InputAntd label="Tel / Cel" />
                 </Form.Item>
               </Grid>
-              <Grid size={{ xs: 12, sm: 6 }}>
+              <Grid xs={12} sm={6}>
                 <Form.Item name="email" rules={[{ pattern: EMAIL_PATTERN, message: 'Ingrese un correo electrónico válido' }]}>
                   <InputAntd label="Correo electrónico" />
                 </Form.Item>
               </Grid>
 
-              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+              <Grid xs={12} sm={6} md={4}>
                 <Form.Item name="departamentoComplete" noStyle />
                 <Form.Item name="departamento">
                   <SelectRegions
@@ -126,7 +127,7 @@ const ProvidersModal: React.FC<ProvidersModalProps> = ({ data, handleClose, hand
                   />
                 </Form.Item>
               </Grid>
-              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+              <Grid xs={12} sm={6} md={4}>
                 <Form.Item name="provinciaComplete" noStyle />
                 <Form.Item noStyle shouldUpdate>
                   {({ getFieldValue }) => (
@@ -147,7 +148,7 @@ const ProvidersModal: React.FC<ProvidersModalProps> = ({ data, handleClose, hand
                   )}
                 </Form.Item>
               </Grid>
-              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+              <Grid xs={12} sm={6} md={4}>
                 <Form.Item name="distritoComplete" noStyle />
                 <Form.Item noStyle shouldUpdate>
                   {({ getFieldValue }) => (
@@ -167,7 +168,7 @@ const ProvidersModal: React.FC<ProvidersModalProps> = ({ data, handleClose, hand
                 </Form.Item>
               </Grid>
 
-              <Grid size={{ xs: 12 }}>
+              <Grid xs={12}>
                 <Form.Item name="direccion">
                   <InputAntd label="Dirección" />
                 </Form.Item>

@@ -12,7 +12,7 @@ const HEADER_HEIGHT = 165;
 const NavigatorList = () => {
   const { pathname } = useLocation();
   const { user } = useAppContext();
-  const sidebarList = useSidebarConfig(user.rol);
+  const sidebarList = useSidebarConfig(user.role);
   return (
     <Box>
       <Stack p={3} spacing={2}>
@@ -24,9 +24,9 @@ const NavigatorList = () => {
         </Stack>
         <Stack alignItems="center">
           <Typography fontWeight={600} sx={{ color: 'white' }}>
-            {user.name}
+            {user.nombre}
           </Typography>
-          <FormHelperText sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>{user.rol.toUpperCase()}</FormHelperText>
+          <FormHelperText sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>{user.role}</FormHelperText>
         </Stack>
       </Stack>
       <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)' }} />

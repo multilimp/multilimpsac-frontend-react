@@ -1,9 +1,8 @@
-export enum RolesEnum {
-  ADMIN = 'admin',
-  USER  = 'user', 
-}
-
 export enum ModalStateEnum {
-  BOX = 'box',
-  DELETE = 'delete',
+  BOX = 'BOX',
+  MODAL = 'MODAL',
+  DRAWER = 'DRAWER',
+  DELETE = 'DELETE',
+  NONE = 'NONE',
+  SECOND_BOX = 'SECOND_BOX',
 }

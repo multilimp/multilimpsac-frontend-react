@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-interface SelectContainerProps {
+export interface SelectContainerProps {
   children: any;
   label: string;
   isFloating?: boolean;

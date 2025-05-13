@@ -1,7 +1,7 @@
 import { lazy } from 'react';
 import Loadable from './Loadable';
-import { RolesEnum } from '@/types/global.enum';
 import { PropsRoutes } from '@/types/global';
+import { RolesEnum } from '@/services/users/user.enum';
 
 // ERRORS -------------------------------------------------------------------------------
 const Page404 = Loadable(lazy(() => import('@/pages/errors/Page404')));
@@ -16,16 +16,18 @@ const RecoveryPassword = Loadable(lazy(() => import('@/pages/public/RecoveryPass
 const Dashboard = Loadable(lazy(() => import('@/pages/private/Dashboard')));
 const Profile = Loadable(lazy(() => import('@/pages/private/Profile')));
 const Companies = Loadable(lazy(() => import('@/pages/private/Companies')));
-const Quotes = Loadable(lazy(() => import('@/pages/private/Quotes'))); 
-const Sales = Loadable(lazy(() => import('@/pages/private/Sales')));    
-const Orders = Loadable(lazy(() => import('@/pages/private/Orders')));  
-const Clients = Loadable(lazy(() => import('@/pages/private/Clients')));  
-const Providers = Loadable(lazy(() => import('@/pages/private/Providers')));  
-const Transports = Loadable(lazy(() => import('@/pages/private/Transports')));  
-const Treasurys = Loadable(lazy(() => import('@/pages/private/Treasurys')));  
-const Billings = Loadable(lazy(() => import('@/pages/private/Billings')));  
-const Trackings = Loadable(lazy(() => import('@/pages/private/Trackings')));  
-const Users = Loadable(lazy(() => import('@/pages/private/Users')));  
+const Users = Loadable(lazy(() => import('@/pages/private/Users')));
+const Quotes = Loadable(lazy(() => import('@/pages/private/Quotes')));
+const Sales = Loadable(lazy(() => import('@/pages/private/Sales')));
+const Orders = Loadable(lazy(() => import('@/pages/private/Orders')));
+const Clients = Loadable(lazy(() => import('@/pages/private/Clients')));
+const Providers = Loadable(lazy(() => import('@/pages/private/Providers')));
+const Transports = Loadable(lazy(() => import('@/pages/private/Transports')));
+const Treasurys = Loadable(lazy(() => import('@/pages/private/Treasurys')));
+const Billings = Loadable(lazy(() => import('@/pages/private/Billings')));
+const Trackings = Loadable(lazy(() => import('@/pages/private/Trackings')));
+
+const rolesArr = Object.values(RolesEnum);
 
 const routes: Array<PropsRoutes> = [
   {
@@ -58,80 +60,80 @@ const routes: Array<PropsRoutes> = [
   },
   {
     path: '/',
-    roles: Object.values(RolesEnum),
+    roles: rolesArr,
     element: PrivateLayout,
     isPrivate: true,
     children: [
       {
         path: '',
         element: Dashboard,
-        roles: Object.values(RolesEnum),
+        roles: rolesArr,
       },
       {
         path: 'profile',
         element: Profile,
-        roles: Object.values(RolesEnum),
+        roles: rolesArr,
       },
       {
         path: 'companies',
         element: Companies,
-        roles: Object.values(RolesEnum),
+        roles: rolesArr,
       },
       {
-        path: 'quotes',  // Corregido typo (de 'quates' a 'quotes')
-        element: Quotes,  // Actualizado a PascalCase
-        roles: Object.values(RolesEnum),
+        path: 'quotes', // Corregido typo (de 'quates' a 'quotes')
+        element: Quotes, // Actualizado a PascalCase
+        roles: rolesArr,
       },
       {
         path: 'sales',
-        element: Sales,   // Actualizado a PascalCase
-        roles: Object.values(RolesEnum),
+        element: Sales, // Actualizado a PascalCase
+        roles: rolesArr,
       },
       {
         path: 'orders',
-        element: Orders,  // Actualizado a PascalCase
-        roles: Object.values(RolesEnum),
+        element: Orders, // Actualizado a PascalCase
+        roles: rolesArr,
       },
       {
         path: 'clients',
-        element: Clients,  // Actualizado a PascalCase
-        roles: Object.values(RolesEnum),
+        element: Clients, // Actualizado a PascalCase
+        roles: rolesArr,
       },
       {
         path: 'providers',
-        element: Providers,  // Actualizado a PascalCase
-        roles: Object.values(RolesEnum),
+        element: Providers, // Actualizado a PascalCase
+        roles: rolesArr,
       },
       {
         path: 'transports',
-        element: Transports,  // Actualizado a PascalCase
-        roles: Object.values(RolesEnum),
+        element: Transports, // Actualizado a PascalCase
+        roles: rolesArr,
       },
       {
         path: 'treasury',
-        element: Treasurys,  // Actualizado a PascalCase
-        roles: Object.values(RolesEnum),
+        element: Treasurys, // Actualizado a PascalCase
+        roles: rolesArr,
       },
       {
         path: 'billing',
-        element: Billings,  // Actualizado a PascalCase
-        roles: Object.values(RolesEnum),
+        element: Billings, // Actualizado a PascalCase
+        roles: rolesArr,
       },
       {
         path: 'tracking',
-        element: Trackings,  // Actualizado a PascalCase
-        roles: Object.values(RolesEnum),
+        element: Trackings, // Actualizado a PascalCase
+        roles: rolesArr,
       },
-            {
+      {
         path: 'users',
-        element: Users,  // Actualizado a PascalCase
+        element: Users, // Actualizado a PascalCase
         roles: Object.values(RolesEnum),
       },
       // EXCEPT
       {
         path: '*',
         element: Page404,
-        roles: Object.values(RolesEnum),
+        roles: rolesArr,
       },
     ],
   },

@@ -1,3 +1,4 @@
+
 // src/pages/TrackingsPage.tsx
 import React, { useEffect, useState } from 'react';
 import PageContent from '@/components/PageContent';
@@ -71,6 +72,10 @@ const TrackingsPage: React.FC = () => {
     }
   };
 
+  const handleEdit = (row: TrackingProps) => {
+    setModal({ data: row, mode: ModalStateEnum.BOX });
+  };
+
   return (
     <PageContent
       component={
@@ -86,7 +91,7 @@ const TrackingsPage: React.FC = () => {
       <TrackingsTable
         data={data}
         loading={loading}
-        onEdit={(row) => setModal({ data: row, mode: ModalStateEnum.BOX })}
+        onEdit={handleEdit}
         onDelete={handleDelete}
       />
 

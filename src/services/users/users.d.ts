@@ -1,4 +1,4 @@
-import { RolesEnum } from '@/types/global.enum';
+import { RolesEnum } from './user.enum';
 
 export interface UserProps {
   id: number;

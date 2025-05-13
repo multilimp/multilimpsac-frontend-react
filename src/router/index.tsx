@@ -1,3 +1,4 @@
+
 import { Route, Routes } from 'react-router-dom';
 import routes from './config';
 import Page401 from '@/pages/errors/Page401';
@@ -20,7 +21,7 @@ const ConfigRoutes = () => {
                 {children.map((el) => {
                   const { path: ruta, element: Element, roles } = el;
                   let flag = false;
-                  if (roles.includes(user.rol ?? '')) flag = true;
+                  if (roles.includes(user.role)) flag = true;
                   return <Route path={ruta} element={flag ? <Element /> : <Page401 />} key={ruta} />;
                 })}
               </Route>

@@ -166,7 +166,7 @@ export default function GlobalStyles() {
           fontWeight: '400',
           position: 'absolute',
           pointerEvents: 'none',
-          left: '12px',
+          left: '16px',
           top: '14px',
           transition: '0.2s ease all',
           color: '#272a2c',
@@ -211,6 +211,12 @@ export default function GlobalStyles() {
         },
         '.d-none': {
           display: 'none !important',
+        },
+        '.flex-1': {
+          flex: 1,
+        },
+        '.flex-2': {
+          flex: 2,
         },
       }}
     />

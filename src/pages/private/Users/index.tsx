@@ -36,33 +36,13 @@ const Users = () => {
   };
 
   return (
-    <PageContent
-      component={
-        <Button onClick={() => setModal({ mode: ModalStateEnum.BOX })}>
-          Agregar
-        </Button>
-      }
-    >
-      <UsersTable
-        data={data}
-        loading={loading}
-        onRecordAction={(mode, record) => setModal({ mode, data: record })}
-      />
+    <PageContent component={<Button onClick={() => setModal({ mode: ModalStateEnum.BOX })}>Agregar</Button>}>
+      <UsersTable data={data} loading={loading} onRecordAction={(mode, record) => setModal({ mode, data: record })} />
 
-      {modal?.mode === ModalStateEnum.BOX ? (
-        <UsersModal
-          data={modal.data}
-          handleReload={obtainData}
-          handleClose={() => setModal(null)}
-        />
-      ) : null}
+      {modal?.mode === ModalStateEnum.BOX ? <UsersModal data={modal.data} handleReload={obtainData} handleClose={() => setModal(null)} /> : null}
 
       {modal?.mode === ModalStateEnum.DELETE ? (
-        <ConfirmDelete
-          endpoint={`/users/${modal.data?.id}`}
-          handleClose={() => setModal(null)}
-          handleReload={obtainData}
-        />
+        <ConfirmDelete endpoint={`/users/${modal.data?.id}`} handleClose={() => setModal(null)} handleReload={obtainData} />
       ) : null}
     </PageContent>
   );

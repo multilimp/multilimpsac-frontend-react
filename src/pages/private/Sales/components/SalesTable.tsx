@@ -1,18 +1,16 @@
-import React, { useState } from 'react';
-import { Box, Button, Chip } from '@mui/material';
-import { DatePicker, Space, Tooltip } from 'antd';
-import { SaleProps, SaleFilter } from '@/services/sales/sales';
-import { Delete, Edit, Loop, VisibilityOutlined } from '@mui/icons-material';
+import React from 'react';
+import { Button, Chip } from '@mui/material';
+import { Space, Tooltip } from 'antd';
+import { SaleProps } from '@/services/sales/sales';
+import { Delete, Edit, VisibilityOutlined } from '@mui/icons-material';
 import AntTable, { AntColumnType } from '@/components/AntTable';
 import { formatCurrency } from '@/utils/functions';
-
-const { RangePicker } = DatePicker;
+import dayjs from 'dayjs';
 
 interface SalesTableProps {
   data: SaleProps[];
-  loading?: boolean;
+  loading: boolean;
   onEdit: (sale: SaleProps) => void;
-  onRefresh?: () => void;
 }
 
 const getStatusColor = (status: string) => {
@@ -28,198 +26,109 @@ const getStatusColor = (status: string) => {
   }
 };
 
-const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onEdit, onRefresh }) => {
-  const [dateRange, setDateRange] = useState<any>([null, null]);
-  const [filter, setFilter] = useState<SaleFilter>({});
-
-  const handleDateRangeChange = (dates: any) => {
-    if (!dates || dates.length < 2) {
-      setDateRange([null, null]);
-      setFilter({ ...filter, dateFrom: undefined, dateTo: undefined });
-      return;
-    }
-    
-    setDateRange(dates);
-    setFilter({
-      ...filter,
-      dateFrom: dates[0]?.format('YYYY-MM-DD'),
-      dateTo: dates[1]?.format('YYYY-MM-DD')
-    });
-  };
-
-  const handleRefresh = () => {
-    if (onRefresh) {
-      onRefresh();
-    }
-  };
-
+const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onEdit }) => {
   const columns: AntColumnType<SaleProps>[] = [
     {
       title: 'Código Venta',
-      dataIndex: 'saleCode',
-      key: 'saleCode',
-      render: (saleCode: string | undefined, record: SaleProps) => saleCode || record.saleNumber,
-      filters: [],
-      filterSearch: true,
+      dataIndex: 'codigoVenta',
+      key: 'codigoVenta',
+      filter: true,
+      width: 150,
     },
     {
       title: 'Cliente',
-      dataIndex: 'client',
-      key: 'client',
-      filters: [],
-      filterSearch: true,
+      dataIndex: 'cliente',
+      key: 'cliente',
+      width: 125,
+      render: (_, record) => record.cliente?.razonSocial ?? '-',
     },
     {
       title: 'RUC Cliente',
-      dataIndex: 'clientRuc',
-      key: 'clientRuc',
-      filters: [],
-      filterSearch: true,
+      dataIndex: 'cliente',
+      key: 'cliente',
+      width: 150,
+      render: (_, record) => record.cliente?.ruc ?? '-',
     },
     {
       title: 'Empresa',
-      dataIndex: 'companyName',
-      key: 'companyName',
-      filters: [],
-      filterSearch: true,
-      render: (companyName: string) => companyName || '-',
+      dataIndex: 'empresa',
+      key: 'empresa',
+      width: 150,
+      render: (_, record) => record.empresa?.razonSocial ?? '-',
     },
     {
-      title: 'Fecha',
-      dataIndex: 'date',
-      key: 'date',
-      sorter: (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-    },
-    {
-      title: 'Forma de Pago',
-      dataIndex: 'paymentMethod',
-      key: 'paymentMethod',
-      filters: [
-        { text: 'Efectivo', value: 'cash' },
-        { text: 'Crédito', value: 'credit' },
-        { text: 'Transferencia', value: 'transfer' }
-      ],
-      onFilter: (value: any, record: SaleProps) => record.paymentMethod === value,
-      render: (paymentMethod: string) => {
-        switch (paymentMethod) {
-          case 'cash': return 'Efectivo';
-          case 'credit': return 'Crédito';
-          case 'transfer': return 'Transferencia';
-          default: return paymentMethod;
-        }
-      }
+      title: 'Fecha de emisión',
+      dataIndex: 'fechaEmision',
+      key: 'fechaEmision',
+      width: 150,
+      render: (value) => (value ? dayjs(value).format('DD/MM/YYYY') : ''),
     },
     {
       title: 'Estado',
-      dataIndex: 'status',
-      key: 'status',
+      dataIndex: 'etapaSiaf',
+      key: 'etapaSiaf',
+      width: 150,
       filters: [
         { text: 'Completado', value: 'completed' },
         { text: 'Pendiente', value: 'pending' },
-        { text: 'Reembolsado', value: 'refunded' }
+        { text: 'Reembolsado', value: 'refunded' },
       ],
-      onFilter: (value: any, record: SaleProps) => record.status === value,
-      render: (status: string) => {
+      onFilter: (value: any, record: SaleProps) => record.etapaSiaf === value,
+      render: (etapaSiaf: string) => {
         const statusTranslations: Record<string, string> = {
           completed: 'Completado',
           pending: 'Pendiente',
-          refunded: 'Reembolsado'
+          refunded: 'Reembolsado',
         };
-        
+
         return (
           <Chip
-            label={statusTranslations[status] || status}
-            color={getStatusColor(status) as any}
+            label={statusTranslations[etapaSiaf] || etapaSiaf}
+            color={getStatusColor(etapaSiaf) as any}
             size="small"
             variant="filled"
             sx={{ fontWeight: 500 }}
           />
         );
-      }
+      },
     },
     {
       title: 'Total',
-      dataIndex: 'total',
-      key: 'total',
-      sorter: (a, b) => a.total - b.total,
-      render: (total: number) => formatCurrency(total)
+      dataIndex: 'montoVenta',
+      key: 'montoVenta',
+      width: 150,
+      render: (montoVenta: number) => formatCurrency(montoVenta),
     },
     {
       title: 'Acciones',
       key: 'actions',
+      fixed: 'right',
+      width: 150,
       render: (_, record) => (
         <Space size="small">
           <Tooltip title="Ver detalles">
-            <Button
-              size="small"
-              variant="outlined"
-              color="info"
-              sx={{ minWidth: 'auto', p: 0.75 }}
-              onClick={() => {}}
-            >
+            <Button size="small" variant="outlined" color="info" sx={{ minWidth: 'auto', p: 0.75 }} onClick={() => {}}>
               <VisibilityOutlined fontSize="small" />
             </Button>
           </Tooltip>
-          
+
           <Tooltip title="Editar">
-            <Button
-              size="small"
-              variant="outlined"
-              color="primary"
-              sx={{ minWidth: 'auto', p: 0.75 }}
-              onClick={() => onEdit(record)}
-            >
+            <Button size="small" variant="outlined" color="primary" sx={{ minWidth: 'auto', p: 0.75 }} onClick={() => onEdit(record)}>
               <Edit fontSize="small" />
             </Button>
           </Tooltip>
-          
+
           <Tooltip title="Eliminar">
-            <Button
-              size="small"
-              variant="outlined"
-              color="error"
-              sx={{ minWidth: 'auto', p: 0.75 }}
-              onClick={() => {}}
-            >
+            <Button size="small" variant="outlined" color="error" sx={{ minWidth: 'auto', p: 0.75 }} onClick={() => {}}>
               <Delete fontSize="small" />
             </Button>
           </Tooltip>
         </Space>
-      )
-    }
+      ),
+    },
   ];
 
-  return (
-    <Box>
-      <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
-        <Box>
-          <RangePicker 
-            value={dateRange} 
-            onChange={handleDateRangeChange}
-            style={{ marginRight: '1rem' }} 
-          />
-        </Box>
-        
-        <Box>
-          <Button 
-            variant="outlined" 
-            color="primary" 
-            startIcon={<Loop />} 
-            onClick={handleRefresh}
-            sx={{ mr: 1 }}
-          >
-            Actualizar
-          </Button>
-        </Box>
-      </Box>
-      
-      <AntTable 
-        data={data}
-        columns={columns as AntColumnType<SaleProps>[]}
-        loading={loading}
-      />
-    </Box>
-  );
+  return <AntTable data={data} columns={columns} loading={loading} />;
 };
 
 export default SalesTable;

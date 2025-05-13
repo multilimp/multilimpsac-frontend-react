@@ -17,3 +17,5 @@ export const filterOptions = (inputValue: string, option: any) => {
   const title = removeAccents(String(option?.title ?? option?.children).toLowerCase());
   return title.includes(inputValue.toLowerCase());
 };
+
+export const parseJSON = (str?: null | string) => (str ? JSON.parse(str) : null);
