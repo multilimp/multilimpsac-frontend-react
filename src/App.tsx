@@ -5,6 +5,7 @@ import { ConfigProvider } from 'antd';
 import es from 'antd/lib/locale/es_ES';
 import AppContextProvider from './context';
 import ConfigRoutes from './router';
+import GlobalInformationProvider from './context/GlobalInformationProvider';
 
 const App = () => {
   return (
@@ -13,7 +14,9 @@ const App = () => {
         <GlobalStyles />
         <BrowserRouter>
           <AppContextProvider>
-            <ConfigRoutes />
+            <GlobalInformationProvider>
+              <ConfigRoutes />
+            </GlobalInformationProvider>
           </AppContextProvider>
         </BrowserRouter>
       </ThemeConfig>

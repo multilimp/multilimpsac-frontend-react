@@ -1,27 +1,25 @@
-
 import { useEffect, useState } from 'react';
 import { notification } from 'antd';
 import { CatalogProps } from '@/services/catalogs/catalogs';
 import { getCatalogsByCompany } from '@/services/catalogs/catalogs.requests';
 
-const useCatalogs = (companyId: number) => {
+const useCatalogs = (companyId?: number) => {
   const [loadingCatalogs, setLoadingCatalogs] = useState(false);
   const [catalogs, setCatalogs] = useState<Array<CatalogProps>>([]);
 
   useEffect(() => {
-    if (companyId) {
-      obtainCatalogs();
-    }
+    obtainCatalogs();
   }, [companyId]);
 
   const obtainCatalogs = async () => {
-    if (!companyId) {
-      setCatalogs([]);
-      return;
-    }
-    
     try {
       setLoadingCatalogs(true);
+
+      if (!companyId) {
+        setCatalogs([]);
+        return;
+      }
+
       const res = await getCatalogsByCompany(companyId);
       setCatalogs(res);
     } catch (error) {

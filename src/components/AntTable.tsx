@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { Fragment, useRef, useState } from 'react';
 import type { InputRef, TableColumnType } from 'antd';
 import { Table } from 'antd';
 import Highlighter from 'react-highlight-words';
@@ -115,17 +115,21 @@ const AntTable = <T extends Record<string, any>>(props: AntTableProps<T>) => {
         }
       },
     },
-    render: (text) =>
-      searchedColumn === dataIndex ? (
-        <Highlighter
-          highlightStyle={{ backgroundColor: '#ffd54f', padding: 0 }}
-          searchWords={[String(searchText)]}
-          autoEscape
-          textToHighlight={text ? text.toString() : ''}
-        />
-      ) : (
-        text
-      ),
+    render: (text) => (
+      <Fragment>
+        {searchedColumn === dataIndex ? (
+          // @ts-expect-error
+          <Highlighter
+            highlightStyle={{ backgroundColor: '#ffd54f', padding: 0 }}
+            searchWords={[String(searchText)]}
+            autoEscape
+            textToHighlight={text ? text.toString() : ''}
+          />
+        ) : (
+          text
+        )}
+      </Fragment>
+    ),
   });
 
   const auxColumns = columns.map((item) => {

@@ -4,7 +4,7 @@ import { ContactProps } from './contacts';
 
 export const getContacts = async (): Promise<Array<ContactProps>> => {
   const res = await apiClient.get('/contacts');
-  return res.data;
+  return res.data.data;
 };
 
 export const createContact = async (contactData: Partial<ContactProps>): Promise<ContactProps> => {

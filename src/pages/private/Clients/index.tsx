@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import PageContent from '@/components/PageContent';
 import ClientsTable from './components/ClientsTable';
@@ -8,11 +7,11 @@ import { ModalStateEnum } from '@/types/global.enum';
 import { ClientProps } from '@/services/clients/clients';
 import { ModalStateProps } from '@/types/global';
 import ConfirmDelete from '@/components/ConfirmDelete';
-import useClients from '@/hooks/useClients';
+import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 
 const ClientsPage = () => {
   const [modalState, setModalState] = useState<ModalStateProps<ClientProps>>(null);
-  const { clients, loadingClients, obtainClients } = useClients();
+  const { clients, loadingClients, obtainClients } = useGlobalInformation();
 
   const handleOpenModal = () => {
     setModalState({

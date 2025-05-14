@@ -34,3 +34,8 @@ export const generateInvoice = async (saleId: string): Promise<{ pdfUrl: string 
   const response = await apiClient.get(`/ventas/${saleId}/invoice`);
   return response.data;
 };
+
+export const updateSale = async (saleId: number, sale: Record<string, any>): Promise<SaleProps> => {
+  const response = await apiClient.put(`/ventas/${saleId}`, sale);
+  return response.data;
+};

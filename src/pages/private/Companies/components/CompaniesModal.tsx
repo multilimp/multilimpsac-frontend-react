@@ -1,4 +1,3 @@
-
 import { Form, notification, Spin } from 'antd';
 import InputAntd from '@/components/InputAntd';
 import SubmitButton from '@/components/SubmitButton';
@@ -81,7 +80,7 @@ const CompaniesModal = ({ data, handleClose, handleReload }: CompaniesModalProps
         <Spin spinning={loading}>
           <Form form={form} onFinish={handleSubmit} layout="vertical" style={{ marginTop: 8 }} autoComplete="off">
             <Grid container spacing={2}>
-              <Grid xs={12} sm={6} md={4}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                 <Form.Item
                   name="ruc"
                   rules={[
@@ -92,12 +91,12 @@ const CompaniesModal = ({ data, handleClose, handleReload }: CompaniesModalProps
                   <InputAntd label="RUC" />
                 </Form.Item>
               </Grid>
-              <Grid xs={12} sm={6} md={8}>
+              <Grid size={{ xs: 12, sm: 6, md: 8 }}>
                 <Form.Item name="razon_social" rules={[{ required: true, message: 'La razón social es requerida' }]}>
                   <InputAntd label="Razón social" />
                 </Form.Item>
               </Grid>
-              <Grid xs={12} sm={6} md={4}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                 <Form.Item
                   name="telefono"
                   rules={[
@@ -109,7 +108,7 @@ const CompaniesModal = ({ data, handleClose, handleReload }: CompaniesModalProps
                   <InputAntd label="Tel / Cel" />
                 </Form.Item>
               </Grid>
-              <Grid xs={12} sm={6} md={4}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                 <Form.Item
                   name="email"
                   rules={[
@@ -120,13 +119,13 @@ const CompaniesModal = ({ data, handleClose, handleReload }: CompaniesModalProps
                   <InputAntd label="Correo electrónico" />
                 </Form.Item>
               </Grid>
-              <Grid xs={12} sm={6} md={4}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                 <Form.Item name="web">
                   <InputAntd label="Dirección Web" />
                 </Form.Item>
               </Grid>
 
-              <Grid xs={12} sm={6} md={4}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                 <Form.Item name="departamentoComplete" noStyle />
                 <Form.Item name="departamento">
                   <SelectRegions
@@ -144,7 +143,7 @@ const CompaniesModal = ({ data, handleClose, handleReload }: CompaniesModalProps
                   />
                 </Form.Item>
               </Grid>
-              <Grid xs={12} sm={6} md={4}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                 <Form.Item name="provinciaComplete" noStyle />
                 <Form.Item noStyle shouldUpdate>
                   {({ getFieldValue }) => (
@@ -165,7 +164,7 @@ const CompaniesModal = ({ data, handleClose, handleReload }: CompaniesModalProps
                   )}
                 </Form.Item>
               </Grid>
-              <Grid xs={12} sm={6} md={4}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                 <Form.Item name="distritoComplete" noStyle />
                 <Form.Item noStyle shouldUpdate>
                   {({ getFieldValue }) => (
@@ -185,12 +184,12 @@ const CompaniesModal = ({ data, handleClose, handleReload }: CompaniesModalProps
                 </Form.Item>
               </Grid>
 
-              <Grid xs={12} sm={6} md={6}>
+              <Grid size={{ xs: 12, sm: 6, md: 6 }}>
                 <Form.Item name="direccion" rules={[{ required: true, message: 'La dirección es requerida' }]}>
                   <InputAntd label="Dirección" />
                 </Form.Item>
               </Grid>
-              <Grid xs={12} sm={6} md={6}>
+              <Grid size={{ xs: 12, sm: 6, md: 6 }}>
                 <Form.Item name="logo">
                   <InputFile label="Seleccione el logo de la empresa" onChange={(file) => form.setFieldValue('logo', file)} />
                 </Form.Item>

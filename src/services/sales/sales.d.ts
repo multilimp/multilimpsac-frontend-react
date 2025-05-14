@@ -1,16 +1,22 @@
+import { CatalogProps } from '../catalogs/catalogs';
 import { ClientProps } from '../clients/clients';
 import { CompanyProps } from '../companies/company';
+import { ContactProps } from '../contacts/contacts';
 
 export interface SaleProps {
-  id: 5;
+  id: number;
   codigoVenta: string;
-  fechaEmision?: string;
+  fechaEmision: string;
   archivoOc?: string;
   empresaId: number;
   clienteId: number;
-  contactoClienteId?: number;
-  catalogoEmpresaId?: number;
+  contactoClienteId: number;
+  catalogoEmpresaId: number;
   ventaPrivada: boolean;
+  departamentoEntrega?: {
+    id: string;
+    name: string;
+  };
   provinciaEntrega?: {
     id: string;
     name: string;
@@ -19,22 +25,18 @@ export interface SaleProps {
     id: string;
     name: string;
   };
-  departamentoEntrega?: {
-    id: string;
-    name: string;
-  };
-  direccionEntrega?: string;
-  referenciaEntrega?: string;
-  fechaEntrega?: string;
-  montoVenta?: string;
-  fechaForm?: string;
-  fechaMaxForm?: string;
+  direccionEntrega: string;
+  referenciaEntrega: string;
+  fechaEntrega: string;
+  montoVenta: string;
+  fechaForm: string;
+  fechaMaxForm: string;
   productos: Array<string>;
-  documentoOce?: string;
-  documentoOcf?: string;
-  siaf?: string;
-  etapaSiaf?: string;
-  fechaSiaf?: string;
+  documentoOce: string;
+  documentoOcf: string;
+  siaf: string;
+  etapaSiaf: string;
+  fechaSiaf: string;
   documentoPeruCompras?: string;
   fechaPeruCompras?: string;
   fechaEntregaOc?: string;
@@ -43,13 +45,37 @@ export interface SaleProps {
   estadoCobranza?: string;
   fechaEstadoCobranza?: string;
   fechaProximaGestion?: string;
-  etapaActual: 'creacion' | 'pending' | 'completed';
+  etapaActual: string;
   estadoActivo: boolean;
+  createdAt: string;
+  updatedAt: string;
   empresa: CompanyProps;
   cliente: ClientProps;
-  contactoCliente?: string;
-  catalogoEmpresa?: string;
-  ordenesProveedor: [];
+  contactoCliente: ContactProps;
+  catalogoEmpresa: CatalogProps;
+  ordenesProveedor: Array<any>;
+}
+
+export interface SaleProcessedProps {
+  ventaPrivada?: boolean;
+  empresaRuc?: string;
+  empresaRazonSocial?: string;
+  clienteRuc?: string;
+  clienteRazonSocial?: string;
+  codigoUnidadEjecutora?: string;
+  provinciaEntrega?: string;
+  distritoEntrega?: string;
+  departamentoEntrega?: string;
+  direccionEntrega?: string;
+  referenciaEntrega?: string;
+  fechaEntrega?: string;
+  montoVenta?: number;
+  fechaForm?: string;
+  fechaMaxForm?: string;
+  fechaMaxEntrega?: string;
+  productos?: Array<string>;
+  siaf?: number;
+  fechaSiaf?: string;
 }
 
 export interface SaleFilter {

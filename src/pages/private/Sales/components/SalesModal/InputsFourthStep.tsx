@@ -1,4 +1,3 @@
-
 import { Grid } from '@mui/material';
 import { Form } from 'antd';
 import { Controls, ControlActionsProps, StepItemContent } from './smallcomponents';
@@ -12,7 +11,7 @@ const InputsFourthStep = ({ form, ...controlProps }: InputsFourthStepProps) => {
   return (
     <StepItemContent title="INFORMACIÓN DE CONTACTO" subtitle="Ingresa la información solicitada">
       <Grid container spacing={2}>
-        <Grid xs={12} sm={6} md={4}>
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
           <Form.Item name="cargoContactoComplete" noStyle />
           <Form.Item name="cargoContacto" rules={[requiredField]}>
             <SelectContacts
@@ -28,12 +27,12 @@ const InputsFourthStep = ({ form, ...controlProps }: InputsFourthStepProps) => {
             />
           </Form.Item>
         </Grid>
-        <Grid xs={12} sm={6} md={4}>
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
           <Form.Item name="nombreContacto" rules={[requiredField]}>
             <InputAntd label="Nombre" disabled />
           </Form.Item>
         </Grid>
-        <Grid xs={12} sm={6} md={4}>
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
           <Form.Item name="celularContacto" rules={[requiredField]}>
             <InputAntd label="Celular" disabled />
           </Form.Item>
