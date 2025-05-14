@@ -1,6 +1,6 @@
 import React from 'react';
 import './Profile.css';
-import { RolesEnum } from '@/types/global.enum';
+import { RolesEnum } from '@/services/users/user.enum';
 
 export interface UserProps {
   id: number;
@@ -28,7 +28,6 @@ const defaultUser: UserProps = {
 const Profile: React.FC<ProfileProps> = ({ user = defaultUser }) => (
   <div className="profile-container">
     <div className="profile-wrapper">
-
       <div className="card card-photo">
         <img src={user.foto} alt={user.nombre} />
         <div className="name">{user.nombre}</div>
@@ -39,32 +38,44 @@ const Profile: React.FC<ProfileProps> = ({ user = defaultUser }) => (
         <h3>Detalles de Perfil</h3>
         <ul className="info-list">
           <li className="info-item">
-            <label>ID:</label><span>{user.id}</span>
+            <label>ID:</label>
+            <span>{user.id}</span>
           </li>
           <li className="info-item">
-            <label>Nombre:</label><span>{user.nombre}</span>
+            <label>Nombre:</label>
+            <span>{user.nombre}</span>
           </li>
           <li className="info-item">
-            <label>Email:</label><span>{user.email}</span>
+            <label>Email:</label>
+            <span>{user.email}</span>
           </li>
           <li className="info-item">
-            <label>Rol:</label><span>{user.role.toLowerCase()}</span>
+            <label>Rol:</label>
+            <span>{user.role.toLowerCase()}</span>
           </li>
           <li className="info-item">
-            <label>Estado:</label><span>{user.estado ? 'Activo' : 'Inactivo'}</span>
+            <label>Estado:</label>
+            <span>{user.estado ? 'Activo' : 'Inactivo'}</span>
           </li>
         </ul>
       </div>
 
       <div className="maintenance-wrapper">
         <div className="card-maintenance">
-          <p>Por el momento<br/>en mantenimiento</p>
+          <p>
+            Por el momento
+            <br />
+            en mantenimiento
+          </p>
         </div>
         <div className="card-maintenance">
-          <p>Por el momento<br/>en mantenimiento</p>
+          <p>
+            Por el momento
+            <br />
+            en mantenimiento
+          </p>
         </div>
       </div>
-
     </div>
   </div>
 );
