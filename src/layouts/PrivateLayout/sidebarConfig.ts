@@ -70,6 +70,12 @@ const sidebarConfig: Array<SidebarConfigProps> = [
         roles: rolesArr,
       },
       {
+        name: 'Órdenes de Proveedores',
+        path: '/provider-orders',
+        icon: Apps,
+        roles: rolesArr,
+      },
+      {
         name: 'Seguimiento',
         path: '/tracking',
         icon: Apps,

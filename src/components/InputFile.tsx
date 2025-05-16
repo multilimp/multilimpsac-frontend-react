@@ -6,6 +6,7 @@ interface InputFileProps {
   label?: string;
   disabled?: boolean;
   accept?: keyof typeof acceptFiles;
+  height?: string | number;
 }
 
 const acceptFiles = {
@@ -13,7 +14,7 @@ const acceptFiles = {
   image: 'image/jpeg,image/png,image/jpg',
 };
 
-const InputFile = ({ onChange, label, disabled, accept = 'image' }: InputFileProps) => (
+const InputFile = ({ onChange, label, disabled, accept = 'image', height = 'auto' }: InputFileProps) => (
   <Upload
     multiple={false}
     listType="picture"
@@ -37,7 +38,18 @@ const InputFile = ({ onChange, label, disabled, accept = 'image' }: InputFilePro
     // }}
     style={disabled ? { pointerEvents: 'none', backgroundColor: '#eee', opacity: 0.75 } : {}}
   >
-    <FormHelperText sx={{ lineHeight: 1, textAlign: 'center', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+    <FormHelperText
+      sx={{
+        textAlign: 'center',
+        textOverflow: 'ellipsis',
+        overflow: 'hidden',
+        whiteSpace: 'nowrap',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height,
+      }}
+    >
       {label ?? 'Seleccione el archivo'}
     </FormHelperText>
   </Upload>

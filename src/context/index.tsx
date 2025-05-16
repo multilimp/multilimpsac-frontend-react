@@ -30,7 +30,6 @@ const AppContextProvider = ({ children }: { children: ReactNode }) => {
       const res = await validateSession();
       setUser({ ...res });
     } catch (error) {
-      console.error('Error validating user session:', error);
       StorageService.delete(STORAGE_KEY);
     } finally {
       setLoading(false);
