@@ -18,7 +18,6 @@ import {
   List,
   ListItem,
   ListItemText,
-  Paper,
   Stack,
   Table,
   TableBody,
@@ -26,7 +25,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  TextField,
 } from '@mui/material';
 import { DatePicker, Form, Input } from 'antd';
 import InputAntd from '@/components/InputAntd';
@@ -68,9 +66,9 @@ const ProviderOrderForm = () => {
   };
 
   return (
-    <Box display="flex" flexDirection="row" gap={2}>
-      <Box sx={{ width: '300px' }}>
-        <Card>
+    <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+      <Box sx={{ width: { sm: '100%', md: 300 } }} position="relative">
+        <Card sx={{ position: 'sticky', top: 80 }}>
           <CardHeader title="Órden de compra OCGRU660" subheader="Fecha: 20/10/2025" slotProps={{ title: { fontWeight: 700, fontSize: 20 } }} />
           <Divider />
           <CardContent sx={{ pt: 0, pb: 0 }}>
@@ -99,7 +97,7 @@ const ProviderOrderForm = () => {
         </Card>
       </Box>
 
-      <Box sx={{ width: 'calc((100%) - 300px)' }}>
+      <Box flex={1}>
         <Form form={form} onFinish={(values: any) => handleFinish(values)}>
           <Stack spacing={1}>
             <Card>
@@ -450,7 +448,7 @@ const ProviderOrderForm = () => {
           </Stack>
         </Form>
       </Box>
-    </Box>
+    </Stack>
   );
 };
 
