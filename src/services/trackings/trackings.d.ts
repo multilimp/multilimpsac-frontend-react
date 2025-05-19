@@ -1,4 +1,5 @@
 // src/services/trackings/trackings.d.ts
+
 export interface TrackingProps {
   id: number;
   saleId: number;

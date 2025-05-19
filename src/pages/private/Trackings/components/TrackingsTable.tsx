@@ -1,17 +1,17 @@
-
-// src/pages/components/TrackingsTable.tsx
+// src/pages/private/Trackings/components/TrackingsTable.tsx
 import React from 'react';
 import AntTable, { AntColumnType } from '@/components/AntTable';
 import { TrackingProps } from '@/services/trackings/trackings.d';
 import dayjs from 'dayjs';
-import { Button, ButtonGroup } from '@mui/material';
-import { Delete, Edit } from '@mui/icons-material';
+import { Button, ButtonGroup, Fab } from '@mui/material';
+import { Delete, Edit, PictureAsPdf } from '@mui/icons-material';
 
 interface TrackingsTableProps {
   data: TrackingProps[];
   loading: boolean;
   onEdit: (row: TrackingProps) => void;
   onDelete: (row: TrackingProps) => void;
+  onRowClick: (row: TrackingProps) => void;
 }
 
 const statusLabels: Record<TrackingProps['status'], string> = {
@@ -21,24 +21,33 @@ const statusLabels: Record<TrackingProps['status'], string> = {
   canceled: 'Cancelado',
 };
 
-const TrackingsTable: React.FC<TrackingsTableProps> = ({ data, loading, onEdit, onDelete }) => {
+const TrackingsTable: React.FC<TrackingsTableProps> = ({
+  data,
+  loading,
+  onEdit,
+  onDelete,
+  onRowClick
+}) => {
   const columns: AntColumnType<TrackingProps>[] = [
     {
       title: 'Acciones',
       key: 'actions',
+      fixed: 'right',
       width: 120,
       render: (_, record) => (
         <ButtonGroup size="small">
-          <Button color="info" onClick={() => onEdit(record)}>
+          <Button color="info" onClick={e => { e.stopPropagation(); onEdit(record); }}>
             <Edit fontSize="small" />
           </Button>
-          <Button color="error" onClick={() => onDelete(record)}>
+          <Button color="error" onClick={e => { e.stopPropagation(); onDelete(record); }}>
             <Delete fontSize="small" />
           </Button>
         </ButtonGroup>
       ),
     },
+
     { title: 'ID', dataIndex: 'id', minWidth: 70, filter: true },
+
     { title: 'ID Venta', dataIndex: 'saleId', minWidth: 100, filter: true },
     { title: 'RUC Cliente', dataIndex: 'clientRuc', minWidth: 120, filter: true },
     { title: 'RUC Empresa', dataIndex: 'companyRuc', minWidth: 120, filter: true },
@@ -64,23 +73,27 @@ const TrackingsTable: React.FC<TrackingsTableProps> = ({ data, loading, onEdit, 
       title: 'OCE',
       dataIndex: 'oce',
       minWidth: 120,
+      align: 'center',
       render: url =>
-        url ? <a href={url} target="_blank" rel="noopener noreferrer">Descargar OCE</a> : '-',
+        url
+          ? <Fab size="small" component="a" href={url} target="_blank" rel="noopener noreferrer"><PictureAsPdf /></Fab>
+          : '-',
     },
     {
       title: 'OCF',
       dataIndex: 'ocf',
       minWidth: 120,
+      align: 'center',
       render: url =>
-        url ? <a href={url} target="_blank" rel="noopener noreferrer">Descargar OCF</a> : '-',
+        url
+          ? <Fab size="small" component="a" href={url} target="_blank" rel="noopener noreferrer"><PictureAsPdf /></Fab>
+          : '-',
     },
-
     {
       title: 'Perú Compras',
       dataIndex: 'peruPurchases',
       minWidth: 140,
-      render: url =>
-        url ? <a href={url} target="_blank" rel="noopener noreferrer">Descargar Doc</a> : '-',
+      render: flag => flag ? 'Sí' : 'No',
     },
 
     { title: 'GRR', dataIndex: 'grr', minWidth: 100 },
@@ -94,26 +107,28 @@ const TrackingsTable: React.FC<TrackingsTableProps> = ({ data, loading, onEdit, 
       title: 'Refact',
       dataIndex: 'isRefact',
       minWidth: 90,
-      render: v => (v ? 'Sí' : 'No'),
+      render: v => v ? 'Sí' : 'No',
     },
+
     {
       title: 'Fecha Perú Compras',
       dataIndex: 'peruPurchasesDate',
       minWidth: 160,
-      render: d => (d ? dayjs(d).format('DD/MM/YYYY') : '-'),
+      render: d => d ? dayjs(d).format('DD/MM/YYYY') : '-',
     },
     {
       title: 'Fecha Entrega OC',
       dataIndex: 'deliveryDateOC',
       minWidth: 150,
-      render: d => (d ? dayjs(d).format('DD/MM/YYYY') : '-'),
+      render: d => d ? dayjs(d).format('DD/MM/YYYY') : '-',
     },
     {
       title: 'Utilidad (%)',
       dataIndex: 'utility',
       minWidth: 100,
-      render: v => (v != null ? `${v}%` : '-'),
+      render: v => v != null ? `${v}%` : '-',
     },
+
     {
       title: 'Estado',
       dataIndex: 'status',
@@ -129,6 +144,10 @@ const TrackingsTable: React.FC<TrackingsTableProps> = ({ data, loading, onEdit, 
       loading={loading}
       rowKey="id"
       scroll={{ x: 2500 }}
+      onRow={record => ({
+        onClick: () => onRowClick(record),
+        style: { cursor: 'pointer' },
+      })}
     />
   );
 };
