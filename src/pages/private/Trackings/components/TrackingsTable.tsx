@@ -1,17 +1,15 @@
-
-// src/pages/components/TrackingsTable.tsx
-import React from 'react';
+// src/pages/private/Trackings/components/TrackingsTable.tsx
+import React, { Fragment } from 'react';
 import AntTable, { AntColumnType } from '@/components/AntTable';
 import { TrackingProps } from '@/services/trackings/trackings.d';
 import dayjs from 'dayjs';
-import { Button, ButtonGroup } from '@mui/material';
-import { Delete, Edit } from '@mui/icons-material';
+import { Fab } from '@mui/material';
+import { PictureAsPdf } from '@mui/icons-material';
 
 interface TrackingsTableProps {
   data: TrackingProps[];
   loading: boolean;
-  onEdit: (row: TrackingProps) => void;
-  onDelete: (row: TrackingProps) => void;
+  onRowClick: (row: TrackingProps) => void;
 }
 
 const statusLabels: Record<TrackingProps['status'], string> = {
@@ -21,98 +19,91 @@ const statusLabels: Record<TrackingProps['status'], string> = {
   canceled: 'Cancelado',
 };
 
-const TrackingsTable: React.FC<TrackingsTableProps> = ({ data, loading, onEdit, onDelete }) => {
+const TrackingsTable: React.FC<TrackingsTableProps> = ({ data, loading, onRowClick }) => {
   const columns: AntColumnType<TrackingProps>[] = [
+    { title: 'ID Venta', dataIndex: 'saleId', minWidth: 100 },
     {
-      title: 'Acciones',
-      key: 'actions',
-      width: 120,
-      render: (_, record) => (
-        <ButtonGroup size="small">
-          <Button color="info" onClick={() => onEdit(record)}>
-            <Edit fontSize="small" />
-          </Button>
-          <Button color="error" onClick={() => onDelete(record)}>
-            <Delete fontSize="small" />
-          </Button>
-        </ButtonGroup>
-      ),
-    },
-    { title: 'ID', dataIndex: 'id', minWidth: 70, filter: true },
-    { title: 'ID Venta', dataIndex: 'saleId', minWidth: 100, filter: true },
-    { title: 'RUC Cliente', dataIndex: 'clientRuc', minWidth: 120, filter: true },
-    { title: 'RUC Empresa', dataIndex: 'companyRuc', minWidth: 120, filter: true },
-    { title: 'Razón Social Empresa', dataIndex: 'companyBusinessName', minWidth: 200, filter: true },
-    { title: 'Cliente', dataIndex: 'clientName', minWidth: 150, filter: true },
-
-    {
-      title: 'Fecha Máx. Entrega',
-      dataIndex: 'maxDeliveryDate',
-      minWidth: 140,
-      render: d => dayjs(d).format('DD/MM/YYYY'),
+      title: 'Cliente',
+      align: 'center',
+      children: [
+        { title: 'RUC', dataIndex: 'clientRuc', minWidth: 120 },
+        { title: 'Nombre', dataIndex: 'clientName', minWidth: 150 },
+      ],
     },
     {
-      title: 'Monto Venta',
-      dataIndex: 'saleAmount',
-      minWidth: 120,
-      render: amt => `S/ ${amt.toFixed(2)}`,
+      title: 'Empresa',
+      align: 'center',
+      children: [
+        { title: 'RUC', dataIndex: 'companyRuc', minWidth: 120 },
+        { title: 'Razón social', dataIndex: 'companyBusinessName', minWidth: 200 },
+      ],
     },
     { title: 'CUE', dataIndex: 'cue', minWidth: 100 },
-    { title: 'Departamento', dataIndex: 'department', minWidth: 140 },
-
     {
-      title: 'OCE',
-      dataIndex: 'oce',
-      minWidth: 120,
-      render: url =>
-        url ? <a href={url} target="_blank" rel="noopener noreferrer">Descargar OCE</a> : '-',
+      title: 'Documentos',
+      align: 'center',
+      children: [
+        {
+          title: 'OCE',
+          dataIndex: 'oce',
+          minWidth: 75,
+          render: (_, record) =>
+            record.oce
+              ? <Fab size="small" component="a" href={record.oce} target="_blank"><PictureAsPdf /></Fab>
+              : '-',
+        },
+        {
+          title: 'OCF',
+          dataIndex: 'ocf',
+          minWidth: 75,
+          render: (_, record) =>
+            record.ocf
+              ? <Fab size="small" component="a" href={record.ocf} target="_blank"><PictureAsPdf /></Fab>
+              : '-',
+        },
+      ],
     },
     {
-      title: 'OCF',
-      dataIndex: 'ocf',
-      minWidth: 120,
-      render: url =>
-        url ? <a href={url} target="_blank" rel="noopener noreferrer">Descargar OCF</a> : '-',
-    },
-
-    {
-      title: 'Perú Compras',
-      dataIndex: 'peruPurchases',
-      minWidth: 140,
-      render: url =>
-        url ? <a href={url} target="_blank" rel="noopener noreferrer">Descargar Doc</a> : '-',
-    },
-
-    { title: 'GRR', dataIndex: 'grr', minWidth: 100 },
-    {
-      title: 'Factura',
-      dataIndex: 'invoiceNumber',
-      minWidth: 100,
-      render: t => t || '-',
-    },
-    {
-      title: 'Refact',
-      dataIndex: 'isRefact',
-      minWidth: 90,
-      render: v => (v ? 'Sí' : 'No'),
+      title: 'Fechas',
+      align: 'center',
+      children: [
+        {
+          title: 'Máx. entrega',
+          dataIndex: 'maxDeliveryDate',
+          minWidth: 140,
+          render: d => dayjs(d).format('DD/MM/YYYY'),
+        },
+        {
+          title: 'Perú Compras',
+          dataIndex: 'peruPurchasesDate',
+          minWidth: 160,
+          render: d => d ? dayjs(d).format('DD/MM/YYYY') : '-',
+        },
+        {
+          title: 'Entrega OC',
+          dataIndex: 'deliveryDateOC',
+          minWidth: 150,
+          render: d => d ? dayjs(d).format('DD/MM/YYYY') : '-',
+        },
+      ],
     },
     {
-      title: 'Fecha Perú Compras',
-      dataIndex: 'peruPurchasesDate',
-      minWidth: 160,
-      render: d => (d ? dayjs(d).format('DD/MM/YYYY') : '-'),
-    },
-    {
-      title: 'Fecha Entrega OC',
-      dataIndex: 'deliveryDateOC',
-      minWidth: 150,
-      render: d => (d ? dayjs(d).format('DD/MM/YYYY') : '-'),
-    },
-    {
-      title: 'Utilidad (%)',
-      dataIndex: 'utility',
-      minWidth: 100,
-      render: v => (v != null ? `${v}%` : '-'),
+      title: 'Financiero',
+      align: 'center',
+      children: [
+        {
+          title: 'Monto Venta',
+          dataIndex: 'saleAmount',
+          minWidth: 120,
+          render: amt => `S/ ${amt.toFixed(2)}`,
+        },
+        {
+          title: 'Utilidad (%)',
+          dataIndex: 'utility',
+          minWidth: 100,
+          render: v => v != null ? `${v}%` : '-',
+        },
+      ],
     },
     {
       title: 'Estado',
@@ -128,7 +119,11 @@ const TrackingsTable: React.FC<TrackingsTableProps> = ({ data, loading, onEdit, 
       data={data}
       loading={loading}
       rowKey="id"
-      scroll={{ x: 2500 }}
+      scroll={{ x: 'max-content' }}
+      onRow={record => ({
+        onClick: () => onRowClick(record),
+        style: { cursor: 'pointer' },
+      })}
     />
   );
 };
