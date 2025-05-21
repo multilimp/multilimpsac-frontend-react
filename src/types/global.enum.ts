@@ -5,4 +5,5 @@ export enum ModalStateEnum {
   DELETE = 'DELETE',
   NONE = 'NONE',
   SECOND_BOX = 'SECOND_BOX',
+  DETAILS = 'DETAILS',
 }

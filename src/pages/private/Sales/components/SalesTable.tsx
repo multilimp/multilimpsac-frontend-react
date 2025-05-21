@@ -1,16 +1,16 @@
 import React from 'react';
-import { Button, Chip } from '@mui/material';
-import { Space, Tooltip } from 'antd';
+import { Chip, IconButton, Stack } from '@mui/material';
 import { SaleProps } from '@/services/sales/sales';
 import { Delete, Edit, VisibilityOutlined } from '@mui/icons-material';
 import AntTable, { AntColumnType } from '@/components/AntTable';
 import { formatCurrency } from '@/utils/functions';
 import dayjs from 'dayjs';
+import { ModalStateEnum } from '@/types/global.enum';
 
 interface SalesTableProps {
   data: SaleProps[];
   loading: boolean;
-  onEdit: (sale: SaleProps) => void;
+  onRecordAction: (action: ModalStateEnum, data: SaleProps) => void;
 }
 
 const getStatusColor = (status: string) => {
@@ -26,7 +26,7 @@ const getStatusColor = (status: string) => {
   }
 };
 
-const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onEdit }) => {
+const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onRecordAction }) => {
   const columns: AntColumnType<SaleProps>[] = [
     {
       title: 'Código Venta',
@@ -103,27 +103,21 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onEdit }) => {
       title: 'Acciones',
       key: 'actions',
       fixed: 'right',
-      width: 150,
+      width: 100,
       render: (_, record) => (
-        <Space size="small">
-          <Tooltip title="Ver detalles">
-            <Button size="small" variant="outlined" color="info" sx={{ minWidth: 'auto', p: 0.75 }} onClick={() => {}}>
-              <VisibilityOutlined fontSize="small" />
-            </Button>
-          </Tooltip>
+        <Stack direction="row" spacing={1} bgcolor="background.paper">
+          <IconButton size="small" color="info" onClick={() => onRecordAction(ModalStateEnum.DETAILS, record)}>
+            <VisibilityOutlined fontSize="small" />
+          </IconButton>
 
-          <Tooltip title="Editar">
-            <Button size="small" variant="outlined" color="primary" sx={{ minWidth: 'auto', p: 0.75 }} onClick={() => onEdit(record)}>
-              <Edit fontSize="small" />
-            </Button>
-          </Tooltip>
+          <IconButton size="small" color="primary" onClick={() => onRecordAction(ModalStateEnum.BOX, record)}>
+            <Edit fontSize="small" />
+          </IconButton>
 
-          <Tooltip title="Eliminar">
-            <Button size="small" variant="outlined" color="error" sx={{ minWidth: 'auto', p: 0.75 }} onClick={() => {}}>
-              <Delete fontSize="small" />
-            </Button>
-          </Tooltip>
-        </Space>
+          {/* <IconButton size="small" color="error" onClick={() => onRecordAction(ModalStateEnum.DELETE, record)}>
+            <Delete fontSize="small" />
+          </IconButton> */}
+        </Stack>
       ),
     },
   ];

@@ -1,23 +1,49 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import PageContent from '@/components/PageContent';
 import SalesTable from './components/SalesTable';
 import { SaleProcessedProps, SaleProps } from '@/services/sales/sales';
-import { Box, Button, Card, CardHeader, Grid, Stack, TextField, Typography } from '@mui/material';
+import { Box, Button, Card, CardHeader, Grid, IconButton, InputAdornment, Stack, TextField } from '@mui/material';
 import SalesModal from './components/SalesModal';
 import OcrSalesModal from './components/OcrSalesModal';
 import { ModalStateEnum } from '@/types/global.enum';
-import { Add, Loop, SmartToy } from '@mui/icons-material';
+import { Add, Close, Loop, SmartToy } from '@mui/icons-material';
 import { ModalStateProps } from '@/types/global';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
+import ConfirmDelete from '@/components/ConfirmDelete';
+import SalesDetails from './components/SalesDetails';
 
 type ModalStateType = ModalStateProps<SaleProps> & { processed?: SaleProcessedProps };
 
 const SalesPage = () => {
   const { sales, obtainSales, resumeSalesData, loadingSales } = useGlobalInformation();
+  const [backup, setBackup] = useState<Array<SaleProps>>([]);
   const [modal, setModal] = useState<ModalStateType>();
+  const [value, setValue] = useState<string>('');
 
-  const handleEdit = (sale: SaleProps) => {
-    setModal({ mode: ModalStateEnum.BOX, data: sale });
+  useEffect(() => {
+    setBackup([...sales]);
+  }, [sales]);
+
+  const closeModal = () => setModal(undefined);
+
+  const normalize = (val: string | number) => val.toString().toLowerCase();
+
+  const handleFilter = (raw: string) => {
+    setValue(raw);
+    const val = normalize(raw);
+
+    const filteredSales = sales.filter((sale) => {
+      const finder =
+        normalize(sale.codigoVenta).includes(val) ||
+        normalize(sale.cliente.razonSocial).includes(val) ||
+        normalize(sale.cliente.ruc).includes(val) ||
+        normalize(sale.empresa.razonSocial).includes(val) ||
+        normalize(sale.empresa.ruc).includes(val) ||
+        normalize(sale.siaf).includes(val);
+      return finder;
+    });
+
+    setBackup([...filteredSales]);
   };
 
   return (
@@ -34,23 +60,33 @@ const SalesPage = () => {
       }
     >
       <Box sx={{ mb: 3 }}>
-        <Stack direction="row" alignItems="center" justifyContent="space-between" mb={2}>
-          <TextField label="Buscar..." variant="filled" sx={{ minWidth: 400 }} />
-
-          <Button variant="outlined" color="primary" startIcon={<Loop />} onClick={obtainSales}>
-            Actualizar
-          </Button>
-        </Stack>
-        {/* <Grid container spacing={2}>
+        <Grid container spacing={2} my={2} justifyContent="space-between">
           <Grid>
-            <TextField label="Buscar..." variant="filled" sx={{ minWidth: 400 }} />
+            <TextField
+              value={value}
+              onChange={(event) => handleFilter(event.target.value)}
+              label="Buscar..."
+              variant="filled"
+              sx={{ minWidth: 400 }}
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton color="error" onClick={() => handleFilter('')}>
+                        <Close />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                },
+              }}
+            />
           </Grid>
           <Grid>
             <Button variant="outlined" color="primary" startIcon={<Loop />} onClick={obtainSales}>
               Actualizar
             </Button>
           </Grid>
-        </Grid> */}
+        </Grid>
 
         <Grid container spacing={2}>
           {resumeSalesData.map((item) => (
@@ -68,14 +104,22 @@ const SalesPage = () => {
         </Grid>
       </Box>
 
-      <SalesTable data={sales} loading={loadingSales} onEdit={handleEdit} />
+      <SalesTable data={backup} loading={loadingSales} onRecordAction={(mode, data) => setModal({ mode, data })} />
 
       {modal?.mode === ModalStateEnum.BOX && (
-        <SalesModal data={modal.data} processed={modal.processed} handleClose={() => setModal(undefined)} handleReload={obtainSales} />
+        <SalesModal data={modal.data} processed={modal.processed} handleClose={closeModal} handleReload={obtainSales} />
       )}
 
       {modal?.mode === ModalStateEnum.SECOND_BOX && (
-        <OcrSalesModal onClose={() => setModal(undefined)} onSuccess={(aux) => setModal({ mode: ModalStateEnum.BOX, processed: aux })} />
+        <OcrSalesModal onClose={closeModal} onSuccess={(aux) => setModal({ mode: ModalStateEnum.BOX, processed: aux })} />
+      )}
+
+      {modal?.mode === ModalStateEnum.DELETE ? (
+        <ConfirmDelete endpoint={`/ventas/${modal.data?.id}`} handleClose={closeModal} handleReload={obtainSales} />
+      ) : null}
+
+      {modal?.mode === ModalStateEnum.DETAILS && (
+        <SalesDetails data={modal.data!} handleClose={closeModal} handleEdit={(data) => setModal({ mode: ModalStateEnum.BOX, data })} />
       )}
     </PageContent>
   );

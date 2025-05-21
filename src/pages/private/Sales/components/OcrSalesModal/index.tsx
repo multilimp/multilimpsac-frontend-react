@@ -60,12 +60,7 @@ const OcrSalesModal = ({ onClose, onSuccess }: OcrSalesModalProps) => {
 
         <Spin size="large" tip="Procesando documento..." spinning={loading}>
           <Box sx={{ my: 3, p: 4, border: '2px dashed #ccc', borderRadius: 2, backgroundColor: '#f9f9f9' }}>
-            <InputFile
-              onChange={setSelectedFile}
-              label="Arrastre aquí su orden de compra o haga clic para seleccionar"
-              disabled={loading}
-              accept="pdf"
-            />
+            <InputFile onChange={setSelectedFile} label="Arrastre aquí su orden de compra o haga clic para seleccionar" accept="pdf" />
           </Box>
         </Spin>
       </DialogContent>
