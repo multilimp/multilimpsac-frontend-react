@@ -7,7 +7,7 @@ import InputsSecondStep from './InputsSecondStep';
 import InputsThirdStep from './InputsThirdStep';
 import InputsFourthStep from './InputsFourthStep';
 import InputsFifthStep from './InputsFifthStep';
-import { createSale, updateSale } from '@/services/sales/sales.request';
+import { createDirectSale, createPrivateSale, updateSale } from '@/services/sales/sales.request';
 import { SaleProcessedProps, SaleProps } from '@/services/sales/sales';
 import dayjs from 'dayjs';
 import { uploadFile } from '@/services/files/file.requests';
@@ -99,24 +99,31 @@ const SalesModal = ({ handleClose, handleReload, data, processed }: SalesModalPr
 
   const handleFinish = async (values: Record<string, any>) => {
     try {
+      if (isEdit) {
+        notification.error({ message: 'EDICIÓN NO IMPLEMENTADA POR COMPLETO' });
+        return;
+      }
+
       setLoading(true);
 
-      let OCE_DOC;
-      let OCF_DOC;
-      if (values.ordenCompraElectronica) {
-        OCE_DOC = await uploadFile(values.ordenCompraElectronica);
-      }
-      if (values.ordenCompraFisica) {
-        OCF_DOC = await uploadFile(values.ordenCompraFisica);
-      }
+      let OCE_DOC = 'https://pub-be92c56cdc1645c5aac3eb28d9ddb2c8.r2.dev/general-uploads/L73_-7HanJ-y-tYeeeO1R.pdf';
+      let OCF_DOC = 'https://pub-be92c56cdc1645c5aac3eb28d9ddb2c8.r2.dev/general-uploads/L73_-7HanJ-y-tYeeeO1R.pdf';
+      // if (values.ordenCompraElectronica) {
+      //   OCE_DOC = await uploadFile(values.ordenCompraElectronica);
+      // }
+      // if (values.ordenCompraFisica) {
+      //   OCF_DOC = await uploadFile(values.ordenCompraFisica);
+      // }
 
-      const body = {
+      const ventaPrivada = values.tipoVenta === 'privada';
+
+      const bodyVentaDirecta = {
         empresa: { connect: { id: values.empresa } },
         cliente: { connect: { id: values.cliente } },
         contactoCliente: { connect: { id: values.cargoContacto } },
         catalogoEmpresa: { connect: { id: values.catalogo } },
 
-        ventaPrivada: values.tipoVenta === 'privada',
+        ventaPrivada,
         departamentoEntrega: JSON.stringify(values.regionEntregaComplete),
         provinciaEntrega: JSON.stringify(values.provinciaEntregaComplete),
         distritoEntrega: JSON.stringify(values.distritoEntregaComplete),
@@ -134,8 +141,40 @@ const SalesModal = ({ handleClose, handleReload, data, processed }: SalesModalPr
         productos: values.productos,
       };
 
-      if (isEdit) await updateSale(data.id, body);
-      else await createSale(body);
+      console.log('body', bodyVentaDirecta);
+
+      const response = await createDirectSale(bodyVentaDirecta);
+
+      if (ventaPrivada) {
+        const pagos = [];
+        for (const payment of values.pagos) {
+          console.log('payment', payment);
+          // const archivoPago = await uploadFile(payment.file);
+          pagos.push({
+            fechaPago: payment.date.toISOString(),
+            bancoPago: payment.bank,
+            descripcionPago: payment.description,
+            archivoPago: 'https://pub-be92c56cdc1645c5aac3eb28d9ddb2c8.r2.dev/general-uploads/L73_-7HanJ-y-tYeeeO1R.pdf',
+            montoPago: payment.amount,
+            estadoPago: payment.status === 'activo',
+          });
+        }
+
+        // const documentoPago = await uploadFile(values.documentoFactura);
+        const bodyVentaPrivada = {
+          ordenCompraId: response.id,
+          clienteId: values.privateClient,
+          contactoClienteId: values.privateContact,
+          estadoPago: values.facturaStatus,
+          fechaPago: values.dateFactura.toISOString(),
+          documentoPago: 'https://pub-be92c56cdc1645c5aac3eb28d9ddb2c8.r2.dev/general-uploads/L73_-7HanJ-y-tYeeeO1R.pdf',
+          pagos,
+        };
+
+        await createPrivateSale(bodyVentaPrivada);
+
+        console.log('bodyVentaPrivada', bodyVentaPrivada);
+      }
 
       handleClose();
       handleReload();

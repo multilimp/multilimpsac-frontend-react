@@ -1,5 +1,6 @@
+import { Fragment } from 'react';
 import { Divider, Form } from 'antd';
-import { Button, Collapse, Grid, IconButton, Stack, StepLabel, Typography } from '@mui/material';
+import { Button, Collapse, FormHelperText, Grid, IconButton, Stack, StepLabel, Typography } from '@mui/material';
 import SelectCompanies from '@/components/selects/SelectCompanies';
 import { ControlActionsProps, Controls, StepItemContent } from './smallcomponents';
 import SelectClients from '@/components/selects/SelectClients';
@@ -9,6 +10,7 @@ import InputAntd from '@/components/InputAntd';
 import { Delete } from '@mui/icons-material';
 import { formatCurrency } from '@/utils/functions';
 import DatePickerAntd from '@/components/DatePickerAnt';
+import SelectContacts from '@/components/selects/SelectContacts';
 
 interface InputsFirstStepProps extends ControlActionsProps {}
 
@@ -30,6 +32,15 @@ const statusOptions = [
   { label: 'Activo', value: 'activo' },
   { label: 'Inactivo', value: 'inactivo' },
 ];
+
+const getEmptyPaymentRecord = () => ({
+  date: null,
+  bank: '',
+  description: '',
+  file: null,
+  amount: '',
+  status: 'activo',
+});
 
 const InputsFirstStep = ({ form, ...controlProps }: InputsFirstStepProps) => {
   return (
@@ -60,7 +71,7 @@ const InputsFirstStep = ({ form, ...controlProps }: InputsFirstStepProps) => {
         </Grid>
         <Grid size={{ xs: 12, md: 6 }}>
           <Form.Item name="tipoVenta" rules={[requiredField]} initialValue="directa">
-            <SelectGeneric label="Tipo de venta" options={saleTypeOptions} disabled />
+            <SelectGeneric label="Tipo de venta" options={saleTypeOptions} />
           </Form.Item>
         </Grid>
       </Grid>
@@ -69,19 +80,30 @@ const InputsFirstStep = ({ form, ...controlProps }: InputsFirstStepProps) => {
         {({ getFieldValue }) => {
           const allow = getFieldValue('tipoVenta') === 'privada';
 
+          const sumPayments = (getFieldValue('pagos') ?? []).reduce(
+            (acum: number, next: { amount: string }) => acum + (next.amount ? parseFloat(next.amount) : 0),
+            0
+          );
+
           return (
             <Collapse in={allow} unmountOnExit>
               <Divider>VENTA PRIVADA</Divider>
 
-              <Form.Item name="privateClientComplete" noStyle />
-              <Form.Item name="privateClient" rules={[requiredField]}>
-                <SelectClients
-                  label="Cliente"
-                  onChange={(value, record: any) => form.setFieldsValue({ privateClient: value, privateClientComplete: record.optiondata })}
-                />
-              </Form.Item>
-
-              <Grid container spacing={2} sx={{ mt: 2 }}>
+              <Grid container columnSpacing={2}>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <Form.Item name="privateClientComplete" noStyle />
+                  <Form.Item name="privateClient" rules={[requiredField]}>
+                    <SelectClients
+                      label="Cliente"
+                      onChange={(value, record: any) => form.setFieldsValue({ privateClient: value, privateClientComplete: record.optiondata })}
+                    />
+                  </Form.Item>
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <Form.Item name="privateContact" rules={[requiredField]}>
+                    <SelectContacts label="Cargo contacto" />
+                  </Form.Item>
+                </Grid>
                 <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                   <Form.Item name="facturaStatus" rules={[requiredField]}>
                     <SelectGeneric label="Estado de Factura" options={facturaStatusOptions} />
@@ -100,42 +122,66 @@ const InputsFirstStep = ({ form, ...controlProps }: InputsFirstStepProps) => {
                 <Grid size={12}>
                   <Divider dashed>Pagos Recibidos</Divider>
 
-                  {[1, 2, 3, 4].map((item) => (
-                    <Stack direction="row" spacing={1} key={item}>
-                      <Form.Item name="date" rules={[requiredField]} className="flex-2">
-                        <DatePickerAntd label="Fecha" />
-                      </Form.Item>
-                      <Form.Item name="bank" rules={[requiredField]} className="flex-2">
-                        <InputAntd label="Banco" />
-                      </Form.Item>
-                      <Form.Item name="description" rules={[requiredField]} className="flex-2">
-                        <InputAntd label="Descripción" />
-                      </Form.Item>
-                      <Form.Item name="file" rules={[requiredField]} className="flex-1">
-                        <InputFile onChange={(file) => form.setFieldValue('file', file)} accept="pdf" />
-                      </Form.Item>
-                      <Form.Item name="amount" rules={[requiredField]} className="flex-1">
-                        <InputAntd label="Monto" type="number" />
-                      </Form.Item>
-                      <Form.Item name="status" rules={[requiredField]} className="flex-1">
-                        <SelectGeneric label="Estado" options={statusOptions} />
-                      </Form.Item>
-                      <Form.Item>
-                        <IconButton size="large" color="error">
-                          <Delete />
-                        </IconButton>
-                      </Form.Item>
-                    </Stack>
-                  ))}
-
-                  <Stack direction="row" alignItems="center" justifyContent="space-between">
-                    <Button size="medium" color="warning" variant="outlined">
-                      AGREGAR PAGO
-                    </Button>
-                    <Typography variant="h5" pr={8}>
-                      {formatCurrency(0)}
-                    </Typography>
-                  </Stack>
+                  <Form.List
+                    name="pagos"
+                    initialValue={[getEmptyPaymentRecord()]}
+                    rules={[
+                      {
+                        validator(_, arr) {
+                          if (!arr.length) {
+                            return Promise.reject(new Error('Debe ingresar por lo menos 1 pago para continuar.'));
+                          }
+                          return Promise.resolve();
+                        },
+                      },
+                    ]}
+                  >
+                    {(fields, { add, remove }, { errors }) => (
+                      <Fragment>
+                        {fields.map((field) => (
+                          <Stack key={field.name} direction="row" spacing={1}>
+                            <Form.Item name={[field.name, 'date']} rules={[requiredField]} className="flex-2">
+                              <DatePickerAntd label="Fecha" />
+                            </Form.Item>
+                            <Form.Item name={[field.name, 'bank']} rules={[requiredField]} className="flex-2">
+                              <InputAntd label="Banco" />
+                            </Form.Item>
+                            <Form.Item name={[field.name, 'description']} rules={[requiredField]} className="flex-2">
+                              <InputAntd label="Descripción" />
+                            </Form.Item>
+                            <Form.Item name={[field.name, 'file']} rules={[requiredField]} className="flex-1">
+                              <InputFile onChange={(file) => form.setFieldValue('file', file)} accept="pdf" />
+                            </Form.Item>
+                            <Form.Item name={[field.name, 'amount']} rules={[requiredField]} className="flex-1">
+                              <InputAntd label="Monto" type="number" />
+                            </Form.Item>
+                            <Form.Item name={[field.name, 'status']} rules={[requiredField]} className="flex-1">
+                              <SelectGeneric label="Estado" options={statusOptions} />
+                            </Form.Item>
+                            <Form.Item>
+                              <IconButton size="large" color="error" onClick={() => remove(field.name)}>
+                                <Delete />
+                              </IconButton>
+                            </Form.Item>
+                          </Stack>
+                        ))}
+                        <Stack direction="row" alignItems="center" justifyContent="space-between">
+                          <Button
+                            size="medium"
+                            color={errors.length ? 'error' : 'warning'}
+                            variant="outlined"
+                            onClick={() => add(getEmptyPaymentRecord())}
+                          >
+                            AGREGAR PAGO
+                          </Button>
+                          {errors.length ? <FormHelperText error>{(errors as Array<string>).join(' - ')}</FormHelperText> : null}
+                          <Typography variant="h5" pr={8} color={errors.length ? 'error' : 'primary'}>
+                            {formatCurrency(sumPayments)}
+                          </Typography>
+                        </Stack>
+                      </Fragment>
+                    )}
+                  </Form.List>
                 </Grid>
               </Grid>
             </Collapse>
@@ -143,7 +189,18 @@ const InputsFirstStep = ({ form, ...controlProps }: InputsFirstStepProps) => {
         }}
       </Form.Item>
 
-      <Controls fieldsToValidate={['empresa', 'tipoVenta']} form={form} {...controlProps} />
+      <Form.Item shouldUpdate noStyle>
+        {({ getFieldValue }) => {
+          const emptyPayments = getFieldValue('pagos') ?? [];
+          const disabled = !emptyPayments.length || emptyPayments.some((item: any) => Object.values(item).some((value) => !value));
+
+          const fields = ['empresa', 'tipoVenta'];
+          const allow = getFieldValue('tipoVenta') === 'privada';
+          if (allow) fields.push('privateClient', 'facturaStatus', 'dateFactura', 'documentoFactura', 'pagos');
+
+          return <Controls fieldsToValidate={fields} dnext={allow && disabled} form={form} {...controlProps} />;
+        }}
+      </Form.Item>
     </StepItemContent>
   );
 };

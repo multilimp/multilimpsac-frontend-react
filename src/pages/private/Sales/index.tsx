@@ -22,7 +22,7 @@ const SalesPage = () => {
   const fetchSales = async () => {
     try {
       setLoading(true);
-      const response = await getSales();
+      const response = await getSales({ pageSize: 1000, page: 1 });
       setData([...response]);
     } catch (error) {
       notification.error({

@@ -1,9 +1,9 @@
 import { parseJSON } from '@/utils/functions';
 import apiClient from '../apiClient';
-import { SaleProps } from './sales';
+import { SaleFiltersProps, SaleProps } from './sales';
 
-export const getSales = async (): Promise<SaleProps[]> => {
-  const response = await apiClient.get('/ventas');
+export const getSales = async (params?: SaleFiltersProps): Promise<SaleProps[]> => {
+  const response = await apiClient.get('/ventas', { params });
   const aux = response.data?.data;
   const data = Array.isArray(aux) ? aux : [];
 
@@ -17,8 +17,13 @@ export const getSales = async (): Promise<SaleProps[]> => {
   return formatted;
 };
 
-export const createSale = async (sale: Record<string, any>): Promise<SaleProps> => {
+export const createDirectSale = async (sale: Record<string, any>): Promise<SaleProps> => {
   const response = await apiClient.post('/ventas', sale);
+  return response.data;
+};
+
+export const createPrivateSale = async (sale: Record<string, any>): Promise<SaleProps> => {
+  const response = await apiClient.post('/ventas/privada', sale);
   return response.data;
 };
 

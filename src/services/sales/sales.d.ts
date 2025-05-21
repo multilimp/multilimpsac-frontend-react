@@ -78,10 +78,13 @@ export interface SaleProcessedProps {
   fechaSiaf?: string;
 }
 
-export interface SaleFilter {
-  clientRuc?: string;
-  companyRuc?: string;
-  dateFrom?: string;
-  dateTo?: string;
-  status?: string;
+export interface SaleFiltersProps {
+  page?: number;
+  pageSize?: number;
+  clienteId?: number;
+  minPrice?: number;
+  maxPrice?: number;
+  fechaFrom?: string;
+  fechaTo?: string;
+  search?: string;
 }

@@ -1,26 +1,24 @@
-// src/pages/private/Trackings/components/TrackingsTable.tsx
-import React, { Fragment } from 'react';
 import AntTable, { AntColumnType } from '@/components/AntTable';
-import { TrackingProps } from '@/services/trackings/trackings.d';
 import dayjs from 'dayjs';
 import { Fab } from '@mui/material';
 import { PictureAsPdf } from '@mui/icons-material';
+import { SaleProps } from '@/services/sales/sales';
 
 interface TrackingsTableProps {
-  data: TrackingProps[];
+  data: SaleProps[];
   loading: boolean;
-  onRowClick: (row: TrackingProps) => void;
+  onRowClick: (row: SaleProps) => void;
 }
 
-const statusLabels: Record<TrackingProps['status'], string> = {
+const statusLabels: Record<SaleProps['etapaSiaf'], string> = {
   pending: 'Pendiente',
   in_progress: 'En Progreso',
   delivered: 'Entregado',
   canceled: 'Cancelado',
 };
 
-const TrackingsTable: React.FC<TrackingsTableProps> = ({ data, loading, onRowClick }) => {
-  const columns: AntColumnType<TrackingProps>[] = [
+const TrackingsTable = ({ data, loading, onRowClick }: TrackingsTableProps) => {
+  const columns: AntColumnType<SaleProps>[] = [
     { title: 'ID Venta', dataIndex: 'saleId', minWidth: 100 },
     {
       title: 'Cliente',
@@ -48,18 +46,26 @@ const TrackingsTable: React.FC<TrackingsTableProps> = ({ data, loading, onRowCli
           dataIndex: 'oce',
           minWidth: 75,
           render: (_, record) =>
-            record.oce
-              ? <Fab size="small" component="a" href={record.oce} target="_blank"><PictureAsPdf /></Fab>
-              : '-',
+            record.documentoOce ? (
+              <Fab size="small" component="a" href={record.documentoOce} target="_blank">
+                <PictureAsPdf />
+              </Fab>
+            ) : (
+              '-'
+            ),
         },
         {
           title: 'OCF',
           dataIndex: 'ocf',
           minWidth: 75,
           render: (_, record) =>
-            record.ocf
-              ? <Fab size="small" component="a" href={record.ocf} target="_blank"><PictureAsPdf /></Fab>
-              : '-',
+            record.documentoOcf ? (
+              <Fab size="small" component="a" href={record.documentoOcf} target="_blank">
+                <PictureAsPdf />
+              </Fab>
+            ) : (
+              '-'
+            ),
         },
       ],
     },
@@ -71,19 +77,19 @@ const TrackingsTable: React.FC<TrackingsTableProps> = ({ data, loading, onRowCli
           title: 'Máx. entrega',
           dataIndex: 'maxDeliveryDate',
           minWidth: 140,
-          render: d => dayjs(d).format('DD/MM/YYYY'),
+          render: (d) => dayjs(d).format('DD/MM/YYYY'),
         },
         {
           title: 'Perú Compras',
           dataIndex: 'peruPurchasesDate',
           minWidth: 160,
-          render: d => d ? dayjs(d).format('DD/MM/YYYY') : '-',
+          render: (d) => (d ? dayjs(d).format('DD/MM/YYYY') : '-'),
         },
         {
           title: 'Entrega OC',
           dataIndex: 'deliveryDateOC',
           minWidth: 150,
-          render: d => d ? dayjs(d).format('DD/MM/YYYY') : '-',
+          render: (d) => (d ? dayjs(d).format('DD/MM/YYYY') : '-'),
         },
       ],
     },
@@ -93,15 +99,15 @@ const TrackingsTable: React.FC<TrackingsTableProps> = ({ data, loading, onRowCli
       children: [
         {
           title: 'Monto Venta',
-          dataIndex: 'saleAmount',
+          dataIndex: 'montoVenta',
           minWidth: 120,
-          render: amt => `S/ ${amt.toFixed(2)}`,
+          render: (amt) => `S/ ${amt}`,
         },
         {
           title: 'Utilidad (%)',
           dataIndex: 'utility',
           minWidth: 100,
-          render: v => v != null ? `${v}%` : '-',
+          render: (v) => (v != null ? `${v}%` : '-'),
         },
       ],
     },
@@ -109,7 +115,7 @@ const TrackingsTable: React.FC<TrackingsTableProps> = ({ data, loading, onRowCli
       title: 'Estado',
       dataIndex: 'status',
       minWidth: 120,
-      render: (_, rec) => statusLabels[rec.status],
+      render: (_, rec) => statusLabels[rec.etapaSiaf],
     },
   ];
 
@@ -120,7 +126,7 @@ const TrackingsTable: React.FC<TrackingsTableProps> = ({ data, loading, onRowCli
       loading={loading}
       rowKey="id"
       scroll={{ x: 'max-content' }}
-      onRow={record => ({
+      onRow={(record) => ({
         onClick: () => onRowClick(record),
         style: { cursor: 'pointer' },
       })}

@@ -26,6 +26,7 @@ const Transports = Loadable(lazy(() => import('@/pages/private/Transports')));
 const Treasurys = Loadable(lazy(() => import('@/pages/private/Treasurys')));
 const Billings = Loadable(lazy(() => import('@/pages/private/Billings')));
 const Trackings = Loadable(lazy(() => import('@/pages/private/Trackings')));
+const TrackingsOrders = Loadable(lazy(() => import('@/pages/private/Trackings/TrackingsOrdersPage')));
 const ProviderOrders = Loadable(lazy(() => import('@/pages/private/ProviderOrders')));
 const ProviderOrderForm = Loadable(lazy(() => import('@/pages/private/ProviderOrders/ProviderOrderForm')));
 
@@ -134,6 +135,11 @@ const routes: Array<PropsRoutes> = [
       {
         path: 'tracking',
         element: Trackings, // Actualizado a PascalCase
+        roles: rolesArr,
+      },
+      {
+        path: 'tracking/:trackingId',
+        element: TrackingsOrders, // Actualizado a PascalCase
         roles: rolesArr,
       },
       {

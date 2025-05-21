@@ -19,4 +19,11 @@ export const filterOptions = (inputValue: string, option: any) => {
   return title.includes(inputValue.toLowerCase());
 };
 
-export const parseJSON = (str?: null | string) => (str ? JSON.parse(str) : null);
+export const parseJSON = (str?: null | string) => {
+  try {
+    if (!str) return null;
+    return JSON.parse(str);
+  } catch (error) {
+    return null;
+  }
+};
