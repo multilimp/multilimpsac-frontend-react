@@ -7,10 +7,10 @@ import InputsSecondStep from './InputsSecondStep';
 import InputsThirdStep from './InputsThirdStep';
 import InputsFourthStep from './InputsFourthStep';
 import InputsFifthStep from './InputsFifthStep';
-import { createDirectSale, createPrivateSale, updateSale } from '@/services/sales/sales.request';
+import { createDirectSale, createPrivateSale } from '@/services/sales/sales.request';
 import { SaleProcessedProps, SaleProps } from '@/services/sales/sales';
 import dayjs from 'dayjs';
-import { uploadFile } from '@/services/files/file.requests';
+// import { uploadFile } from '@/services/files/file.requests';
 import { removeAccents } from '@/utils/functions';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Chip, IconButton, Stack } from '@mui/material';
 import { SaleProps } from '@/services/sales/sales';
-import { Delete, Edit, VisibilityOutlined } from '@mui/icons-material';
+import { Edit, VisibilityOutlined } from '@mui/icons-material';
 import AntTable, { AntColumnType } from '@/components/AntTable';
 import { formatCurrency } from '@/utils/functions';
 import dayjs from 'dayjs';

@@ -315,7 +315,6 @@ const ProviderOrderForm = () => {
                                   <Form.Item className="m-0" name={[field.name, 'evidencia']} rules={[{ required: true, message: 'Requerido' }]}>
                                     <InputFile
                                       label="Adjuntar"
-                                      height={36}
                                       accept="pdf"
                                       onChange={(file) => {
                                         console.log(file);
