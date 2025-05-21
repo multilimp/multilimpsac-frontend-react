@@ -13,8 +13,12 @@ import { getProviders } from '@/services/providers/providers.request';
 import { TransportProps } from '@/services/transports/transports';
 import { getTransports } from '@/services/transports/transports.request';
 import { useAppContext } from '.';
+import { SaleProps } from '@/services/sales/sales';
+import { getSales } from '@/services/sales/sales.request';
+import { formatCurrency } from '@/utils/functions';
 
 interface ContextProps {
+  resumeSalesData: Array<{ label: string; value: string; color: string }>;
   loadingRegions: boolean;
   loadingCompanies: boolean;
   loadingClients: boolean;
@@ -25,11 +29,14 @@ interface ContextProps {
   providers: Array<ProviderProps>;
   loadingTransports: boolean;
   transports: Array<TransportProps>;
+  loadingSales: boolean;
+  sales: Array<SaleProps>;
   obtainClients: VoidFunction;
   obtainCompanies: VoidFunction;
   obtainRegions: VoidFunction;
   obtainProviders: VoidFunction;
   obtainTransports: VoidFunction;
+  obtainSales: VoidFunction;
 }
 
 const GlobalInformation = createContext({} as ContextProps);
@@ -53,6 +60,9 @@ const GlobalInformationProvider = ({ children }: { children: ReactNode }) => {
   const [loadingTransports, setLoadingTransports] = useState(false);
   const [transports, setTransports] = useState<Array<TransportProps>>([]);
 
+  const [loadingSales, setLoadingSales] = useState(false);
+  const [sales, setSales] = useState<Array<SaleProps>>([]);
+
   useEffect(() => {
     const token = StorageService.get(STORAGE_KEY);
     if (!token || !user.id) return;
@@ -62,6 +72,7 @@ const GlobalInformationProvider = ({ children }: { children: ReactNode }) => {
     obtainCompanies();
     obtainProviders();
     obtainTransports();
+    obtainSales();
   }, [user]);
 
   const obtainRegions = async () => {
@@ -136,8 +147,35 @@ const GlobalInformationProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const values = useMemo(
-    () => ({
+  const obtainSales = async () => {
+    try {
+      setLoadingSales(true);
+      const response = await getSales({ pageSize: 1000, page: 1 });
+      setSales([...response]);
+    } catch (error) {
+      notification.error({
+        message: 'Error al obtener ventas',
+        description: `Detalles: ${error instanceof Error ? error.message : String(error)}`,
+      });
+    } finally {
+      setLoadingSales(false);
+    }
+  };
+
+  const values = useMemo(() => {
+    const resumeSalesData = [
+      { label: 'Total de Ventas', value: sales.length.toString(), color: 'primary.light' },
+      {
+        label: 'Monto Total',
+        value: formatCurrency(sales.reduce((sum, sale) => sum + parseInt(sale.montoVenta ?? '0', 10), 0)),
+        color: 'secondary.main',
+      },
+      { label: 'Ventas Pendientes', value: sales.filter((sale) => sale.etapaActual === 'pending').length.toString(), color: 'warning.main' },
+      { label: 'Ventas Completadas', value: sales.filter((sale) => sale.etapaActual === 'completed').length.toString(), color: 'info.main' },
+    ];
+
+    return {
+      resumeSalesData,
       loadingRegions,
       regions,
       companies,
@@ -148,14 +186,29 @@ const GlobalInformationProvider = ({ children }: { children: ReactNode }) => {
       loadingProviders,
       transports,
       loadingTransports,
+      sales,
+      loadingSales,
       obtainClients,
       obtainCompanies,
       obtainRegions,
       obtainProviders,
       obtainTransports,
-    }),
-    [loadingRegions, regions, companies, loadingCompanies, clients, loadingClients, providers, loadingProviders, transports, loadingTransports]
-  );
+      obtainSales,
+    };
+  }, [
+    loadingRegions,
+    regions,
+    companies,
+    loadingCompanies,
+    clients,
+    loadingClients,
+    providers,
+    loadingProviders,
+    transports,
+    loadingTransports,
+    sales,
+    loadingSales,
+  ]);
 
   return <GlobalInformation.Provider value={values}>{children}</GlobalInformation.Provider>;
 };

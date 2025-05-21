@@ -1,47 +1,20 @@
+import { useState } from 'react';
 import PageContent from '@/components/PageContent';
 import SalesTable from './components/SalesTable';
-import { useEffect, useState } from 'react';
 import { SaleProcessedProps, SaleProps } from '@/services/sales/sales';
-import { notification } from 'antd';
-import { getSales } from '@/services/sales/sales.request';
-import { Box, Button, Stack, Typography } from '@mui/material';
+import { Box, Button, Card, CardHeader, Grid, Stack, TextField, Typography } from '@mui/material';
 import SalesModal from './components/SalesModal';
 import OcrSalesModal from './components/OcrSalesModal';
 import { ModalStateEnum } from '@/types/global.enum';
 import { Add, Loop, SmartToy } from '@mui/icons-material';
 import { ModalStateProps } from '@/types/global';
-import { formatCurrency } from '@/utils/functions';
+import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 
 type ModalStateType = ModalStateProps<SaleProps> & { processed?: SaleProcessedProps };
 
 const SalesPage = () => {
-  const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<SaleProps[]>([]);
+  const { sales, obtainSales, resumeSalesData, loadingSales } = useGlobalInformation();
   const [modal, setModal] = useState<ModalStateType>();
-
-  const fetchSales = async () => {
-    try {
-      setLoading(true);
-      const response = await getSales({ pageSize: 1000, page: 1 });
-      setData([...response]);
-    } catch (error) {
-      notification.error({
-        message: 'Error al obtener ventas',
-        description: `Detalles: ${error instanceof Error ? error.message : String(error)}`,
-      });
-      setData([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchSales();
-  }, []);
-
-  const handleRefresh = () => {
-    fetchSales();
-  };
 
   const handleEdit = (sale: SaleProps) => {
     setModal({ mode: ModalStateEnum.BOX, data: sale });
@@ -62,46 +35,43 @@ const SalesPage = () => {
     >
       <Box sx={{ mb: 3 }}>
         <Stack direction="row" alignItems="center" justifyContent="space-between" mb={2}>
-          <Typography variant="h6" fontWeight={600} color="primary.main" sx={{ mb: 1 }}>
-            Dashboard de Ventas
-          </Typography>
+          <TextField label="Buscar..." variant="filled" sx={{ minWidth: 400 }} />
 
-          <Button variant="outlined" color="primary" startIcon={<Loop />} onClick={handleRefresh}>
+          <Button variant="outlined" color="primary" startIcon={<Loop />} onClick={obtainSales}>
             Actualizar
           </Button>
         </Stack>
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 2 }}>
-          <Box sx={{ bgcolor: 'primary.light', p: 2, borderRadius: 2, color: 'white' }}>
-            <Typography variant="h5" fontWeight={700}>
-              {data.length}
-            </Typography>
-            <Typography variant="body2">Total de Ventas</Typography>
-          </Box>
-          <Box sx={{ bgcolor: 'secondary.main', p: 2, borderRadius: 2, color: 'white' }}>
-            <Typography variant="h5" fontWeight={700}>
-              {formatCurrency(data.reduce((sum, sale) => sum + parseInt(sale.montoVenta ?? '0', 10), 0))}
-            </Typography>
-            <Typography variant="body2">Monto Total</Typography>
-          </Box>
-          <Box sx={{ bgcolor: '#fb9c0c', p: 2, borderRadius: 2, color: 'white' }}>
-            <Typography variant="h5" fontWeight={700}>
-              {data.filter((sale) => sale.etapaActual === 'pending').length}
-            </Typography>
-            <Typography variant="body2">Ventas Pendientes</Typography>
-          </Box>
-          <Box sx={{ bgcolor: '#04BA6B', p: 2, borderRadius: 2, color: 'white' }}>
-            <Typography variant="h5" fontWeight={700}>
-              {data.filter((sale) => sale.etapaActual === 'completed').length}
-            </Typography>
-            <Typography variant="body2">Ventas Completadas</Typography>
-          </Box>
-        </Box>
+        {/* <Grid container spacing={2}>
+          <Grid>
+            <TextField label="Buscar..." variant="filled" sx={{ minWidth: 400 }} />
+          </Grid>
+          <Grid>
+            <Button variant="outlined" color="primary" startIcon={<Loop />} onClick={obtainSales}>
+              Actualizar
+            </Button>
+          </Grid>
+        </Grid> */}
+
+        <Grid container spacing={2}>
+          {resumeSalesData.map((item) => (
+            <Grid key={item.label} size={{ xs: 12, sm: 6, md: 3 }}>
+              <Card>
+                <CardHeader
+                  title={item.value}
+                  subheader={item.label}
+                  slotProps={{ title: { color: '#fff', fontSize: 18, fontWeight: 700 }, subheader: { color: '#fff' } }}
+                  sx={{ bgcolor: item.color, pt: 2 }}
+                />
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
       </Box>
 
-      <SalesTable data={data} loading={loading} onEdit={handleEdit} />
+      <SalesTable data={sales} loading={loadingSales} onEdit={handleEdit} />
 
       {modal?.mode === ModalStateEnum.BOX && (
-        <SalesModal data={modal.data} processed={modal.processed} handleClose={() => setModal(undefined)} handleReload={handleRefresh} />
+        <SalesModal data={modal.data} processed={modal.processed} handleClose={() => setModal(undefined)} handleReload={obtainSales} />
       )}
 
       {modal?.mode === ModalStateEnum.SECOND_BOX && (
