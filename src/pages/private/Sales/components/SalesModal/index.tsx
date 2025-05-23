@@ -207,7 +207,7 @@ const SalesModal = ({ handleClose, handleReload, data, processed }: SalesModalPr
 
               <InputsFourthStep form={form} />
 
-              <InputsFifthStep form={form} />
+              <InputsFifthStep />
             </Stack>
             <Button type="submit" className="d-none"></Button>
           </Form>

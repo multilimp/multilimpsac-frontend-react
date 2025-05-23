@@ -7,7 +7,7 @@ import CompaniesModal from './components/CompaniesModal';
 import { ModalStateEnum } from '@/types/global.enum';
 import { ModalStateProps } from '@/types/global';
 import ConfirmDelete from '@/components/ConfirmDelete';
-import CatalogsTab from '@/components/tabs/CatalogsTab';
+// import CatalogsTab from '@/components/tabs/CatalogsTab';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 
 interface TabPanelProps {
@@ -66,7 +66,7 @@ const Companies = () => {
               <h2>{selectedCompany.razonSocial}</h2>
               <p>RUC: {selectedCompany.ruc}</p>
             </Box>
-            <CatalogsTab companyId={selectedCompany.id} />
+            {/* <CatalogsTab companyId={selectedCompany.id} /> */}
           </TabPanel>
         </>
       ) : (

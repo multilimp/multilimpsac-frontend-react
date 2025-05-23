@@ -1,15 +1,11 @@
 import { Fragment } from 'react';
-import { Form, FormInstance, Input } from 'antd';
+import { Form, Input } from 'antd';
 import { StepItemContent } from './smallcomponents';
 import { requiredField } from './InputsFirstStep';
 import { Button, Fab, FormHelperText, Stack } from '@mui/material';
 import { Delete } from '@mui/icons-material';
 
-interface InputsFifthStepProps {
-  form: FormInstance;
-}
-
-const InputsFifthStep = ({ form }: InputsFifthStepProps) => {
+const InputsFifthStep = () => {
   return (
     <StepItemContent title="PRODUCTOS" subtitle="Ingrese todos los productos">
       <Form.List
