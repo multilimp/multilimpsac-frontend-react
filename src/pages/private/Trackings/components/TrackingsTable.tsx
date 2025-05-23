@@ -1,121 +1,109 @@
+// src/components/TrackingsTable.tsx
+import React from 'react';
 import AntTable, { AntColumnType } from '@/components/AntTable';
 import dayjs from 'dayjs';
 import { Fab } from '@mui/material';
 import { PictureAsPdf } from '@mui/icons-material';
-import { SaleProps } from '@/services/sales/sales';
+import { TrackingProps } from '@/services/trackings/trackings.d';
 
 interface TrackingsTableProps {
-  data: SaleProps[];
+  data: TrackingProps[];
   loading: boolean;
-  onRowClick: (row: SaleProps) => void;
+  onRowClick: (row: TrackingProps) => void;
 }
 
-const statusLabels: Record<SaleProps['etapaSiaf'], string> = {
+const statusLabels: Record<TrackingProps['status'], string> = {
   pending: 'Pendiente',
   in_progress: 'En Progreso',
   delivered: 'Entregado',
   canceled: 'Cancelado',
 };
 
-const TrackingsTable = ({ data, loading, onRowClick }: TrackingsTableProps) => {
-  const columns: AntColumnType<SaleProps>[] = [
+const TrackingsTable: React.FC<TrackingsTableProps> = ({ data, loading, onRowClick }) => {
+  const columns: AntColumnType<TrackingProps>[] = [
+    { title: 'ID', dataIndex: 'id', minWidth: 80 },
     { title: 'ID Venta', dataIndex: 'saleId', minWidth: 100 },
+    { title: 'Razón Social Cliente', dataIndex: 'clientName', minWidth: 200 },
+    { title: 'RUC Cliente', dataIndex: 'clientRuc', minWidth: 140 },
+    { title: 'RUC Empresa', dataIndex: 'companyRuc', minWidth: 140 },
+    { title: 'Razón Social Empresa', dataIndex: 'companyBusinessName', minWidth: 200 },
     {
-      title: 'Cliente',
-      align: 'center',
-      children: [
-        { title: 'RUC', dataIndex: 'clientRuc', minWidth: 120 },
-        { title: 'Nombre', dataIndex: 'clientName', minWidth: 150 },
-      ],
+      title: 'Fecha Máx. Ent.',
+      dataIndex: 'maxDeliveryDate',
+      minWidth: 140,
+      render: (d: string) => dayjs(d).format('DD/MM/YYYY'),
     },
     {
-      title: 'Empresa',
-      align: 'center',
-      children: [
-        { title: 'RUC', dataIndex: 'companyRuc', minWidth: 120 },
-        { title: 'Razón social', dataIndex: 'companyBusinessName', minWidth: 200 },
-      ],
+      title: 'Monto Venta',
+      dataIndex: 'saleAmount',
+      minWidth: 120,
+      render: (amt: number) => `S/ ${amt}`,
     },
     { title: 'CUE', dataIndex: 'cue', minWidth: 100 },
+    { title: 'Departamento', dataIndex: 'department', minWidth: 120 },
     {
-      title: 'Documentos',
-      align: 'center',
-      children: [
-        {
-          title: 'OCE',
-          dataIndex: 'oce',
-          minWidth: 75,
-          render: (_, record) =>
-            record.documentoOce ? (
-              <Fab size="small" component="a" href={record.documentoOce} target="_blank">
-                <PictureAsPdf />
-              </Fab>
-            ) : (
-              '-'
-            ),
-        },
-        {
-          title: 'OCF',
-          dataIndex: 'ocf',
-          minWidth: 75,
-          render: (_, record) =>
-            record.documentoOcf ? (
-              <Fab size="small" component="a" href={record.documentoOcf} target="_blank">
-                <PictureAsPdf />
-              </Fab>
-            ) : (
-              '-'
-            ),
-        },
-      ],
+      title: 'OCE (PDF)',
+      dataIndex: 'oce',
+      minWidth: 75,
+      render: (_, record) =>
+        record.oce ? (
+          <Fab size="small" component="a" href={record.oce} target="_blank" title="Descargar PDF OCE">
+            <PictureAsPdf />
+          </Fab>
+        ) : (
+          '-'
+        ),
     },
     {
-      title: 'Fechas',
-      align: 'center',
-      children: [
-        {
-          title: 'Máx. entrega',
-          dataIndex: 'maxDeliveryDate',
-          minWidth: 140,
-          render: (d) => dayjs(d).format('DD/MM/YYYY'),
-        },
-        {
-          title: 'Perú Compras',
-          dataIndex: 'peruPurchasesDate',
-          minWidth: 160,
-          render: (d) => (d ? dayjs(d).format('DD/MM/YYYY') : '-'),
-        },
-        {
-          title: 'Entrega OC',
-          dataIndex: 'deliveryDateOC',
-          minWidth: 150,
-          render: (d) => (d ? dayjs(d).format('DD/MM/YYYY') : '-'),
-        },
-      ],
+      title: 'OCF (PDF)',
+      dataIndex: 'ocf',
+      minWidth: 75,
+      render: (_, record) =>
+        record.ocf ? (
+          <Fab size="small" component="a" href={record.ocf} target="_blank" title="Descargar PDF OCF">
+            <PictureAsPdf />
+          </Fab>
+        ) : (
+          '-'
+        ),
     },
     {
-      title: 'Financiero',
-      align: 'center',
-      children: [
-        {
-          title: 'Monto Venta',
-          dataIndex: 'montoVenta',
-          minWidth: 120,
-          render: (amt) => `S/ ${amt}`,
-        },
-        {
-          title: 'Utilidad (%)',
-          dataIndex: 'utility',
-          minWidth: 100,
-          render: (v) => (v != null ? `${v}%` : '-'),
-        },
-      ],
+      title: 'Peru Compras',
+      dataIndex: 'peruPurchases',
+      minWidth: 120,
+      render: (val: boolean) => (val ? 'Sí' : 'No'),
+    },
+    { title: 'GRR', dataIndex: 'grr', minWidth: 100 },
+    { title: 'Factura', dataIndex: 'invoiceNumber', minWidth: 120 },
+    {
+      title: 'Refact',
+      dataIndex: 'isRefact',
+      minWidth: 80,
+      render: (val: boolean) => (val ? 'Sí' : 'No'),
+    },
+    {
+      title: 'Fecha Peru Compras',
+      dataIndex: 'peruPurchasesDate',
+      minWidth: 150,
+      render: (d?: string) => (d ? dayjs(d).format('DD/MM/YYYY') : '-'),
+    },
+    {
+      title: 'Fecha Entrega OC',
+      dataIndex: 'deliveryDateOC',
+      minWidth: 150,
+      render: (d?: string) => (d ? dayjs(d).format('DD/MM/YYYY') : '-'),
+    },
+    {
+      title: 'Utilidad (%)',
+      dataIndex: 'utility',
+      minWidth: 100,
+      render: (v?: number) => (v != null ? `${v}%` : '-'),
     },
     {
       title: 'Estado',
       dataIndex: 'status',
       minWidth: 120,
-      render: (_, rec) => statusLabels[rec.etapaSiaf],
+      render: (_, record) => statusLabels[record.status],
     },
   ];
 
