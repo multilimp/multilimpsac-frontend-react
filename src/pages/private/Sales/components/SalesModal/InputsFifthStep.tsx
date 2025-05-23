@@ -1,17 +1,15 @@
 import { Fragment } from 'react';
-import { Form, Input } from 'antd';
-import { ControlActionsProps, Controls, StepItemContent } from './smallcomponents';
+import { Form, FormInstance, Input } from 'antd';
+import { StepItemContent } from './smallcomponents';
 import { requiredField } from './InputsFirstStep';
 import { Button, Fab, FormHelperText, Stack } from '@mui/material';
 import { Delete } from '@mui/icons-material';
 
-interface InputsFifthStepProps extends ControlActionsProps {}
+interface InputsFifthStepProps {
+  form: FormInstance;
+}
 
-const InputsFifthStep = ({ form, next, ...controlProps }: InputsFifthStepProps) => {
-  const handleFinalValidation = () => {
-    form.validateFields().then(() => next?.());
-  };
-
+const InputsFifthStep = ({ form }: InputsFifthStepProps) => {
   return (
     <StepItemContent title="PRODUCTOS" subtitle="Ingrese todos los productos">
       <Form.List
@@ -49,8 +47,6 @@ const InputsFifthStep = ({ form, next, ...controlProps }: InputsFifthStepProps) 
           </Fragment>
         )}
       </Form.List>
-
-      <Controls fieldsToValidate={['productos']} next={handleFinalValidation} form={form} {...controlProps} />
     </StepItemContent>
   );
 };

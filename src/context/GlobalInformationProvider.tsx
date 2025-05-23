@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useMemo, useContext, useState, useEffect } from 'react';
+import { createContext, ReactNode, useMemo, useContext, useState, useEffect, Dispatch, SetStateAction } from 'react';
 import { RegionProps } from '@/services/ubigeo/ubigeo';
 import { CompanyProps } from '@/services/companies/company';
 import { ClientProps } from '@/services/clients/clients';
@@ -31,6 +31,8 @@ interface ContextProps {
   transports: Array<TransportProps>;
   loadingSales: boolean;
   sales: Array<SaleProps>;
+  selectedSale: null | SaleProps;
+  setSelectedSale: Dispatch<SetStateAction<null | SaleProps>>;
   obtainClients: VoidFunction;
   obtainCompanies: VoidFunction;
   obtainRegions: VoidFunction;
@@ -45,6 +47,8 @@ export const useGlobalInformation = () => useContext(GlobalInformation);
 
 const GlobalInformationProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAppContext();
+  const [selectedSale, setSelectedSale] = useState<null | SaleProps>(null);
+
   const [loadingRegions, setLoadingRegions] = useState(false);
   const [regions, setRegions] = useState<Array<RegionProps>>([]);
 
@@ -188,6 +192,8 @@ const GlobalInformationProvider = ({ children }: { children: ReactNode }) => {
       loadingTransports,
       sales,
       loadingSales,
+      selectedSale,
+      setSelectedSale,
       obtainClients,
       obtainCompanies,
       obtainRegions,
@@ -208,6 +214,7 @@ const GlobalInformationProvider = ({ children }: { children: ReactNode }) => {
     loadingTransports,
     sales,
     loadingSales,
+    selectedSale,
   ]);
 
   return <GlobalInformation.Provider value={values}>{children}</GlobalInformation.Provider>;

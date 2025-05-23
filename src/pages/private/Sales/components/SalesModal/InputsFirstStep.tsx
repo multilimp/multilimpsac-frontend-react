@@ -1,8 +1,8 @@
 import { Fragment } from 'react';
-import { Divider, Form } from 'antd';
-import { Button, Collapse, FormHelperText, Grid, IconButton, Stack, StepLabel, Typography } from '@mui/material';
+import { Divider, Form, FormInstance } from 'antd';
+import { Button, Collapse, FormHelperText, Grid, IconButton, Stack, Typography } from '@mui/material';
 import SelectCompanies from '@/components/selects/SelectCompanies';
-import { ControlActionsProps, Controls, StepItemContent } from './smallcomponents';
+import { StepItemContent } from './smallcomponents';
 import SelectClients from '@/components/selects/SelectClients';
 import SelectGeneric from '@/components/selects/SelectGeneric';
 import InputFile from '@/components/InputFile';
@@ -12,7 +12,9 @@ import { formatCurrency } from '@/utils/functions';
 import DatePickerAntd from '@/components/DatePickerAnt';
 import SelectContacts from '@/components/selects/SelectContacts';
 
-interface InputsFirstStepProps extends ControlActionsProps {}
+interface InputsFirstStepProps {
+  form: FormInstance;
+}
 
 export const requiredField = { required: true, message: 'Campo requerido' };
 
@@ -42,23 +44,9 @@ const getEmptyPaymentRecord = () => ({
   status: 'activo',
 });
 
-const InputsFirstStep = ({ form, ...controlProps }: InputsFirstStepProps) => {
+const InputsFirstStep = ({ form }: InputsFirstStepProps) => {
   return (
-    <StepItemContent
-      customTitle={
-        <Form.Item shouldUpdate noStyle>
-          {({ getFieldValue }) => {
-            const privateSale = getFieldValue('tipoVenta') === 'privada';
-            const aux = getFieldValue('empresaComplete');
-            return (
-              <StepLabel optional={privateSale !== undefined && (privateSale ? 'VENTA PRIVADA' : 'VENTA DIRECTA')}>
-                {aux ? `${aux.razonSocial} — RUC: ${aux.ruc}` : 'SELECCIONAR EMPRESA'}
-              </StepLabel>
-            );
-          }}
-        </Form.Item>
-      }
-    >
+    <StepItemContent title="EMPRESA Y TIPO DE VENTA" subtitle="Ingresa la información solicitada">
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, md: 6 }}>
           <Form.Item name="empresaComplete" noStyle />
@@ -186,19 +174,6 @@ const InputsFirstStep = ({ form, ...controlProps }: InputsFirstStepProps) => {
               </Grid>
             </Collapse>
           );
-        }}
-      </Form.Item>
-
-      <Form.Item shouldUpdate noStyle>
-        {({ getFieldValue }) => {
-          const emptyPayments = getFieldValue('pagos') ?? [];
-          const disabled = !emptyPayments.length || emptyPayments.some((item: any) => Object.values(item).some((value) => !value));
-
-          const fields = ['empresa', 'tipoVenta'];
-          const allow = getFieldValue('tipoVenta') === 'privada';
-          if (allow) fields.push('privateClient', 'facturaStatus', 'dateFactura', 'documentoFactura', 'pagos');
-
-          return <Controls fieldsToValidate={fields} dnext={allow && disabled} form={form} {...controlProps} />;
         }}
       </Form.Item>
     </StepItemContent>
