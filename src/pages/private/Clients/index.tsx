@@ -8,36 +8,29 @@ import { ClientProps } from '@/services/clients/clients';
 import { ModalStateProps } from '@/types/global';
 import ConfirmDelete from '@/components/ConfirmDelete';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
+import { ContactTypeEnum } from '@/services/contacts/contacts.enum';
+import ContactsDrawer from '@/components/ContactsDrawer';
 
 const ClientsPage = () => {
-  const [modalState, setModalState] = useState<ModalStateProps<ClientProps>>(null);
+  const [modalState, setModal] = useState<ModalStateProps<ClientProps>>(null);
   const { clients, loadingClients, obtainClients } = useGlobalInformation();
 
-  const handleOpenModal = () => {
-    setModalState({
-      mode: ModalStateEnum.BOX,
-      data: undefined,
-    });
-  };
-
   const handleCloseModal = () => {
-    setModalState(null);
+    setModal(null);
   };
 
   return (
-    <PageContent
-      component={
-        <Button variant="contained" onClick={handleOpenModal}>
-          Agregar Cliente
-        </Button>
-      }
-    >
-      <ClientsTable data={clients} loading={loadingClients} onRecordAction={(mode, data) => setModalState({ mode, data })} />
+    <PageContent component={<Button onClick={() => setModal({ mode: ModalStateEnum.BOX })}>Agregar</Button>}>
+      <ClientsTable data={clients} loading={loadingClients} onRecordAction={(mode, data) => setModal({ mode, data })} />
 
       {modalState?.mode === ModalStateEnum.BOX && <ClientsModal data={modalState.data} handleClose={handleCloseModal} handleReload={obtainClients} />}
 
       {modalState?.mode === ModalStateEnum.DELETE ? (
         <ConfirmDelete endpoint={`/clients/${modalState.data?.id}`} handleClose={handleCloseModal} handleReload={obtainClients} />
+      ) : null}
+
+      {modalState?.mode === ModalStateEnum.DRAWER ? (
+        <ContactsDrawer referenceId={modalState.data?.id!} handleClose={handleCloseModal} tipo={ContactTypeEnum.CLIENTE} />
       ) : null}
     </PageContent>
   );

@@ -1,13 +1,15 @@
 import { Grid } from '@mui/material';
-import { Form } from 'antd';
-import { Controls, ControlActionsProps, StepItemContent } from './smallcomponents';
+import { Form, FormInstance } from 'antd';
+import { StepItemContent } from './smallcomponents';
 import { requiredField } from './InputsFirstStep';
 import InputAntd from '@/components/InputAntd';
 import SelectContacts from '@/components/selects/SelectContacts';
 
-interface InputsFourthStepProps extends ControlActionsProps {}
+interface InputsFourthStepProps {
+  form: FormInstance;
+}
 
-const InputsFourthStep = ({ form, ...controlProps }: InputsFourthStepProps) => {
+const InputsFourthStep = ({ form }: InputsFourthStepProps) => {
   return (
     <StepItemContent title="INFORMACIÓN DE CONTACTO" subtitle="Ingresa la información solicitada">
       <Grid container spacing={2}>
@@ -38,8 +40,6 @@ const InputsFourthStep = ({ form, ...controlProps }: InputsFourthStepProps) => {
           </Form.Item>
         </Grid>
       </Grid>
-
-      <Controls fieldsToValidate={['cargoContacto', 'nombreContacto', 'celularContacto']} form={form} {...controlProps} />
     </StepItemContent>
   );
 };

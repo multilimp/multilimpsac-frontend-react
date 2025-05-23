@@ -1,5 +1,5 @@
-import { Form } from 'antd';
-import { Controls, ControlActionsProps, StepItemContent } from './smallcomponents';
+import { Form, FormInstance } from 'antd';
+import { StepItemContent } from './smallcomponents';
 import { Card, CardContent, CardHeader, Grid } from '@mui/material';
 import SelectClients from '@/components/selects/SelectClients';
 import { requiredField } from './InputsFirstStep';
@@ -9,9 +9,11 @@ import SelectDistricts from '@/components/selects/SelectDistricts';
 import InputAntd from '@/components/InputAntd';
 import DatePickerAntd from '@/components/DatePickerAnt';
 
-interface InputsSecondStepProps extends ControlActionsProps {}
+interface InputsSecondStepProps {
+  form: FormInstance;
+}
 
-const InputsSecondStep = ({ form, ...controlProps }: InputsSecondStepProps) => {
+const InputsSecondStep = ({ form }: InputsSecondStepProps) => {
   return (
     <StepItemContent title="DATOS DEL CLIENTE Y LUGAR DE ENTREGA" subtitle="Ingresa la información solicitada">
       <Form.Item name="clienteComplete" noStyle />
@@ -97,12 +99,6 @@ const InputsSecondStep = ({ form, ...controlProps }: InputsSecondStepProps) => {
           </Grid>
         </CardContent>
       </Card>
-
-      <Controls
-        fieldsToValidate={['cliente', 'regionEntrega', 'provinciaEntrega', 'distritoEntrega', 'direccionEntrega', 'referenciaEntrega']}
-        form={form}
-        {...controlProps}
-      />
     </StepItemContent>
   );
 };

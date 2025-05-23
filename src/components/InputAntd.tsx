@@ -55,7 +55,7 @@ const InputAntd = (props: InputAntdProps) => {
     <div className={`input-form ${size}`}>
       <div className="float-label" onBlur={() => setFocus(false)} onFocus={() => setFocus(true)}>
         {props.type === 'textarea' ? (
-          <Input.TextArea {...(props as TextAreaInputProps)} size={size} rows={4} />
+          <Input.TextArea {...(props as TextAreaInputProps)} size={size} rows={3} />
         ) : props.type === 'number' ? (
           <InputNumber {...(props as NumberInputProps)} size={size} style={{ width: '100%' }} />
         ) : (

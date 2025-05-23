@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Button, Dialog, DialogContent, DialogTitle, Fab, Stack, Step, Stepper, Typography } from '@mui/material';
-import { Form, notification } from 'antd';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Fab, Stack, Typography } from '@mui/material';
+import { Form, notification, Spin } from 'antd';
 import { Close } from '@mui/icons-material';
 import InputsFirstStep from './InputsFirstStep';
 import InputsSecondStep from './InputsSecondStep';
@@ -24,9 +24,7 @@ interface SalesModalProps {
 const SalesModal = ({ handleClose, handleReload, data, processed }: SalesModalProps) => {
   const isEdit = !!data && !processed;
   const { regions, companies, clients } = useGlobalInformation();
-
   const [form] = Form.useForm();
-  const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -93,9 +91,6 @@ const SalesModal = ({ handleClose, handleReload, data, processed }: SalesModalPr
       });
     }
   }, [data, companies, clients, regions]);
-
-  const handleNext = () => setStep(step + 1);
-  const handleBack = () => setStep(step - 1);
 
   const handleFinish = async (values: Record<string, any>) => {
     try {
@@ -201,44 +196,31 @@ const SalesModal = ({ handleClose, handleReload, data, processed }: SalesModalPr
       </DialogTitle>
 
       <DialogContent>
-        <Form form={form} onFinish={handleFinish}>
-          <Stepper activeStep={step} orientation="vertical">
-            <Step active={step === 1}>
-              <InputsFirstStep form={form} dback next={handleNext} />
-            </Step>
+        <Spin spinning={loading} size="large" tip="..:: Espere mientras finaliza la transacción ::..">
+          <Form form={form} onFinish={handleFinish}>
+            <Stack direction="column" spacing={2}>
+              <InputsFirstStep form={form} />
 
-            <Step active={step === 2}>
-              <InputsSecondStep form={form} back={handleBack} next={handleNext} />
-            </Step>
+              <InputsSecondStep form={form} />
 
-            <Step active={step === 3}>
-              <InputsThirdStep form={form} back={handleBack} next={handleNext} omitFiles={isEdit} />
-            </Step>
+              <InputsThirdStep form={form} />
 
-            <Step active={step === 4}>
-              <InputsFourthStep form={form} back={handleBack} next={handleNext} />
-            </Step>
+              <InputsFourthStep form={form} />
 
-            <Step active={step === 5}>
-              <InputsFifthStep form={form} back={handleBack} next={handleNext} />
-            </Step>
-          </Stepper>
-
-          {step === 6 && (
-            <Stack alignItems="center" justifyContent="center" my={5}>
-              <Typography variant="h5">Completaste todos los pasos correctamante</Typography>
-              <Stack direction="row" mt={3} spacing={2}>
-                <Button variant="outlined" onClick={() => handleBack()} disabled={loading}>
-                  Volver al último paso
-                </Button>
-                <Button loading={loading} type="submit">
-                  Finalizar y {isEdit ? 'actualizar' : 'registrar'} venta
-                </Button>
-              </Stack>
+              <InputsFifthStep />
             </Stack>
-          )}
-        </Form>
+            <Button type="submit" className="d-none"></Button>
+          </Form>
+        </Spin>
       </DialogContent>
+      <DialogActions>
+        <Button variant="outlined" color="error" disabled={loading} onClick={handleClose}>
+          Cancelar
+        </Button>
+        <Button loading={loading} onClick={() => form.submit()}>
+          Finalizar y {isEdit ? 'actualizar' : 'registrar'} venta
+        </Button>
+      </DialogActions>
     </Dialog>
   );
 };

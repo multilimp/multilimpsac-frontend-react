@@ -26,7 +26,7 @@ const PrivateLayout = () => {
         <MainNav />
         <Box
           sx={{
-            m: { xs: 1, md: 3 },
+            m: { xs: 1, md: 2 },
             p: { xs: 1, md: 2 },
             borderRadius: 3,
             bgcolor: 'background.paper',

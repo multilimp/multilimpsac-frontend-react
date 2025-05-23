@@ -103,7 +103,12 @@ const routes: Array<PropsRoutes> = [
         roles: rolesArr,
       },
       {
-        path: 'provider-orders/:saleId',
+        path: 'provider-orders/create',
+        element: ProviderOrderForm,
+        roles: rolesArr,
+      },
+      {
+        path: 'provider-orders/:saleId/update',
         element: ProviderOrderForm,
         roles: rolesArr,
       },

@@ -68,7 +68,7 @@ const ProvidersModal: React.FC<ProvidersModalProps> = ({ data, handleClose, hand
   return (
     <Dialog open fullWidth maxWidth="md">
       <DialogTitle variant="h5" textAlign="center">
-        {data ? 'Editar' : 'Agregar'} empresa
+        {data ? 'Editar' : 'Agregar'} proveedor
       </DialogTitle>
       <DialogContent>
         <Spin spinning={loading}>

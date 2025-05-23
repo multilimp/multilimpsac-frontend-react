@@ -4,7 +4,7 @@ import { SaleFiltersProps, SaleProps } from './sales';
 
 export const getSales = async (params?: SaleFiltersProps): Promise<SaleProps[]> => {
   const response = await apiClient.get('/ventas', { params });
-  const aux = response.data?.data;
+  const aux = response.data;
   const data = Array.isArray(aux) ? aux : [];
 
   const formatted = data.map((item) => ({

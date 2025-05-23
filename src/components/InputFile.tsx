@@ -4,7 +4,7 @@ import { Delete, FileUpload } from '@mui/icons-material';
 
 interface InputFileProps {
   label?: string;
-  onChange: (file: null | File) => void;
+  onChange?: (file: null | File) => void;
   accept?: keyof typeof acceptFiles;
 }
 
@@ -31,13 +31,13 @@ const InputFile = ({ onChange, label, accept = 'image' }: InputFileProps) => {
 
     setErrorFile('');
     setFile(selected);
-    onChange(selected);
+    onChange?.(selected);
   };
 
   const handleError = (msg: string) => {
     setErrorFile(msg);
     setFile(null);
-    onChange(null);
+    onChange?.(null);
     fileRef.current!.value = '';
   };
 

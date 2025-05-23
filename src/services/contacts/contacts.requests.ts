@@ -1,9 +1,8 @@
-
 import apiClient from '../apiClient';
-import { ContactProps } from './contacts';
+import { ContactFilterProps, ContactProps } from './contacts';
 
-export const getContacts = async (): Promise<Array<ContactProps>> => {
-  const res = await apiClient.get('/contacts');
+export const getContacts = async (params?: ContactFilterProps): Promise<Array<ContactProps>> => {
+  const res = await apiClient.get('/contacts', { params });
   return res.data.data;
 };
 
@@ -22,10 +21,7 @@ export const deleteContact = async (contactId: number): Promise<boolean> => {
   return res.status === 200;
 };
 
-export const getContactsByEntityType = async (
-  entityType: 'cliente' | 'proveedor' | 'transporte',
-  entityId: number
-): Promise<Array<ContactProps>> => {
+export const getContactsByEntityType = async (entityType: 'cliente' | 'proveedor' | 'transporte', entityId: number): Promise<Array<ContactProps>> => {
   const res = await apiClient.get(`/contacts/${entityType}/${entityId}`);
   return res.data;
 };

@@ -1,7 +1,7 @@
 import AntTable, { AntColumnType } from '@/components/AntTable';
 import { ClientProps } from '@/services/clients/clients';
 import { ModalStateEnum } from '@/types/global.enum';
-import { Delete, Edit } from '@mui/icons-material';
+import { Delete, Edit, PermContactCalendar } from '@mui/icons-material';
 import { Button, ButtonGroup, FormHelperText, Typography } from '@mui/material';
 
 interface ClientsTableProps {
@@ -29,10 +29,14 @@ const ClientsTable = ({ data, loading, onRecordAction }: ClientsTableProps) => {
     {
       title: 'Acciones',
       dataIndex: 'id',
+      align: 'center',
       fixed: 'right',
-      width: 150,
+      width: 200,
       render: (_, record) => (
-        <ButtonGroup size="small">
+        <ButtonGroup size="small" sx={{ bgcolor: '#fff' }}>
+          <Button color="warning" onClick={() => onRecordAction(ModalStateEnum.DRAWER, record)}>
+            <PermContactCalendar />
+          </Button>
           <Button color="info" onClick={() => onRecordAction(ModalStateEnum.BOX, record)}>
             <Edit />
           </Button>

@@ -1,4 +1,4 @@
-import { Delete, Edit, RadioButtonChecked, RadioButtonUnchecked } from '@mui/icons-material';
+import { Delete, Edit, PermContactCalendar, RadioButtonChecked, RadioButtonUnchecked } from '@mui/icons-material';
 import AntTable, { AntColumnType } from '@/components/AntTable';
 import { Button, ButtonGroup, FormHelperText, Typography } from '@mui/material';
 import { ModalStateEnum } from '@/types/global.enum';
@@ -39,9 +39,13 @@ const ProvidersTable = ({ data, loading, onRecordAction }: ProvidersTableProps) 
       title: 'Acciones',
       dataIndex: 'id',
       fixed: 'right',
-      width: 140,
+      align: 'center',
+      width: 200,
       render: (_, record) => (
-        <ButtonGroup size="small">
+        <ButtonGroup size="small" sx={{ bgcolor: '#fff' }}>
+          <Button color="warning" onClick={() => onRecordAction(ModalStateEnum.DRAWER, record)}>
+            <PermContactCalendar />
+          </Button>
           <Button color="info" onClick={() => onRecordAction(ModalStateEnum.BOX, record)}>
             <Edit />
           </Button>
