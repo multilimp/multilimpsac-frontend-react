@@ -1,21 +1,21 @@
 import PageContent from '@/components/PageContent';
 import TrackingsTable from './components/TrackingsTable';
-import { SaleProps } from '@/services/sales/sales';
+import { TrackingProps } from '@/services/trackings/trackings.d';
 import { useNavigate } from 'react-router-dom';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 
 const TrackingsPage = () => {
   const router = useNavigate();
-  const { sales, loadingSales } = useGlobalInformation();
+  const { trackings, loadingTrackings } = useGlobalInformation();
 
-  const onRowClick = (data: SaleProps) => {
+  const onRowClick = (data: TrackingProps) => {
     console.log('Row clicked', data);
     router('/tracking/' + data.id);
   };
 
   return (
     <PageContent>
-      <TrackingsTable data={sales} loading={loadingSales} onRowClick={onRowClick} />
+      <TrackingsTable data={trackings} loading={loadingTrackings} onRowClick={onRowClick} />
     </PageContent>
   );
 };
