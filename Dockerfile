@@ -1,28 +1,28 @@
-# Use Node.js 20 official image
-FROM node:20-alpine AS builder
+# Use Node.js 22 official image
+FROM node:22-alpine AS builder
 
 # Set working directory
 WORKDIR /app
 
 # Copy package files
-COPY package.json yarn.lock ./
+COPY package.json package-lock.json ./
 
 # Install dependencies
-RUN yarn install --frozen-lockfile
+RUN npm ci
 
 # Copy source code
 COPY . .
 
 # Build the application
-RUN yarn build
+RUN npm run build
 
 # Production stage
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 
 WORKDIR /app
 
 # Install serve to serve static files
-RUN yarn global add serve
+RUN npm install -g serve
 
 # Copy built application
 COPY --from=builder /app/dist ./dist

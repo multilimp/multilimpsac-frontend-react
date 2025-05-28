@@ -1,8 +1,2 @@
 [variables]
-NODE_VERSION = "20"
-
-[build]
-buildCommand = "yarn build"
-
-[start]
-cmd = "yarn start"
+NODE_VERSION = "22"

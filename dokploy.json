@@ -1,7 +1,7 @@
 {
-  "buildCommand": "yarn build",
+  "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "installCommand": "yarn install --frozen-lockfile",
+  "installCommand": "npm ci",
   "framework": "vite",
-  "nodeVersion": "20"
+  "nodeVersion": "22"
 }
