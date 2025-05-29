@@ -3,122 +3,80 @@ import { useAppContext } from '@/context';
 import useSidebarConfig from '@/hooks/useSidebarConfig';
 import { SidebarItemProps } from '@/types/global';
 import { isNavItemActive } from '@/utils/functions';
-import { Box, Divider, FormHelperText, Stack, Typography } from '@mui/material';
+import { Box, Divider, Stack, Tooltip } from '@mui/material';
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
-const HEADER_HEIGHT = 165;
+const HEADER_HEIGHT = 80; // si cambias el header, ajusta este valor
 
-const NavigatorList = () => {
+const NavigatorList: React.FC = () => {
   const { pathname } = useLocation();
   const { user } = useAppContext();
   const sidebarList = useSidebarConfig(user.role);
+
   return (
-    <Box>
-      <Stack p={3} spacing={2}>
-        <Stack direction="row" alignItems="center" justifyContent="center" spacing={2}>
-          <Box component="img" src="/images/multilimp-logo.svg" alt="Logo" height={50} />
-          <Typography variant="h5" fontWeight={700} sx={{ color: 'white' }}>
-            MULTILIMPSAC
-          </Typography>
-        </Stack>
-        <Stack alignItems="center">
-          <Typography fontWeight={600} sx={{ color: 'white' }}>
-            {user.nombre}
-          </Typography>
-          <FormHelperText sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>{user.role}</FormHelperText>
-        </Stack>
-      </Stack>
-      <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)' }} />
-      <Box component="nav">
-        <Scrollbar sx={{ height: `calc((100vh) - ${HEADER_HEIGHT}px)`, p: 2 }}>
-          <Stack spacing={2}>
-            {sidebarList.map((item) => (
-              <Stack key={item.title} spacing={1.5}>
-                <FormHelperText
-                  sx={{
-                    mb: 1,
-                    color: 'rgba(255, 255, 255, 0.5)',
-                    fontWeight: 500,
-                    fontSize: '0.75rem',
-                  }}
-                >
-                  {item.title.toUpperCase()}
-                </FormHelperText>
-                {item.routes.map((record) => (
-                  <NavItem key={record.path} pathname={pathname} {...record} />
-                ))}
-              </Stack>
-            ))}
-          </Stack>
-        </Scrollbar>
+    <Box sx={{ width: '100%' }}>
+      {/* Logo (opcional) */}
+      <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
+        <Box component="img" src="/images/multilimp-logo.svg" alt="Logo" height={40} />
       </Box>
+
+      <Divider sx={{ width: '80%', borderColor: 'rgba(255,255,255,0.2)', mb: 1 }} />
+
+      <Scrollbar sx={{ height: `calc(100vh - ${HEADER_HEIGHT}px)`, p: 1 }}>
+        <Stack spacing={1}>
+          {sidebarList.flatMap(section =>
+            section.routes.map(route => (
+              <NavIconButton
+                key={route.path}
+                icon={route.icon}
+                to={route.path}
+                name={route.name}
+                active={isNavItemActive({ path: route.path, pathname })}
+              />
+            ))
+          )}
+        </Stack>
+      </Scrollbar>
     </Box>
   );
 };
+
 export default NavigatorList;
-interface NavItemProps extends SidebarItemProps {
-  pathname: string;
+
+interface NavIconButtonProps {
+  icon: React.ElementType;
+  to: string;
+  name: string;
+  active: boolean;
 }
-function NavItem({ icon: Icon, name, path, pathname }: Readonly<NavItemProps>): React.JSX.Element {
-  const active = isNavItemActive({
-    path,
-    pathname,
-  });
-  return (
+
+const NavIconButton: React.FC<NavIconButtonProps> = ({ icon: Icon, to, name, active }) => (
+  <Tooltip title={name} placement="right" arrow>
     <Box
       component={Link}
-      to={path}
+      to={to}
       sx={{
-        alignItems: 'center',
-        borderRadius: 2,
-        color: 'var(--NavItem-color)',
-        cursor: 'pointer',
+        width: '100%',
+        p: 1.5,
         display: 'flex',
-        flex: '0 0 auto',
-        gap: 1,
-        p: '8px 16px',
-        position: 'relative',
-        textDecoration: 'none',
-        whiteSpace: 'nowrap',
-        transition: 'all 0.2s ease',
+        justifyContent: 'center',
+        alignItems: 'center',
+        color: active
+          ? 'var(--NavItem-icon-active-color)'
+          : 'var(--NavItem-icon-color)',
+        bgcolor: active
+          ? 'var(--NavItem-active-background)'
+          : 'transparent',
+        borderRadius: 1.5,
+        transition: 'background-color 0.2s, transform 0.2s',
         '&:hover': {
           bgcolor: 'var(--NavItem-hover-background)',
           transform: 'translateX(4px)',
         },
-        ...(active && {
-          bgcolor: 'var(--NavItem-active-background)',
-          color: 'var(--NavItem-active-color)',
-          '&:hover': {
-            transform: 'none',
-            bgcolor: 'var(--NavItem-active-background)',
-          },
-        }),
       }}
     >
-      <Box
-        sx={{
-          alignItems: 'center',
-          display: 'flex',
-          justifyContent: 'center',
-          flex: '0 0 auto',
-          color: active ? 'var(--NavItem-icon-active-color)' : 'var(--NavItem-icon-color)',
-        }}
-      >
-        <Icon />
-      </Box>
-      <Typography
-        component="span"
-        sx={{
-          color: 'inherit',
-          fontSize: '0.875rem',
-          fontWeight: active ? 600 : 500,
-          lineHeight: '28px',
-          flex: '1 1 auto',
-        }}
-      >
-        {name}
-      </Typography>
+      <Icon fontSize="medium" />
     </Box>
-  );
-}
+  </Tooltip>
+);

@@ -1,19 +1,33 @@
+// src/config/sidebarConfig.ts
 import { RolesEnum } from '@/services/users/user.enum';
 import { SidebarConfigProps } from '@/types/global';
-import { Person, Apps, Apartment, People, Diversity3, LocalShipping } from '@mui/icons-material';
+
+// Iconos más específicos para cada ruta
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import ApartmentIcon from '@mui/icons-material/Apartment';
+import GroupIcon from '@mui/icons-material/Group';
+import BusinessIcon from '@mui/icons-material/Business';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import FormatQuoteIcon from '@mui/icons-material/FormatQuote';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import ListAltIcon from '@mui/icons-material/ListAlt';
+import TrackChangesIcon from '@mui/icons-material/TrackChanges';
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import ReceiptIcon from '@mui/icons-material/Receipt';
+import PersonIcon from '@mui/icons-material/Person';
 
 const rolesArr = Object.values(RolesEnum);
 
-const sidebarConfig: Array<SidebarConfigProps> = [
+const sidebarConfig: SidebarConfigProps[] = [
   {
     title: 'Principal',
     roles: rolesArr,
     routes: [
       {
-        roles: rolesArr,
-        path: '/',
-        icon: Apps,
         name: 'Dashboard',
+        path: '/',
+        icon: DashboardIcon,
+        roles: rolesArr,
       },
     ],
   },
@@ -24,25 +38,25 @@ const sidebarConfig: Array<SidebarConfigProps> = [
       {
         name: 'Empresas',
         path: '/companies',
-        icon: Apartment,
+        icon: ApartmentIcon,
         roles: rolesArr,
       },
       {
         name: 'Clientes',
         path: '/clients',
-        icon: People,
+        icon: GroupIcon,
         roles: rolesArr,
       },
       {
         name: 'Proveedores',
         path: '/providers',
-        icon: Diversity3,
+        icon: BusinessIcon,
         roles: rolesArr,
       },
       {
         name: 'Transportes',
         path: '/transports',
-        icon: LocalShipping,
+        icon: LocalShippingIcon,
         roles: rolesArr,
       },
     ],
@@ -54,43 +68,43 @@ const sidebarConfig: Array<SidebarConfigProps> = [
       {
         name: 'Cotizaciones',
         path: '/quotes',
-        icon: Apps,
+        icon: FormatQuoteIcon,
         roles: rolesArr,
       },
       {
         name: 'Ventas',
         path: '/sales',
-        icon: Apps,
+        icon: ShoppingCartIcon,
         roles: rolesArr,
       },
       {
         name: 'Órdenes',
         path: '/orders',
-        icon: Apps,
+        icon: ListAltIcon,
         roles: rolesArr,
       },
       {
         name: 'Órdenes de Proveedores',
         path: '/provider-orders',
-        icon: Apps,
+        icon: LocalShippingIcon,
         roles: rolesArr,
       },
       {
         name: 'Seguimiento',
         path: '/tracking',
-        icon: Apps,
+        icon: TrackChangesIcon,
         roles: rolesArr,
       },
       {
         name: 'Tesorería',
         path: '/treasury',
-        icon: Apps,
+        icon: AccountBalanceWalletIcon,
         roles: rolesArr,
       },
       {
         name: 'Facturación',
         path: '/billing',
-        icon: Apps,
+        icon: ReceiptIcon,
         roles: rolesArr,
       },
     ],
@@ -102,7 +116,7 @@ const sidebarConfig: Array<SidebarConfigProps> = [
       {
         name: 'Usuarios',
         path: '/users',
-        icon: Person,
+        icon: PersonIcon,
         roles: rolesArr,
       },
     ],
