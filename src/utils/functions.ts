@@ -1,3 +1,5 @@
+import dayjs from 'dayjs';
+
 export const isNavItemActive = ({ path, pathname = '' }: { path: string; pathname?: string }): boolean =>
   path === pathname || Boolean(path !== '/' && pathname.startsWith(path));
 
@@ -26,4 +28,9 @@ export const parseJSON = (str?: null | string) => {
   } catch (error) {
     return null;
   }
+};
+
+export const formattedDate = (value?: null | Date | string, format = 'DD/MM/YYYY'): null | string => {
+  if (!value || !dayjs(value).isValid()) return '';
+  return dayjs(value).format(format);
 };

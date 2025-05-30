@@ -20,12 +20,16 @@ const InputsThirdStep = ({ form }: InputsThirdStepProps) => {
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, sm: 12, md: 4, lg: 3 }}>
           <Form.Item name="catalogoComplete" noStyle />
-          <Form.Item name="catalogo" rules={[requiredField]}>
-            <SelectCatalogs
-              companyId={form.getFieldValue('empresa')}
-              label="Catálogo"
-              onChange={(value, record: any) => form.setFieldsValue({ catalogo: value, catalogoComplete: record?.optiondata })}
-            />
+          <Form.Item shouldUpdate noStyle>
+            {({ getFieldValue, setFieldsValue }) => (
+              <Form.Item name="catalogo" rules={[requiredField]}>
+                <SelectCatalogs
+                  companyId={getFieldValue('empresa')}
+                  label="Catálogo"
+                  onChange={(value, record: any) => setFieldsValue({ catalogo: value, catalogoComplete: record?.optiondata })}
+                />
+              </Form.Item>
+            )}
           </Form.Item>
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>

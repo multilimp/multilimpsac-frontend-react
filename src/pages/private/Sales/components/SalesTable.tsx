@@ -1,11 +1,10 @@
-import React from 'react';
-import { Chip, IconButton, Stack } from '@mui/material';
+import React, { useMemo } from 'react';
+import { IconButton, Stack } from '@mui/material';
 import { SaleProps } from '@/services/sales/sales';
-import { Edit, VisibilityOutlined } from '@mui/icons-material';
-import AntTable, { AntColumnType } from '@/components/AntTable';
-import { formatCurrency } from '@/utils/functions';
-import dayjs from 'dayjs';
+import { Edit, PictureAsPdf, VisibilityOutlined } from '@mui/icons-material';
+import { formatCurrency, formattedDate } from '@/utils/functions';
 import { ModalStateEnum } from '@/types/global.enum';
+import CustomTable, { AntColumnType } from '@/components/CustomTable';
 
 interface SalesTableProps {
   data: SaleProps[];
@@ -13,99 +12,75 @@ interface SalesTableProps {
   onRecordAction: (action: ModalStateEnum, data: SaleProps) => void;
 }
 
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case 'completed':
-      return 'success';
-    case 'pending':
-      return 'warning';
-    case 'refunded':
-      return 'error';
-    default:
-      return 'default';
-  }
-};
-
 const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onRecordAction }) => {
-  const columns: AntColumnType<SaleProps>[] = [
-    {
-      title: 'Código Venta',
-      dataIndex: 'codigoVenta',
-      key: 'codigoVenta',
-      filter: true,
-      width: 150,
-    },
-    {
-      title: 'Cliente',
-      dataIndex: 'cliente',
-      key: 'cliente',
-      width: 125,
-      render: (_, record) => record.cliente?.razonSocial ?? '-',
-    },
-    {
-      title: 'RUC Cliente',
-      dataIndex: 'cliente',
-      key: 'cliente',
-      width: 150,
-      render: (_, record) => record.cliente?.ruc ?? '-',
-    },
-    {
-      title: 'Empresa',
-      dataIndex: 'empresa',
-      key: 'empresa',
-      width: 150,
-      render: (_, record) => record.empresa?.razonSocial ?? '-',
-    },
-    {
-      title: 'Fecha de emisión',
-      dataIndex: 'fechaEmision',
-      key: 'fechaEmision',
-      width: 150,
-      render: (value) => (value ? dayjs(value).format('DD/MM/YYYY') : ''),
-    },
-    {
-      title: 'Estado',
-      dataIndex: 'etapaSiaf',
-      key: 'etapaSiaf',
-      width: 150,
-      filters: [
-        { text: 'Completado', value: 'completed' },
-        { text: 'Pendiente', value: 'pending' },
-        { text: 'Reembolsado', value: 'refunded' },
-      ],
-      onFilter: (value: any, record: SaleProps) => record.etapaSiaf === value,
-      render: (etapaSiaf: string) => {
-        const statusTranslations: Record<string, string> = {
-          completed: 'Completado',
-          pending: 'Pendiente',
-          refunded: 'Reembolsado',
-        };
+  const formattedData = useMemo(() => {
+    return data.map((item) => ({
+      id: item.id,
+      codigo_venta: item.codigoVenta,
+      razon_social_cliente: item.cliente.razonSocial,
+      ruc_cliente: item.cliente.ruc,
+      ruc_empresa: item.empresa.ruc,
+      razon_social_empresa: item.empresa.razonSocial,
+      contacto: item.contactoCliente ? `${item.contactoCliente.nombre} - ${item.contactoCliente.cargo}` : '',
+      catalogo: item.catalogoEmpresa?.nombre ?? '',
+      fecha_formalizacion: formattedDate(item.fechaForm),
+      fecha_max_entrega: formattedDate(item.fechaMaxForm),
+      monto_venta: formatCurrency(Number(item.montoVenta)),
+      cue: item.cliente.codigoUnidadEjecutora,
+      direccion_entrega: `${item.direccionEntrega ?? ''} -
+                          ${item.departamentoEntrega?.name ?? ''}
+                          ${item.provinciaEntrega?.name ?? ''}
+                          ${item.distritoEntrega?.name ?? ''} -
+                          ${item.referenciaEntrega ?? ''}`,
+      oce: item.documentoOce,
+      ocf: item.documentoOcf,
 
-        return (
-          <Chip
-            label={statusTranslations[etapaSiaf] || etapaSiaf}
-            color={getStatusColor(etapaSiaf) as any}
-            size="small"
-            variant="filled"
-            sx={{ fontWeight: 500 }}
-          />
-        );
-      },
+      rawdata: item,
+    }));
+  }, [data]);
+
+  const columns: Array<AntColumnType<any>> = [
+    { title: 'Código Venta', dataIndex: 'codigo_venta', width: 200, sort: true, filter: true },
+    { title: 'Razón Social Cliente', dataIndex: 'razon_social_cliente', width: 200, sort: true, filter: true },
+    { title: 'RUC Cliente', dataIndex: 'ruc_cliente', width: 200, sort: true, filter: true },
+    { title: 'RUC Empresa', dataIndex: 'ruc_empresa', width: 200, sort: true, filter: true },
+    { title: 'Razón Social Empresa', dataIndex: 'razon_social_empresa', width: 200, sort: true, filter: true },
+    { title: 'Contacto', dataIndex: 'contacto', width: 200, sort: true, filter: true },
+    { title: 'Catálogo', dataIndex: 'catalogo', width: 200, sort: true, filter: true },
+    { title: 'Fecha Formalización', dataIndex: 'fecha_formalizacion', width: 200, sort: true, filter: true },
+    { title: 'Fecha Máxima Entrega', dataIndex: 'fecha_max_entrega', width: 200, sort: true, filter: true },
+    { title: 'Monto Venta', dataIndex: 'monto_venta', width: 200, sort: true, filter: true },
+    { title: 'CUE', dataIndex: 'cue', width: 200, sort: true, filter: true },
+    { title: 'Dirección Entrega', dataIndex: 'direccion_entrega', width: 300, sort: true, filter: true },
+    {
+      title: 'OCE',
+      dataIndex: 'oce',
+      width: 100,
+      render: (value) =>
+        value && (
+          <IconButton color="error" component="a" href={value} target="_blank">
+            <PictureAsPdf />
+          </IconButton>
+        ),
     },
     {
-      title: 'Total',
-      dataIndex: 'montoVenta',
-      key: 'montoVenta',
-      width: 150,
-      render: (montoVenta: number) => formatCurrency(montoVenta),
+      title: 'OCF',
+      dataIndex: 'ocf',
+      width: 100,
+      render: (value) =>
+        value && (
+          <IconButton color="error" component="a" href={value} target="_blank">
+            <PictureAsPdf />
+          </IconButton>
+        ),
     },
     {
       title: 'Acciones',
-      key: 'actions',
+      dataIndex: 'id',
       fixed: 'right',
       width: 100,
       render: (_, record) => (
-        <Stack direction="row" spacing={1} bgcolor="background.paper">
+        <Stack direction="row" spacing={1}>
           <IconButton size="small" color="info" onClick={() => onRecordAction(ModalStateEnum.DETAILS, record)}>
             <VisibilityOutlined fontSize="small" />
           </IconButton>
@@ -122,7 +97,7 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onRecordAction }
     },
   ];
 
-  return <AntTable data={data} columns={columns} loading={loading} />;
+  return <CustomTable data={formattedData} columns={columns} loading={loading} />;
 };
 
 export default SalesTable;

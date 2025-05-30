@@ -88,16 +88,16 @@ export default function GlobalStyles() {
         '.ant-select-selector': {
           borderRadius: '6px !important',
         },
-        '.ant-table-cell': {
-          overflowWrap: 'break-word',
-          padding: '20px',
-        },
-        '.ant-table-cell-row-hover': {
-          backgroundColor: 'rgba(4, 186, 107, 0.04) !important',
-        },
-        'table tr th': {
-          padding: '16px !important',
-        },
+        // '.ant-table-cell': {
+        //   overflowWrap: 'break-word',
+        //   padding: '20px',
+        // },
+        // '.ant-table-cell-row-hover': {
+        //   backgroundColor: 'rgba(4, 186, 107, 0.04) !important',
+        // },
+        // 'table tr th': {
+        //   padding: '16px !important',
+        // },
         '.ant-notification-notice': {
           borderRadius: '12px',
           boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',

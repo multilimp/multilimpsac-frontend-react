@@ -138,12 +138,11 @@ const SalesModal = ({ handleClose, handleReload, data, processed }: SalesModalPr
 
       console.log('body', bodyVentaDirecta);
 
-      const response = await createDirectSale(bodyVentaDirecta);
+      // const response = await createDirectSale(bodyVentaDirecta);
 
       if (ventaPrivada) {
         const pagos = [];
         for (const payment of values.pagos) {
-          console.log('payment', payment);
           // const archivoPago = await uploadFile(payment.file);
           pagos.push({
             fechaPago: payment.date.toISOString(),
@@ -157,7 +156,7 @@ const SalesModal = ({ handleClose, handleReload, data, processed }: SalesModalPr
 
         // const documentoPago = await uploadFile(values.documentoFactura);
         const bodyVentaPrivada = {
-          ordenCompraId: response.id,
+          ordenCompraId: 1,
           clienteId: values.privateClient,
           contactoClienteId: values.privateContact,
           estadoPago: values.facturaStatus,
@@ -166,13 +165,13 @@ const SalesModal = ({ handleClose, handleReload, data, processed }: SalesModalPr
           pagos,
         };
 
-        await createPrivateSale(bodyVentaPrivada);
+        // await createPrivateSale(bodyVentaPrivada);
 
         console.log('bodyVentaPrivada', bodyVentaPrivada);
       }
 
-      handleClose();
-      handleReload();
+      // handleClose();
+      // handleReload();
 
       notification.success({ message: `La venta fue ${isEdit ? 'actualizada' : 'registrada'} correctamente` });
     } catch (error) {
