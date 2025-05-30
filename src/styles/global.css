@@ -45,6 +45,7 @@ body {
   }
 }
 
-.ant-table-tbody > .table-filter-row:nth-child(2) > td:last-child {
+.ant-table-tbody > .table-filter-row:nth-child(2) > td:last-child button {
   pointer-events: none;
+  color: transparent;
 }

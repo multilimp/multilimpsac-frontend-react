@@ -88,7 +88,7 @@ const SalesDetails = ({ handleClose, data, handleEdit }: SalesDetailsProps) => {
             <CardList
               title="EMPRESA"
               data={[
-                { label: 'RUC', value: empresa.ruc },
+                { label: 'RUC', value: empresa?.ruc },
                 { label: 'Razón social', value: empresa.razonSocial },
                 { label: 'Dirección', value: empresa.direccion },
                 { label: 'Teléfono', value: empresa.telefono ?? defaultText },

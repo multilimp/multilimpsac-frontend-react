@@ -12,8 +12,10 @@ export const formatCurrency = (value: number): string => {
 };
 
 export const removeAccents = (str?: string): string => {
-  if (!str) return '';
-  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  if (!['number', 'string'].includes(typeof str)) return '';
+  return String(str)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
 };
 
 export const filterOptions = (inputValue: string, option: any) => {

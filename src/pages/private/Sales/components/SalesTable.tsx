@@ -81,11 +81,11 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onRecordAction }
       width: 100,
       render: (_, record) => (
         <Stack direction="row" spacing={1}>
-          <IconButton size="small" color="info" onClick={() => onRecordAction(ModalStateEnum.DETAILS, record)}>
+          <IconButton size="small" color="info" onClick={() => onRecordAction(ModalStateEnum.DETAILS, record.rawdata)}>
             <VisibilityOutlined fontSize="small" />
           </IconButton>
 
-          <IconButton size="small" color="primary" onClick={() => onRecordAction(ModalStateEnum.BOX, record)}>
+          <IconButton size="small" color="primary" onClick={() => onRecordAction(ModalStateEnum.BOX, record.rawdata)}>
             <Edit fontSize="small" />
           </IconButton>
 

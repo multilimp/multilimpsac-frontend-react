@@ -195,9 +195,7 @@ const GlobalInformationProvider = ({ children }: { children: ReactNode }) => {
       { label: 'Total de Ventas', value: sales.length.toString(), color: 'primary.light' },
       {
         label: 'Monto Total',
-        value: formatCurrency(
-          sales.reduce((sum, sale) => sum + parseInt(sale.montoVenta ?? '0', 10), 0)
-        ),
+        value: formatCurrency(sales.reduce((sum, sale) => sum + parseInt(sale.montoVenta ?? '0', 10), 0)),
         color: 'secondary.main',
       },
       {
