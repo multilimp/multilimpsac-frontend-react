@@ -11,6 +11,10 @@ export default defineConfig(({ mode }) => ({
     host: "::", // accesible desde la red local
     port: 8080,
   },
+  preview: {
+    host: "0.0.0.0",
+    port: 3000,
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -18,7 +22,7 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     outDir: "dist",
-    sourcemap: true,
+    sourcemap: mode === "development",
     emptyOutDir: true,
     chunkSizeWarningLimit: 1000, // aumentar límite de advertencia
     rollupOptions: {
