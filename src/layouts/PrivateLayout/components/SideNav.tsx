@@ -5,7 +5,7 @@ const SideNavbar: React.FC = () => (
   <Box
     component="nav"
     sx={{
-      '--SideNav-width': '80px',            // ← ancho aumentado
+      '--SideNav-width': '72px',
       '--SideNav-background': '#00A65A',
       '--SideNav-color': '#FFFFFF',
       '--NavItem-hover-background': 'rgba(255, 255, 255, 0.08)',
@@ -19,13 +19,14 @@ const SideNavbar: React.FC = () => (
       display: { xs: 'none', lg: 'flex' },
       flexDirection: 'column',
       alignItems: 'center',
-      position: 'fixed',
+      minHeight: '100vh',
+      pt: 1,
+      pb: 1,
+      boxShadow: '2px 0 10px rgba(0,0,0,0.1)',
+      position: 'sticky', // Cambiado de fixed a sticky
       top: 0,
-      left: 0,
-      height: '100vh',
-      pt: 2,
-      boxShadow: '0 0 20px rgba(0,0,0,0.15)',
-      zIndex: 1100,
+      flexShrink: 0, // Evita que se comprima
+      transition: 'all 0.3s ease',
     }}
   >
     <NavigatorList />
