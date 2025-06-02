@@ -78,8 +78,21 @@ const BillingsModal: React.FC<BillingsModalProps> = ({
     }
   };
 
-  return (
-    <Dialog open={open} fullWidth maxWidth="lg" onClose={onClose}>
+  return (    <Dialog 
+      open={open} 
+      fullWidth 
+      maxWidth="lg" 
+      onClose={onClose}
+      sx={{
+        zIndex: 1300, // Más alto que el sidebar (1200)
+        '& .MuiDialog-paper': {
+          zIndex: 1300,
+        },
+        '& .MuiBackdrop-root': {
+          zIndex: 1299,
+        }
+      }}
+    >
       <DialogTitle>{data ? 'Editar' : 'Agregar'} Factura</DialogTitle>
       <DialogContent dividers>
         <Spin spinning={loading}>

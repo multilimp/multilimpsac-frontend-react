@@ -64,8 +64,21 @@ const OrdersModal = ({ data, open, onClose, onSuccess }: OrdersModalProps) => {
 
   const required = (msg: string) => [{ required: true, message: msg }];
 
-  return (
-    <Dialog open={open} fullWidth maxWidth="md" onClose={onClose}>
+  return (    <Dialog 
+      open={open} 
+      fullWidth 
+      maxWidth="md" 
+      onClose={onClose}
+      sx={{
+        zIndex: 1300, // Más alto que el sidebar (1200)
+        '& .MuiDialog-paper': {
+          zIndex: 1300,
+        },
+        '& .MuiBackdrop-root': {
+          zIndex: 1299,
+        }
+      }}
+    >
       <DialogTitle>{data ? 'Editar' : 'Agregar'} orden</DialogTitle>
       <DialogContent>
         <Spin spinning={loading}>

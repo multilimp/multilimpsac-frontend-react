@@ -72,8 +72,21 @@ export default function TreasurysModal({ data = null, open, onClose, onReload }:
     }
   };
 
-  return (
-    <Dialog open={open} fullWidth maxWidth="md" onClose={onClose}>
+  return (    <Dialog 
+      open={open} 
+      fullWidth 
+      maxWidth="md" 
+      onClose={onClose}
+      sx={{
+        zIndex: 1300, // Más alto que el sidebar (1200)
+        '& .MuiDialog-paper': {
+          zIndex: 1300,
+        },
+        '& .MuiBackdrop-root': {
+          zIndex: 1299,
+        }
+      }}
+    >
       <DialogTitle variant="h5" textAlign="center">
         {data ? 'Editar' : 'Agregar'} registro de tesorería
       </DialogTitle>

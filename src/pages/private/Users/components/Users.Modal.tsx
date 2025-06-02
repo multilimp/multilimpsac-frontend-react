@@ -61,8 +61,20 @@ const UsersModal = ({ data, handleClose, handleReload }: UsersModalProps) => {
     }
   };
 
-  return (
-    <Dialog open fullWidth maxWidth="sm">
+  return (    <Dialog 
+      open 
+      fullWidth 
+      maxWidth="sm"
+      sx={{
+        zIndex: 1300, // Más alto que el sidebar (1200)
+        '& .MuiDialog-paper': {
+          zIndex: 1300,
+        },
+        '& .MuiBackdrop-root': {
+          zIndex: 1299,
+        }
+      }}
+    >
       <DialogTitle textAlign="center">{data ? 'Editar usuario' : 'Agregar usuario'}</DialogTitle>
       <DialogContent>
         <Spin spinning={loading}>

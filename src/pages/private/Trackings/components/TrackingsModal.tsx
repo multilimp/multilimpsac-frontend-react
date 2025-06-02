@@ -57,8 +57,21 @@ const TrackingsModal: React.FC<Props> = ({ data, open, onClose, onSave }) => {
     setSaving(false);
   };
 
-  return (
-    <Dialog open={open} fullWidth maxWidth="xl" onClose={onClose}>
+  return (    <Dialog 
+      open={open} 
+      fullWidth 
+      maxWidth="xl" 
+      onClose={onClose}
+      sx={{
+        zIndex: 1300, // Más alto que el sidebar (1200)
+        '& .MuiDialog-paper': {
+          zIndex: 1300,
+        },
+        '& .MuiBackdrop-root': {
+          zIndex: 1299,
+        }
+      }}
+    >
       <DialogTitle>{data ? 'Editar' : 'Agregar'} Seguimiento</DialogTitle>
       <DialogContent dividers>
         <Spin spinning={saving}>

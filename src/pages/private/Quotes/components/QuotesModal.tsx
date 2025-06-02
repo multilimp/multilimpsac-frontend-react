@@ -74,12 +74,20 @@ const QuotesModal = ({ data, open, onClose, onSuccess }: QuotesModalProps) => {
     }
   };
 
-  return (
-    <Dialog
+  return (    <Dialog
       open={open}
       fullWidth
       maxWidth="md"
       onClose={onClose}
+      sx={{
+        zIndex: 1300, // Más alto que el sidebar (1200)
+        '& .MuiDialog-paper': {
+          zIndex: 1300,
+        },
+        '& .MuiBackdrop-root': {
+          zIndex: 1299,
+        }
+      }}
       PaperProps={{
         sx: {
           borderRadius: 3,

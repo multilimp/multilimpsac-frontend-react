@@ -14,40 +14,37 @@ interface ProviderOrdersTableProps {
 
 const ProviderOrdersTable = ({ data, loading, onRowClick }: ProviderOrdersTableProps) => {
   const columns: Array<AntColumnType<SaleProps>> = [
-    { title: 'Código Venta', dataIndex: 'codigoVenta', minWidth: 125 },
-    {
+    { title: 'Código Venta', dataIndex: 'codigoVenta', minWidth: 125 },    {
       title: 'Cliente',
       align: 'center',
       children: [
-        { title: 'RUC', dataIndex: 'clienteId', minWidth: 100, render: (_, record) => record.cliente.ruc },
-        { title: 'Razón social', dataIndex: 'clienteId', minWidth: 250, render: (_, record) => record.contactoCliente.nombre },
+        { title: 'RUC', dataIndex: 'clienteId', minWidth: 100, render: (_, record) => record.cliente?.ruc ?? 'N/A' },
+        { title: 'Razón social', dataIndex: 'clienteId', minWidth: 250, render: (_, record) => record.cliente?.razonSocial ?? 'N/A' },
       ],
-    },
-    {
+    },    {
       title: 'Empresa',
       align: 'center',
       children: [
-        { title: 'RUC', dataIndex: 'empresaId', minWidth: 100, render: (_, record) => record.empresa.ruc },
-        { title: 'Razón social', dataIndex: 'empresaId', minWidth: 250, render: (_, record) => record.empresa.razonSocial },
+        { title: 'RUC', dataIndex: 'empresaId', minWidth: 100, render: (_, record) => record.empresa?.ruc ?? 'N/A' },
+        { title: 'Razón social', dataIndex: 'empresaId', minWidth: 250, render: (_, record) => record.empresa?.razonSocial ?? 'N/A' },
       ],
-    },
+    },    
     {
       title: 'Contacto',
       align: 'center',
       children: [
-        { title: 'Cargo', dataIndex: 'contactoClienteId', minWidth: 200, render: (_, record) => record.contactoCliente.cargo },
-        { title: 'Nombre', dataIndex: 'contactoClienteId', minWidth: 250, render: (_, record) => record.contactoCliente.nombre },
+        { title: 'Cargo', dataIndex: 'contactoClienteId', minWidth: 200, render: (_, record) => record.contactoCliente?.cargo ?? 'N/A' },
+        { title: 'Nombre', dataIndex: 'contactoClienteId', minWidth: 250, render: (_, record) => record.contactoCliente?.nombre ?? 'N/A' },
       ],
-    },
-    {
+    },    {
       title: 'Catálogo',
       dataIndex: 'catalogoEmpresaId',
       minWidth: 300,
       render: (_, record) => (
         <Fragment>
-          {record.catalogoEmpresa.nombre}
+          {record.catalogoEmpresa?.nombre ?? 'N/A'}
           <br />
-          {record.catalogoEmpresa.descripcion}
+          {record.catalogoEmpresa?.descripcion ?? 'N/A'}
         </Fragment>
       ),
     },
@@ -58,10 +55,9 @@ const ProviderOrdersTable = ({ data, loading, onRowClick }: ProviderOrdersTableP
     {
       title: 'Dirección',
       align: 'center',
-      children: [
-        { title: 'Departamento', dataIndex: 'departamentoEntrega', minWidth: 150, render: (_, record) => record.departamentoEntrega?.name },
-        { title: 'Provincia', dataIndex: 'provinciaEntrega', minWidth: 150, render: (_, record) => record.provinciaEntrega?.name },
-        { title: 'Distrito', dataIndex: 'distritoEntrega', minWidth: 150, render: (_, record) => record.distritoEntrega?.name },
+      children: [        { title: 'Departamento', dataIndex: 'departamentoEntrega', minWidth: 150, render: (_, record) => record.departamentoEntrega?.name ?? 'N/A' },
+        { title: 'Provincia', dataIndex: 'provinciaEntrega', minWidth: 150, render: (_, record) => record.provinciaEntrega?.name ?? 'N/A' },
+        { title: 'Distrito', dataIndex: 'distritoEntrega', minWidth: 150, render: (_, record) => record.distritoEntrega?.name ?? 'N/A' },
         { title: 'Dirección', dataIndex: 'direccionEntrega', minWidth: 200 },
         { title: 'Referencia', dataIndex: 'referenciaEntrega', minWidth: 200 },
       ],

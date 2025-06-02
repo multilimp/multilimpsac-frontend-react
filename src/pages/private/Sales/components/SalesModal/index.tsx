@@ -180,9 +180,12 @@ const SalesModal = ({ handleClose, handleReload, data, processed }: SalesModalPr
       setLoading(false);
     }
   };
-
   return (
-    <Dialog open fullScreen>
+    <Dialog 
+      open 
+      fullWidth
+      maxWidth="md"
+    >
       <DialogTitle>
         <Stack direction="row" alignItems="center" justifyContent="space-between" mb={2}>
           <Typography variant="h5" color="primary" fontWeight={700}>

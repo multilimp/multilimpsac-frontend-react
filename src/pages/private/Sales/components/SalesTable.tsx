@@ -42,7 +42,7 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onRecordAction }
   const columns: Array<AntColumnType<any>> = [    { title: 'Código OC', dataIndex: 'codigo_venta', width: 200, sort: true, filter: true,      render: (value, record) => (
         <Button
           variant="contained" 
-          onClick={() => onRecordAction(ModalStateEnum.DETAILS, record.rawdata)}
+          onClick={() => onRecordAction(ModalStateEnum.BOX, record.rawdata)}
           startIcon={<VisibilityOutlined />}
           sx={{
             backgroundColor: '#006DFA !important', // Azul claro con !important

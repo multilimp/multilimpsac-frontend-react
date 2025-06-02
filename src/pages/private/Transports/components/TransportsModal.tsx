@@ -66,8 +66,20 @@ const TransportsModal: React.FC<TransportsModalProps> = ({ data, handleClose, ha
     }
   };
 
-  return (
-    <Dialog open fullWidth maxWidth="md">
+  return (    <Dialog 
+      open 
+      fullWidth 
+      maxWidth="md"
+      sx={{
+        zIndex: 1300, // Más alto que el sidebar (1200)
+        '& .MuiDialog-paper': {
+          zIndex: 1300,
+        },
+        '& .MuiBackdrop-root': {
+          zIndex: 1299,
+        }
+      }}
+    >
       <DialogTitle variant="h5" textAlign="center">
         {data ? 'Editar' : 'Agregar'} transporte
       </DialogTitle>

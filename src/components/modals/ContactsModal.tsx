@@ -70,8 +70,20 @@ const ContactsModal: React.FC<ContactsModalProps> = ({ data, handleClose, handle
     }
   };
 
-  return (
-    <Dialog open fullWidth maxWidth="md">
+  return (    <Dialog 
+      open 
+      fullWidth 
+      maxWidth="md"
+      sx={{
+        zIndex: 1300, // Más alto que el sidebar (1200)
+        '& .MuiDialog-paper': {
+          zIndex: 1300,
+        },
+        '& .MuiBackdrop-root': {
+          zIndex: 1299,
+        }
+      }}
+    >
       <DialogTitle>{data ? 'Editar' : 'Agregar'} Contacto</DialogTitle>
       <DialogContent>
         <Spin spinning={loading}>
