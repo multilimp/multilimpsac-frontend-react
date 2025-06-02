@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { IconButton, Stack } from '@mui/material';
+import { IconButton, Stack, Button } from '@mui/material';
 import { SaleProps } from '@/services/sales/sales';
 import { Edit, PictureAsPdf, VisibilityOutlined } from '@mui/icons-material';
 import { formatCurrency, formattedDate } from '@/utils/functions';
@@ -39,8 +39,57 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onRecordAction }
     }));
   }, [data]);
 
-  const columns: Array<AntColumnType<any>> = [
-    { title: 'Código Venta', dataIndex: 'codigo_venta', width: 200, sort: true, filter: true },
+  const columns: Array<AntColumnType<any>> = [    { title: 'Código OC', dataIndex: 'codigo_venta', width: 200, sort: true, filter: true,      render: (value, record) => (
+        <Button
+          variant="contained" 
+          onClick={() => onRecordAction(ModalStateEnum.DETAILS, record.rawdata)}
+          startIcon={<VisibilityOutlined />}
+          sx={{
+            backgroundColor: '#006DFA !important', // Azul claro con !important
+            color: 'white !important',
+            fontSize: '0.75rem',
+            padding: '4px 12px',
+            textTransform: 'none',
+            border: 'none',
+            boxShadow: '0 2px 4px rgba(0, 109, 250, 0.3)',
+            background: '#006DFA !important', // Fuerza el background también
+            '&:hover': {
+              backgroundColor: '#111826 !important', // Azul oscuro en hover con !important
+              background: '#111826 !important',
+              boxShadow: '0 4px 8px rgba(17, 24, 38, 0.4)',
+              transform: 'translateY(-1px)',
+            },
+            '&:active': {
+              backgroundColor: '#0F172A !important', // Azul muy oscuro en click con !important
+              background: '#0F172A !important',
+            },
+            '&.MuiButton-contained': {
+              backgroundColor: '#006DFA !important', // Azul claro forzado
+              background: '#006DFA !important',
+              '&:hover': {
+                backgroundColor: '#111826 !important', // Azul oscuro en hover forzado
+                background: '#111826 !important',
+              },
+              '&:active': {
+                backgroundColor: '#0F172A !important', // Azul muy oscuro en click forzado
+                background: '#0F172A !important',
+              }
+            },
+            // Sobrescribe específicamente los gradientes del tema
+            '&.MuiButton-containedPrimary': {
+              background: '#006DFA !important',
+              backgroundColor: '#006DFA !important',
+              '&:hover': {
+                background: '#111826 !important',
+                backgroundColor: '#111826 !important',
+              }
+            }
+          }}
+        >
+          {value}
+        </Button>
+      ),
+     },
     { title: 'Razón Social Cliente', dataIndex: 'razon_social_cliente', width: 200, sort: true, filter: true },
     { title: 'RUC Cliente', dataIndex: 'ruc_cliente', width: 200, sort: true, filter: true },
     { title: 'RUC Empresa', dataIndex: 'ruc_empresa', width: 200, sort: true, filter: true },
@@ -74,27 +123,27 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onRecordAction }
           </IconButton>
         ),
     },
-    {
-      title: 'Acciones',
-      dataIndex: 'id',
-      fixed: 'right',
-      width: 100,
-      render: (_, record) => (
-        <Stack direction="row" spacing={1}>
-          <IconButton size="small" color="info" onClick={() => onRecordAction(ModalStateEnum.DETAILS, record.rawdata)}>
-            <VisibilityOutlined fontSize="small" />
-          </IconButton>
+    // {
+    //   title: 'Acciones',
+    //   dataIndex: 'id',
+    //   fixed: 'right',
+    //   width: 100,
+    //   render: (_, record) => (
+    //     <Stack direction="row" spacing={1}>
+    //       <IconButton size="small" color="info" onClick={() => onRecordAction(ModalStateEnum.DETAILS, record.rawdata)}>
+    //         <VisibilityOutlined fontSize="small" />
+    //       </IconButton>
 
-          <IconButton size="small" color="primary" onClick={() => onRecordAction(ModalStateEnum.BOX, record.rawdata)}>
-            <Edit fontSize="small" />
-          </IconButton>
+    //       <IconButton size="small" color="primary" onClick={() => onRecordAction(ModalStateEnum.BOX, record.rawdata)}>
+    //         <Edit fontSize="small" />
+    //       </IconButton>
 
-          {/* <IconButton size="small" color="error" onClick={() => onRecordAction(ModalStateEnum.DELETE, record)}>
-            <Delete fontSize="small" />
-          </IconButton> */}
-        </Stack>
-      ),
-    },
+    //       {/* <IconButton size="small" color="error" onClick={() => onRecordAction(ModalStateEnum.DELETE, record)}>
+    //         <Delete fontSize="small" />
+    //       </IconButton> */}
+    //     </Stack>
+    //   ),
+    // },
   ];
 
   return <CustomTable data={formattedData} columns={columns} loading={loading} />;

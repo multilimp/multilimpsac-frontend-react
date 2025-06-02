@@ -2,25 +2,27 @@
 import { RolesEnum } from '@/services/users/user.enum';
 import { SidebarConfigProps } from '@/types/global';
 
-// Iconos más específicos para cada ruta
+// Iconos más específicos y modernos para cada ruta
 import DashboardIcon from '@mui/icons-material/Dashboard';
-import ApartmentIcon from '@mui/icons-material/Apartment';
-import GroupIcon from '@mui/icons-material/Group';
 import BusinessIcon from '@mui/icons-material/Business';
+import GroupIcon from '@mui/icons-material/Group';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
-import FormatQuoteIcon from '@mui/icons-material/FormatQuote';
+import ApartmentIcon from '@mui/icons-material/Apartment';
+import RequestQuoteIcon from '@mui/icons-material/RequestQuote';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import ListAltIcon from '@mui/icons-material/ListAlt';
-import TrackChangesIcon from '@mui/icons-material/TrackChanges';
+import InventoryIcon from '@mui/icons-material/Inventory';
+import TimelineIcon from '@mui/icons-material/Timeline';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
-import ReceiptIcon from '@mui/icons-material/Receipt';
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
+import PaymentsIcon from '@mui/icons-material/Payments';
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import PersonIcon from '@mui/icons-material/Person';
 
 const rolesArr = Object.values(RolesEnum);
 
 const sidebarConfig: SidebarConfigProps[] = [
   {
-    title: 'Principal',
+    title: 'Panel Principal',
     roles: rolesArr,
     routes: [
       {
@@ -32,7 +34,7 @@ const sidebarConfig: SidebarConfigProps[] = [
     ],
   },
   {
-    title: 'Directorio',
+    title: 'Entidades',
     roles: rolesArr,
     routes: [
       {
@@ -62,13 +64,13 @@ const sidebarConfig: SidebarConfigProps[] = [
     ],
   },
   {
-    title: 'Procesos',
+    title: 'Procesos de Negocio',
     roles: rolesArr,
     routes: [
       {
         name: 'Cotizaciones',
         path: '/quotes',
-        icon: FormatQuoteIcon,
+        icon: RequestQuoteIcon,
         roles: rolesArr,
       },
       {
@@ -78,23 +80,23 @@ const sidebarConfig: SidebarConfigProps[] = [
         roles: rolesArr,
       },
       {
-        name: 'Órdenes',
-        path: '/orders',
-        icon: ListAltIcon,
-        roles: rolesArr,
-      },
-      {
-        name: 'Órdenes de Proveedores',
+        name: 'Órdenes Proveedores',
         path: '/provider-orders',
-        icon: LocalShippingIcon,
+        icon: InventoryIcon,
         roles: rolesArr,
       },
       {
         name: 'Seguimiento',
         path: '/tracking',
-        icon: TrackChangesIcon,
+        icon: TimelineIcon,
         roles: rolesArr,
       },
+    ],
+  },
+  {
+    title: 'Gestión Financiera',
+    roles: rolesArr,
+    routes: [
       {
         name: 'Tesorería',
         path: '/treasury',
@@ -104,18 +106,30 @@ const sidebarConfig: SidebarConfigProps[] = [
       {
         name: 'Facturación',
         path: '/billing',
-        icon: ReceiptIcon,
+        icon: ReceiptLongIcon,
+        roles: rolesArr,
+      },
+      {
+        name: 'Cobranzas',
+        path: '/collections',
+        icon: PaymentsIcon,
         roles: rolesArr,
       },
     ],
   },
   {
-    title: 'Configuraciones',
+    title: 'Administración',
     roles: rolesArr,
     routes: [
       {
         name: 'Usuarios',
         path: '/users',
+        icon: ManageAccountsIcon,
+        roles: rolesArr,
+      },
+      {
+        name: 'Perfil',
+        path: '/profile',
         icon: PersonIcon,
         roles: rolesArr,
       },

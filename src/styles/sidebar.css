@@ -1,0 +1,99 @@
+/* Estilos adicionales para el sidebar mejorado */
+
+/* Animaciones suaves para el sidebar */
+.sidebar-transition {
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Efecto hover mejorado para los elementos del nav */
+.nav-item {
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(17, 24, 38, 0.1), transparent); /* Azul oscuro */
+  transition: left 0.3s ease;
+}
+
+.nav-item:hover::before {
+  left: 100%;
+}
+
+/* Scroll personalizado para el sidebar */
+.sidebar-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: rgba(17, 24, 38, 0.4); /* Azul oscuro con transparencia */
+  border-radius: 3px;
+  transition: background 0.3s ease;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(17, 24, 38, 0.7); /* Azul oscuro más intenso en hover */
+}
+
+/* Scroll para Firefox */
+.sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(17, 24, 38, 0.4) rgba(255, 255, 255, 0.05);
+}
+
+/* Animación de entrada para los elementos de menú */
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.menu-item-enter {
+  animation: slideInLeft 0.3s ease forwards;
+}
+
+/* Indicador visual para elemento activo */
+.nav-item-active {
+  position: relative;
+}
+
+.nav-item-active::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  width: 3px;
+  height: 20px;
+  background: #111826; /* Azul oscuro */
+  border-radius: 1.5px 0 0 1.5px;
+  transform: translateY(-50%);
+}
+
+/* Mejoras para tooltips */
+.MuiTooltip-tooltip {
+  background-color: #1e293b !important;
+  color: white !important;
+  font-size: 0.75rem !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+}
+
+.MuiTooltip-arrow {
+  color: #1e293b !important;
+}

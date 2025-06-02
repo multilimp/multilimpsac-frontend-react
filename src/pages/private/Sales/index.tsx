@@ -32,8 +32,8 @@ const SalesPage = () => {
           </Button>
         </Stack>
       }
-    >
-      <Grid container spacing={2} mb={2}>
+    >      {/* Cards de resumen de ventas - Comentadas temporalmente */}
+      {/* <Grid container spacing={2} mb={2}>
         {resumeSalesData.map((item) => (
           <Grid key={item.label} size={{ xs: 12, sm: 6, md: 3 }}>
             <Card>
@@ -46,7 +46,7 @@ const SalesPage = () => {
             </Card>
           </Grid>
         ))}
-      </Grid>
+      </Grid> */}
 
       <SalesTable data={sales} loading={loadingSales} onRecordAction={(mode, data) => setModal({ mode, data })} />
 
