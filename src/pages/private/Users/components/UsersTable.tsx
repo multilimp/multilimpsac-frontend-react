@@ -13,8 +13,25 @@ interface UsersTableProps {
 const UsersTable = ({ data, loading, onRecordAction }: UsersTableProps) => {
   const columns: AntColumnType<UserProps>[] = [
     {
+      title: 'Foto',
+      dataIndex: 'foto',
+      width: 75,
+      render: (value, record) => <Avatar src={value} alt={record.nombre} />,
+    },
+    { title: 'Nombre', dataIndex: 'nombre', width: 200, filter: true, sort: true },
+    { title: 'Email', dataIndex: 'email', width: 200, filter: true, sort: true },
+    { title: 'Rol', dataIndex: 'role', width: 100, filter: true, sort: true },
+    {
+      title: 'Estado',
+      dataIndex: 'estado',
+      width: 100,
+      render: (value) => (value ? 'Activo' : 'Inactivo'),
+    },
+    {
       title: 'Acciones',
       dataIndex: 'id',
+      fixed: 'right',
+      width: 150,
       render: (_, record) => (
         <ButtonGroup size="small">
           <Button color="info" onClick={() => onRecordAction(ModalStateEnum.BOX, record)}>
@@ -25,21 +42,6 @@ const UsersTable = ({ data, loading, onRecordAction }: UsersTableProps) => {
           </Button>
         </ButtonGroup>
       ),
-    },
-    {
-      title: 'Foto',
-      dataIndex: 'foto',
-      minWidth: 75,
-      render: (value, record) => <Avatar src={value} alt={record.nombre} />,
-    },
-    { title: 'Nombre', dataIndex: 'nombre', minWidth: 150, filter: true },
-    { title: 'Email', dataIndex: 'email', minWidth: 200, filter: true },
-    { title: 'Rol', dataIndex: 'role', minWidth: 100, filter: true },
-    {
-      title: 'Estado',
-      dataIndex: 'estado',
-      minWidth: 100,
-      render: (value) => (value ? 'Activo' : 'Inactivo'),
     },
   ];
 

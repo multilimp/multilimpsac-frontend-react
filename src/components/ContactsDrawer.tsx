@@ -29,7 +29,7 @@ const ContactsDrawer = ({ handleClose, tipo, referenceId }: ContactsDrawerProps)
       setOpenForm(false);
       obtainContacts();
     } catch (error) {
-      message.error('No se logró guardar el contacto');
+      message.error(`No se logró guardar el contacto. ${error}`);
     } finally {
       setLoading(false);
     }

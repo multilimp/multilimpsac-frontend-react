@@ -1,4 +1,3 @@
-
 import apiClient from '../apiClient';
 import { CatalogProps } from './catalogs';
 
@@ -7,7 +6,7 @@ export const getCatalogs = async (): Promise<Array<CatalogProps>> => {
   return res.data;
 };
 
-export const createCatalog = async (catalogData: Partial<CatalogProps>): Promise<CatalogProps> => {
+export const createCatalog = async (catalogData: Record<string, string | number>): Promise<CatalogProps> => {
   const res = await apiClient.post('/catalogs', catalogData);
   return res.data;
 };

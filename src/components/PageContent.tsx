@@ -1,4 +1,3 @@
-
 import { ReactNode, useEffect } from 'react';
 import { Box, Breadcrumbs, Fade, Link as MuiLink, Typography } from '@mui/material';
 
@@ -123,7 +122,7 @@ const PageContent = ({ component, children, title, helper }: PageContentProps) =
             >
               {displayTitle}
             </Typography>
-            
+
             {displayHelper && (
               <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
                 {displayHelper}
@@ -134,7 +133,7 @@ const PageContent = ({ component, children, title, helper }: PageContentProps) =
           {<Box sx={{ width: { xs: '100%', md: '50%' }, display: 'flex', justifyContent: 'flex-end' }}>{component}</Box>}
         </Box>
 
-        <Scrollbar sx={{ height: 'calc((100vh) - 260px)', pr: 2 }}>
+        <Scrollbar sx={{ height: 'calc((100vh) - 270px)', pr: 2 }}>
           <Box sx={{ width: '100%' }}>{children}</Box>
         </Scrollbar>
       </Box>

@@ -32,7 +32,7 @@ export const parseJSON = (str?: null | string) => {
   }
 };
 
-export const formattedDate = (value?: null | Date | string, format = 'DD/MM/YYYY'): null | string => {
-  if (!value || !dayjs(value).isValid()) return '';
+export const formattedDate = (value?: null | Date | string, format = 'DD/MM/YYYY', defaultText?: string): string => {
+  if (!value || !dayjs(value).isValid()) return defaultText ?? '';
   return dayjs(value).format(format);
 };

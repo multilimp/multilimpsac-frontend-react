@@ -14,7 +14,8 @@ const SideNavbar: React.FC = () => {
       component="nav"
       sx={{
         '--SideNav-width-collapsed': '72px',
-        '--SideNav-width-expanded': '240px',        '--SideNav-background': '#00A65A', // Color verde original
+        '--SideNav-width-expanded': '240px',
+        '--SideNav-background': '#00A65A', // Color verde original
         '--SideNav-color': '#FFFFFF',
         '--NavItem-hover-background': 'rgba(255, 255, 255, 0.1)',
         '--NavItem-active-background': 'rgba(255, 255, 255, 0.15)',
@@ -23,7 +24,8 @@ const SideNavbar: React.FC = () => {
 
         width: expanded ? 'var(--SideNav-width-expanded)' : 'var(--SideNav-width-collapsed)',
         bgcolor: 'var(--SideNav-background)',
-        color: 'var(--SideNav-color)',        display: { xs: 'none', lg: 'flex' },
+        color: 'var(--SideNav-color)',
+        display: 'flex',
         flexDirection: 'column',
         height: '100vh',
         maxHeight: '100vh',
@@ -33,9 +35,9 @@ const SideNavbar: React.FC = () => {
         flexShrink: 0,
         transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         overflow: 'hidden',
-        zIndex: 1200,
+        zIndex: 0,
       }}
-    >      {/* Logo en la parte superior */}
+    >
       <Box
         sx={{
           display: 'flex',
@@ -69,17 +71,19 @@ const SideNavbar: React.FC = () => {
             MULTILIMPSAC
           </Box>
         )}
-      </Box>      {/* Lista de navegación */}
-      <Box 
-        sx={{ 
-          flex: 1, 
-          overflow: 'auto', 
-          py: 1 
+      </Box>{' '}
+      {/* Lista de navegación */}
+      <Box
+        sx={{
+          flex: 1,
+          overflow: 'auto',
+          py: 1,
         }}
         className="sidebar-scroll"
       >
         <NavigatorList expanded={expanded} />
-      </Box>{/* Botón de toggle en la parte inferior */}
+      </Box>
+      {/* Botón de toggle en la parte inferior */}
       <Box
         sx={{
           display: 'flex',

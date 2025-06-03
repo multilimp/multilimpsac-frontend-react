@@ -1,4 +1,3 @@
-
 import { Delete, Edit, ViewList } from '@mui/icons-material';
 import { CompanyProps } from '@/services/companies/company';
 import AntTable, { AntColumnType } from '@/components/AntTable';
@@ -9,10 +8,9 @@ interface CompaniesTableProps {
   data: Array<CompanyProps>;
   loading: boolean;
   onRecordAction: (action: ModalStateEnum, data: CompanyProps) => void;
-  onSelectCompany?: (company: CompanyProps) => void;
 }
 
-const CompaniesTable = ({ data, loading, onRecordAction, onSelectCompany }: CompaniesTableProps) => {
+const CompaniesTable = ({ data, loading, onRecordAction }: CompaniesTableProps) => {
   const columns: Array<AntColumnType<CompanyProps>> = [
     {
       title: 'Logo',
@@ -20,10 +18,10 @@ const CompaniesTable = ({ data, loading, onRecordAction, onSelectCompany }: Comp
       width: 75,
       render: (value, record) => <Avatar src={value} alt={record.razonSocial} />,
     },
-    { title: 'Razón social', dataIndex: 'razonSocial', width: 150, filter: true },
-    { title: 'RUC', dataIndex: 'ruc', width: 110, filter: true },
-    { title: 'Teléfono', dataIndex: 'telefono', width: 150, filter: true },
-    { title: 'Correo electrónico', dataIndex: 'email', width: 200, filter: true },
+    { title: 'Razón social', dataIndex: 'razonSocial', width: 250, filter: true, sort: true },
+    { title: 'RUC', dataIndex: 'ruc', width: 200, filter: true, sort: true },
+    { title: 'Teléfono', dataIndex: 'telefono', width: 150, filter: true, sort: true },
+    { title: 'Correo electrónico', dataIndex: 'email', width: 200, filter: true, sort: true },
     {
       title: 'Dirección',
       dataIndex: 'departamento',
@@ -35,7 +33,7 @@ const CompaniesTable = ({ data, loading, onRecordAction, onSelectCompany }: Comp
         </>
       ),
     },
-    { title: 'Web', dataIndex: 'web', width: 250 },
+    { title: 'Web', dataIndex: 'web', width: 250, sort: true },
     {
       title: 'Acciones',
       dataIndex: 'id',
@@ -43,11 +41,10 @@ const CompaniesTable = ({ data, loading, onRecordAction, onSelectCompany }: Comp
       width: 200,
       render: (_, record) => (
         <ButtonGroup size="small">
-          {onSelectCompany && (
-            <Button color="primary" onClick={() => onSelectCompany(record)}>
-              <ViewList />
-            </Button>
-          )}
+          <Button color="primary" onClick={() => onRecordAction(ModalStateEnum.DRAWER, record)}>
+            <ViewList />
+          </Button>
+
           <Button color="info" onClick={() => onRecordAction(ModalStateEnum.BOX, record)}>
             <Edit />
           </Button>

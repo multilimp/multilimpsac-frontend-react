@@ -23,7 +23,7 @@ import {
 import { Bolt, Clear, Close, North, Reorder, Replay, SaveAlt, Search, South, Storage, SwapVert } from '@mui/icons-material';
 import { removeAccents } from '@/utils/functions';
 
-export interface AntColumnType<T> extends ColumnType<T> {
+interface AntColumnType<T> extends ColumnType<T> {
   filter?: boolean;
   sort?: boolean;
   children?: AntColumnType<T>[];
@@ -168,7 +168,7 @@ const CustomTable = <T extends Record<string, any>>(props: CustomTablePropsProps
 
   return (
     <Fragment>
-      <Drawer anchor="left" open={showDrawer} onClose={() => setShowDrawer(false)}>
+      <Drawer anchor="left" open={showDrawer} onClose={() => setShowDrawer(false)} sx={{ zIndex: '1200 !important' }}>
         <Box width={320} height="100%" bgcolor="secondary.dark" color="#fff">
           <CardHeader
             title="Personalizar Columnas"

@@ -12,9 +12,9 @@ interface ClientsTableProps {
 
 const ClientsTable = ({ data, loading, onRecordAction }: ClientsTableProps) => {
   const columns: Array<AntColumnType<ClientProps>> = [
-    { title: 'RUC', dataIndex: 'ruc', width: 110, filter: true },
-    { title: 'Razón Social', dataIndex: 'razonSocial', width: 200 },
-    { title: 'Código Unidad', dataIndex: 'codigoUnidadEjecutora', width: 150, render: (text) => text ?? '-' },
+    { title: 'RUC', dataIndex: 'ruc', width: 150, filter: true, sort: true },
+    { title: 'Razón Social', dataIndex: 'razonSocial', width: 200, filter: true, sort: true },
+    { title: 'Código Unidad', dataIndex: 'codigoUnidadEjecutora', width: 200, filter: true, sort: true },
     {
       title: 'Dirección',
       dataIndex: 'direccion',

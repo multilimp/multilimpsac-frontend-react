@@ -36,7 +36,7 @@ const PrivateLayout = () => {
             transition: 'all 0.3s ease',
             m: { xs: 0, sm: 2 },
             overflow: 'auto',
-            width: '100%',
+            // width: '100%',
           }}
         >
           <Outlet />

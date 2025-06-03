@@ -1,4 +1,4 @@
-import { Delete, Edit, PermContactCalendar, RadioButtonChecked, RadioButtonUnchecked } from '@mui/icons-material';
+import { Delete, Edit, PermContactCalendar } from '@mui/icons-material';
 import AntTable, { AntColumnType } from '@/components/AntTable';
 import { Button, ButtonGroup, FormHelperText, Typography } from '@mui/material';
 import { ModalStateEnum } from '@/types/global.enum';
@@ -12,8 +12,11 @@ interface TransportsTableProps {
 
 const TransportsTable = ({ data, loading, onRecordAction }: TransportsTableProps) => {
   const columns: Array<AntColumnType<TransportProps>> = [
-    { title: 'Razón social', dataIndex: 'razonSocial', width: 250, filter: true },
-    { title: 'RUC', dataIndex: 'ruc', width: 150, filter: true },
+    { title: 'Razón social', dataIndex: 'razonSocial', width: 250, filter: true, sort: true },
+    { title: 'RUC', dataIndex: 'ruc', width: 150, filter: true, sort: true },
+    { title: 'Correo electrónico', dataIndex: 'email', width: 200, filter: true, sort: true },
+    { title: 'Teléfono', dataIndex: 'telefono', width: 150, filter: true, sort: true },
+    { title: 'Cobertura', dataIndex: 'cobertura', width: 150, filter: true, sort: true },
     {
       title: 'Dirección',
       dataIndex: 'departamento',
@@ -25,15 +28,6 @@ const TransportsTable = ({ data, loading, onRecordAction }: TransportsTableProps
         </>
       ),
     },
-    {
-      title: 'Estado',
-      dataIndex: 'estado',
-      width: 100,
-      render: (value) => (value ? <RadioButtonChecked color="success" /> : <RadioButtonUnchecked color="error" />),
-    },
-    { title: 'Correo electrónico', dataIndex: 'email', width: 200, filter: true },
-    { title: 'Teléfono', dataIndex: 'telefono', width: 150, filter: true },
-    { title: 'Cobertura', dataIndex: 'cobertura', width: 150, filter: true },
     {
       title: 'Acciones',
       dataIndex: 'id',
