@@ -1,5 +1,5 @@
 import { Fragment } from 'react';
-import { Divider, Form, FormInstance } from 'antd';
+import { Form, FormInstance } from 'antd';
 import { Button, Collapse, FormHelperText, Grid, IconButton, Stack, Typography, Paper, Box, Alert } from '@mui/material';
 import SelectCompanies from '@/components/selects/SelectCompanies';
 import { StepItemContent } from './smallcomponents';
@@ -24,10 +24,9 @@ const saleTypeOptions = [
 ];
 
 const facturaStatusOptions = [
-  { label: 'Pendiente', value: 'pendiente' },
-  { label: 'Pagada', value: 'pagada' },
-  { label: 'Cancelada', value: 'cancelada' },
-  { label: 'Anulada', value: 'anulada' },
+  { label: 'Pendiente', value: 'PENDIENTE' },
+  { label: 'Pagado', value: 'PAGADO' },
+  { label: 'Urgente', value: 'URGENTE' },
 ];
 
 const statusOptions = [
@@ -47,13 +46,13 @@ const getEmptyPaymentRecord = () => ({
 const InputsFirstStep = ({ form }: InputsFirstStepProps) => {
   return (
     <StepItemContent title="EMPRESA Y TIPO DE VENTA" subtitle="Ingresa la información solicitada">
-      <Paper 
-        elevation={0} 
-        sx={{ 
-          p: 3, 
-          bgcolor: '#f8f9fa', 
+      <Paper
+        elevation={0}
+        sx={{
+          p: 3,
+          bgcolor: '#f8f9fa',
           borderRadius: 2,
-          border: '1px solid #e9ecef'
+          border: '1px solid #e9ecef',
         }}
       >
         <Grid container spacing={3}>
@@ -83,16 +82,17 @@ const InputsFirstStep = ({ form }: InputsFirstStepProps) => {
             0
           );
 
-          return (            <Collapse in={allow} unmountOnExit>
+          return (
+            <Collapse in={allow} unmountOnExit>
               <Box sx={{ mt: 3 }}>
-                <Alert 
+                <Alert
                   icon={<Payment />}
-                  severity="info" 
-                  sx={{ 
+                  severity="info"
+                  sx={{
                     mb: 3,
                     bgcolor: '#e3f2fd',
                     border: '1px solid #bbdefb',
-                    '& .MuiAlert-icon': { color: '#006DFA' }
+                    '& .MuiAlert-icon': { color: '#006DFA' },
                   }}
                 >
                   <Typography variant="body2" sx={{ fontWeight: 500 }}>
@@ -100,13 +100,13 @@ const InputsFirstStep = ({ form }: InputsFirstStepProps) => {
                   </Typography>
                 </Alert>
 
-                <Paper 
-                  elevation={0} 
-                  sx={{ 
-                    p: 3, 
-                    bgcolor: '#ffffff', 
+                <Paper
+                  elevation={0}
+                  sx={{
+                    p: 3,
+                    bgcolor: '#ffffff',
                     borderRadius: 2,
-                    border: '1px solid #e0e0e0'
+                    border: '1px solid #e0e0e0',
                   }}
                 >
                   <Grid container spacing={3}>
@@ -142,15 +142,15 @@ const InputsFirstStep = ({ form }: InputsFirstStepProps) => {
                   </Grid>
 
                   <Box sx={{ mt: 4 }}>
-                    <Typography 
-                      variant="h6" 
-                      sx={{ 
-                        mb: 3, 
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        mb: 3,
                         color: '#111826',
                         fontWeight: 600,
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 1
+                        gap: 1,
                       }}
                     >
                       <Payment sx={{ color: '#006DFA' }} />
@@ -173,7 +173,7 @@ const InputsFirstStep = ({ form }: InputsFirstStepProps) => {
                     >
                       {(fields, { add, remove }, { errors }) => (
                         <Fragment>
-                          {fields.map((field, index) => (
+                          {fields.map((field) => (
                             <Paper
                               key={field.name}
                               elevation={0}
@@ -182,56 +182,52 @@ const InputsFirstStep = ({ form }: InputsFirstStepProps) => {
                                 mb: 2,
                                 bgcolor: '#f8f9fa',
                                 border: '1px solid #dee2e6',
-                                borderRadius: 2
+                                borderRadius: 2,
                               }}
                             >
                               <Stack direction="row" spacing={2} alignItems="flex-start">
-                                <Grid container spacing={2} sx={{ flex: 1 }}>
-                                  <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+                                <Grid container columnSpacing={2} sx={{ flex: 1 }}>
+                                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                     <Form.Item name={[field.name, 'date']} rules={[requiredField]}>
                                       <DatePickerAntd label="Fecha" />
                                     </Form.Item>
                                   </Grid>
-                                  <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+                                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                     <Form.Item name={[field.name, 'bank']} rules={[requiredField]}>
                                       <InputAntd label="Banco" />
                                     </Form.Item>
                                   </Grid>
+
                                   <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                                    <Form.Item name={[field.name, 'description']} rules={[requiredField]}>
-                                      <InputAntd label="Descripción" />
-                                    </Form.Item>
-                                  </Grid>
-                                  <Grid size={{ xs: 12, sm: 6, md: 2 }}>
                                     <Form.Item name={[field.name, 'amount']} rules={[requiredField]}>
                                       <InputAntd label="Monto" type="number" />
                                     </Form.Item>
                                   </Grid>
-                                  <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+                                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                     <Form.Item name={[field.name, 'status']} rules={[requiredField]}>
                                       <SelectGeneric label="Estado" options={statusOptions} />
                                     </Form.Item>
                                   </Grid>
-                                  <Grid size={{ xs: 12, md: 1 }}>
+                                  <Grid size={{ xs: 12, md: 6 }}>
+                                    <Form.Item name={[field.name, 'description']} rules={[requiredField]}>
+                                      <InputAntd label="Descripción" />
+                                    </Form.Item>
+                                  </Grid>
+                                  <Grid size={{ xs: 12, md: 6 }}>
                                     <Form.Item name={[field.name, 'file']} rules={[requiredField]}>
                                       <InputFile onChange={(file) => form.setFieldValue('file', file)} accept="pdf" />
                                     </Form.Item>
                                   </Grid>
                                 </Grid>
                                 {fields.length > 1 && (
-                                  <IconButton 
-                                    size="small" 
-                                    color="error" 
-                                    onClick={() => remove(field.name)}
-                                    sx={{ mt: 1 }}
-                                  >
+                                  <IconButton size="small" color="error" onClick={() => remove(field.name)} sx={{ mt: 1 }}>
                                     <Delete />
                                   </IconButton>
                                 )}
                               </Stack>
                             </Paper>
                           ))}
-                          
+
                           <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mt: 2 }}>
                             <Button
                               size="medium"
@@ -244,15 +240,13 @@ const InputsFirstStep = ({ form }: InputsFirstStepProps) => {
                                 '&:hover': {
                                   borderColor: '#111826',
                                   bgcolor: '#006DFA',
-                                  color: 'white'
-                                }
+                                  color: 'white',
+                                },
                               }}
                             >
                               AGREGAR PAGO
                             </Button>
-                            {errors.length ? (
-                              <FormHelperText error>{(errors as Array<string>).join(' - ')}</FormHelperText>
-                            ) : null}
+                            {errors.length ? <FormHelperText error>{(errors as Array<string>).join(' - ')}</FormHelperText> : null}
                             <Box sx={{ textAlign: 'right' }}>
                               <Typography variant="caption" color="textSecondary" display="block">
                                 Total Pagos
@@ -267,7 +261,8 @@ const InputsFirstStep = ({ form }: InputsFirstStepProps) => {
                     </Form.List>
                   </Box>
                 </Paper>
-              </Box>            </Collapse>
+              </Box>{' '}
+            </Collapse>
           );
         }}
       </Form.Item>

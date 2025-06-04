@@ -73,9 +73,20 @@ export interface SaleProcessedProps {
   fechaForm?: string;
   fechaMaxForm?: string;
   fechaMaxEntrega?: string;
-  productos?: Array<string>;
+  productos?: Array<{
+    codigo: string;
+    descripcion: string;
+    marca: string;
+    cantidad: number;
+  }>;
   siaf?: number;
   fechaSiaf?: string;
+  codigoCatalogo: null;
+  contactos: Array<{
+    cargo: string;
+    nombre: string;
+    telefono: string;
+  }>;
 }
 
 export interface SaleFiltersProps {

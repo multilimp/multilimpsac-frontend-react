@@ -22,11 +22,6 @@ export const createDirectSale = async (sale: Record<string, any>): Promise<SaleP
   return response.data;
 };
 
-export const createPrivateSale = async (sale: Record<string, any>): Promise<SaleProps> => {
-  const response = await apiClient.post('/ventas/privada', sale);
-  return response.data;
-};
-
 export const processPdfSales = async (file: File) => {
   const form = new FormData();
   form.append('pdfFile', file);

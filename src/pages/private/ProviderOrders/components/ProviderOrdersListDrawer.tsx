@@ -1,6 +1,5 @@
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
-import { ProviderOrderProps } from '@/services/providerOrders/providerOrders';
-import { getOrderProvider } from '@/services/providerOrders/providerOrders.requests';
+import { getOrderProvidersByOC } from '@/services/providerOrders/providerOrders.requests';
 import { SaleProps } from '@/services/sales/sales';
 import { Delete, RemoveRedEye } from '@mui/icons-material';
 import { Button, Card, CardActions, CardContent, CardHeader, Drawer, Stack } from '@mui/material';
@@ -17,7 +16,7 @@ const ProviderOrdersListDrawer = ({ handleClose, data }: ProviderOrdersListDrawe
   const { setSelectedSale } = useGlobalInformation();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [orderProviders, setOrderProviders] = useState<Array<ProviderOrderProps>>([]);
+  const [orderProvidersCodes, setOrderProvidersCodes] = useState<Array<{ id: number; codigoOp: string }>>([]);
 
   useEffect(() => {
     handleGetData();
@@ -33,9 +32,8 @@ const ProviderOrdersListDrawer = ({ handleClose, data }: ProviderOrdersListDrawe
   const handleGetData = async () => {
     try {
       setLoading(true);
-      const res = await getOrderProvider(data.id);
-      console.log(res);
-      setOrderProviders([...res]);
+      const res = await getOrderProvidersByOC(data.id);
+      setOrderProvidersCodes([...res]);
     } catch (error) {
       notification.error({ message: 'No se logró obtener la información' });
     } finally {
@@ -49,10 +47,10 @@ const ProviderOrdersListDrawer = ({ handleClose, data }: ProviderOrdersListDrawe
         <CardHeader title="DETALLE DE LA ÓRDEN DEL PROVEEDOR" slotProps={{ title: { fontWeight: 700, fontSize: 20, textAlign: 'center' } }} />
         <CardContent sx={{ height: 'calc((100vh) - 225px)', overflow: 'auto', pt: 0.1 }}>
           <Spin spinning={loading}>
-            {orderProviders.length ? (
+            {orderProvidersCodes.length ? (
               <Stack direction="column" spacing={2}>
-                {orderProviders.map((item, index) => (
-                  <Card key={index}>
+                {orderProvidersCodes.map((item, index) => (
+                  <Card key={index + 1} variant="outlined">
                     <CardHeader title={item.codigoOp} slotProps={{ title: { textAlign: 'center', fontSize: 20, fontWeight: 700 } }} />
                     <CardActions>
                       <Button
@@ -62,10 +60,11 @@ const ProviderOrdersListDrawer = ({ handleClose, data }: ProviderOrdersListDrawe
                         variant="outlined"
                         startIcon={<RemoveRedEye />}
                         onClick={() => handleSelected(item.id)}
+                        disabled
                       >
                         VER DETALLE
                       </Button>
-                      <Button fullWidth size="small" color="error" variant="outlined" endIcon={<Delete />}>
+                      <Button fullWidth size="small" color="error" variant="outlined" endIcon={<Delete />} disabled>
                         ELIMINAR
                       </Button>
                     </CardActions>

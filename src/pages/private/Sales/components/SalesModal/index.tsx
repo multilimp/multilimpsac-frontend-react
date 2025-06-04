@@ -7,7 +7,7 @@ import InputsSecondStep from './InputsSecondStep';
 import InputsThirdStep from './InputsThirdStep';
 import InputsFourthStep from './InputsFourthStep';
 import InputsFifthStep from './InputsFifthStep';
-import { createDirectSale, createPrivateSale } from '@/services/sales/sales.request';
+import { createDirectSale } from '@/services/sales/sales.request';
 import { SaleProcessedProps, SaleProps } from '@/services/sales/sales';
 import dayjs from 'dayjs';
 // import { uploadFile } from '@/services/files/file.requests';
@@ -29,6 +29,11 @@ const SalesModal = ({ handleClose, handleReload, data, processed }: SalesModalPr
 
   useEffect(() => {
     if (processed) {
+      // codigoCatalogo,
+      // contactos,
+      // distritoEntrega,
+      // provinciaEntrega,
+
       const findCompany = companies.find((item) => item.ruc === processed.empresaRuc);
       const findClient = clients.find((item) => item.ruc === processed.clienteRuc);
       const findRegion = regions.find(
@@ -56,40 +61,40 @@ const SalesModal = ({ handleClose, handleReload, data, processed }: SalesModalPr
         fechaSIAF: dayjs(processed.fechaSiaf).isValid() ? dayjs(processed.fechaSiaf) : null,
       });
 
-      return;
+      // return;
     }
 
-    if (data) {
-      form.setFieldsValue({
-        etapaSIAF: data.etapaSiaf,
-        fechaSIAF: dayjs(data.fechaSiaf),
-        empresa: data.empresaId,
-        empresaComplete: data.empresa,
-        tipoVenta: data.ventaPrivada ? 'privada' : 'directa',
-        cliente: data.clienteId,
-        clienteComplete: data.cliente,
-        regionEntregaComplete: data.departamentoEntrega,
-        regionEntrega: data.departamentoEntrega?.id,
-        provinciaEntregaComplete: data.provinciaEntrega,
-        provinciaEntrega: data.provinciaEntrega?.id,
-        distritoEntregaComplete: data.distritoEntrega,
-        distritoEntrega: data.distritoEntrega?.id,
-        fechaEntrega: dayjs(data.fechaEntrega),
-        direccionEntrega: data.direccionEntrega,
-        referenciaEntrega: data.referenciaEntrega,
-        catalogoComplete: data.catalogoEmpresa,
-        catalogo: data.catalogoEmpresaId,
-        fechaFormalizacion: dayjs(data.fechaForm),
-        fechaMaxEntrega: dayjs(data.fechaMaxForm),
-        montoVenta: data.montoVenta,
-        numeroSIAF: data.siaf,
-        cargoContactoComplete: data.contactoCliente,
-        cargoContacto: data.contactoClienteId,
-        nombreContacto: data.contactoCliente?.nombre,
-        celularContacto: data.contactoCliente?.telefono,
-        productos: data.productos,
-      });
-    }
+    // if (data) {
+    //   form.setFieldsValue({
+    //     etapaSIAF: data.etapaSiaf,
+    //     fechaSIAF: dayjs(data.fechaSiaf),
+    //     empresa: data.empresaId,
+    //     empresaComplete: data.empresa,
+    //     tipoVenta: data.ventaPrivada ? 'privada' : 'directa',
+    //     cliente: data.clienteId,
+    //     clienteComplete: data.cliente,
+    //     regionEntregaComplete: data.departamentoEntrega,
+    //     regionEntrega: data.departamentoEntrega?.id,
+    //     provinciaEntregaComplete: data.provinciaEntrega,
+    //     provinciaEntrega: data.provinciaEntrega?.id,
+    //     distritoEntregaComplete: data.distritoEntrega,
+    //     distritoEntrega: data.distritoEntrega?.id,
+    //     fechaEntrega: dayjs(data.fechaEntrega),
+    //     direccionEntrega: data.direccionEntrega,
+    //     referenciaEntrega: data.referenciaEntrega,
+    //     catalogoComplete: data.catalogoEmpresa,
+    //     catalogo: data.catalogoEmpresaId,
+    //     fechaFormalizacion: dayjs(data.fechaForm),
+    //     fechaMaxEntrega: dayjs(data.fechaMaxForm),
+    //     montoVenta: data.montoVenta,
+    //     numeroSIAF: data.siaf,
+    //     cargoContactoComplete: data.contactoCliente,
+    //     cargoContacto: data.contactoClienteId,
+    //     nombreContacto: data.contactoCliente?.nombre,
+    //     celularContacto: data.contactoCliente?.telefono,
+    //     productos: data.productos,
+    //   });
+    // }
   }, [data, companies, clients, regions]);
 
   const handleFinish = async (values: Record<string, any>) => {
@@ -110,7 +115,31 @@ const SalesModal = ({ handleClose, handleReload, data, processed }: SalesModalPr
       //   OCF_DOC = await uploadFile(values.ordenCompraFisica);
       // }
 
-      const ventaPrivada = values.tipoVenta === 'privada';
+      let bodyVentaPrivada = null;
+      if (values.tipoVenta === 'privada') {
+        const pagos = [];
+        for (const payment of values.pagos) {
+          // const archivoPago = await uploadFile(payment.file);
+          pagos.push({
+            fechaPago: payment.date.toISOString(),
+            bancoPago: payment.bank,
+            descripcionPago: payment.description,
+            archivoPago: 'https://pub-be92c56cdc1645c5aac3eb28d9ddb2c8.r2.dev/general-uploads/L73_-7HanJ-y-tYeeeO1R.pdf',
+            montoPago: payment.amount,
+            estadoPago: payment.status === 'activo',
+          });
+        }
+
+        // const documentoPago = await uploadFile(values.documentoFactura);
+        bodyVentaPrivada = {
+          clienteId: values.privateClient,
+          contactoClienteId: values.privateContact,
+          estadoPago: values.facturaStatus,
+          fechaPago: values.dateFactura.toISOString(),
+          documentoPago: 'https://pub-be92c56cdc1645c5aac3eb28d9ddb2c8.r2.dev/general-uploads/L73_-7HanJ-y-tYeeeO1R.pdf',
+          pagos,
+        };
+      }
 
       const bodyVentaDirecta = {
         empresa: { connect: { id: values.empresa } },
@@ -118,7 +147,7 @@ const SalesModal = ({ handleClose, handleReload, data, processed }: SalesModalPr
         contactoCliente: { connect: { id: values.cargoContacto } },
         catalogoEmpresa: { connect: { id: values.catalogo } },
 
-        ventaPrivada,
+        ventaPrivada: bodyVentaPrivada,
         departamentoEntrega: JSON.stringify(values.regionEntregaComplete),
         provinciaEntrega: JSON.stringify(values.provinciaEntregaComplete),
         distritoEntrega: JSON.stringify(values.distritoEntregaComplete),
@@ -138,40 +167,10 @@ const SalesModal = ({ handleClose, handleReload, data, processed }: SalesModalPr
 
       console.log('body', bodyVentaDirecta);
 
-      // const response = await createDirectSale(bodyVentaDirecta);
+      await createDirectSale(bodyVentaDirecta);
 
-      if (ventaPrivada) {
-        const pagos = [];
-        for (const payment of values.pagos) {
-          // const archivoPago = await uploadFile(payment.file);
-          pagos.push({
-            fechaPago: payment.date.toISOString(),
-            bancoPago: payment.bank,
-            descripcionPago: payment.description,
-            archivoPago: 'https://pub-be92c56cdc1645c5aac3eb28d9ddb2c8.r2.dev/general-uploads/L73_-7HanJ-y-tYeeeO1R.pdf',
-            montoPago: payment.amount,
-            estadoPago: payment.status === 'activo',
-          });
-        }
-
-        // const documentoPago = await uploadFile(values.documentoFactura);
-        const bodyVentaPrivada = {
-          ordenCompraId: 1,
-          clienteId: values.privateClient,
-          contactoClienteId: values.privateContact,
-          estadoPago: values.facturaStatus,
-          fechaPago: values.dateFactura.toISOString(),
-          documentoPago: 'https://pub-be92c56cdc1645c5aac3eb28d9ddb2c8.r2.dev/general-uploads/L73_-7HanJ-y-tYeeeO1R.pdf',
-          pagos,
-        };
-
-        // await createPrivateSale(bodyVentaPrivada);
-
-        console.log('bodyVentaPrivada', bodyVentaPrivada);
-      }
-
-      // handleClose();
-      // handleReload();
+      handleClose();
+      handleReload();
 
       notification.success({ message: `La venta fue ${isEdit ? 'actualizada' : 'registrada'} correctamente` });
     } catch (error) {
@@ -181,11 +180,7 @@ const SalesModal = ({ handleClose, handleReload, data, processed }: SalesModalPr
     }
   };
   return (
-    <Dialog 
-      open 
-      fullWidth
-      maxWidth="md"
-    >
+    <Dialog open fullWidth maxWidth="lg">
       <DialogTitle>
         <Stack direction="row" alignItems="center" justifyContent="space-between" mb={2}>
           <Typography variant="h5" color="primary" fontWeight={700}>
