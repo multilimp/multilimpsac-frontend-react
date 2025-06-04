@@ -1,18 +1,11 @@
 import { Fragment, useState } from 'react';
 import { Form, Input, InputNumber, notification, Spin } from 'antd';
-import { ExpandMore, Delete } from '@mui/icons-material';
+import { Delete } from '@mui/icons-material';
 import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
   Box,
   Card,
   CardContent,
   CardHeader,
-  Divider,
-  List,
-  ListItem,
-  ListItemText,
   Stack,
   Button,
   FormHelperText,
@@ -26,6 +19,7 @@ import {
   TableRow,
   Typography,
 } from '@mui/material';
+import PurchaseOrderCard from '@/components/PurchaseOrderCard';
 import InputAntd from '@/components/InputAntd';
 import InputFile from '@/components/InputFile';
 import SelectGeneric from '@/components/selects/SelectGeneric';
@@ -148,38 +142,10 @@ const ProviderOrderFormContent = ({ sale }: ProviderOrderFormContentProps) => {
     const sum = parseInt(record.cTotal || '0', 10) * parseInt(record.precioUnitario || '0', 10);
     form.setFieldValue(['productos', index, 'total'], sum);
   };
-
   return (
     <Stack direction={{ xs: 'column', lg: 'row' }} spacing={2}>
       <Box width={{ xs: '100%', lg: COLUMN_WIDTH }}>
-        <Card>
-          <CardHeader title="Órden de compra OCGRU660" subheader="Fecha: 20/10/2025" slotProps={{ title: { fontWeight: 700, fontSize: 20 } }} />
-          <Divider />
-          <CardContent sx={{ pt: 0, pb: 0 }}>
-            <List dense>
-              <ListItem divider>
-                <ListItemText primary="Fecha máxima" secondary="Jan 9, 2014" />
-              </ListItem>
-              <ListItem divider>
-                <ListItemText primary="OP Importe Total" secondary="S/ 20580.34" />
-              </ListItem>
-              <ListItem>
-                <ListItemText primary="OC Importe Total" secondary="S/ 20580.34" />
-              </ListItem>
-            </List>
-          </CardContent>
-
-          <Divider />
-
-          {['Datos generales', 'Documentos', 'Cliente', 'Entrega', 'Productos'].map((text) => (
-            <Accordion key={text}>
-              <AccordionSummary expandIcon={<ExpandMore />}>{text}</AccordionSummary>
-              <AccordionDetails>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget.
-              </AccordionDetails>
-            </Accordion>
-          ))}
-        </Card>
+        <PurchaseOrderCard />
       </Box>
 
       <Box width={{ xs: '100%', lg: `calc((100%) - ${COLUMN_WIDTH}px)` }}>
