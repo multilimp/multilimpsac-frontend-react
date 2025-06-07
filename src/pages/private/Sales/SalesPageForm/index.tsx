@@ -1,69 +1,43 @@
 import { useEffect, useState } from 'react';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Fab, Stack, Typography } from '@mui/material';
-import { Form, notification, Spin } from 'antd';
-import { Close } from '@mui/icons-material';
+import { Box, Button, Collapse, Stack } from '@mui/material';
+import { Form, message, notification, Spin } from 'antd';
 import InputsFirstStep from './InputsFirstStep';
 import InputsSecondStep from './InputsSecondStep';
 import InputsThirdStep from './InputsThirdStep';
 import InputsFourthStep from './InputsFourthStep';
 import InputsFifthStep from './InputsFifthStep';
-import { createDirectSale } from '@/services/sales/sales.request';
-import { SaleProcessedProps, SaleProps } from '@/services/sales/sales';
+import { createDirectSale, processPdfSales } from '@/services/sales/sales.request';
+import { SaleProps } from '@/services/sales/sales';
 import dayjs from 'dayjs';
-// import { uploadFile } from '@/services/files/file.requests';
 import { removeAccents } from '@/utils/functions';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
+import { BlackBarKeyEnum } from '@/types/global.enum';
 
-interface SalesModalProps {
+interface SalesPageFormProps {
   handleClose: VoidFunction;
   handleReload: VoidFunction;
   data?: SaleProps;
-  processed?: SaleProcessedProps;
 }
 
-const SalesModal = ({ handleClose, handleReload, data, processed }: SalesModalProps) => {
-  const isEdit = !!data && !processed;
-  const { regions, companies, clients } = useGlobalInformation();
+const SalesPageForm = ({ handleClose, handleReload, data }: SalesPageFormProps) => {
+  const isEdit = !!data;
+  const { regions, companies, clients, saleInputValues, setSaleInputValues, setBlackBarKey } = useGlobalInformation();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (processed) {
-      // codigoCatalogo,
-      // contactos,
-      // distritoEntrega,
-      // provinciaEntrega,
+    handleAnalizeFile();
+  }, [saleInputValues]);
 
-      const findCompany = companies.find((item) => item.ruc === processed.empresaRuc);
-      const findClient = clients.find((item) => item.ruc === processed.clienteRuc);
-      const findRegion = regions.find(
-        (item) => removeAccents(item.name).toLowerCase() === removeAccents(processed.departamentoEntrega).toLowerCase()
-      );
+  useEffect(() => {
+    setBlackBarKey(BlackBarKeyEnum.OC);
+    return () => {
+      setSaleInputValues({ enterprise: null, tipoVenta: 'directa', file: null });
+      setBlackBarKey(null);
+    };
+  }, []);
 
-      form.setFieldsValue({
-        tipoVenta: processed.ventaPrivada ? 'privada' : 'directa',
-        empresa: findCompany?.id,
-        empresaComplete: findCompany,
-        cliente: findClient?.id,
-        clienteComplete: findClient,
-        regionEntregaComplete: findRegion,
-        regionEntrega: findRegion?.id,
-        direccionEntrega: processed.direccionEntrega,
-        referenciaEntrega: processed.referenciaEntrega,
-        fechaEntrega: dayjs(processed.fechaEntrega).isValid() ? dayjs(processed.fechaEntrega) : null,
-        fechaFormalizacion: dayjs(processed.fechaForm).isValid() ? dayjs(processed.fechaForm) : null,
-        fechaMaxEntrega: dayjs(processed.fechaMaxEntrega ?? processed.fechaMaxForm).isValid()
-          ? dayjs(processed.fechaMaxEntrega ?? processed.fechaMaxForm)
-          : null,
-        montoVenta: processed.montoVenta,
-        productos: processed.productos,
-        numeroSIAF: processed.siaf,
-        fechaSIAF: dayjs(processed.fechaSiaf).isValid() ? dayjs(processed.fechaSiaf) : null,
-      });
-
-      // return;
-    }
-
+  useEffect(() => {
     // if (data) {
     //   form.setFieldsValue({
     //     etapaSIAF: data.etapaSiaf,
@@ -71,8 +45,7 @@ const SalesModal = ({ handleClose, handleReload, data, processed }: SalesModalPr
     //     empresa: data.empresaId,
     //     empresaComplete: data.empresa,
     //     tipoVenta: data.ventaPrivada ? 'privada' : 'directa',
-    //     cliente: data.clienteId,
-    //     clienteComplete: data.cliente,
+    //     clienteEstado: data.cliente,
     //     regionEntregaComplete: data.departamentoEntrega,
     //     regionEntrega: data.departamentoEntrega?.id,
     //     provinciaEntregaComplete: data.provinciaEntrega,
@@ -96,6 +69,48 @@ const SalesModal = ({ handleClose, handleReload, data, processed }: SalesModalPr
     //   });
     // }
   }, [data, companies, clients, regions]);
+
+  const handleAnalizeFile = async () => {
+    try {
+      setLoading(true);
+      if (!saleInputValues.file) return;
+      const correctTypeFile = saleInputValues.file.type === 'application/pdf';
+      if (!correctTypeFile) throw new Error('INCORRECT FILE');
+
+      const response = await processPdfSales(saleInputValues.file);
+
+      const findCompany = companies.find((item) => item.ruc === response.empresaRuc);
+      const findClient = clients.find((item) => item.ruc === response.clienteRuc);
+      const findRegion = regions.find((item) => removeAccents(item.name).toLowerCase() === removeAccents(response.departamentoEntrega).toLowerCase());
+
+      // codigoCatalogo,
+      // contactos,
+      // distritoEntrega,
+      // provinciaEntrega,
+      setSaleInputValues({ enterprise: findCompany ?? null, tipoVenta: response.ventaPrivada ? 'privada' : 'directa', file: null });
+      form.setFieldsValue({
+        clienteEstado: findClient,
+        regionEntregaComplete: findRegion,
+        regionEntrega: findRegion?.id,
+        direccionEntrega: response.direccionEntrega,
+        referenciaEntrega: response.referenciaEntrega,
+        fechaEntrega: dayjs(response.fechaEntrega).isValid() ? dayjs(response.fechaEntrega) : null,
+        fechaFormalizacion: dayjs(response.fechaForm).isValid() ? dayjs(response.fechaForm) : null,
+        fechaMaxEntrega: dayjs(response.fechaMaxEntrega ?? response.fechaMaxForm).isValid()
+          ? dayjs(response.fechaMaxEntrega ?? response.fechaMaxForm)
+          : null,
+        montoVenta: response.montoVenta,
+        productos: response.productos,
+        numeroSIAF: response.siaf,
+        fechaSIAF: dayjs(response.fechaSiaf).isValid() ? dayjs(response.fechaSiaf) : null,
+      });
+    } catch (error) {
+      message.error(`El archivo no pudo ser procesado`);
+      setSaleInputValues({ ...saleInputValues, file: null });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleFinish = async (values: Record<string, any>) => {
     try {
@@ -132,7 +147,7 @@ const SalesModal = ({ handleClose, handleReload, data, processed }: SalesModalPr
 
         // const documentoPago = await uploadFile(values.documentoFactura);
         bodyVentaPrivada = {
-          clienteId: values.privateClient,
+          clienteId: values.clientePrivate.id,
           contactoClienteId: values.privateContact,
           estadoPago: values.facturaStatus,
           fechaPago: values.dateFactura.toISOString(),
@@ -165,8 +180,6 @@ const SalesModal = ({ handleClose, handleReload, data, processed }: SalesModalPr
         productos: values.productos,
       };
 
-      console.log('body', bodyVentaDirecta);
-
       await createDirectSale(bodyVentaDirecta);
 
       handleClose();
@@ -179,47 +192,35 @@ const SalesModal = ({ handleClose, handleReload, data, processed }: SalesModalPr
       setLoading(false);
     }
   };
+
   return (
-    <Dialog open fullWidth maxWidth="lg">
-      <DialogTitle>
-        <Stack direction="row" alignItems="center" justifyContent="space-between" mb={2}>
-          <Typography variant="h5" color="primary" fontWeight={700}>
-            {isEdit ? 'EDITAR' : 'REGISTRAR NUEVA'} VENTA
-          </Typography>
-          <Fab onClick={handleClose} size="small" disabled={loading}>
-            <Close />
-          </Fab>
-        </Stack>
-      </DialogTitle>
-
-      <DialogContent>
-        <Spin spinning={loading} size="large" tip="..:: Espere mientras finaliza la transacción ::..">
-          <Form form={form} onFinish={handleFinish}>
-            <Stack direction="column" spacing={2}>
+    <Box>
+      <Spin spinning={loading} size="large" tip="..:: Espere mientras finaliza la operación ::..">
+        <Form form={form} onFinish={handleFinish}>
+          <Stack direction="column" spacing={2}>
+            <Collapse in={saleInputValues.tipoVenta === 'privada'}>
               <InputsFirstStep form={form} />
+            </Collapse>
 
-              <InputsSecondStep form={form} />
+            <InputsSecondStep form={form} />
 
-              <InputsThirdStep form={form} />
+            <InputsThirdStep form={form} />
 
-              <InputsFourthStep form={form} />
+            <InputsFourthStep form={form} />
 
-              <InputsFifthStep />
-            </Stack>
-            <Button type="submit" className="d-none"></Button>
-          </Form>
-        </Spin>
-      </DialogContent>
-      <DialogActions>
-        <Button variant="outlined" color="error" disabled={loading} onClick={handleClose}>
-          Cancelar
-        </Button>
+            <InputsFifthStep />
+          </Stack>
+          <Button type="submit" className="d-none"></Button>
+        </Form>
+      </Spin>
+
+      <Stack direction="row" spacing={2} my={5} justifyContent="center">
         <Button loading={loading} onClick={() => form.submit()}>
           Finalizar y {isEdit ? 'actualizar' : 'registrar'} venta
         </Button>
-      </DialogActions>
-    </Dialog>
+      </Stack>
+    </Box>
   );
 };
 
-export default SalesModal;
+export default SalesPageForm;

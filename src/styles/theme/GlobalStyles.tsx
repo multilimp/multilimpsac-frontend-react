@@ -87,6 +87,7 @@ export default function GlobalStyles() {
         },
         '.ant-select-selector': {
           borderRadius: '6px !important',
+          // backgroundColor: 'transparent !important',
         },
         // '.ant-table-cell': {
         //   overflowWrap: 'break-word',
@@ -185,8 +186,9 @@ export default function GlobalStyles() {
           fontSize: '12px !important',
           color: '#272a2c !important',
           backgroundColor: 'white',
-          padding: '0 4px',
+          padding: '0 6px',
           zIndex: '20',
+          borderRadius: 6,
         },
         '.float-label .label-float.focus': {
           color: `${theme.palette.primary.main} !important`,

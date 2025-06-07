@@ -13,7 +13,6 @@ const useContacts = (filters?: ContactFilterProps) => {
 
   const obtainContacts = async () => {
     try {
-      console.log(1);
       setLoadingContacts(true);
       const data = await getContacts(filters);
       setContacts([...data]);

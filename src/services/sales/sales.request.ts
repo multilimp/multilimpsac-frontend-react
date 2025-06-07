@@ -1,6 +1,6 @@
 import { parseJSON } from '@/utils/functions';
 import apiClient from '../apiClient';
-import { SaleFiltersProps, SaleProps } from './sales';
+import { SaleFiltersProps, SaleProcessedProps, SaleProps } from './sales';
 
 export const getSales = async (params?: SaleFiltersProps): Promise<SaleProps[]> => {
   const response = await apiClient.get('/ventas', { params });
@@ -22,7 +22,7 @@ export const createDirectSale = async (sale: Record<string, any>): Promise<SaleP
   return response.data;
 };
 
-export const processPdfSales = async (file: File) => {
+export const processPdfSales = async (file: File): Promise<SaleProcessedProps> => {
   const form = new FormData();
   form.append('pdfFile', file);
 

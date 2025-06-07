@@ -8,10 +8,11 @@ interface ClientsTableProps {
   data: ClientProps[];
   loading: boolean;
   onRecordAction: (action: ModalStateEnum, data: ClientProps) => void;
+  hideActions?: boolean;
 }
 
-const ClientsTable = ({ data, loading, onRecordAction }: ClientsTableProps) => {
-  const columns: Array<AntColumnType<ClientProps>> = [
+const ClientsTable = ({ data, loading, hideActions, onRecordAction }: ClientsTableProps) => {
+  const columns: Array<AntColumnType<ClientProps> | false> = [
     { title: 'RUC', dataIndex: 'ruc', width: 150, filter: true, sort: true },
     { title: 'Razón Social', dataIndex: 'razonSocial', width: 200, filter: true, sort: true },
     { title: 'Código Unidad', dataIndex: 'codigoUnidadEjecutora', width: 200, filter: true, sort: true },
@@ -26,7 +27,7 @@ const ClientsTable = ({ data, loading, onRecordAction }: ClientsTableProps) => {
         </>
       ),
     },
-    {
+    !hideActions && {
       title: 'Acciones',
       dataIndex: 'id',
       align: 'center',
@@ -48,7 +49,22 @@ const ClientsTable = ({ data, loading, onRecordAction }: ClientsTableProps) => {
     },
   ];
 
-  return <AntTable data={data} columns={columns} loading={loading} />;
+  const filteredColumns = columns.filter((item) => !!item);
+
+  return (
+    <AntTable
+      data={data}
+      columns={filteredColumns}
+      loading={loading}
+      onRow={(record) => {
+        if (!hideActions) return {};
+        return {
+          onClick: () => onRecordAction(ModalStateEnum.BOX, record),
+          style: { cursor: 'pointer' },
+        };
+      }}
+    />
+  );
 };
 
 export default ClientsTable;

@@ -19,6 +19,7 @@ const Companies = Loadable(lazy(() => import('@/pages/private/Companies')));
 const Users = Loadable(lazy(() => import('@/pages/private/Users')));
 const Quotes = Loadable(lazy(() => import('@/pages/private/Quotes')));
 const Sales = Loadable(lazy(() => import('@/pages/private/Sales')));
+const SalesPageForm = Loadable(lazy(() => import('@/pages/private/Sales/SalesPageForm')));
 const Orders = Loadable(lazy(() => import('@/pages/private/Orders')));
 const Clients = Loadable(lazy(() => import('@/pages/private/Clients')));
 const Providers = Loadable(lazy(() => import('@/pages/private/Providers')));
@@ -89,7 +90,12 @@ const routes: Array<PropsRoutes> = [
       },
       {
         path: 'sales',
-        element: Sales, // Actualizado a PascalCase
+        element: Sales,
+        roles: rolesArr,
+      },
+      {
+        path: 'sales/create',
+        element: SalesPageForm,
         roles: rolesArr,
       },
       {

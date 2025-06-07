@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom';
 import { Box } from '@mui/material';
 import SideNavbar from './components/SideNav';
 import MainNav from './components/MainNav';
+import BlackBar from './components/BlackBar';
 
 const PrivateLayout = () => {
   return (
@@ -13,6 +14,9 @@ const PrivateLayout = () => {
       }}
     >
       <SideNavbar />
+
+      <BlackBar />
+
       <Box
         component="main"
         sx={{

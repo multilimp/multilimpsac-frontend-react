@@ -12,16 +12,16 @@ import { ContactTypeEnum } from '@/services/contacts/contacts.enum';
 import ContactsDrawer from '@/components/ContactsDrawer';
 
 const ClientsPage = () => {
-  const [modalState, setModal] = useState<ModalStateProps<ClientProps>>(null);
+  const [modalState, setModalState] = useState<ModalStateProps<ClientProps>>(null);
   const { clients, loadingClients, obtainClients } = useGlobalInformation();
 
   const handleCloseModal = () => {
-    setModal(null);
+    setModalState(null);
   };
 
   return (
-    <PageContent component={<Button onClick={() => setModal({ mode: ModalStateEnum.BOX })}>Agregar</Button>}>
-      <ClientsTable data={clients} loading={loadingClients} onRecordAction={(mode, data) => setModal({ mode, data })} />
+    <PageContent component={<Button onClick={() => setModalState({ mode: ModalStateEnum.BOX })}>Agregar</Button>}>
+      <ClientsTable data={clients} loading={loadingClients} onRecordAction={(mode, data) => setModalState({ mode, data })} />
 
       {modalState?.mode === ModalStateEnum.BOX && <ClientsModal data={modalState.data} handleClose={handleCloseModal} handleReload={obtainClients} />}
 

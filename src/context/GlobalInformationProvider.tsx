@@ -12,15 +12,16 @@ import { ProviderProps } from '@/services/providers/providers';
 import { getProviders } from '@/services/providers/providers.request';
 import { TransportProps } from '@/services/transports/transports';
 import { getTransports } from '@/services/transports/transports.request';
-import { useAppContext } from '.';
+import { useAppContext } from './index';
 import { SaleProps } from '@/services/sales/sales';
 import { getSales } from '@/services/sales/sales.request';
-import { formatCurrency } from '@/utils/functions';
 import { getTrackings } from '@/services/trackings/trackings.request';
 import { TrackingProps } from '@/services/trackings/trackings.d';
+import { BlackBarKeyEnum } from '@/types/global.enum';
+
+export type SaleInputsType = { enterprise: null | CompanyProps; tipoVenta: 'directa' | 'privada'; file: null | File };
 
 interface ContextProps {
-  resumeSalesData: Array<{ label: string; value: string; color: string }>;
   loadingRegions: boolean;
   loadingCompanies: boolean;
   loadingClients: boolean;
@@ -36,6 +37,8 @@ interface ContextProps {
   loadingTrackings: boolean;
   trackings: Array<TrackingProps>;
   selectedSale: null | SaleProps;
+  saleInputValues: SaleInputsType;
+  blackBarKey: BlackBarKeyEnum | null;
   setSelectedSale: Dispatch<SetStateAction<null | SaleProps>>;
   obtainClients: VoidFunction;
   obtainCompanies: VoidFunction;
@@ -44,6 +47,8 @@ interface ContextProps {
   obtainTransports: VoidFunction;
   obtainSales: VoidFunction;
   obtainTrackings: VoidFunction;
+  setSaleInputValues: Dispatch<SetStateAction<SaleInputsType>>;
+  setBlackBarKey: Dispatch<SetStateAction<BlackBarKeyEnum | null>>;
 }
 
 const GlobalInformation = createContext({} as ContextProps);
@@ -74,6 +79,9 @@ const GlobalInformationProvider = ({ children }: { children: ReactNode }) => {
 
   const [loadingTrackings, setLoadingTrackings] = useState(false);
   const [trackings, setTrackings] = useState<Array<TrackingProps>>([]);
+
+  const [saleInputValues, setSaleInputValues] = useState<SaleInputsType>({ enterprise: null, file: null, tipoVenta: 'directa' });
+  const [blackBarKey, setBlackBarKey] = useState<null | BlackBarKeyEnum>(null);
 
   useEffect(() => {
     const token = StorageService.get(STORAGE_KEY);
@@ -190,28 +198,8 @@ const GlobalInformationProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const values = useMemo(() => {
-    const resumeSalesData = [
-      { label: 'Total de Ventas', value: sales.length.toString(), color: 'primary.light' },
-      {
-        label: 'Monto Total',
-        value: formatCurrency(sales.reduce((sum, sale) => sum + parseInt(sale.montoVenta ?? '0', 10), 0)),
-        color: 'secondary.main',
-      },
-      {
-        label: 'Ventas Pendientes',
-        value: sales.filter((sale) => sale.etapaActual === 'pending').length.toString(),
-        color: 'warning.main',
-      },
-      {
-        label: 'Ventas Completadas',
-        value: sales.filter((sale) => sale.etapaActual === 'completed').length.toString(),
-        color: 'info.main',
-      },
-    ];
-
-    return {
-      resumeSalesData,
+  const values = useMemo(
+    () => ({
       loadingRegions,
       regions,
       companies,
@@ -227,6 +215,8 @@ const GlobalInformationProvider = ({ children }: { children: ReactNode }) => {
       trackings,
       loadingTrackings,
       selectedSale,
+      saleInputValues,
+      blackBarKey,
       setSelectedSale,
       obtainClients,
       obtainCompanies,
@@ -235,24 +225,29 @@ const GlobalInformationProvider = ({ children }: { children: ReactNode }) => {
       obtainTransports,
       obtainSales,
       obtainTrackings,
-    };
-  }, [
-    loadingRegions,
-    regions,
-    companies,
-    loadingCompanies,
-    clients,
-    loadingClients,
-    providers,
-    loadingProviders,
-    transports,
-    loadingTransports,
-    sales,
-    loadingSales,
-    trackings,
-    loadingTrackings,
-    selectedSale,
-  ]);
+      setSaleInputValues,
+      setBlackBarKey,
+    }),
+    [
+      loadingRegions,
+      regions,
+      companies,
+      loadingCompanies,
+      clients,
+      loadingClients,
+      providers,
+      loadingProviders,
+      transports,
+      loadingTransports,
+      sales,
+      loadingSales,
+      trackings,
+      loadingTrackings,
+      selectedSale,
+      saleInputValues,
+      blackBarKey,
+    ]
+  );
 
   return <GlobalInformation.Provider value={values}>{children}</GlobalInformation.Provider>;
 };
