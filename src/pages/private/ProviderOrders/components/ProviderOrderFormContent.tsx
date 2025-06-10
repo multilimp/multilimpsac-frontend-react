@@ -50,14 +50,6 @@ const getEmptyProductRecord = () => ({
   total: '',
 });
 
-// const getEmptyPaymentRecord = () => ({
-//   fecha: null,
-//   banco: '',
-//   descripcion: '',
-//   evidencia: null,
-//   monto: '',
-// });
-
 const getEmptyTransformRecord = () => ({
   transporte: null,
   destino: null,
@@ -97,7 +89,7 @@ const ProviderOrderFormContent = ({ sale }: ProviderOrderFormContentProps) => {
         distrito: item.destino,
         direccion: item.direccion,
         notaTransporte: item.nota,
-        cotizacionTransporte: 'https://pub-be92c56cdc1645c5aac3eb28d9ddb2c8.r2.dev/general-uploads/L73_-7HanJ-y-tYeeeO1R.pdf', // item.cotizacion
+        cotizacionTransporte: item.cotizacion,
         tipoDestino: item.destino,
       }));
 

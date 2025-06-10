@@ -5,7 +5,6 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Switch, Grid
 import { DatePicker, Form, Input, InputNumber, Select, Spin } from 'antd';
 import dayjs from 'dayjs';
 import InputFile from '@/components/InputFile';
-import { uploadFile } from '@/services/files/file.requests';
 
 const { Option } = Select;
 
@@ -42,25 +41,15 @@ const TrackingsModal: React.FC<Props> = ({ data, open, onClose, onSave }) => {
       deliveryDateOC: vals.deliveryDateOC?.toISOString(),
     };
 
-    // Subir solo si son File
-    if (vals.oce instanceof File) {
-      payload.oce = await uploadFile(vals.oce);
-    }
-    if (vals.ocf instanceof File) {
-      payload.ocf = await uploadFile(vals.ocf);
-    }
-    if (vals.peruPurchases instanceof File) {
-      payload.peruPurchases = await uploadFile(vals.peruPurchases);
-    }
-
     await onSave(payload, data?.id);
     setSaving(false);
   };
 
-  return (    <Dialog 
-      open={open} 
-      fullWidth 
-      maxWidth="xl" 
+  return (
+    <Dialog
+      open={open}
+      fullWidth
+      maxWidth="xl"
       onClose={onClose}
       sx={{
         zIndex: 1300, // Más alto que el sidebar (1200)
@@ -69,7 +58,7 @@ const TrackingsModal: React.FC<Props> = ({ data, open, onClose, onSave }) => {
         },
         '& .MuiBackdrop-root': {
           zIndex: 1299,
-        }
+        },
       }}
     >
       <DialogTitle>{data ? 'Editar' : 'Agregar'} Seguimiento</DialogTitle>

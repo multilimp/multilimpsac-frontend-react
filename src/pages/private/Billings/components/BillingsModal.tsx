@@ -1,21 +1,10 @@
-
 // src/pages/components/BillingsModal.tsx
 import React, { useEffect, useState } from 'react';
 import { BillingProps } from '@/services/billings/billings.d';
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Switch,
-  FormControlLabel,
-  Grid,
-} from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Switch, FormControlLabel, Grid } from '@mui/material';
 import { DatePicker, Form, Input, InputNumber, Select, Spin } from 'antd';
 import dayjs from 'dayjs';
 import InputFile from '@/components/InputFile';
-import { uploadFile } from '@/services/files/file.requests';
 
 const { Option } = Select;
 
@@ -26,12 +15,7 @@ interface BillingsModalProps {
   onSave: (values: Omit<BillingProps, 'id'>, id?: number) => void;
 }
 
-const BillingsModal: React.FC<BillingsModalProps> = ({
-  data,
-  open,
-  onClose,
-  onSave,
-}) => {
+const BillingsModal: React.FC<BillingsModalProps> = ({ data, open, onClose, onSave }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
 
@@ -65,23 +49,17 @@ const BillingsModal: React.FC<BillingsModalProps> = ({
         invoiceDate: values.invoiceDate ? values.invoiceDate.toISOString() : undefined,
       };
 
-      if (values.oce instanceof File) {
-        payload.oce = await uploadFile(values.oce);
-      }
-      if (values.ocf instanceof File) {
-        payload.ocf = await uploadFile(values.ocf);
-      }
-
       await onSave(payload, data?.id);
     } finally {
       setLoading(false);
     }
   };
 
-  return (    <Dialog 
-      open={open} 
-      fullWidth 
-      maxWidth="lg" 
+  return (
+    <Dialog
+      open={open}
+      fullWidth
+      maxWidth="lg"
       onClose={onClose}
       sx={{
         zIndex: 1300, // Más alto que el sidebar (1200)
@@ -90,18 +68,13 @@ const BillingsModal: React.FC<BillingsModalProps> = ({
         },
         '& .MuiBackdrop-root': {
           zIndex: 1299,
-        }
+        },
       }}
     >
       <DialogTitle>{data ? 'Editar' : 'Agregar'} Factura</DialogTitle>
       <DialogContent dividers>
         <Spin spinning={loading}>
-          <Form
-            form={form}
-            layout="vertical"
-            onFinish={handleFinish}
-            style={{ marginTop: 16 }}
-          >
+          <Form form={form} layout="vertical" onFinish={handleFinish} style={{ marginTop: 16 }}>
             <Grid container columnSpacing={2}>
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <Form.Item name="saleId" label="ID Venta" rules={[{ required: true }]}>
@@ -116,11 +89,7 @@ const BillingsModal: React.FC<BillingsModalProps> = ({
               </Grid>
 
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <Form.Item
-                  name="clientBusinessName"
-                  label="Razón Social Cliente"
-                  rules={[{ required: true }]}
-                >
+                <Form.Item name="clientBusinessName" label="Razón Social Cliente" rules={[{ required: true }]}>
                   <Input />
                 </Form.Item>
               </Grid>
@@ -132,11 +101,7 @@ const BillingsModal: React.FC<BillingsModalProps> = ({
               </Grid>
 
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <Form.Item
-                  name="companyBusinessName"
-                  label="Razón Social Empresa"
-                  rules={[{ required: true }]}
-                >
+                <Form.Item name="companyBusinessName" label="Razón Social Empresa" rules={[{ required: true }]}>
                   <Input />
                 </Form.Item>
               </Grid>
@@ -148,41 +113,25 @@ const BillingsModal: React.FC<BillingsModalProps> = ({
               </Grid>
 
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <Form.Item
-                  name="registerDate"
-                  label="Fecha Registro"
-                  rules={[{ required: true }]}
-                >
+                <Form.Item name="registerDate" label="Fecha Registro" rules={[{ required: true }]}>
                   <DatePicker style={{ width: '100%' }} />
                 </Form.Item>
               </Grid>
 
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <Form.Item
-                  name="maxDeliveryDate"
-                  label="Fecha Máx Entrega"
-                  rules={[{ required: true }]}
-                >
+                <Form.Item name="maxDeliveryDate" label="Fecha Máx Entrega" rules={[{ required: true }]}>
                   <DatePicker style={{ width: '100%' }} />
                 </Form.Item>
               </Grid>
 
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <Form.Item
-                  name="deliveryDateOC"
-                  label="Fecha Entrega O.C."
-                  rules={[{ required: true }]}
-                >
+                <Form.Item name="deliveryDateOC" label="Fecha Entrega O.C." rules={[{ required: true }]}>
                   <DatePicker style={{ width: '100%' }} />
                 </Form.Item>
               </Grid>
 
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <Form.Item
-                  name="saleAmount"
-                  label="Monto Venta"
-                  rules={[{ required: true }]}
-                >
+                <Form.Item name="saleAmount" label="Monto Venta" rules={[{ required: true }]}>
                   <InputNumber style={{ width: '100%' }} min={0} />
                 </Form.Item>
               </Grid>
@@ -200,21 +149,13 @@ const BillingsModal: React.FC<BillingsModalProps> = ({
               </Grid>
 
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <Form.Item
-                  name="receptionDate"
-                  label="Fecha Recepción"
-                  rules={[{ required: true }]}
-                >
+                <Form.Item name="receptionDate" label="Fecha Recepción" rules={[{ required: true }]}>
                   <DatePicker style={{ width: '100%' }} />
                 </Form.Item>
               </Grid>
 
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <Form.Item
-                  name="programmingDate"
-                  label="Fecha Programación"
-                  rules={[{ required: true }]}
-                >
+                <Form.Item name="programmingDate" label="Fecha Programación" rules={[{ required: true }]}>
                   <DatePicker style={{ width: '100%' }} />
                 </Form.Item>
               </Grid>
@@ -261,12 +202,7 @@ const BillingsModal: React.FC<BillingsModalProps> = ({
         <Button onClick={onClose} disabled={loading} color="error" variant="outlined">
           Cancelar
         </Button>
-        <Button
-          onClick={() => form.submit()}
-          disabled={loading}
-          color="primary"
-          variant="contained"
-        >
+        <Button onClick={() => form.submit()} disabled={loading} color="primary" variant="contained">
           Guardar{data ? ' cambios' : ''}
         </Button>
       </DialogActions>

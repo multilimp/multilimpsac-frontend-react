@@ -4,7 +4,6 @@ import InputFile from '@/components/InputFile';
 import SubmitButton from '@/components/SubmitButton';
 import { UserProps } from '@/services/users/users';
 import { postUser, putUser } from '@/services/users/users.request';
-import { uploadFile } from '@/services/files/file.requests';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { RolesEnum } from '@/services/users/user.enum';
@@ -44,7 +43,6 @@ const UsersModal = ({ data, handleClose, handleReload }: UsersModalProps) => {
       };
 
       if (raw.password) body.password = raw.password;
-      if (raw.foto) body.foto = await uploadFile(raw.foto as File);
 
       if (data) await putUser(data.id, body);
       else await postUser(body);
@@ -61,9 +59,10 @@ const UsersModal = ({ data, handleClose, handleReload }: UsersModalProps) => {
     }
   };
 
-  return (    <Dialog 
-      open 
-      fullWidth 
+  return (
+    <Dialog
+      open
+      fullWidth
       maxWidth="sm"
       sx={{
         zIndex: 1300, // Más alto que el sidebar (1200)
@@ -72,7 +71,7 @@ const UsersModal = ({ data, handleClose, handleReload }: UsersModalProps) => {
         },
         '& .MuiBackdrop-root': {
           zIndex: 1299,
-        }
+        },
       }}
     >
       <DialogTitle textAlign="center">{data ? 'Editar usuario' : 'Agregar usuario'}</DialogTitle>

@@ -51,10 +51,6 @@ const CompaniesModal = ({ data, handleClose, handleReload }: CompaniesModalProps
         distrito: raw.distrito ? JSON.stringify(raw.distritoComplete) : undefined,
       };
 
-      if (raw.logo) {
-        body.logo = await uploadFile(body.logo as File);
-      }
-
       delete body.departamentoComplete;
       delete body.provinciaComplete;
       delete body.distritoComplete;
@@ -71,9 +67,10 @@ const CompaniesModal = ({ data, handleClose, handleReload }: CompaniesModalProps
     }
   };
 
-  return (    <Dialog 
-      open 
-      fullWidth 
+  return (
+    <Dialog
+      open
+      fullWidth
       maxWidth="md"
       sx={{
         zIndex: 1300, // Más alto que el sidebar (1200)
@@ -82,7 +79,7 @@ const CompaniesModal = ({ data, handleClose, handleReload }: CompaniesModalProps
         },
         '& .MuiBackdrop-root': {
           zIndex: 1299,
-        }
+        },
       }}
     >
       <DialogTitle variant="h5" textAlign="center">

@@ -12,11 +12,12 @@ import { Info, Description } from '@mui/icons-material';
 
 interface InputsThirdStepProps {
   form: FormInstance;
+  companyId: number;
 }
 
 const etapaSIAFOptions = ['COM', 'DEV', 'PAG', 'SSIAF', 'RES', 'GIR', 'GIR-F', 'GIR-V', 'GIR-A', 'GIR-R'].map((value) => ({ label: value, value }));
 
-const InputsThirdStep = ({ form }: InputsThirdStepProps) => {
+const InputsThirdStep = ({ form, companyId }: InputsThirdStepProps) => {
   return (
     <Fragment>
       <StepItemContent>
@@ -29,10 +30,10 @@ const InputsThirdStep = ({ form }: InputsThirdStepProps) => {
           <Grid size={{ xs: 12, md: 6 }}>
             <Form.Item name="catalogoComplete" noStyle />
             <Form.Item shouldUpdate noStyle>
-              {({ getFieldValue, setFieldsValue }) => (
+              {({ setFieldsValue }) => (
                 <Form.Item name="catalogo" rules={[requiredField]}>
                   <SelectCatalogs
-                    companyId={getFieldValue('empresa')}
+                    companyId={companyId}
                     label="Catálogo"
                     onChange={(value, record: any) => setFieldsValue({ catalogo: value, catalogoComplete: record?.optiondata })}
                   />

@@ -1,4 +1,3 @@
-
 import { notification, Select, SelectProps } from 'antd';
 import SelectContainer from './SelectContainer';
 import { filterOptions } from '@/utils/functions';
@@ -37,15 +36,7 @@ const SelectProvinces = ({ label, regionId, size = 'large', ...props }: SelectPr
 
   return (
     <SelectContainer label={label}>
-      <Select 
-        showSearch 
-        filterOption={filterOptions} 
-        size={size} 
-        style={{ width: '100%' }} 
-        loading={loading} 
-        disabled={loading} 
-        {...props}
-      >
+      <Select showSearch filterOption={filterOptions} size={size} style={{ width: '100%' }} loading={loading} disabled={loading} {...props}>
         {provinces.map((item) => (
           <Select.Option key={item.id} value={item.id} optiondata={item} title={item.name}>
             {item.name}
