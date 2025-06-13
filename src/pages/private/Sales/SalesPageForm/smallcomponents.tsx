@@ -5,12 +5,13 @@ import { OverridableComponent } from '@mui/material/OverridableComponent';
 
 interface StepItemContentProps {
   children: ReactNode;
-  color?: 'primary' | 'info';
+  color?: string;
   headerLeft?: ReactNode;
   headerRight?: ReactNode;
   showHeader?: boolean;
   showFooter?: boolean;
   ResumeIcon?: OverridableComponent<SvgIconTypeMap<{}, 'svg'>>;
+  ResumeSearchIcon?: OverridableComponent<SvgIconTypeMap<{}, 'svg'>>;
   resumeContent?: ReactNode;
   onClickSearch?: VoidFunction;
 }
@@ -22,14 +23,15 @@ export const StepItemContent = ({
   showHeader,
   showFooter,
   ResumeIcon = Search,
-  color = 'primary',
+  ResumeSearchIcon = Search,
+  color = '#04BA6B',
   resumeContent,
   onClickSearch,
 }: StepItemContentProps) => (
   <Box border="1px solid #f2f2f2" boxShadow="0 3px 20px -15px rgba(0,0,0,0.75);">
     {showHeader ? (
       <Fragment>
-        <Stack direction="row" justifyContent="space-between" alignItems="center" bgcolor={`${color}.main`} color="#ffffff" px={2} height={32}>
+        <Stack direction="row" justifyContent="space-between" alignItems="center" bgcolor={color} color="#ffffff" px={2} height={32}>
           <Typography component="div" fontSize={12}>
             {headerLeft}
           </Typography>
@@ -41,17 +43,17 @@ export const StepItemContent = ({
         <Stack bgcolor="#2f3a4b" color="#ffffff" p={2} direction="row" justifyContent="space-between" alignItems="center">
           <Stack direction="row" spacing={2}>
             <Stack alignItems="center" justifyContent="center">
-              <ResumeIcon sx={{ fontSize: 56 }} color={color} />
+              <ResumeIcon sx={{ fontSize: 56, color }} />
             </Stack>
 
             <Box>
-              <Divider orientation="vertical" sx={{ borderColor: `${color}.main` }} />
+              <Divider orientation="vertical" sx={{ borderColor: color }} />
             </Box>
             <Box>{resumeContent}</Box>
           </Stack>
 
-          <IconButton color={color} sx={{ border: '1px solid', borderRadius: 1 }} onClick={onClickSearch}>
-            <Search />
+          <IconButton sx={{ border: '1px solid', borderRadius: 1, color }} onClick={onClickSearch}>
+            <ResumeSearchIcon />
           </IconButton>
         </Stack>
       </Fragment>

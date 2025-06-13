@@ -31,7 +31,12 @@ export interface SaleProps {
   montoVenta: string;
   fechaForm: string;
   fechaMaxForm: string;
-  productos: Array<string>;
+  productos: Array<{
+    cantidad: number;
+    codigo: string;
+    marca: string;
+    descripcion: string;
+  }>;
   documentoOce: string;
   documentoOcf: string;
   siaf: string;

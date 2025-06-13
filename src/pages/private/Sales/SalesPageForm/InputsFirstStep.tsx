@@ -43,7 +43,7 @@ const InputsFirstStep = ({ form }: { form: FormInstance }) => {
         showHeader
         showFooter
         ResumeIcon={Handshake}
-        color="info"
+        color="#006DFA"
         onClickSearch={() => setOpenClients(true)}
         resumeContent={
           <Form.Item noStyle shouldUpdate>

@@ -8,10 +8,11 @@ interface ProvidersTableProps {
   data: Array<ProviderProps>;
   loading: boolean;
   onRecordAction: (action: ModalStateEnum, data: ProviderProps) => void;
+  hideActions?: boolean;
 }
 
-const ProvidersTable = ({ data, loading, onRecordAction }: ProvidersTableProps) => {
-  const columns: Array<AntColumnType<ProviderProps>> = [
+const ProvidersTable = ({ data, loading, onRecordAction, hideActions }: ProvidersTableProps) => {
+  const columns: Array<AntColumnType<ProviderProps> | false> = [
     { title: 'Razón social', dataIndex: 'razonSocial', width: 250, filter: true },
     { title: 'RUC', dataIndex: 'ruc', width: 150, filter: true },
     {
@@ -35,7 +36,7 @@ const ProvidersTable = ({ data, loading, onRecordAction }: ProvidersTableProps) 
     },
     { title: 'Correo electrónico', dataIndex: 'email', width: 200, filter: true },
     { title: 'Teléfono', dataIndex: 'telefono', width: 150, filter: true },
-    {
+    !hideActions && {
       title: 'Acciones',
       dataIndex: 'id',
       fixed: 'right',
@@ -57,7 +58,22 @@ const ProvidersTable = ({ data, loading, onRecordAction }: ProvidersTableProps) 
     },
   ];
 
-  return <AntTable columns={columns} data={data} loading={loading} />;
+  const filteredColumns = columns.filter((item) => !!item);
+
+  return (
+    <AntTable
+      columns={filteredColumns}
+      data={data}
+      loading={loading}
+      onRow={(record) => {
+        if (!hideActions) return {};
+        return {
+          onClick: () => onRecordAction(ModalStateEnum.BOX, record),
+          style: { cursor: 'pointer' },
+        };
+      }}
+    />
+  );
 };
 
 export default ProvidersTable;

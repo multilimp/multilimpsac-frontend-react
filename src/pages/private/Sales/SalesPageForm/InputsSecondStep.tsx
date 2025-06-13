@@ -28,7 +28,6 @@ const InputsSecondStep = ({ form }: InputsSecondStepProps) => {
         showHeader
         showFooter
         ResumeIcon={Business}
-        color="primary"
         onClickSearch={() => setOpenClients(true)}
         headerLeft={
           <Form.Item noStyle shouldUpdate>

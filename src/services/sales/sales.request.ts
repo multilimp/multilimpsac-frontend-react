@@ -12,6 +12,7 @@ export const getSales = async (params?: SaleFiltersProps): Promise<SaleProps[]> 
     departamentoEntrega: parseJSON(item.departamentoEntrega),
     provinciaEntrega: parseJSON(item.provinciaEntrega),
     distritoEntrega: parseJSON(item.distritoEntrega),
+    productos: parseJSON(item.productos) ?? [],
   }));
 
   return formatted;
