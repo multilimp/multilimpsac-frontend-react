@@ -182,9 +182,8 @@ const AntTable = <T extends Record<string, any>>(props: AntTablePropsProps<T>) =
             <Stack direction="column" spacing={2}>
               {columnsCloned
                 .filter((item) => item.title !== 'Acciones')
-                .map((item, index) => {
-                  return (
-                    <Card key={index + 1} sx={{ bgcolor: 'transparent' }} variant="outlined">
+                .map((item, index) => {                  return (
+                    <Card key={index + 1} sx={{ bgcolor: 'transparent', borderColor: '#4A5563' }} variant="outlined">
                       <CardActionArea
                         onClick={() => {
                           columnsCloned[index].selected = !item.selected;
