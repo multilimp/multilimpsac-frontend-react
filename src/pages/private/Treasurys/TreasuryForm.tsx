@@ -35,7 +35,20 @@ const mockSaleData: SaleProps = {
   montoVenta: '15000.00',
   fechaForm: '2024-12-01T00:00:00.000Z',
   fechaMaxForm: '2024-12-30T00:00:00.000Z',
-  productos: ['SERV001', 'SERV002', 'PROD001'],
+  productos: [
+    {
+      descripcion: 'Servicio de Limpieza',
+      cantidad: 10,
+      codigo : 'SL-001',
+      marca : 'Marca A',
+    },
+    {
+      descripcion: 'Servicio de Mantenimiento',
+      cantidad: 5,
+      codigo : 'SM-001',
+      marca : 'Marca B',
+    }
+  ],
   documentoOce: 'OCE-2024-001.pdf',
   documentoOcf: 'OCF-2024-001.pdf',
   siaf: '12345',

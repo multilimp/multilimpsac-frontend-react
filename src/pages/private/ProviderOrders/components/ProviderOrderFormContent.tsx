@@ -1,6 +1,6 @@
 import { Fragment, useState } from 'react';
 import { Form, Input, InputNumber, notification, Spin } from 'antd';
-import { AddCircle, Business, Delete, LocalShipping, LocationOn, ShoppingCart } from '@mui/icons-material';
+import { AddCircle, Business, Delete, LocalShipping, ShoppingCart } from '@mui/icons-material';
 import {
   Box,
   Card,
@@ -26,7 +26,6 @@ import InputFile from '@/components/InputFile';
 import SelectGeneric from '@/components/selects/SelectGeneric';
 import SelectTransports from '@/components/selects/SelectTransports';
 import DatePickerAntd from '@/components/DatePickerAnt';
-import SelectProviders from '@/components/selects/SelectProviders';
 import { SaleProps } from '@/services/sales/sales';
 import { formatCurrency } from '@/utils/functions';
 import SelectRegions from '@/components/selects/SelectRegions';

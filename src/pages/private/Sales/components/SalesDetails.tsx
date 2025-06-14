@@ -133,7 +133,7 @@ const SalesDetails = ({ handleClose, data, handleEdit }: SalesDetailsProps) => {
               ]}
             />
 
-            <CardList title="PRODUCTOS" data={productos.map((label) => ({ label, value: '' }))} />
+            <CardList title="PRODUCTOS" data={productos.map((producto) => ({ label: producto.descripcion, value: `Código: ${producto.codigo} | Marca: ${producto.marca} | Cantidad: ${producto.cantidad}` }))} />
           </Stack>
         </CardContent>
       </Card>

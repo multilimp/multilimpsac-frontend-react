@@ -1,6 +1,6 @@
 import { Empty, message } from 'antd';
 import { useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Stack } from '@mui/material';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 import ProviderOrderFormContent from './components/ProviderOrderFormContent';
@@ -8,7 +8,7 @@ import { BlackBarKeyEnum } from '@/types/global.enum';
 
 const ProviderOrderForm = () => {
   const { selectedSale, setSelectedSale, setBlackBarKey } = useGlobalInformation();
-  const { saleId } = useParams();
+  // const { saleId } = useParams();
   const navigate = useNavigate();
 
   useEffect(() => {

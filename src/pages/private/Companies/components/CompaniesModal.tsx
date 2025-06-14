@@ -10,7 +10,6 @@ import InputFile from '../../../../components/InputFile';
 import { EMAIL_PATTERN, PHONE_PATTERN } from '@/utils/constants';
 import { useEffect, useState } from 'react';
 import { postCompany, putCompany } from '@/services/companies/company.requests';
-import { uploadFile } from '@/services/files/file.requests';
 
 interface CompaniesModalProps {
   data?: CompanyProps;
