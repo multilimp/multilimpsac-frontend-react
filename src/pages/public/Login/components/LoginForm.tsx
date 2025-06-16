@@ -1,10 +1,12 @@
-import InputAntd from '@/components/InputAntd';
 import { useAppContext } from '@/context';
 import StorageService from '@/services/storageService';
 import { authUser } from '@/services/users/user.requests';
 import { EMAIL_PATTERN, STORAGE_KEY } from '@/utils/constants';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
-import { Button, Card, CardContent, CardHeader, IconButton, Stack } from '@mui/material';
+import { HeroButton } from '@/components/ui/HeroButton';
+import { HeroInput } from '@/components/ui/HeroInput';
+import { heroUIColors, alpha } from '@/styles/theme/heroui-colors';
+import { Visibility, VisibilityOff, Login as LoginIcon } from '@mui/icons-material';
+import { Box, CardContent, IconButton, Stack, Typography, Button } from '@mui/material';
 import { Form } from 'antd';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -44,14 +46,35 @@ const LoginForm = () => {
   };
 
   return (
-    <Card>
-      <CardHeader
-        title="Iniciar Sesión"
-        subheader="Ingrese sus credenciales para continuar"
-        slotProps={{ title: { variant: 'h4', fontWeight: 700 }, subheader: { variant: 'body1' } }}
-      />
-      <CardContent>
-        <Form form={form} onFinish={handleSubmit}>
+    <Box sx={{ p: 0 }}>
+      {/* Header estilizado */}
+      <Box sx={{ textAlign: 'center', mb: 4 }}>
+        <Typography 
+          variant="h4" 
+          sx={{ 
+            fontWeight: 800,
+            background: heroUIColors.gradients.primary,
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            mb: 1,
+          }}
+        >
+          Iniciar Sesión
+        </Typography>
+        <Typography 
+          variant="body1" 
+          sx={{ 
+            color: heroUIColors.neutral[600],
+            fontWeight: 400,
+          }}
+        >
+          Ingrese sus credenciales para continuar
+        </Typography>
+      </Box>
+
+      <CardContent sx={{ p: 4 }}>
+        <Form form={form} onFinish={handleSubmit} layout="vertical">
           <Form.Item
             name="email"
             rules={[
@@ -59,36 +82,135 @@ const LoginForm = () => {
               { pattern: EMAIL_PATTERN, message: 'Ingrese un email válido' },
             ]}
           >
-            <InputAntd label="Email" autoComplete="username" disabled={loading} />
+            <Box sx={{ mb: 2 }}>
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  fontWeight: 600, 
+                  mb: 1, 
+                  color: heroUIColors.neutral[700] 
+                }}
+              >
+                Email
+              </Typography>
+              <HeroInput 
+                variant="soft"
+                heroSize="large"
+                placeholder="ejemplo@multilimp.com"
+                autoComplete="username" 
+                disabled={loading}
+              />
+            </Box>
           </Form.Item>
 
-          <Form.Item name="password" rules={[{ required: true, message: 'La contraseña es requerida' }]}>
-            <InputAntd
-              label="Contraseña"
-              autoComplete="password"
-              type={show ? 'text' : 'password'}
-              suffix={
-                <IconButton size="small" onClick={() => setShow(!show)} disabled={loading}>
-                  {show ? <Visibility /> : <VisibilityOff />}
-                </IconButton>
-              }
-              style={{ paddingTop: 0, paddingBottom: 0 }}
-              disabled={loading}
-            />
+          <Form.Item 
+            name="password" 
+            rules={[{ required: true, message: 'La contraseña es requerida' }]}
+          >
+            <Box sx={{ mb: 3 }}>
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  fontWeight: 600, 
+                  mb: 1, 
+                  color: heroUIColors.neutral[700] 
+                }}
+              >
+                Contraseña
+              </Typography>
+              <HeroInput
+                variant="soft"
+                heroSize="large"
+                placeholder="Ingrese su contraseña"
+                autoComplete="password"
+                type={show ? 'text' : 'password'}
+                suffix={
+                  <IconButton 
+                    size="small" 
+                    onClick={() => setShow(!show)} 
+                    disabled={loading}
+                    sx={{
+                      color: heroUIColors.neutral[500],
+                      '&:hover': {
+                        color: heroUIColors.primary[500],
+                        background: alpha(heroUIColors.primary[500], 0.1),
+                      }
+                    }}
+                  >
+                    {show ? <Visibility /> : <VisibilityOff />}
+                  </IconButton>
+                }
+                disabled={loading}
+              />
+            </Box>
           </Form.Item>
 
-          <Button type="submit" fullWidth sx={{ mt: 2 }} loading={loading}>
-            Sign in
-          </Button>
+          <HeroButton 
+            variant="gradient"
+            glow
+            loading={loading}
+            type="submit"
+            style={{ 
+              width: '100%',
+              height: '48px',
+              fontSize: '16px',
+              fontWeight: 600,
+              marginBottom: '16px'
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <LoginIcon />
+              {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+            </Box>
+          </HeroButton>
         </Form>
 
-        <Stack justifyContent="flex-end" alignItems="flex-end" mt={2}>
-          <Button component={Link} to="/recovery-password" variant="text">
+        <Stack justifyContent="center" alignItems="center" mt={2}>
+          <Button 
+            component={Link} 
+            to="/recovery-password" 
+            variant="text"
+            sx={{
+              color: heroUIColors.neutral[600],
+              textTransform: 'none',
+              fontWeight: 500,
+              textDecoration: 'none',
+              '&:hover': {
+                color: heroUIColors.primary[500],
+                background: 'transparent',
+                textDecoration: 'underline',
+              }
+            }}
+          >
             ¿Olvidaste tu contraseña?
           </Button>
         </Stack>
+
+        {/* Información adicional */}
+        <Box 
+          sx={{ 
+            mt: 4, 
+            p: 2, 
+            borderRadius: heroUIColors.radius.md,
+            background: alpha(heroUIColors.primary[50], 0.5),
+            border: `1px solid ${alpha(heroUIColors.primary[200], 0.3)}`,
+          }}
+        >
+          <Typography 
+            variant="caption" 
+            sx={{ 
+              color: heroUIColors.neutral[600],
+              display: 'block',
+              textAlign: 'center',
+              lineHeight: 1.4,
+            }}
+          >
+            🔒 Conexión segura mediante SSL<br/>
+            💼 Sistema ERP empresarial
+          </Typography>
+        </Box>
       </CardContent>
-    </Card>
+    </Box>
   );
 };
 

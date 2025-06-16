@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { IconButton, Button } from '@mui/material';
+import { IconButton, Button, Input } from '@mui/material';
 import { SaleProps } from '@/services/sales/sales';
 import { PictureAsPdf, VisibilityOutlined } from '@mui/icons-material';
 import { formatCurrency, formattedDate } from '@/utils/functions';
@@ -44,6 +44,7 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onRecordAction }
       title: 'Código OC',
       dataIndex: 'codigo_venta',
       width: 200,
+      // filter: true,
       render: (value, record) => (
         <Button
           variant="contained"
@@ -51,10 +52,11 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onRecordAction }
           startIcon={<VisibilityOutlined />}
           size="small"
           color="info"
+          style={{ width: '100%' }}
         >
           {value}
         </Button>
-      ),
+      )
     },
     { title: 'Razón Social Cliente', dataIndex: 'razon_social_cliente', width: 200, sort: true, filter: true },
     { title: 'RUC Cliente', dataIndex: 'ruc_cliente', width: 200, sort: true, filter: true },

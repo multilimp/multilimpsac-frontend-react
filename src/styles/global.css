@@ -33,43 +33,202 @@ body {
 
 /* Clases personalizadas para Stack con bordes azules */
 .stack-bordered {
-  border: 2px solid #1E293B !important; /* Azul de tu tema secundario */
-  border-radius: 8px !important;
-  padding: 16px !important;
-  background-color: rgba(255, 255, 255, 0.95) !important;
-  box-shadow: 0 2px 8px rgba(30, 41, 59, 0.1) !important;
+  border: 1px solid #e3f2fd;
 }
 
 .stack-bordered-primary {
-  border: 2px solid #04BA6B !important; /* Verde primario */
-  border-radius: 8px !important;
-  padding: 16px !important;
-  background-color: rgba(255, 255, 255, 0.95) !important;
-  box-shadow: 0 2px 8px rgba(4, 186, 107, 0.1) !important;
+  border: 1px solid #1976d2;
 }
 
 .stack-bordered-light {
-  border: 1px solid #e2e8f0 !important;
-  border-radius: 6px !important;
-  padding: 12px !important;
-  background-color: #ffffff !important;
+  border: 1px solid rgba(25, 118, 210, 0.3);
 }
 
 .zoom-in {
-  animation: zoomIn 5s forwards;
+  transition: transform 0.3s ease;
 }
-@keyframes zoomIn {
+
+.zoom-in:hover {
+  transform: scale(1.05);
+}
+
+/* ===== HEROUI GLOBAL STYLES ===== */
+
+/* Animación de spin para componentes */
+@keyframes spin {
   from {
-    transform: scale(0.5);
-    opacity: 0;
+    transform: rotate(0deg);
   }
   to {
-    transform: scale(1);
-    opacity: 1;
+    transform: rotate(360deg);
   }
 }
 
-.ant-table-tbody > .table-filter-row:nth-child(2) > td:last-child button {
-  pointer-events: none;
-  color: transparent;
+/* Efectos de cristal globales */
+.hero-glass {
+  background: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.hero-gradient-primary {
+  background: linear-gradient(135deg, #04BA6B 0%, #03a861 50%, #039354 100%) !important;
+}
+
+.hero-gradient-secondary {
+  background: linear-gradient(135deg, #1890ff 0%, #096dd9 50%, #0050b3 100%) !important;
+}
+
+.hero-gradient-hero {
+  background: linear-gradient(135deg, #04BA6B 0%, #1890ff 50%, #667eea 100%) !important;
+}
+
+/* Animaciones suaves */
+.hero-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Hover effects */
+.hero-hover-lift:hover {
+  transform: translateY(-4px) !important;
+}
+
+.hero-hover-glow:hover {
+  box-shadow: 0 0 30px rgba(4, 186, 107, 0.4) !important;
+}
+
+/* Texto con gradiente */
+.hero-text-gradient {
+  background: linear-gradient(135deg, #04BA6B 0%, #1890ff 50%, #667eea 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Cards especiales */
+.hero-card-elevated {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+  border-radius: 16px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.hero-card-elevated:hover {
+  transform: translateY(-8px) !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Scrollbar personalizado estilo HeroUI */
+.hero-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.hero-scrollbar::-webkit-scrollbar-track {
+  background: rgba(245, 245, 245, 0.5);
+  border-radius: 4px;
+}
+
+.hero-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(45deg, #04BA6B, #1890ff);
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.hero-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(45deg, #03a861, #096dd9);
+}
+
+/* Mejoras para elementos de formulario existentes */
+.ant-form-item-label > label {
+  font-weight: 600 !important;
+  color: #525252 !important;
+}
+
+.ant-form-item-explain-error {
+  font-size: 12px !important;
+  margin-top: 4px !important;
+}
+
+/* Estados focus mejorados para todos los inputs */
+.ant-input:focus,
+.ant-input-focused,
+.ant-select-focused .ant-select-selector {
+  border-color: #04BA6B !important;
+  box-shadow: 0 0 0 2px rgba(4, 186, 107, 0.2) !important;
+}
+
+/* Mejoras para botones Ant Design */
+.ant-btn-primary {
+  background: linear-gradient(135deg, #04BA6B 0%, #03a861 100%) !important;
+  border: none !important;
+  box-shadow: 0 4px 15px rgba(4, 186, 107, 0.4) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.ant-btn-primary:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 25px rgba(4, 186, 107, 0.6) !important;
+  background: linear-gradient(135deg, #03a861 0%, #039354 100%) !important;
+}
+
+/* Notificaciones estilo HeroUI */
+.ant-notification {
+  border-radius: 12px !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+.ant-notification-notice {
+  border-radius: 12px !important;
+  border: 1px solid rgba(229, 229, 229, 0.3) !important;
+}
+
+/* Mejoras para modales */
+.ant-modal-content {
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25) !important;
+}
+
+.ant-modal-header {
+  background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%) !important;
+  border-bottom: 1px solid rgba(229, 229, 229, 0.3) !important;
+}
+
+/* Mejoras para tablas */
+.ant-table-thead > tr > th {
+  background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%) !important;
+  border-bottom: 2px solid rgba(4, 186, 107, 0.1) !important;
+  font-weight: 600 !important;
+  color: #525252 !important;
+}
+
+.ant-table-tbody > tr:hover > td {
+  background: rgba(4, 186, 107, 0.05) !important;
+}
+
+/* Efecto de carga global */
+.hero-loading {
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-loading::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
 }

@@ -12,7 +12,7 @@ const LoaderPage = () => {
         justifyContent="center"
         alignItems="center"
         bgcolor="red"
-        sx={{ background: 'linear-gradient(135deg,rgba(4, 186, 107, 1) 25%, rgba(255, 255, 255, 1) 100%);' }}
+        sx={{ background: 'rgba(4, 186, 107, 1);' }}
       >
         <Box width={200} height={200} className="zoom-in">
           <Box component="img" src="/images/multilimp-logo.svg" alt="Logo" />
