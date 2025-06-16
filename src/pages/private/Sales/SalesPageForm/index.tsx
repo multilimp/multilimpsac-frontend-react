@@ -7,6 +7,7 @@ import InputsThirdStep from './InputsThirdStep';
 import InputsFourthStep from './InputsFourthStep';
 import InputsFifthStep from './InputsFifthStep';
 import { createDirectSale, processPdfSales } from '@/services/sales/sales.request';
+import { getProvinces, getDistricts } from '@/services/ubigeo/ubigeo.requests';
 import dayjs from 'dayjs';
 import { removeAccents } from '@/utils/functions';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
@@ -28,7 +29,6 @@ const SalesPageForm = () => {
       setBlackBarKey(null);
     };
   }, []);
-
   const handleAnalizeFile = async () => {
     try {
       setLoading(true);
@@ -41,16 +41,43 @@ const SalesPageForm = () => {
       const findCompany = companies.find((item) => item.ruc === response.empresaRuc);
       const findClient = clients.find((item) => item.ruc === response.clienteRuc);
       const findRegion = regions.find((item) => removeAccents(item.name).toLowerCase() === removeAccents(response.departamentoEntrega).toLowerCase());
+      
+      // Buscar provincia dentro de la región encontrada
+      let findProvince = null;
+      let findDistrict = null;
+      
+      if (findRegion && response.provinciaEntrega) {
+        try {
+          const provinces = await getProvinces(findRegion.id);
+          findProvince = provinces.find((item) => 
+            removeAccents(item.name).toLowerCase() === removeAccents(response.provinciaEntrega).toLowerCase()
+          );
+          
+          // Buscar distrito dentro de la provincia encontrada
+          if (findProvince && response.distritoEntrega) {
+            const districts = await getDistricts(findProvince.id);
+            findDistrict = districts.find((item) => 
+              removeAccents(item.name).toLowerCase() === removeAccents(response.distritoEntrega).toLowerCase()
+            );
+          }
+        } catch (error) {
+          console.error('Error cargando provincias/distritos:', error);
+        }
+      }
 
-      // codigoCatalogo,
-      // contactos,
-      // distritoEntrega,
-      // provinciaEntrega,
+      console.log('📄 PDF Analysis Results:');
+      console.log('  - Región encontrada:', findRegion);
+      console.log('  - Provincia encontrada:', findProvince);
+      console.log('  - Distrito encontrado:', findDistrict);
+      console.log('  - Response original:', response);
+      
       setSaleInputValues({ enterprise: findCompany ?? null, tipoVenta: response.ventaPrivada ? 'privada' : 'directa', file: null });
       form.setFieldsValue({
         clienteEstado: findClient,
         regionEntregaComplete: findRegion,
         regionEntrega: findRegion?.id,
+        provinciaEntrega: findProvince?.name || response.provinciaEntrega,
+        distritoEntrega: findDistrict?.name || response.distritoEntrega,
         direccionEntrega: response.direccionEntrega,
         referenciaEntrega: response.referenciaEntrega,
         fechaEntrega: dayjs(response.fechaEntrega).isValid() ? dayjs(response.fechaEntrega) : null,

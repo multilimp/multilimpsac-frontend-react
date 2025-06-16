@@ -1,13 +1,10 @@
 import { Fragment, useState } from 'react';
 import { Form, FormInstance } from 'antd';
 import { StepItemContent } from './smallcomponents';
-import { Grid, Stack, Typography } from '@mui/material';
+import { Grid, Stack, Typography, Box } from '@mui/material';
 import { requiredField } from './InputsFirstStep';
-import SelectRegions from '@/components/selects/SelectRegions';
-import SelectProvinces from '@/components/selects/SelectProvinces';
-import SelectDistricts from '@/components/selects/SelectDistricts';
+// Removed location select components - using text inputs with AI autocomplete instead
 import InputAntd from '@/components/InputAntd';
-import DatePickerAntd from '@/components/DatePickerAnt';
 import { Business, LocationOn } from '@mui/icons-material';
 import ClientSelectorModal from '../../Clients/components/ClientSelectorModal';
 import { ClientProps } from '@/services/clients/clients';
@@ -83,76 +80,39 @@ const InputsSecondStep = ({ form }: InputsSecondStepProps) => {
           Lugar de entrega
         </Typography>
 
-        <Grid container columnSpacing={2}>
-          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-            <Form.Item name="regionEntregaComplete" noStyle />
-            <Form.Item name="regionEntrega" rules={[requiredField]}>
-              <SelectRegions
-                label="Departamento"
-                onChange={(value, record: any) =>
-                  form.setFieldsValue({
-                    regionEntrega: value,
-                    regionEntregaComplete: record?.optiondata,
-                    provinciaEntrega: null,
-                    provinciaEntregaComplete: null,
-                    distritoEntrega: null,
-                    distritoEntregaComplete: null,
-                  })
-                }
-              />
-            </Form.Item>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        
+          {/* Fila de ubicación geográfica */}
+          <Grid container columnSpacing={2} rowSpacing={2}>
+            {/* Primera fila - Dirección completa */}
+            <Grid size={12}>
+              <Form.Item name="direccionEntrega" rules={[requiredField]}>
+                <InputAntd label="Dirección" />
+              </Form.Item>
+            </Grid>            {/* Segunda fila - Ubicación geográfica con texto libre para AI */}            <Grid size={{ xs: 12, sm: 4 }}>
+              <Form.Item name="regionEntrega" rules={[requiredField]}>
+                <InputAntd label="Región" />
+              </Form.Item>
+            </Grid>
+
+            <Grid size={{ xs: 12, sm: 4 }}>
+              <Form.Item name="provinciaEntrega" rules={[requiredField]}>
+                <InputAntd label="Provincia" />
+              </Form.Item>
+            </Grid>
+
+            <Grid size={{ xs: 12, sm: 4 }}>
+              <Form.Item name="distritoEntrega" rules={[requiredField]}>
+                <InputAntd label="Distrito" />
+              </Form.Item>
+            </Grid>{/* Tercera fila - Referencia */}
+            <Grid size={12}>
+              <Form.Item name="referenciaEntrega" rules={[requiredField]}>
+                <InputAntd label="Referencia" />
+              </Form.Item>
+            </Grid>
           </Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-            <Form.Item name="provinciaEntregaComplete" noStyle />
-            <Form.Item noStyle shouldUpdate>
-              {({ getFieldValue }) => (
-                <Form.Item name="provinciaEntrega" rules={[requiredField]}>
-                  <SelectProvinces
-                    label="Provincia"
-                    regionId={getFieldValue('regionEntrega')}
-                    onChange={(value, record: any) =>
-                      form.setFieldsValue({
-                        provinciaEntrega: value,
-                        provinciaEntregaComplete: record?.optiondata,
-                        distritoEntrega: null,
-                        distritoEntregaComplete: null,
-                      })
-                    }
-                  />
-                </Form.Item>
-              )}
-            </Form.Item>
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-            <Form.Item name="distritoEntregaComplete" noStyle />
-            <Form.Item noStyle shouldUpdate>
-              {({ getFieldValue }) => (
-                <Form.Item name="distritoEntrega" rules={[requiredField]}>
-                  <SelectDistricts
-                    label="Distrito"
-                    provinceId={getFieldValue('provinciaEntrega')}
-                    onChange={(value, record: any) => form.setFieldsValue({ distritoEntrega: value, distritoEntregaComplete: record?.optiondata })}
-                  />
-                </Form.Item>
-              )}
-            </Form.Item>
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-            <Form.Item name="fechaEntrega" rules={[requiredField]}>
-              <DatePickerAntd label="Fecha de entrega" />
-            </Form.Item>
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-            <Form.Item name="direccionEntrega" rules={[requiredField]}>
-              <InputAntd label="Dirección" />
-            </Form.Item>
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-            <Form.Item name="referenciaEntrega" rules={[requiredField]}>
-              <InputAntd label="Referencia" />
-            </Form.Item>
-          </Grid>
-        </Grid>
+        </Box>
       </StepItemContent>
 
       {openClients ? (

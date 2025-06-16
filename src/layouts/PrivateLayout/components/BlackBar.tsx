@@ -28,18 +28,69 @@ const BlackBar = () => {
   const components = {
     [BlackBarKeyEnum.OC]: (
       <Stack direction="column" spacing={3}>
-        <SelectCompanies
-          label="Selecciona una empresa"
-          value={saleInputValues.enterprise?.id}
-          onChange={(_, option: any) => setSaleInputValues({ ...saleInputValues, enterprise: option?.optiondata })}
-        />
+        <Box
+          sx={{
+            '& .ant-select-single .ant-select-selector': {
+              backgroundColor: '#4F46E5 !important',
+              borderColor: '#4F46E5 !important',
+              color: '#ffffff !important',
+              borderRadius: '8px !important',
+              height: '50px !important',
+              display: 'flex !important',
+              alignItems: 'center !important',
+              minHeight: '50px !important',
+            },
+            '& .ant-select-arrow': {
+              color: '#ffffff !important',
+            },
+            '& .float-label label': {
+              display: 'none !important', // Oculta el label flotante
+            },
+          }}
+        >
+          <SelectCompanies
+            label="Selecciona una empresa"
+            value={saleInputValues.enterprise?.id}
+            onChange={(_, option: any) => setSaleInputValues({ ...saleInputValues, enterprise: option?.optiondata })}
+          />
+        </Box>
 
-        <SelectGeneric
-          label="Tipo de venta"
-          options={saleTypeOptions}
-          value={saleInputValues.tipoVenta}
-          onChange={(tipoVenta) => setSaleInputValues({ ...saleInputValues, tipoVenta })}
-        />
+        <Box
+          sx={{
+            '& .ant-select-single .ant-select-selector': {
+              backgroundColor: 'transparent !important',
+              borderColor: '#4F46E5 !important',
+              color: '#ffffff !important',
+              borderRadius: '8px !important',
+              height: '50px !important',
+              display: 'flex !important',
+              alignItems: 'center !important',
+              minHeight: '50px !important',
+            },
+            '& .ant-select-selection-placeholder': {
+              color: '#ffffff !important',
+              opacity: 0.8,
+              lineHeight: '46px !important',
+            },
+            '& .ant-select-selection-item': {
+              color: '#ffffff !important',
+              lineHeight: '46px !important',
+            },
+            '& .ant-select-arrow': {
+              color: '#ffffff !important',
+            },
+            '& .float-label label': {
+              display: 'none !important', // Oculta el label flotante
+            },
+          }}
+        >
+          <SelectGeneric
+            label="Tipo de venta"
+            options={saleTypeOptions}
+            value={saleInputValues.tipoVenta}
+            onChange={(tipoVenta) => setSaleInputValues({ ...saleInputValues, tipoVenta })}
+          />
+        </Box>
 
         <Divider />
 
@@ -181,7 +232,13 @@ const BlackBar = () => {
   return (
     <Fragment>
       {blackBarKey ? (
-        <Box width={300} bgcolor="#111827" color="#ffffff" px={2} pb={2} pt={4}>
+        <Box 
+          width={300} 
+          bgcolor="#111827" 
+          color="#ffffff" 
+          px={2} 
+          py={3} 
+        >
           {components[blackBarKey]}
         </Box>
       ) : null}

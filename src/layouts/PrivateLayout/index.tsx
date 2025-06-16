@@ -34,9 +34,9 @@ const PrivateLayout = () => {
           sx={{
             flex: 1,
             p: { xs: 2, md: 3 },
-            borderRadius: { xs: 0, sm: 2 },
-            bgcolor: 'background.paper',
-            boxShadow: { xs: 'none', sm: '0 1px 3px rgba(0, 0, 0, 0.1)' },
+            // borderRadius: { xs: 0, sm: 2 },
+            // bgcolor: 'background.paper',
+            // boxShadow: { xs: 'none', sm: '0 1px 3px rgba(0, 0, 0, 0.1)' },
             transition: 'all 0.3s ease',
             m: { xs: 0, sm: 2 },
             overflow: 'auto',

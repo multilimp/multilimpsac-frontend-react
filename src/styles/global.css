@@ -31,6 +31,30 @@ body {
   box-shadow: 0 0 0 2px rgba(4, 186, 107, 0.2) !important;
 }
 
+/* Clases personalizadas para Stack con bordes azules */
+.stack-bordered {
+  border: 2px solid #1E293B !important; /* Azul de tu tema secundario */
+  border-radius: 8px !important;
+  padding: 16px !important;
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 0 2px 8px rgba(30, 41, 59, 0.1) !important;
+}
+
+.stack-bordered-primary {
+  border: 2px solid #04BA6B !important; /* Verde primario */
+  border-radius: 8px !important;
+  padding: 16px !important;
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 0 2px 8px rgba(4, 186, 107, 0.1) !important;
+}
+
+.stack-bordered-light {
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 6px !important;
+  padding: 12px !important;
+  background-color: #ffffff !important;
+}
+
 .zoom-in {
   animation: zoomIn 5s forwards;
 }

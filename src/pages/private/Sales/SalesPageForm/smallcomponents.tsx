@@ -28,7 +28,7 @@ export const StepItemContent = ({
   resumeContent,
   onClickSearch,
 }: StepItemContentProps) => (
-  <Box border="1px solid #f2f2f2" boxShadow="0 3px 20px -15px rgba(0,0,0,0.75);">
+  <Box>
     {showHeader ? (
       <Fragment>
         <Stack direction="row" justifyContent="space-between" alignItems="center" bgcolor={color} color="#ffffff" px={2} height={32}>

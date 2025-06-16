@@ -52,28 +52,31 @@ const InputsFifthStep = () => {
                 >
                   <Stack direction="row" spacing={2} alignItems="flex-start">
                     <Box sx={{ flex: 1 }}>
-                      <Grid container columnSpacing={2}>
-                        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                      <Stack direction="row" spacing={1}>
+                        <Box sx={{ width: '15%' }}>
                           <Form.Item name={[field.name, 'codigo']} rules={[requiredField]}>
-                            <InputAntd label="Código" />
+                            <InputAntd label="Código" size="small" />
                           </Form.Item>
-                        </Grid>
-                        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                          <Form.Item name={[field.name, 'cantidad']} rules={[requiredField]}>
-                            <InputAntd type="number" label="Cantidad" />
-                          </Form.Item>
-                        </Grid>
-                        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                          <Form.Item name={[field.name, 'marca']} rules={[requiredField]}>
-                            <InputAntd label="Marca" />
-                          </Form.Item>
-                        </Grid>
-                        <Grid size={12}>
+                        </Box>
+                        
+                        <Box sx={{ width: '45%' }}>
                           <Form.Item name={[field.name, 'descripcion']} rules={[requiredField]}>
-                            <InputAntd type="textarea" label="Descripción detallada del producto, especificaciones técnicas, cantidad, etc." />
+                            <InputAntd label="Descripción" size="small" />
                           </Form.Item>
-                        </Grid>
-                      </Grid>
+                        </Box>
+                        
+                        <Box sx={{ width: '20%' }}>
+                          <Form.Item name={[field.name, 'cantidad']} rules={[requiredField]}>
+                            <InputAntd type="number" label="Cantidad" size="small" />
+                          </Form.Item>
+                        </Box>
+                        
+                        <Box sx={{ width: '20%' }}>
+                          <Form.Item name={[field.name, 'marca']} rules={[requiredField]}>
+                            <InputAntd label="Marca" size="small" />
+                          </Form.Item>
+                        </Box>
+                      </Stack>
                     </Box>
                     {fields.length > 1 && (
                       <IconButton

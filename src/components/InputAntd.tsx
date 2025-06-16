@@ -2,24 +2,35 @@ import { Input, InputNumber, InputProps } from 'antd';
 import { useState } from 'react';
 
 type CommonProps = {
-  label: string;
+  label?: string;
   isFloating?: boolean;
   hasError?: boolean;
   isAddonBefore?: boolean;
   size?: 'large' | 'middle' | 'small';
+  placeholder?: string; // Agregar aquí para que todas las interfaces lo hereden
 };
 
-interface TextInputProps extends CommonProps, Omit<InputProps, 'type'> {
-  type?: 'text' | 'password' | 'date';
+interface TextInputProps extends CommonProps {
+  type?: 'text' | 'password' | 'email' | 'url' | 'tel';
+  value?: string;
+  defaultValue?: string;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  disabled?: boolean;
+  maxLength?: number;
+  autoComplete?: string;
+  bordered?: boolean;
+  // placeholder ya está incluido por CommonProps
 }
 
 interface TextAreaInputProps extends CommonProps {
   type: 'textarea';
   value?: string;
   defaultValue?: string;
-  onChange?: React.ChangeEventHandler<HTMLTextAreaElement>;
-  rows?: number;
+  onChange?: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   disabled?: boolean;
+  maxLength?: number;
+  rows?: number;
+  // placeholder ya está incluido por CommonProps
 }
 
 interface NumberInputProps extends CommonProps {
@@ -30,6 +41,7 @@ interface NumberInputProps extends CommonProps {
   disabled?: boolean;
   min?: number;
   max?: number;
+  // placeholder ya está incluido por CommonProps
 }
 
 type InputAntdProps = TextInputProps | TextAreaInputProps | NumberInputProps;
@@ -61,9 +73,11 @@ const InputAntd = (props: InputAntdProps) => {
         ) : (
           <Input {...(props as TextInputProps)} size={size} type={props.type || 'text'} />
         )}
-        <label htmlFor={label} className={labelClass}>
-          {label}
-        </label>
+        {label && (
+          <label htmlFor={label} className={labelClass}>
+            {label}
+          </label>
+        )}
       </div>
     </div>
   );
