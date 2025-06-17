@@ -41,24 +41,20 @@ const SalesPageForm = () => {
       const findCompany = companies.find((item) => item.ruc === response.empresaRuc);
       const findClient = clients.find((item) => item.ruc === response.clienteRuc);
       const findRegion = regions.find((item) => removeAccents(item.name).toLowerCase() === removeAccents(response.departamentoEntrega).toLowerCase());
-      
+
       // Buscar provincia dentro de la región encontrada
       let findProvince = null;
       let findDistrict = null;
-      
+
       if (findRegion && response.provinciaEntrega) {
         try {
           const provinces = await getProvinces(findRegion.id);
-          findProvince = provinces.find((item) => 
-            removeAccents(item.name).toLowerCase() === removeAccents(response.provinciaEntrega).toLowerCase()
-          );
-          
+          findProvince = provinces.find((item) => removeAccents(item.name).toLowerCase() === removeAccents(response.provinciaEntrega).toLowerCase());
+
           // Buscar distrito dentro de la provincia encontrada
           if (findProvince && response.distritoEntrega) {
             const districts = await getDistricts(findProvince.id);
-            findDistrict = districts.find((item) => 
-              removeAccents(item.name).toLowerCase() === removeAccents(response.distritoEntrega).toLowerCase()
-            );
+            findDistrict = districts.find((item) => removeAccents(item.name).toLowerCase() === removeAccents(response.distritoEntrega).toLowerCase());
           }
         } catch (error) {
           console.error('Error cargando provincias/distritos:', error);
@@ -70,7 +66,7 @@ const SalesPageForm = () => {
       console.log('  - Provincia encontrada:', findProvince);
       console.log('  - Distrito encontrado:', findDistrict);
       console.log('  - Response original:', response);
-      
+
       setSaleInputValues({ enterprise: findCompany ?? null, tipoVenta: response.ventaPrivada ? 'privada' : 'directa', file: null });
       form.setFieldsValue({
         clienteEstado: findClient,
@@ -126,6 +122,8 @@ const SalesPageForm = () => {
         };
       }
 
+      console.log(values, saleInputValues);
+
       const bodyVentaDirecta = {
         empresa: { connect: { id: saleInputValues.enterprise?.id } },
         cliente: { connect: { id: values.clienteEstado?.id } },
@@ -138,7 +136,7 @@ const SalesPageForm = () => {
         distritoEntrega: JSON.stringify(values.distritoEntregaComplete),
         direccionEntrega: values.direccionEntrega,
         referenciaEntrega: values.referenciaEntrega,
-        fechaEntrega: values.fechaEntrega.toISOString(),
+        // fechaEntrega: values.fechaEntrega.toISOString(),
         fechaForm: values.fechaFormalizacion.toISOString(),
         fechaMaxForm: values.fechaMaxEntrega.toISOString(),
         montoVenta: Number(values.montoVenta),
