@@ -8,14 +8,13 @@ import InputsFourthStep from './InputsFourthStep';
 import InputsFifthStep from './InputsFifthStep';
 import { createDirectSale, processPdfSales, getSaleById, updateSale } from '@/services/sales/sales.request';
 import dayjs from 'dayjs';
-import { removeAccents } from '@/utils/functions';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 import { BlackBarKeyEnum } from '@/types/global.enum';
 import { useParams, useNavigate } from 'react-router-dom';
 import { SaleProps } from '@/services/sales/sales';
 
 const SalesPageForm = () => {
-  const { regions, companies, clients, saleInputValues, setSaleInputValues, setBlackBarKey, obtainSales } = useGlobalInformation();
+  const { companies, clients, saleInputValues, setSaleInputValues, setBlackBarKey, obtainSales } = useGlobalInformation();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const { id } = useParams();
@@ -329,50 +328,54 @@ const SalesPageForm = () => {
             <InputsFourthStep form={form} />
 
             <InputsFifthStep />
+            
+            {/* Estado de venta - mantener dentro del Form para sincronización */}
+            <Stack direction="row" spacing={2} justifyContent="center" alignItems="center" mt={3}>
+              <Form.Item 
+                name="estadoVenta" 
+                rules={[{ required: true, message: 'Seleccione un estado' }]}
+                initialValue="incompleto"
+                style={{ margin: 0 }}
+              >
+                <Select
+                  placeholder="Estado de la venta"
+                  size="large"
+                  style={{ minWidth: 200 }}
+                  options={[
+                    { 
+                      value: 'completo', 
+                      label: (
+                        <span style={{ color: '#006fee', fontWeight: 600 }}>
+                          🟢 Completo
+                        </span>
+                      ) 
+                    },
+                    { 
+                      value: 'incompleto', 
+                      label: (
+                        <span style={{ color: '#f5a524', fontWeight: 600 }}>
+                          🟡 Incompleto
+                        </span>
+                      ) 
+                    },
+                    { 
+                      value: 'rechazado', 
+                      label: (
+                        <span style={{ color: '#f31260', fontWeight: 600 }}>
+                          🔴 Rechazado
+                        </span>
+                      ) 
+                    },
+                  ]}
+                />
+              </Form.Item>
+            </Stack>
           </Stack>
           <Button type="submit" className="d-none"></Button>
         </Form>
       </Spin>
 
       <Stack direction="row" spacing={2} my={5} justifyContent="center" alignItems="center">
-        <Form.Item 
-          name="estadoVenta" 
-          rules={[{ required: true, message: 'Seleccione un estado' }]}
-          initialValue="incompleto"
-          style={{ margin: 0 }}
-        >
-          <Select
-            placeholder="Estado de la venta"
-            size="large"
-            style={{ minWidth: 200 }}
-            options={[
-              { 
-                value: 'completo', 
-                label: (
-                  <span style={{ color: '#006fee', fontWeight: 600 }}>
-                    🟢 Completo
-                  </span>
-                ) 
-              },
-              { 
-                value: 'incompleto', 
-                label: (
-                  <span style={{ color: '#f5a524', fontWeight: 600 }}>
-                    🟡 Incompleto
-                  </span>
-                ) 
-              },
-              { 
-                value: 'rechazado', 
-                label: (
-                  <span style={{ color: '#f31260', fontWeight: 600 }}>
-                    🔴 Rechazado
-                  </span>
-                ) 
-              },
-            ]}
-          />
-        </Form.Item>
         <Button loading={loading} onClick={() => form.submit()}>
           {isEditing ? 'Actualizar venta' : 'Finalizar y registrar venta'}
         </Button>

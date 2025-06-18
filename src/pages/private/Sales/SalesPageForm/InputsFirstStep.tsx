@@ -8,7 +8,7 @@ import InputAntd from '@/components/InputAntd';
 import { Delete, Add, Payment, Handshake } from '@mui/icons-material';
 import { formatCurrency } from '@/utils/functions';
 import DatePickerAntd from '@/components/DatePickerAnt';
-import SelectContacts from '@/components/selects/SelectContacts';
+import SelectContactsByClient from '@/components/selects/SelectContactsByClient';
 import ClientSelectorModal from '../../Clients/components/ClientSelectorModal';
 import { ClientProps } from '@/services/clients/clients';
 
@@ -68,8 +68,16 @@ const InputsFirstStep = ({ form }: { form: FormInstance }) => {
 
         <Grid container columnSpacing={3}>
           <Grid size={{ xs: 12, md: 6 }}>
-            <Form.Item name="privateContact" rules={[requiredField]}>
-              <SelectContacts label="Cargo contacto" />
+            <Form.Item name="privateContact" rules={[requiredField]} shouldUpdate>
+              {({ getFieldValue }) => {
+                const clientePrivate = getFieldValue('clientePrivate');
+                return (
+                  <SelectContactsByClient 
+                    label="Cargo contacto" 
+                    clientId={clientePrivate?.id}
+                  />
+                );
+              }}
             </Form.Item>
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>

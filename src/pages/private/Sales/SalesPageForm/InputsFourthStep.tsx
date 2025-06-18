@@ -3,7 +3,7 @@ import { Form, FormInstance } from 'antd';
 import { StepItemContent } from './smallcomponents';
 import { requiredField } from './InputsFirstStep';
 import InputAntd from '@/components/InputAntd';
-import SelectContacts from '@/components/selects/SelectContacts';
+import SelectContactsByClient from '@/components/selects/SelectContactsByClient';
 import { Person } from '@mui/icons-material';
 
 interface InputsFourthStepProps {
@@ -22,17 +22,28 @@ const InputsFourthStep = ({ form }: InputsFourthStepProps) => {
         <Grid size={{ xs: 12, sm: 6, md: 4 }}>
           <Form.Item name="cargoContactoComplete" noStyle />
           <Form.Item name="cargoContacto" rules={[requiredField]}>
-            <SelectContacts
-              label="Cargo"
-              onChange={(value, record: any) =>
-                form.setFieldsValue({
-                  cargoContacto: value,
-                  cargoContactoComplete: record?.optiondata,
-                  nombreContacto: record?.optiondata?.cargo,
-                  celularContacto: record?.optiondata?.telefono,
-                })
-              }
-            />
+            <Form.Item noStyle shouldUpdate>
+              {({ getFieldValue }) => {
+                const clienteEstado = getFieldValue('clienteEstado');
+                return (
+                  <SelectContactsByClient
+                    clientId={clienteEstado?.id}
+                    onChange={(value, record: any) =>
+                      form.setFieldsValue({
+                        cargoContacto: value,
+                        cargoContactoComplete: record?.optiondata,
+                        nombreContacto: record?.optiondata?.nombre,
+                        celularContacto: record?.optiondata?.telefono,
+                      })
+                    }
+                    onContactCreated={() => {
+                      // Refrescar la lista de contactos del hook
+                      // El hook ya se actualiza automáticamente
+                    }}
+                  />
+                );
+              }}
+            </Form.Item>
           </Form.Item>
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 4 }}>

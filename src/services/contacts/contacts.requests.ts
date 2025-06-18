@@ -22,6 +22,22 @@ export const deleteContact = async (contactId: number): Promise<boolean> => {
 };
 
 export const getContactsByEntityType = async (entityType: 'cliente' | 'proveedor' | 'transporte', entityId: number): Promise<Array<ContactProps>> => {
-  const res = await apiClient.get(`/contacts/${entityType}/${entityId}`);
-  return res.data;
+  let endpoint;
+  
+  switch (entityType) {
+    case 'cliente':
+      endpoint = `/contacts/client/${entityId}`;
+      break;
+    case 'proveedor':
+      endpoint = `/contacts/provider/${entityId}`;
+      break;
+    case 'transporte':
+      endpoint = `/contacts/transport/${entityId}`;
+      break;
+    default:
+      throw new Error(`Tipo de entidad no válido: ${entityType}`);
+  }
+  
+  const res = await apiClient.get(endpoint);
+  return res.data.data; // El backend devuelve { data: [...], meta: {...} }
 };

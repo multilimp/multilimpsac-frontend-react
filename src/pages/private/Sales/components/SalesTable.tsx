@@ -33,7 +33,7 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onRecordAction }
                           ${item.provinciaEntrega ?? ''}
                           ${item.distritoEntrega ?? ''} -
                           ${item.referenciaEntrega ?? ''}`,
-      estado_venta: item.estadoVenta || 'incompleto',
+      estado_venta: item.estadoVenta || 'incompleto', // TODO: Activar cuando se ejecute migración
       oce: item.documentoOce,
       ocf: item.documentoOcf,
 
@@ -74,6 +74,7 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onRecordAction }
     { title: 'Monto Venta', dataIndex: 'monto_venta', width: 200, sort: true, filter: true },
     { title: 'CUE', dataIndex: 'cue', width: 200, sort: true, filter: true },
     { title: 'Dirección Entrega', dataIndex: 'direccion_entrega', width: 300, sort: true, filter: true },
+    /* TODO: Activar cuando se ejecute migración de estado_venta
     {
       title: 'Estado',
       dataIndex: 'estado_venta',
@@ -81,39 +82,10 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onRecordAction }
       sort: true,
       filter: true,
       render: (value) => {
-        const getEstadoStyle = (estado: string) => {
-          switch (estado) {
-            case 'completo':
-              return { color: '#006fee', fontWeight: 600 };
-            case 'incompleto':
-              return { color: '#f5a524', fontWeight: 600 };
-            case 'rechazado':
-              return { color: '#f31260', fontWeight: 600 };
-            default:
-              return { color: '#71717a', fontWeight: 600 };
-          }
-        };
-
-        const getEstadoIcon = (estado: string) => {
-          switch (estado) {
-            case 'completo':
-              return '🟢';
-            case 'incompleto':
-              return '🟡';
-            case 'rechazado':
-              return '🔴';
-            default:
-              return '⚫';
-          }
-        };
-
-        return (
-          <span style={getEstadoStyle(value)}>
-            {getEstadoIcon(value)} {value?.charAt(0).toUpperCase() + value?.slice(1)}
-          </span>
-        );
+        // ... código de estado
       },
     },
+    */
     {
       title: 'OCE',
       dataIndex: 'oce',

@@ -1,4 +1,5 @@
 import useContacts from '@/hooks/useContacts';
+import useContactsByEntity from '@/hooks/useContactsByEntity';
 import { ContactProps } from '@/services/contacts/contacts';
 import { ContactTypeEnum } from '@/services/contacts/contacts.enum';
 import { AddBox, Close, KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
@@ -14,10 +15,12 @@ interface ContactsDrawerProps {
   handleClose: VoidFunction;
   tipo: ContactTypeEnum;
   referenceId: number;
+  onContactCreated?: VoidFunction;
 }
 
-const ContactsDrawer = ({ handleClose, tipo, referenceId }: ContactsDrawerProps) => {
-  const { contacts, loadingContacts, obtainContacts } = useContacts({ tipo });
+const ContactsDrawer = ({ handleClose, tipo, referenceId, onContactCreated }: ContactsDrawerProps) => {
+  const entityType = tipo.toLowerCase() as 'cliente' | 'proveedor' | 'transporte';
+  const { contacts, loadingContacts, obtainContacts } = useContactsByEntity(entityType, referenceId);
   const [loading, setLoading] = useState(false);
   const [openForm, setOpenForm] = useState(false);
   const isLoading = loading || loadingContacts;
@@ -28,6 +31,7 @@ const ContactsDrawer = ({ handleClose, tipo, referenceId }: ContactsDrawerProps)
       await createContact(values);
       setOpenForm(false);
       obtainContacts();
+      onContactCreated?.(); // Notificar al componente padre
     } catch (error) {
       message.error(`No se logró guardar el contacto. ${error}`);
     } finally {
