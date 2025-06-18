@@ -31,9 +31,9 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onRecordAction }
       monto_venta: formatCurrency(Number(item.montoVenta)),
       cue: item.cliente.codigoUnidadEjecutora,
       direccion_entrega: `${item.direccionEntrega ?? ''} -
-                          ${item.departamentoEntrega?.name ?? ''}
-                          ${item.provinciaEntrega?.name ?? ''}
-                          ${item.distritoEntrega?.name ?? ''} -
+                          ${item.departamentoEntrega ?? ''}
+                          ${item.provinciaEntrega ?? ''}
+                          ${item.distritoEntrega ?? ''} -
                           ${item.referenciaEntrega ?? ''}`,
       oce: item.documentoOce,
       ocf: item.documentoOcf,

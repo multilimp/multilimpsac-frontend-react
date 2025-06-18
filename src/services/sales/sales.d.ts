@@ -13,18 +13,9 @@ export interface SaleProps {
   contactoClienteId: number;
   catalogoEmpresaId: number;
   ventaPrivada: boolean;
-  departamentoEntrega?: {
-    id: string;
-    name: string;
-  };
-  provinciaEntrega?: {
-    id: string;
-    name: string;
-  };
-  distritoEntrega?: {
-    id: string;
-    name: string;
-  };
+  departamentoEntrega?: string;
+  provinciaEntrega?: string;
+  distritoEntrega?: string;
   direccionEntrega: string;
   referenciaEntrega: string;
   fechaEntrega: string;
@@ -91,6 +82,7 @@ export interface SaleProcessedProps {
   provinciaEntrega?: string;
   distritoEntrega?: string;
   departamentoEntrega?: string;
+  regionEntrega?: string;
   direccionEntrega?: string;
   referenciaEntrega?: string;
   fechaEntrega?: string;

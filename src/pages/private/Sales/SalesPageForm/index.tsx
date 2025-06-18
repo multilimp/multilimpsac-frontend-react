@@ -7,7 +7,6 @@ import InputsThirdStep from './InputsThirdStep';
 import InputsFourthStep from './InputsFourthStep';
 import InputsFifthStep from './InputsFifthStep';
 import { createDirectSale, processPdfSales, getSaleById, updateSale } from '@/services/sales/sales.request';
-import { getProvinces, getDistricts } from '@/services/ubigeo/ubigeo.requests';
 import dayjs from 'dayjs';
 import { removeAccents } from '@/utils/functions';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
@@ -69,15 +68,12 @@ const SalesPageForm = () => {
             // Productos
             productos: saleData.productos,
             
-            // Entrega
-            departamentoEntregaComplete: saleData.departamentoEntrega,
-            departamentoEntrega: saleData.departamentoEntrega?.id,
-            provinciaEntregaComplete: saleData.provinciaEntrega,
-            provinciaEntrega: saleData.provinciaEntrega?.id,
-            distritoEntregaComplete: saleData.distritoEntrega,
-            distritoEntrega: saleData.distritoEntrega?.id,
+            // Entrega - cargar directamente como strings
             direccionEntrega: saleData.direccionEntrega,
             referenciaEntrega: saleData.referenciaEntrega,
+            regionEntrega: saleData.departamentoEntrega,
+            provinciaEntrega: saleData.provinciaEntrega,
+            distritoEntrega: saleData.distritoEntrega,
           };
 
           // Si es venta privada, cargar datos específicos
@@ -133,40 +129,13 @@ const SalesPageForm = () => {
 
       const findCompany = companies.find((item) => item.ruc === response.empresaRuc);
       const findClient = clients.find((item) => item.ruc === response.clienteRuc);
-      const findRegion = regions.find((item) => removeAccents(item.name).toLowerCase() === removeAccents(response.departamentoEntrega).toLowerCase());
-
-      // Buscar provincia dentro de la región encontrada
-      let findProvince = null;
-      let findDistrict = null;
-
-      if (findRegion && response.provinciaEntrega) {
-        try {
-          const provinces = await getProvinces(findRegion.id);
-          findProvince = provinces.find((item) => removeAccents(item.name).toLowerCase() === removeAccents(response.provinciaEntrega).toLowerCase());
-
-          // Buscar distrito dentro de la provincia encontrada
-          if (findProvince && response.distritoEntrega) {
-            const districts = await getDistricts(findProvince.id);
-            findDistrict = districts.find((item) => removeAccents(item.name).toLowerCase() === removeAccents(response.distritoEntrega).toLowerCase());
-          }
-        } catch (error) {
-          console.error('Error cargando provincias/distritos:', error);
-        }
-      }
-
-      console.log('📄 PDF Analysis Results:');
-      console.log('  - Región encontrada:', findRegion);
-      console.log('  - Provincia encontrada:', findProvince);
-      console.log('  - Distrito encontrado:', findDistrict);
-      console.log('  - Response original:', response);
 
       setSaleInputValues({ enterprise: findCompany ?? null, tipoVenta: response.ventaPrivada ? 'privada' : 'directa', file: null });
       form.setFieldsValue({
         clienteEstado: findClient,
-        regionEntregaComplete: findRegion,
-        regionEntrega: findRegion?.id,
-        provinciaEntrega: findProvince?.name || response.provinciaEntrega,
-        distritoEntrega: findDistrict?.name || response.distritoEntrega,
+        regionEntrega: response.regionEntrega,
+        provinciaEntrega:  response.provinciaEntrega,
+        distritoEntrega:  response.distritoEntrega,
         direccionEntrega: response.direccionEntrega,
         referenciaEntrega: response.referenciaEntrega,
         fechaEntrega: dayjs(response.fechaEntrega).isValid() ? dayjs(response.fechaEntrega) : null,
@@ -176,7 +145,7 @@ const SalesPageForm = () => {
           : null,
         montoVenta: response.montoVenta,
         productos: response.productos,
-        numeroSIAF: response.siaf,
+        numeroSIAF: response.siaf ? String(response.siaf) : null,
         fechaSIAF: dayjs(response.fechaSiaf).isValid() ? dayjs(response.fechaSiaf) : null,
       });
     } catch (error) {
@@ -199,20 +168,20 @@ const SalesPageForm = () => {
           contactoCliente: { connect: { id: values.cargoContacto } },
           catalogoEmpresa: { connect: { id: values.catalogo } },
           ventaPrivada: saleInputValues.tipoVenta === 'privada',
-          departamentoEntrega: JSON.stringify(values.regionEntregaComplete),
-          provinciaEntrega: JSON.stringify(values.provinciaEntregaComplete),
-          distritoEntrega: JSON.stringify(values.distritoEntregaComplete),
-          direccionEntrega: values.direccionEntrega,
-          referenciaEntrega: values.referenciaEntrega,
-          fechaForm: values.fechaFormalizacion.toISOString(),
-          fechaMaxForm: values.fechaMaxEntrega.toISOString(),
-          montoVenta: Number(values.montoVenta),
-          siaf: values.numeroSIAF,
-          etapaSiaf: values.etapaSIAF,
-          fechaSiaf: values.fechaSIAF.toISOString(),
-          documentoOce: values.ordenCompraElectronica,
-          documentoOcf: values.ordenCompraFisica,
-          productos: values.productos,
+          departamentoEntrega: values.regionEntrega || null,
+          provinciaEntrega: values.provinciaEntrega || null,
+          distritoEntrega: values.distritoEntrega || null,
+          direccionEntrega: values.direccionEntrega || null,
+          referenciaEntrega: values.referenciaEntrega || null,
+          fechaForm: values.fechaFormalizacion ? values.fechaFormalizacion.toISOString() : null,
+          fechaMaxForm: values.fechaMaxEntrega ? values.fechaMaxEntrega.toISOString() : null,
+          montoVenta: values.montoVenta ? Number(values.montoVenta) : null,
+          siaf: values.numeroSIAF ? String(values.numeroSIAF) : null,
+          etapaSiaf: values.etapaSIAF || null,
+          fechaSiaf: values.fechaSIAF ? values.fechaSIAF.toISOString() : null,
+          documentoOce: values.ordenCompraElectronica || null,
+          documentoOcf: values.ordenCompraFisica || null,
+          productos: values.productos || [],
         };
 
         // Si es venta privada, incluir datos específicos
@@ -280,6 +249,24 @@ const SalesPageForm = () => {
 
         console.log(values, saleInputValues);
 
+        // Validar datos requeridos
+        if (!saleInputValues.enterprise?.id) {
+          notification.error({ message: 'Error', description: 'Debe seleccionar una empresa' });
+          return;
+        }
+        if (!values.clienteEstado?.id) {
+          notification.error({ message: 'Error', description: 'Debe seleccionar un cliente' });
+          return;
+        }
+        if (!values.cargoContacto) {
+          notification.error({ message: 'Error', description: 'Debe seleccionar un contacto' });
+          return;
+        }
+        if (!values.catalogo) {
+          notification.error({ message: 'Error', description: 'Debe seleccionar un catálogo' });
+          return;
+        }
+
         const bodyVentaDirecta = {
           empresa: { connect: { id: saleInputValues.enterprise?.id } },
           cliente: { connect: { id: values.clienteEstado?.id } },
@@ -287,30 +274,37 @@ const SalesPageForm = () => {
           catalogoEmpresa: { connect: { id: values.catalogo } },
 
           ventaPrivada: bodyVentaPrivada,
-          departamentoEntrega: JSON.stringify(values.regionEntregaComplete),
-          provinciaEntrega: JSON.stringify(values.provinciaEntregaComplete),
-          distritoEntrega: JSON.stringify(values.distritoEntregaComplete),
-          direccionEntrega: values.direccionEntrega,
-          referenciaEntrega: values.referenciaEntrega,
-          fechaForm: values.fechaFormalizacion.toISOString(),
-          fechaMaxForm: values.fechaMaxEntrega.toISOString(),
-          montoVenta: Number(values.montoVenta),
-          siaf: values.numeroSIAF,
-          etapaSiaf: values.etapaSIAF,
-          fechaSiaf: values.fechaSIAF.toISOString(),
-          documentoOce: values.ordenCompraElectronica,
-          documentoOcf: values.ordenCompraFisica,
-          productos: values.productos,
+          departamentoEntrega: values.regionEntrega || null,
+          provinciaEntrega: values.provinciaEntrega || null,
+          distritoEntrega: values.distritoEntrega || null,
+          direccionEntrega: values.direccionEntrega || null,
+          referenciaEntrega: values.referenciaEntrega || null,
+          fechaForm: values.fechaFormalizacion ? values.fechaFormalizacion.toISOString() : null,
+          fechaMaxForm: values.fechaMaxEntrega ? values.fechaMaxEntrega.toISOString() : null,
+          montoVenta: values.montoVenta ? Number(values.montoVenta) : null,
+          siaf: values.numeroSIAF ? String(values.numeroSIAF) : null,
+          etapaSiaf: values.etapaSIAF || null,
+          fechaSiaf: values.fechaSIAF ? values.fechaSIAF.toISOString() : null,
+          documentoOce: values.ordenCompraElectronica || null,
+          documentoOcf: values.ordenCompraFisica || null,
+          productos: values.productos || [],
         };
 
+        console.log('Datos a enviar:', bodyVentaDirecta);
         await createDirectSale(bodyVentaDirecta);
 
         notification.success({ message: `La venta fue registrada correctamente` });
         form.resetFields();
         obtainSales();
       }
-    } catch (error) {
-      notification.error({ message: 'No se logró completa la transacción', description: `Intente mas tarde. ${error}` });
+    } catch (error: any) {
+      console.error('Error al guardar venta:', error);
+      const errorMessage = error?.response?.data?.message || error?.message || 'Error desconocido';
+      notification.error({ 
+        message: 'Error al guardar la venta', 
+        description: errorMessage,
+        duration: 5
+      });
     } finally {
       setLoading(false);
     }

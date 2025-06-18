@@ -190,9 +190,9 @@ const BlackBar = () => {
               <Stack direction="column" spacing={2}>
                 {[
                   { label: 'C - Dirección', value: selectedSale.direccionEntrega.toUpperCase() },
-                  { label: 'C - Distrito', value: selectedSale.distritoEntrega?.name ?? '-' },
-                  { label: 'C - Provincia', value: selectedSale.provinciaEntrega?.name ?? '-' },
-                  { label: 'C - Departamento', value: selectedSale.departamentoEntrega?.name ?? '-' },
+                  { label: 'C - Distrito', value: selectedSale.distritoEntrega ?? '-' },
+                  { label: 'C - Provincia', value: selectedSale.provinciaEntrega ?? '-' },
+                  { label: 'C - Departamento', value: selectedSale.departamentoEntrega ?? '-' },
                   { label: 'C - Referencia', value: selectedSale.referenciaEntrega ?? '-' },
                 ].map((item, index) => (
                   <Box key={index + 1}>

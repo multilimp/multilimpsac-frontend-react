@@ -17,18 +17,9 @@ const mockSaleData: SaleProps = {
   contactoClienteId: 1,
   catalogoEmpresaId: 1,
   ventaPrivada: false,
-  departamentoEntrega: {
-    id: '15',
-    name: 'Lima'
-  },
-  provinciaEntrega: {
-    id: '1501',
-    name: 'Lima'
-  },
-  distritoEntrega: {
-    id: '150114',
-    name: 'Miraflores'
-  },
+  departamentoEntrega: 'Lima',
+  provinciaEntrega: 'Lima',
+  distritoEntrega: 'Miraflores',
   direccionEntrega: 'Av. Ejemplo 123, Miraflores',
   referenciaEntrega: 'Frente al parque central',
   fechaEntrega: '2024-12-15T00:00:00.000Z',

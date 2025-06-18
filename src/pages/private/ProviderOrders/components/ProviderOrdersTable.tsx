@@ -71,8 +71,8 @@ const ProviderOrdersTable = ({ data, loading, onRowClick }: ProviderOrdersTableP
           <>
             {record.rawdata?.direccionEntrega} - {record.rawdata?.referenciaEntrega}
             <br />
-            {record.rawdata?.departamentoEntrega?.name ?? defaultText} -{record.rawdata?.provinciaEntrega?.name ?? defaultText} -
-            {record.rawdata?.distritoEntrega?.name ?? defaultText}
+            {record.rawdata?.departamentoEntrega ?? defaultText} -{record.rawdata?.provinciaEntrega ?? defaultText} -
+            {record.rawdata?.distritoEntrega ?? defaultText}
           </>
         );
       },

@@ -106,7 +106,7 @@ const SalesDetails = ({ handleClose, data }: SalesDetailsProps) => {
               title="ENTREGA"
               data={[
                 { label: 'Dirección', value: direccionEntrega },
-                { label: defaultText, value: `${departamentoEntrega?.name} - ${provinciaEntrega?.name} - ${distritoEntrega?.name}` },
+                { label: defaultText, value: `${departamentoEntrega} - ${provinciaEntrega} - ${distritoEntrega}` },
                 { label: 'Referencia', value: referenciaEntrega },
                 { label: 'Fecha de entrega', value: fechaEntrega ? dayjs(fechaEntrega).format('DD/MM/YYYY') : defaultText },
                 { label: 'Fecha de entrega OC', value: fechaEntregaOc ? dayjs(fechaEntregaOc).format('DD/MM/YYYY') : defaultText },
