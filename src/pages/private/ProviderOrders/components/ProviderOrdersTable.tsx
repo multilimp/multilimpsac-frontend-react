@@ -1,8 +1,8 @@
 import AntTable, { AntColumnType } from '@/components/AntTable';
 import { SaleProps } from '@/services/sales/sales';
 import { formatCurrency, formattedDate } from '@/utils/functions';
-import { IconButton } from '@mui/material';
-import { PictureAsPdf } from '@mui/icons-material';
+import { IconButton, Button } from '@mui/material';
+import { PictureAsPdf, Visibility } from '@mui/icons-material';
 
 interface ProviderOrdersTableProps {
   data: Array<SaleProps>;
@@ -49,7 +49,26 @@ const ProviderOrdersTable = ({ data, loading, onRowClick }: ProviderOrdersTableP
   }));
 
   const columns: Array<AntColumnType<ProviderOrdersDataTable>> = [
-    { title: 'Código Venta', dataIndex: 'codigoVenta', width: 150, filter: true, sort: true },
+    {
+      title: 'Código OC',
+      dataIndex: 'codigoVenta',
+      width: 200,
+      render: (value, record) => (
+        <Button
+          variant="contained"
+          onClick={() => {
+            console.log('Abriendo detalles de orden proveedor:', record.rawdata.id);
+            onRowClick(record.rawdata);
+          }}
+          startIcon={<Visibility />}
+          size="small"
+          color="info"
+          style={{ width: '100%' }}
+        >
+          {value}
+        </Button>
+      )
+    },
     { title: 'RUC Cliente', dataIndex: 'clienteRuc', width: 150, filter: true, sort: true },
     { title: 'Nombre Cliente', dataIndex: 'clienteNombre', width: 150, filter: true, sort: true },
     { title: 'RUC Empresa', dataIndex: 'empresaRuc', width: 150, filter: true, sort: true },
