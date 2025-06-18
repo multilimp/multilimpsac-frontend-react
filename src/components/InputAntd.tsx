@@ -4,10 +4,11 @@ import { useState } from 'react';
 type CommonProps = {
   label?: string;
   isFloating?: boolean;
+  className?: string;
   hasError?: boolean;
   isAddonBefore?: boolean;
   size?: 'large' | 'middle' | 'small';
-  placeholder?: string; // Agregar aquí para que todas las interfaces lo hereden
+  placeholder?: string;
 };
 
 interface TextInputProps extends CommonProps {
@@ -19,7 +20,6 @@ interface TextInputProps extends CommonProps {
   maxLength?: number;
   autoComplete?: string;
   bordered?: boolean;
-  // placeholder ya está incluido por CommonProps
 }
 
 interface TextAreaInputProps extends CommonProps {
@@ -30,7 +30,6 @@ interface TextAreaInputProps extends CommonProps {
   disabled?: boolean;
   maxLength?: number;
   rows?: number;
-  // placeholder ya está incluido por CommonProps
 }
 
 interface NumberInputProps extends CommonProps {
@@ -41,13 +40,12 @@ interface NumberInputProps extends CommonProps {
   disabled?: boolean;
   min?: number;
   max?: number;
-  // placeholder ya está incluido por CommonProps
 }
 
 type InputAntdProps = TextInputProps | TextAreaInputProps | NumberInputProps;
 
 const InputAntd = (props: InputAntdProps) => {
-  const { label, isFloating, isAddonBefore, hasError, size = 'large' } = props;
+  const { label, isFloating, isAddonBefore, hasError, size = 'large', className } = props;
   const [focus, setFocus] = useState(false);
 
   let value = '';
@@ -63,8 +61,15 @@ const InputAntd = (props: InputAntdProps) => {
   labelClass += 'disabled' in props && props.disabled ? ' disabled' : '';
   labelClass += isAddonBefore ? ` label-addon-before${focus ? '-focus' : ''}` : '';
 
+  // Combinar clases del contenedor principal
+  const containerClasses = [
+    'input-form',
+    size,
+    className // Agregar className personalizado
+  ].filter(Boolean).join(' ');
+
   return (
-    <div className={`input-form ${size}`}>
+    <div className={containerClasses}>
       <div className="float-label" onBlur={() => setFocus(false)} onFocus={() => setFocus(true)}>
         {props.type === 'textarea' ? (
           <Input.TextArea {...(props as TextAreaInputProps)} size={size} rows={3} />

@@ -112,21 +112,46 @@
 
 .hero-input-soft {
   background: linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%) !important;
-  border-color: rgba(229, 229, 229, 0.5) !important;
+  border-color: var(--hero-border-color, #e5e5e5) !important;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 .hero-input-soft:hover {
   background: #ffffff !important;
-  border-color: #04BA6B !important;
+  border-color: var(--hero-border-hover, #1890ff) !important;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
 }
 
 .hero-input-soft:focus,
 .hero-input-soft:focus-within {
   background: #ffffff !important;
-  border-color: #04BA6B !important;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 0 0 3px rgba(4, 186, 107, 0.2) !important;
+  border-color: var(--hero-border-focus, #1890ff) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 0 0 3px rgba(24, 144, 255, 0.2) !important;
+}
+
+/* Estilos específicos para inputs en contenedores de productos */
+.hero-input-soft .ant-input,
+.hero-input-soft .ant-input-number,
+.hero-input-soft .ant-input-affix-wrapper {
+  border-color: var(--hero-border-color, #e5e5e5) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.hero-input-soft:hover .ant-input,
+.hero-input-soft:hover .ant-input-number,
+.hero-input-soft:hover .ant-input-affix-wrapper {
+  border-color: var(--hero-border-hover, #1890ff) !important;
+}
+
+.hero-input-soft:focus-within .ant-input,
+.hero-input-soft:focus-within .ant-input-number,
+.hero-input-soft:focus-within .ant-input-affix-wrapper,
+.hero-input-soft .ant-input:focus,
+.hero-input-soft .ant-input-number:focus,
+.hero-input-soft .ant-input-affix-wrapper:focus {
+  border-color: var(--hero-border-focus, #1890ff) !important;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2) !important;
 }
 
 /* Estilos para Select */

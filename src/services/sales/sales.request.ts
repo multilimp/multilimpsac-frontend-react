@@ -18,6 +18,19 @@ export const getSales = async (params?: SaleFiltersProps): Promise<SaleProps[]> 
   return formatted;
 };
 
+export const getSaleById = async (id: number): Promise<SaleProps> => {
+  const response = await apiClient.get(`/ventas/${id}`);
+  const item = response.data;
+  
+  return {
+    ...item,
+    departamentoEntrega: parseJSON(item.departamentoEntrega),
+    provinciaEntrega: parseJSON(item.provinciaEntrega),
+    distritoEntrega: parseJSON(item.distritoEntrega),
+    productos: parseJSON(item.productos) ?? [],
+  };
+};
+
 export const createDirectSale = async (sale: Record<string, any>): Promise<SaleProps> => {
   const response = await apiClient.post('/ventas', sale);
   return response.data;

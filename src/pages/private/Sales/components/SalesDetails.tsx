@@ -4,16 +4,21 @@ import { Close, Edit, KeyboardArrowDown, KeyboardArrowUp, OpenInNew } from '@mui
 import { Card, CardContent, CardHeader, Collapse, Drawer, Fab, IconButton, List, ListItem, ListItemText, Stack, Typography } from '@mui/material';
 import dayjs from 'dayjs';
 import { formatCurrency } from '@/utils/functions';
+import { useNavigate } from 'react-router-dom';
 
 interface SalesDetailsProps {
   handleClose: VoidFunction;
-  handleEdit: (data: SaleProps) => void;
   data: SaleProps;
 }
 
 const defaultText = '—';
 
-const SalesDetails = ({ handleClose, data, handleEdit }: SalesDetailsProps) => {
+const SalesDetails = ({ handleClose, data }: SalesDetailsProps) => {
+  const navigate = useNavigate();
+  
+  const handleEditClick = () => {
+    navigate(`/sales/${data.id}/edit`);
+  };
   const {
     catalogoEmpresa,
     cliente,
@@ -67,7 +72,7 @@ const SalesDetails = ({ handleClose, data, handleEdit }: SalesDetailsProps) => {
           }
           avatar={
             <Fab color="warning" size="small">
-              <Edit onClick={() => handleEdit(data)} />
+              <Edit onClick={handleEditClick} />
             </Fab>
           }
         />

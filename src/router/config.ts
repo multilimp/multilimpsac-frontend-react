@@ -100,6 +100,11 @@ const routes: Array<PropsRoutes> = [
         roles: rolesArr,
       },
       {
+        path: 'sales/:id/edit',
+        element: SalesPageForm,
+        roles: rolesArr,
+      },
+      {
         path: 'orders',
         element: Orders,
         roles: rolesArr,

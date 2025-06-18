@@ -1,18 +1,21 @@
 import React, { useMemo } from 'react';
-import { IconButton, Button, Input } from '@mui/material';
+import { IconButton, Button } from '@mui/material';
 import { SaleProps } from '@/services/sales/sales';
-import { PictureAsPdf, VisibilityOutlined } from '@mui/icons-material';
+import { PictureAsPdf, Edit } from '@mui/icons-material';
 import { formatCurrency, formattedDate } from '@/utils/functions';
 import { ModalStateEnum } from '@/types/global.enum';
 import AntTable, { AntColumnType } from '@/components/AntTable';
+import { useNavigate } from 'react-router-dom';
 
 interface SalesTableProps {
   data: SaleProps[];
   loading: boolean;
-  onRecordAction: (action: ModalStateEnum, data: SaleProps) => void;
+  onRecordAction?: (action: ModalStateEnum, data: SaleProps) => void;
 }
 
 const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onRecordAction }) => {
+  const navigate = useNavigate();
+
   const formattedData = useMemo(() => {
     return data.map((item) => ({
       id: item.id,
@@ -48,8 +51,11 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onRecordAction }
       render: (value, record) => (
         <Button
           variant="contained"
-          onClick={() => onRecordAction(ModalStateEnum.BOX, record.rawdata)}
-          startIcon={<VisibilityOutlined />}
+          onClick={() => {
+            console.log('Navegando a edición de venta:', record.rawdata.id);
+            navigate(`/sales/${record.rawdata.id}/edit`);
+          }}
+          startIcon={<Edit />}
           size="small"
           color="info"
           style={{ width: '100%' }}

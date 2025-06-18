@@ -59,6 +59,26 @@ export interface SaleProps {
   contactoCliente: ContactProps;
   catalogoEmpresa: CatalogProps;
   ordenesProveedor: Array<any>;
+  ordenCompraPrivada?: {
+    id: number;
+    ordenCompraId: number;
+    clienteId?: number;
+    contactoClienteId?: number;
+    estadoPago?: string;
+    fechaPago?: string;
+    documentoPago?: string;
+    cliente?: ClientProps;
+    contactoCliente?: ContactProps;
+    pagos?: Array<{
+      id: number;
+      fechaPago: string;
+      bancoPago: string;
+      descripcionPago: string;
+      archivoPago?: string;
+      montoPago: number;
+      estadoPago: boolean;
+    }>;
+  };
 }
 
 export interface SaleProcessedProps {

@@ -34,7 +34,7 @@ const SalesPage = () => {
       ) : null}
 
       {modal?.mode === ModalStateEnum.DETAILS && (
-        <SalesDetails data={modal.data!} handleClose={closeModal} handleEdit={(data) => setModal({ mode: ModalStateEnum.BOX, data })} />
+        <SalesDetails data={modal.data!} handleClose={closeModal} />
       )}
     </PageContent>
   );
