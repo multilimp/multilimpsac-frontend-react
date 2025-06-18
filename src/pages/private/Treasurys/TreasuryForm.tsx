@@ -26,6 +26,7 @@ const mockSaleData: SaleProps = {
   montoVenta: '15000.00',
   fechaForm: '2024-12-01T00:00:00.000Z',
   fechaMaxForm: '2024-12-30T00:00:00.000Z',
+  estadoVenta: 'PENDIENTE',
   productos: [
     {
       descripcion: 'Servicio de Limpieza',

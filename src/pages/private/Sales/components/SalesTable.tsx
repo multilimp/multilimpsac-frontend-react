@@ -1,11 +1,10 @@
 import React, { useMemo } from 'react';
 import { IconButton, Button } from '@mui/material';
 import { SaleProps } from '@/services/sales/sales';
-import { PictureAsPdf, Edit } from '@mui/icons-material';
+import { PictureAsPdf, Visibility } from '@mui/icons-material';
 import { formatCurrency, formattedDate } from '@/utils/functions';
 import { ModalStateEnum } from '@/types/global.enum';
 import AntTable, { AntColumnType } from '@/components/AntTable';
-import { useNavigate } from 'react-router-dom';
 
 interface SalesTableProps {
   data: SaleProps[];
@@ -14,7 +13,6 @@ interface SalesTableProps {
 }
 
 const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onRecordAction }) => {
-  const navigate = useNavigate();
 
   const formattedData = useMemo(() => {
     return data.map((item) => ({
@@ -35,6 +33,7 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onRecordAction }
                           ${item.provinciaEntrega ?? ''}
                           ${item.distritoEntrega ?? ''} -
                           ${item.referenciaEntrega ?? ''}`,
+      estado_venta: item.estadoVenta || 'incompleto',
       oce: item.documentoOce,
       ocf: item.documentoOcf,
 
@@ -52,10 +51,10 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onRecordAction }
         <Button
           variant="contained"
           onClick={() => {
-            console.log('Navegando a edición de venta:', record.rawdata.id);
-            navigate(`/sales/${record.rawdata.id}/edit`);
+            console.log('Abriendo detalles de venta:', record.rawdata.id);
+            onRecordAction?.(ModalStateEnum.DETAILS, record.rawdata);
           }}
-          startIcon={<Edit />}
+          startIcon={<Visibility />}
           size="small"
           color="info"
           style={{ width: '100%' }}
@@ -75,6 +74,46 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onRecordAction }
     { title: 'Monto Venta', dataIndex: 'monto_venta', width: 200, sort: true, filter: true },
     { title: 'CUE', dataIndex: 'cue', width: 200, sort: true, filter: true },
     { title: 'Dirección Entrega', dataIndex: 'direccion_entrega', width: 300, sort: true, filter: true },
+    {
+      title: 'Estado',
+      dataIndex: 'estado_venta',
+      width: 150,
+      sort: true,
+      filter: true,
+      render: (value) => {
+        const getEstadoStyle = (estado: string) => {
+          switch (estado) {
+            case 'completo':
+              return { color: '#006fee', fontWeight: 600 };
+            case 'incompleto':
+              return { color: '#f5a524', fontWeight: 600 };
+            case 'rechazado':
+              return { color: '#f31260', fontWeight: 600 };
+            default:
+              return { color: '#71717a', fontWeight: 600 };
+          }
+        };
+
+        const getEstadoIcon = (estado: string) => {
+          switch (estado) {
+            case 'completo':
+              return '🟢';
+            case 'incompleto':
+              return '🟡';
+            case 'rechazado':
+              return '🔴';
+            default:
+              return '⚫';
+          }
+        };
+
+        return (
+          <span style={getEstadoStyle(value)}>
+            {getEstadoIcon(value)} {value?.charAt(0).toUpperCase() + value?.slice(1)}
+          </span>
+        );
+      },
+    },
     {
       title: 'OCE',
       dataIndex: 'oce',

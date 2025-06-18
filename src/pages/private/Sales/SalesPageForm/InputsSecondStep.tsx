@@ -8,13 +8,16 @@ import InputAntd from '@/components/InputAntd';
 import { Business, LocationOn } from '@mui/icons-material';
 import ClientSelectorModal from '../../Clients/components/ClientSelectorModal';
 import { ClientProps } from '@/services/clients/clients';
+import { SaleProps } from '@/services/sales/sales';
 import dayjs from 'dayjs';
 
 interface InputsSecondStepProps {
   form: FormInstance;
+  isEditing?: boolean;
+  currentSale?: SaleProps | null;
 }
 
-const InputsSecondStep = ({ form }: InputsSecondStepProps) => {
+const InputsSecondStep = ({ form, isEditing = false, currentSale }: InputsSecondStepProps) => {
   const [openClients, setOpenClients] = useState(false);
 
   return (
@@ -62,7 +65,9 @@ const InputsSecondStep = ({ form }: InputsSecondStepProps) => {
               const clienteEstado: null | ClientProps = getFieldValue('clienteEstado');
               return (
                 <Fragment>
-                  <Typography variant="h5">OCGRU660</Typography>
+                  {isEditing && currentSale && (
+                    <Typography variant="h5">{currentSale.codigoVenta}</Typography>
+                  )}
                   <Typography fontWeight={300} color={clienteEstado ? undefined : 'textSecondary'}>
                     {clienteEstado?.razonSocial ?? 'Seleccione a un cliente'}
                   </Typography>

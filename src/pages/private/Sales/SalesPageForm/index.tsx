@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Box, Button, Collapse, Stack } from '@mui/material';
-import { Form, message, notification, Spin } from 'antd';
+import { Form, message, notification, Spin, Select } from 'antd';
 import InputsFirstStep from './InputsFirstStep';
 import InputsSecondStep from './InputsSecondStep';
 import InputsThirdStep from './InputsThirdStep';
@@ -74,6 +74,7 @@ const SalesPageForm = () => {
             regionEntrega: saleData.departamentoEntrega,
             provinciaEntrega: saleData.provinciaEntrega,
             distritoEntrega: saleData.distritoEntrega,
+            estadoVenta: saleData.estadoVenta || 'incompleto',
           };
 
           // Si es venta privada, cargar datos específicos
@@ -179,6 +180,7 @@ const SalesPageForm = () => {
           siaf: values.numeroSIAF ? String(values.numeroSIAF) : null,
           etapaSiaf: values.etapaSIAF || null,
           fechaSiaf: values.fechaSIAF ? values.fechaSIAF.toISOString() : null,
+          estadoVenta: values.estadoVenta || 'incompleto',
           documentoOce: values.ordenCompraElectronica || null,
           documentoOcf: values.ordenCompraFisica || null,
           productos: values.productos || [],
@@ -285,6 +287,7 @@ const SalesPageForm = () => {
           siaf: values.numeroSIAF ? String(values.numeroSIAF) : null,
           etapaSiaf: values.etapaSIAF || null,
           fechaSiaf: values.fechaSIAF ? values.fechaSIAF.toISOString() : null,
+          estadoVenta: values.estadoVenta || 'incompleto',
           documentoOce: values.ordenCompraElectronica || null,
           documentoOcf: values.ordenCompraFisica || null,
           productos: values.productos || [],
@@ -319,7 +322,7 @@ const SalesPageForm = () => {
               <InputsFirstStep form={form} />
             </Collapse>
 
-            <InputsSecondStep form={form} />
+            <InputsSecondStep form={form} isEditing={isEditing} currentSale={currentSale} />
 
             <InputsThirdStep form={form} companyId={saleInputValues.enterprise?.id!} />
 
@@ -331,7 +334,45 @@ const SalesPageForm = () => {
         </Form>
       </Spin>
 
-      <Stack direction="row" spacing={2} my={5} justifyContent="center">
+      <Stack direction="row" spacing={2} my={5} justifyContent="center" alignItems="center">
+        <Form.Item 
+          name="estadoVenta" 
+          rules={[{ required: true, message: 'Seleccione un estado' }]}
+          initialValue="incompleto"
+          style={{ margin: 0 }}
+        >
+          <Select
+            placeholder="Estado de la venta"
+            size="large"
+            style={{ minWidth: 200 }}
+            options={[
+              { 
+                value: 'completo', 
+                label: (
+                  <span style={{ color: '#006fee', fontWeight: 600 }}>
+                    🟢 Completo
+                  </span>
+                ) 
+              },
+              { 
+                value: 'incompleto', 
+                label: (
+                  <span style={{ color: '#f5a524', fontWeight: 600 }}>
+                    🟡 Incompleto
+                  </span>
+                ) 
+              },
+              { 
+                value: 'rechazado', 
+                label: (
+                  <span style={{ color: '#f31260', fontWeight: 600 }}>
+                    🔴 Rechazado
+                  </span>
+                ) 
+              },
+            ]}
+          />
+        </Form.Item>
         <Button loading={loading} onClick={() => form.submit()}>
           {isEditing ? 'Actualizar venta' : 'Finalizar y registrar venta'}
         </Button>

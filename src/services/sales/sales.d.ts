@@ -42,6 +42,7 @@ export interface SaleProps {
   fechaEstadoCobranza?: string;
   fechaProximaGestion?: string;
   etapaActual: string;
+  estadoVenta: string;
   estadoActivo: boolean;
   createdAt: string;
   updatedAt: string;
