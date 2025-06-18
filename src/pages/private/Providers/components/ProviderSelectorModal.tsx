@@ -9,14 +9,14 @@ interface ProviderSelectorModalProps {
 }
 
 const ProviderSelectorModal = ({ onSelected, onClose }: ProviderSelectorModalProps) => {
-  const { clients, loadingClients } = useGlobalInformation();
+  const { providers, loadingProviders } = useGlobalInformation();
 
   return (
     <Dialog open fullWidth maxWidth="md">
       <DialogContent>
         <ProvidersTable
-          data={clients}
-          loading={loadingClients}
+          data={providers}
+          loading={loadingProviders}
           onRecordAction={(_, data) => {
             onSelected(data);
             onClose();

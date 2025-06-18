@@ -19,12 +19,12 @@ import {
   TableRow,
   Typography,
   Divider,
-  Fab,
 } from '@mui/material';
 import InputAntd from '@/components/InputAntd';
 import InputFile from '@/components/InputFile';
 import SelectGeneric from '@/components/selects/SelectGeneric';
 import SelectTransports from '@/components/selects/SelectTransports';
+import SelectCompanies from '@/components/selects/SelectCompanies';
 import DatePickerAntd from '@/components/DatePickerAnt';
 import { SaleProps } from '@/services/sales/sales';
 import { formatCurrency } from '@/utils/functions';
@@ -32,6 +32,7 @@ import SelectRegions from '@/components/selects/SelectRegions';
 import SelectProvinces from '@/components/selects/SelectProvinces';
 import SelectDistricts from '@/components/selects/SelectDistricts';
 import SelectContacts from '@/components/selects/SelectContacts';
+import SelectContactsByProvider from '@/components/selects/SelectContactsByProvider';
 import { createOrderProvider } from '@/services/providerOrders/providerOrders.requests';
 import { useNavigate } from 'react-router-dom';
 import { StepItemContent } from '../../Sales/SalesPageForm/smallcomponents';
@@ -97,6 +98,11 @@ const ProviderOrderFormContent = ({ sale }: ProviderOrderFormContentProps) => {
       }));
 
       const body = {
+        empresa: {
+          connect: {
+            id: values.empresa,
+          },
+        },
         proveedor: {
           connect: {
             id: values.proveedor,
@@ -144,6 +150,15 @@ const ProviderOrderFormContent = ({ sale }: ProviderOrderFormContentProps) => {
         <Form.Item name="proveedor" noStyle />
 
         <Stack direction="column" spacing={2}>
+          {/* Select de empresa compradora */}
+          <Grid container spacing={2}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+              <Form.Item name="empresa" rules={[requiredField]}>
+                <SelectCompanies label="Empresa compradora" />
+              </Form.Item>
+            </Grid>
+          </Grid>
+
           <StepItemContent
             showHeader
             showFooter
@@ -187,10 +202,10 @@ const ProviderOrderFormContent = ({ sale }: ProviderOrderFormContentProps) => {
                     <Fragment>
                       <Typography variant="h5">OCGRU660</Typography>
                       <Typography fontWeight={300} color={provider ? undefined : 'textSecondary'}>
-                        {provider?.razonSocial ?? 'Seleccione a un cliente'}
+                        {provider?.razonSocial ?? 'Seleccione un proveedor'}
                       </Typography>
                       <Typography fontWeight={300} color={provider ? undefined : 'textSecondary'}>
-                        {provider ? `RUC: ${provider.ruc}` : 'Seleccione a un cliente'}
+                        {provider ? `RUC: ${provider.ruc}` : 'Seleccione un proveedor'}
                       </Typography>
                     </Fragment>
                   );
@@ -215,10 +230,23 @@ const ProviderOrderFormContent = ({ sale }: ProviderOrderFormContentProps) => {
                 </Form.Item>
               </Grid>
               <Grid size={12}>
-                <Form.Item name="contactoProveedor" rules={[requiredField]}>
-                  <SelectContacts label="Transporte contacto" />
+                <Form.Item noStyle shouldUpdate>
+                  {({ getFieldValue }) => {
+                    const provider: ProviderProps | null = getFieldValue('proveedor');
+                    return (
+                      <Form.Item name="contactoProveedor" rules={[requiredField]}>
+                        <SelectContactsByProvider
+                          providerId={provider?.id}
+                          onContactCreated={() => {
+                            // Recargar contactos si es necesario
+                          }}
+                        />
+                      </Form.Item>
+                    );
+                  }}
                 </Form.Item>
               </Grid>
+              {/* Nueva sección: Datos del Cliente, Responsable Recepción y Lugar de Entrega */}
               <Grid size={12}>
                 <Stack direction={{ xs: 'column', lg: 'row' }} spacing={2}>
                   <Box flex={1}>
@@ -226,10 +254,13 @@ const ProviderOrderFormContent = ({ sale }: ProviderOrderFormContentProps) => {
                       Datos del cliente
                     </Typography>
                     <Typography textTransform="uppercase" fontSize={10} fontWeight={700}>
-                      Unidad de gestión educativa local de puno
+                      {sale?.cliente?.razonSocial ?? '---'}
                     </Typography>
                     <Typography textTransform="uppercase" fontSize={10} color="textSecondary">
-                      RUC: 20447974003
+                      RUC: {sale?.cliente?.ruc ?? '---'}
+                    </Typography>
+                    <Typography textTransform="uppercase" fontSize={10} color="textSecondary">
+                      CUE: {sale?.cliente?.codigoUnidadEjecutora ?? '---'}
                     </Typography>
                   </Box>
                   <Box>
@@ -237,14 +268,14 @@ const ProviderOrderFormContent = ({ sale }: ProviderOrderFormContentProps) => {
                   </Box>
                   <Box flex={1}>
                     <Typography textTransform="uppercase" fontSize={10} color="#9932CC" fontWeight={600} textAlign="center" mb={1}>
-                      Responsable de recepción
+                      Responsable recepción
                     </Typography>
                     <Typography textTransform="uppercase" fontSize={10} fontWeight={700}>
-                      Encargado de almacen
+                      {sale?.contactoCliente?.cargo ?? '---'}
                     </Typography>
                     <Typography textTransform="uppercase" fontSize={10} color="textSecondary">
-                      Winsto neson bautista yama <br />
-                      973-100-029 - wnbasdd@gmaik.com
+                      {sale?.contactoCliente?.nombre ?? '---'} <br />
+                      {sale?.contactoCliente?.telefono ?? '---'} - {sale?.contactoCliente?.email ?? '---'}
                     </Typography>
                   </Box>
                   <Box>
@@ -255,11 +286,11 @@ const ProviderOrderFormContent = ({ sale }: ProviderOrderFormContentProps) => {
                       Lugar de entrega
                     </Typography>
                     <Typography textTransform="uppercase" fontSize={10} fontWeight={700}>
-                      JR someone test 23443 | tesffs - 3443
+                      {sale?.direccionEntrega ?? '---'}
                     </Typography>
                     <Typography textTransform="uppercase" fontSize={10} color="textSecondary">
-                      PUNO / PUNO / PUNO <br />
-                      Referencia: UGEL PUNO
+                      {sale?.departamentoEntrega ?? '---'} - {sale?.provinciaEntrega ?? '---'} - {sale?.distritoEntrega ?? '---'} <br />
+                      Ref: {sale?.referenciaEntrega ?? '---'}
                     </Typography>
                   </Box>
                 </Stack>
@@ -364,9 +395,9 @@ const ProviderOrderFormContent = ({ sale }: ProviderOrderFormContentProps) => {
                               </Form.Item>
                             </TableCell>
                             <TableCell sx={{ p: 0.25 }}>
-                              <Fab size="small" variant="extended" color="error" onClick={() => remove(field.name)}>
+                              <IconButton size="small" color="error" onClick={() => remove(field.name)}>
                                 <Delete fontSize="medium" />
-                              </Fab>
+                              </IconButton>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -466,7 +497,7 @@ const ProviderOrderFormContent = ({ sale }: ProviderOrderFormContentProps) => {
                           </Grid>
                           <Grid size={{ xs: 12, md: 6, lg: 6, xl: 3 }}>
                             <Form.Item name={[field.name, 'contacto']} rules={[requiredField]}>
-                              <SelectContacts label="Transporte contacto" />
+                              <SelectContacts label="Contacto transporte" />
                             </Form.Item>
                           </Grid>
                           <Grid size={{ xs: 12, md: 6, lg: 6, xl: 3 }}>
