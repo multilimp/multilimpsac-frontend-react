@@ -22,3 +22,13 @@ export interface ContactFilterProps {
   tipo?: ContactTypeEnum;
   referenciaId?: number | string;
 }
+
+export interface ContactUpdateProps {
+  nombre?: string;
+  cargo?: string;
+  telefono?: string;
+  email?: string; 
+  cumpleanos?: string;
+  nota?: string;
+  usuarioDestacado?: boolean;
+}
