@@ -26,13 +26,37 @@ export interface ProviderOrderProps {
   observaciones: null;
   notaAdicional: null;
   activo: true;
-  ordenCompraId: null;
+  ordenCompraId: number | null;
   createdAt: string;
   updatedAt: string;
   empresa: null;
   proveedor: ProviderProps;
   contactoProveedor: ContactProps;
-  ordenCompra: null;
+  ordenCompra: {
+    id: number;
+    codigoVenta: string;
+    fechaEmision: string;
+    empresaId: number;
+    clienteId: number;
+    contactoClienteId: number;
+    departamentoEntrega: string;
+    provinciaEntrega: string;
+    distritoEntrega: string;
+    direccionEntrega: string;
+    referenciaEntrega: string;
+    cliente: {
+      id: number;
+      razonSocial: string;
+      ruc: string;
+    };
+    contactoCliente: {
+      id: number;
+      nombre: string;
+      cargo: string;
+      telefono: string;
+      email: string;
+    };
+  } | null;
   productos: [
     {
       id: number;

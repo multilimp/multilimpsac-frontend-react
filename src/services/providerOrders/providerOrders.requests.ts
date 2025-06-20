@@ -15,3 +15,13 @@ export const getOrderProvidersByOC = async (saleId: number) => {
   const response = await apiClient.get(`/ordenes-proveedores/${saleId}/codigos`);
   return response.data;
 };
+
+export const getOrderProviderById = async (ordenProveedorId: number): Promise<ProviderOrderProps> => {
+  const response = await apiClient.get(`/ordenes-proveedores/${ordenProveedorId}`);
+  return response.data;
+};
+
+export const updateOrderProvider = async (ordenProveedorId: number, data: Record<string, any>): Promise<ProviderOrderProps> => {
+  const response = await apiClient.put(`/ordenes-proveedores/${ordenProveedorId}`, data);
+  return response.data;
+};

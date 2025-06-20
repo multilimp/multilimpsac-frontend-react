@@ -1,123 +1,151 @@
 // src/components/TrackingsTable.tsx
-import React from 'react';
+import React, { useMemo } from 'react';
+import { IconButton, Button } from '@mui/material';
+import { PictureAsPdf, Visibility } from '@mui/icons-material';
+import { formatCurrency, formattedDate } from '@/utils/functions';
+import { ModalStateEnum } from '@/types/global.enum';
 import AntTable, { AntColumnType } from '@/components/AntTable';
-import dayjs from 'dayjs';
-import { Fab } from '@mui/material';
-import { PictureAsPdf } from '@mui/icons-material';
-import { TrackingProps } from '@/services/trackings/trackings.d';
+import { SaleProps } from '@/services/sales/sales';
 
 interface TrackingsTableProps {
-  data: TrackingProps[];
+  data: Array<SaleProps | any>; // SaleProps o cualquier otro tipo extendido
   loading: boolean;
-  onRowClick: (row: TrackingProps) => void;
+  onRowClick?: (row: SaleProps) => void;
+  onRecordAction?: (action: ModalStateEnum, data: SaleProps) => void;
 }
 
-const statusLabels: Record<TrackingProps['status'], string> = {
-  pending: 'Pendiente',
-  in_progress: 'En Progreso',
-  delivered: 'Entregado',
-  canceled: 'Cancelado',
-};
+// const statusLabels: Record<SaleProps['status'], string> = {
+//   pending: 'Pendiente',
+//   in_progress: 'En Progreso',
+//   delivered: 'Entregado',
+//   canceled: 'Cancelado',
+// };
+const defaultText = 'N/A';
+const TrackingsTable: React.FC<TrackingsTableProps> = ({ data, loading, onRowClick, onRecordAction }) => {
 
-const TrackingsTable: React.FC<TrackingsTableProps> = ({ data, loading, onRowClick }) => {
-  const columns: AntColumnType<TrackingProps>[] = [
-    { title: 'ID', dataIndex: 'id', minWidth: 80 },
-    { title: 'ID Venta', dataIndex: 'saleId', minWidth: 100 },
-    { title: 'Razón Social Cliente', dataIndex: 'clientName', minWidth: 200 },
-    { title: 'RUC Cliente', dataIndex: 'clientRuc', minWidth: 140 },
-    { title: 'RUC Empresa', dataIndex: 'companyRuc', minWidth: 140 },
-    { title: 'Razón Social Empresa', dataIndex: 'companyBusinessName', minWidth: 200 },
+  const formattedData = useMemo(() => {
+    return data.map((item) => ({
+      id: item.id,
+      codigo_venta: item.codigoVenta || defaultText,
+      razon_social_cliente: item?.cliente.razonSocial ?? defaultText,
+      ruc_cliente: item?.cliente.ruc ?? defaultText,
+      ruc_empresa: item?.empresa.ruc ?? defaultText,
+      razon_social_empresa: item?.empresa.razonSocial ?? defaultText,
+      fecha_max_entrega: formattedDate(item.fechaMaxForm, undefined, defaultText),
+      monto_venta: formatCurrency(item.montoVenta ? parseInt(item.montoVenta, 10) : 0),
+      cue: item?.cliente.codigoUnidadEjecutora || defaultText,
+      departamento: item.departamentoEntrega || defaultText,
+      // estado: statusLabels[item.status],
+      peru_compras: item.documentoPeruCompras || defaultText,
+      fecha_peru_compras: item.fechaPeruCompras ? formattedDate(item.fechaPeruCompras) : defaultText,
+      fecha_entrega_oc: item.fechaEntregaOc ? formattedDate(item.fechaEntregaOc) : defaultText,
+      // utilidad: item ? `${item.utility}%` : defaultText,
+      // grr: item.grr || defaultText,
+      // factura: item.invoiceNumber || defaultText,
+      oce: item.documentoOce || defaultText,
+      ocf: item.documentoOcf || defaultText,
+      rawdata: item,
+    }));
+  }, [data]);
+
+  const columns: Array<AntColumnType<any>> = [
     {
-      title: 'Fecha Máx. Ent.',
-      dataIndex: 'maxDeliveryDate',
-      minWidth: 140,
-      render: (d: string) => dayjs(d).format('DD/MM/YYYY'),
+      title: 'Código OC',
+      dataIndex: 'codigo_venta',
+      width: 200,
+      render: (value, record) => (
+        <Button
+          variant="contained"
+          onClick={() => {
+            console.log('Abriendo detalles de seguimiento:', record.rawdata.id);
+            if (onRecordAction) {
+              onRecordAction(ModalStateEnum.DETAILS, record.rawdata);
+            } else if (onRowClick) {
+              onRowClick(record.rawdata);
+            }
+          }}
+          startIcon={<Visibility />}
+          size="small"
+          color="info"
+          style={{ width: '100%' }}
+        >
+          {value}
+        </Button>
+      )
     },
-    {
-      title: 'Monto Venta',
-      dataIndex: 'saleAmount',
-      minWidth: 120,
-      render: (amt: number) => `S/ ${amt}`,
-    },
-    { title: 'CUE', dataIndex: 'cue', minWidth: 100 },
-    { title: 'Departamento', dataIndex: 'department', minWidth: 120 },
-    {
-      title: 'OCE (PDF)',
-      dataIndex: 'oce',
-      minWidth: 75,
-      render: (_, record) =>
-        record.oce ? (
-          <Fab size="small" component="a" href={record.oce} target="_blank" title="Descargar PDF OCE">
-            <PictureAsPdf />
-          </Fab>
-        ) : (
-          '-'
-        ),
-    },
-    {
-      title: 'OCF (PDF)',
-      dataIndex: 'ocf',
-      minWidth: 75,
-      render: (_, record) =>
-        record.ocf ? (
-          <Fab size="small" component="a" href={record.ocf} target="_blank" title="Descargar PDF OCF">
-            <PictureAsPdf />
-          </Fab>
-        ) : (
-          '-'
-        ),
-    },
-    {
-      title: 'Peru Compras',
-      dataIndex: 'peruPurchases',
-      minWidth: 120,
-      render: (val: boolean) => (val ? 'Sí' : 'No'),
-    },
-    { title: 'GRR', dataIndex: 'grr', minWidth: 100 },
-    { title: 'Factura', dataIndex: 'invoiceNumber', minWidth: 120 },
-    {
-      title: 'Refact',
-      dataIndex: 'isRefact',
-      minWidth: 80,
-      render: (val: boolean) => (val ? 'Sí' : 'No'),
-    },
-    {
-      title: 'Fecha Peru Compras',
-      dataIndex: 'peruPurchasesDate',
-      minWidth: 150,
-      render: (d?: string) => (d ? dayjs(d).format('DD/MM/YYYY') : '-'),
-    },
-    {
-      title: 'Fecha Entrega OC',
-      dataIndex: 'deliveryDateOC',
-      minWidth: 150,
-      render: (d?: string) => (d ? dayjs(d).format('DD/MM/YYYY') : '-'),
-    },
-    {
-      title: 'Utilidad (%)',
-      dataIndex: 'utility',
-      minWidth: 100,
-      render: (v?: number) => (v != null ? `${v}%` : '-'),
-    },
+    { title: 'Razón Social Cliente', dataIndex: 'razon_social_cliente', width: 200, sort: true, filter: true },
+    { title: 'RUC Cliente', dataIndex: 'ruc_cliente', width: 150, sort: true, filter: true },
+    { title: 'RUC Empresa', dataIndex: 'ruc_empresa', width: 150, sort: true, filter: true },
+    { title: 'Razón Social Empresa', dataIndex: 'razon_social_empresa', width: 200, sort: true, filter: true },
+    { title: 'Fecha Máx. Entrega', dataIndex: 'fecha_max_entrega', width: 150, sort: true, filter: true },
+    { title: 'Monto Venta', dataIndex: 'monto_venta', width: 130, sort: true, filter: true },
+    { title: 'CUE', dataIndex: 'cue', width: 120, sort: true, filter: true },
+    { title: 'Departamento', dataIndex: 'departamento', width: 130, sort: true, filter: true },
     {
       title: 'Estado',
-      dataIndex: 'status',
-      minWidth: 120,
-      render: (_, record) => statusLabels[record.status],
+      dataIndex: 'estado',
+      width: 120,
+      sort: true,
+      filter: true,
+      render: (value) => {
+        const colorMap: Record<string, string> = {
+          'Pendiente': '#f5a524', // amarillo
+          'En Progreso': '#006fee', // azul
+          'Entregado': '#17c964', // verde
+          'Cancelado': '#f31260', // rojo
+        };
+        return (
+          <span style={{
+            color: colorMap[value] || '#000',
+            fontWeight: 600,
+            padding: '4px 8px',
+            backgroundColor: `${colorMap[value] || '#000'}20`,
+            borderRadius: '4px',
+            fontSize: '12px'
+          }}>
+            {value}
+          </span>
+        );
+      }
+    },
+    { title: 'Perú Compras', dataIndex: 'peru_compras', width: 120, sort: true, filter: true },
+    { title: 'Fecha Perú Compras', dataIndex: 'fecha_peru_compras', width: 150, sort: true, filter: true },
+    { title: 'Fecha Entrega OC', dataIndex: 'fecha_entrega_oc', width: 150, sort: true, filter: true },
+    { title: 'Utilidad (%)', dataIndex: 'utilidad', width: 100, sort: true, filter: true },
+    { title: 'GRR', dataIndex: 'grr', width: 100, sort: true, filter: true },
+    { title: 'Factura', dataIndex: 'factura', width: 120, sort: true, filter: true },
+    { title: 'Refact', dataIndex: 'refact', width: 80, sort: true, filter: true },
+    {
+      title: 'OCE',
+      dataIndex: 'oce',
+      width: 80,
+      render: (value) =>
+        value && (
+          <IconButton color="error" component="a" href={value} target="_blank" size="small">
+            <PictureAsPdf />
+          </IconButton>
+        ),
+    },
+    {
+      title: 'OCF',
+      dataIndex: 'ocf',
+      width: 80,
+      render: (value) =>
+        value && (
+          <IconButton color="error" component="a" href={value} target="_blank" size="small">
+            <PictureAsPdf />
+          </IconButton>
+        ),
     },
   ];
 
   return (
     <AntTable
+      data={formattedData}
       columns={columns}
-      data={data}
       loading={loading}
-      rowKey="id"
-      scroll={{ x: 'max-content' }}
-      onRow={(record) => ({
-        onClick: () => onRowClick(record),
-        style: { cursor: 'pointer' },
-      })}
+      scroll={{ x: 2200 }}
+      size="small"
     />
   );
 };

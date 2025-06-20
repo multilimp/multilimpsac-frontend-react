@@ -20,16 +20,17 @@ const Users = Loadable(lazy(() => import('@/pages/private/Users')));
 const Quotes = Loadable(lazy(() => import('@/pages/private/Quotes')));
 const Sales = Loadable(lazy(() => import('@/pages/private/Sales')));
 const SalesPageForm = Loadable(lazy(() => import('@/pages/private/Sales/SalesPageForm')));
-const Orders = Loadable(lazy(() => import('@/pages/private/Orders')));
 const Clients = Loadable(lazy(() => import('@/pages/private/Clients')));
 const Providers = Loadable(lazy(() => import('@/pages/private/Providers')));
 const Transports = Loadable(lazy(() => import('@/pages/private/Transports')));
 const Treasurys = Loadable(lazy(() => import('@/pages/private/Treasurys')));
 const Billings = Loadable(lazy(() => import('@/pages/private/Billings')));
+const Collections = Loadable(lazy(() => import('@/pages/private/Collections/CollectionOrdersPage')));
 const Trackings = Loadable(lazy(() => import('@/pages/private/Trackings')));
 const TrackingsOrders = Loadable(lazy(() => import('@/pages/private/Trackings/TrackingsOrdersPage')));
 const ProviderOrders = Loadable(lazy(() => import('@/pages/private/ProviderOrders')));
 const ProviderOrderForm = Loadable(lazy(() => import('@/pages/private/ProviderOrders/ProviderOrderForm')));
+const ProviderOrderDetail = Loadable(lazy(() => import('@/pages/private/ProviderOrders/ProviderOrderEditPage')));
 const TreasuryForm = Loadable(lazy(() => import('@/pages/private/Treasurys/TreasuryForm')));
 
 const rolesArr = Object.values(RolesEnum);
@@ -105,11 +106,6 @@ const routes: Array<PropsRoutes> = [
         roles: rolesArr,
       },
       {
-        path: 'orders',
-        element: Orders,
-        roles: rolesArr,
-      },
-      {
         path: 'provider-orders',
         element: ProviderOrders,
         roles: rolesArr,
@@ -156,6 +152,11 @@ const routes: Array<PropsRoutes> = [
       {
         path: 'billing',
         element: Billings, // Actualizado a PascalCase
+        roles: rolesArr,
+      },
+      {
+        path: 'collections',
+        element: Collections,
         roles: rolesArr,
       },
       {

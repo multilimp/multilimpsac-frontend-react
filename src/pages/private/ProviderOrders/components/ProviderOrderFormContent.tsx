@@ -1,6 +1,6 @@
-import { Fragment, useState } from 'react';
+import { Fragment, useState, useEffect } from 'react';
 import { Form, Input, InputNumber, notification, Spin } from 'antd';
-import { AddCircle, Business, Delete, LocalShipping, ShoppingCart } from '@mui/icons-material';
+import { AddCircle, Business, Delete, LocalShipping, ShoppingCart, Person } from '@mui/icons-material';
 import {
   Box,
   Card,
@@ -33,15 +33,20 @@ import SelectProvinces from '@/components/selects/SelectProvinces';
 import SelectDistricts from '@/components/selects/SelectDistricts';
 import SelectContacts from '@/components/selects/SelectContacts';
 import SelectContactsByProvider from '@/components/selects/SelectContactsByProvider';
-import { createOrderProvider } from '@/services/providerOrders/providerOrders.requests';
+import { createOrderProvider, updateOrderProvider } from '@/services/providerOrders/providerOrders.requests';
 import { useNavigate } from 'react-router-dom';
 import { StepItemContent } from '../../Sales/SalesPageForm/smallcomponents';
+import PaymentsList from '@/components/PaymentsList';
 import dayjs from 'dayjs';
 import { ProviderProps } from '@/services/providers/providers';
 import ProviderSelectorModal from '../../Providers/components/ProviderSelectorModal';
+import { ProviderOrderProps } from '@/services/providerOrders/providerOrders';
+import { formattedDate } from '@/utils/functions';
 
 interface ProviderOrderFormContentProps {
   sale: SaleProps;
+  orderData?: ProviderOrderProps;
+  isEditing?: boolean;
 }
 
 const getEmptyProductRecord = () => ({
@@ -64,17 +69,52 @@ const getEmptyTransformRecord = () => ({
 
 const requiredField = { required: true, message: 'Requerido' };
 
-const ProviderOrderFormContent = ({ sale }: ProviderOrderFormContentProps) => {
+const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: ProviderOrderFormContentProps) => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [openProvider, setOpenProvider] = useState(false);
 
+  // Inicializar formulario con datos existentes si está en modo edición
+  useEffect(() => {
+    if (isEditing && orderData) {
+      form.setFieldsValue({
+        empresa: 1, // Valor por defecto
+        proveedor: orderData.proveedor,
+        contactoProveedor: orderData.contactoProveedor,
+        fechaDespacho: orderData.fechaDespacho ? dayjs(orderData.fechaDespacho) : null,
+        fechaProgramada: orderData.fechaProgramada ? dayjs(orderData.fechaProgramada) : null,
+        fechaRecepcion: orderData.fechaRecepcion ? dayjs(orderData.fechaRecepcion) : null,
+        productosNota: orderData.notaPedido,
+        productos: orderData.productos?.map(producto => ({
+          codigo: producto.codigo,
+          descripcion: producto.descripcion,
+          uMedida: producto.unidadMedida,
+          cantidad: producto.cantidad,
+          cAlmacen: producto.cantidadAlmacen,
+          cTotal: producto.cantidadTotal,
+          precioUnitario: producto.precioUnitario,
+          total: producto.total,
+        })) || [getEmptyProductRecord()],
+        transportes: orderData.transportesAsignados?.map(transporte => ({
+          transporte: transporte.transporte,
+          contacto: transporte.contactoTransporte,
+          region: transporte.region,
+          provincia: transporte.provincia,
+          destino: transporte.distrito,
+          direccion: transporte.direccion,
+          nota: transporte.notaTransporte,
+          cotizacion: transporte.cotizacionTransporte,
+        })) || [getEmptyTransformRecord()],
+      });
+    }
+  }, [isEditing, orderData, form]);
+
   const handleFinish = async (values: Record<string, any>) => {
     try {
       setLoading(true);
 
-      const productosArr = values.productos.map((item: Record<string, string>) => ({
+      const productosArr = values.productos.map((item: Record<string, any>) => ({
         codigo: item.codigo,
         descripcion: item.descripcion,
         unidadMedida: item.uMedida,
@@ -85,9 +125,9 @@ const ProviderOrderFormContent = ({ sale }: ProviderOrderFormContentProps) => {
         total: item.total,
       }));
 
-      const transportesArr = values.transportes.map((item: Record<string, string>) => ({
-        transporteId: item.transporte,
-        contactoTransporteId: item.contacto,
+      const transportesArr = values.transportes.map((item: Record<string, any>) => ({
+        transporteId: typeof item.transporte === 'object' ? item.transporte?.id : item.transporte,
+        contactoTransporteId: typeof item.contacto === 'object' ? item.contacto?.id : item.contacto,
         region: item.region,
         provincia: item.provincia,
         distrito: item.destino,
@@ -105,12 +145,12 @@ const ProviderOrderFormContent = ({ sale }: ProviderOrderFormContentProps) => {
         },
         proveedor: {
           connect: {
-            id: values.proveedor,
+            id: typeof values.proveedor === 'object' ? values.proveedor.id : values.proveedor,
           },
         },
         contactoProveedor: {
           connect: {
-            id: values.contactoProveedor,
+            id: typeof values.contactoProveedor === 'object' ? values.contactoProveedor.id : values.contactoProveedor,
           },
         },
         fechaDespacho: values.fechaDespacho.toISOString(),
@@ -122,13 +162,17 @@ const ProviderOrderFormContent = ({ sale }: ProviderOrderFormContentProps) => {
         // tipoPago: 'tipo',
         // estadoOp: 'pendiente',
         // activo: true,
-        productos: { create: productosArr },
-        transportesAsignados: { create: transportesArr },
+        productos: isEditing ? { deleteMany: {}, create: productosArr } : { create: productosArr },
+        transportesAsignados: isEditing ? { deleteMany: {}, create: transportesArr } : { create: transportesArr },
       };
 
-      await createOrderProvider(sale.id, body);
-
-      notification.success({ message: 'La órden del proveedor se registró correctamente' });
+      if (isEditing && orderData) {
+        await updateOrderProvider(orderData.id, body);
+        notification.success({ message: 'La orden del proveedor se actualizó correctamente' });
+      } else {
+        await createOrderProvider(sale.id, body);
+        notification.success({ message: 'La orden del proveedor se registró correctamente' });
+      }
 
       navigate('/provider-orders');
     } catch (error) {
@@ -150,6 +194,89 @@ const ProviderOrderFormContent = ({ sale }: ProviderOrderFormContentProps) => {
         <Form.Item name="proveedor" noStyle />
 
         <Stack direction="column" spacing={2}>
+          {/* Información de la OC (solo en modo edición) */}
+          {isEditing && orderData?.ordenCompra && (
+            <StepItemContent
+              showHeader
+              showFooter
+              ResumeIcon={ShoppingCart}
+              color="#006DFA"
+              headerLeft={
+                <Fragment>
+                  {'Creado: '}
+                  <Typography component="span" color="inherit" variant="inherit" fontWeight={600}>
+                    {formattedDate(orderData.ordenCompra.fechaEmision)}
+                  </Typography>
+                </Fragment>
+              }
+              headerRight={
+                <Fragment>
+                  {'OC ID: '}
+                  <Typography component="span" color="inherit" variant="inherit" fontWeight={600}>
+                    {orderData.ordenCompra.id}
+                  </Typography>
+                </Fragment>
+              }
+              resumeContent={
+                <Fragment>
+                  <Typography variant="h5">{orderData.ordenCompra.codigoVenta}</Typography>
+                  <Typography fontWeight={300}>
+                    {orderData.ordenCompra.cliente?.razonSocial || 'N/A'}
+                  </Typography>
+                  <Typography fontWeight={300}>
+                    RUC: {orderData.ordenCompra.cliente?.ruc || 'N/A'}
+                  </Typography>
+                </Fragment>
+              }
+            >
+              <Typography variant="h5" fontWeight={700} component={Stack} direction="row" alignItems="flex-end" spacing={1} mb={2}>
+                <Person />
+                Información de Entrega (Solo Lectura)
+              </Typography>
+
+              <Grid container spacing={3}>
+                <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                    Responsable de Recepción
+                  </Typography>
+                  <Typography variant="body1" fontWeight={600}>
+                    {orderData.ordenCompra.contactoCliente?.nombre || 'N/A'}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {orderData.ordenCompra.contactoCliente?.cargo || 'N/A'}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Tel: {orderData.ordenCompra.contactoCliente?.telefono || 'N/A'}
+                  </Typography>
+                </Grid>
+                
+                <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                    Lugar de Entrega
+                  </Typography>
+                  <Typography variant="body1" fontWeight={600}>
+                    {orderData.ordenCompra.departamentoEntrega || 'N/A'}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {orderData.ordenCompra.provinciaEntrega || 'N/A'} - {orderData.ordenCompra.distritoEntrega || 'N/A'}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {orderData.ordenCompra.direccionEntrega || 'N/A'}
+                  </Typography>
+                </Grid>
+
+                <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                    Referencia de Entrega
+                  </Typography>
+                  <Typography variant="body1">
+                    {orderData.ordenCompra.referenciaEntrega || 'Sin referencia'}
+                  </Typography>
+                </Grid>
+              </Grid>
+            </StepItemContent>
+          )}
+
           {/* Select de empresa compradora */}
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, sm: 6, md: 4 }}>
@@ -448,6 +575,18 @@ const ProviderOrderFormContent = ({ sale }: ProviderOrderFormContentProps) => {
             </Form.Item>
           </StepItemContent>
 
+          {/* Sección de Pagos Proveedor */}
+          <PaymentsList
+            name="pagosProveedor"
+            title="Pagos Proveedor"
+            readonly={true}
+            color="#9932CC"
+            borderColor="#9932CC"
+            buttonColor="#9932CC"
+            required={false}
+            initialValue={[]}
+          />
+
           <Form.List
             name="transportes"
             initialValue={[getEmptyTransformRecord()]}
@@ -478,7 +617,7 @@ const ProviderOrderFormContent = ({ sale }: ProviderOrderFormContentProps) => {
               >
                 <Stack direction="column" spacing={2}>
                   {fields.map((field) => (
-                    <Card key={field.name} variant="outlined" sx={{ borderRadius: 0 }}>
+                    <Card key={field.name} sx={{ borderRadius: 0 , paddingX: 0}}>
                       <CardHeader
                         title={`TRANSPORTE N° ${field.name + 1}`}
                         sx={{ py: 1.5, bgcolor: '#a87bc7' }}
@@ -489,31 +628,31 @@ const ProviderOrderFormContent = ({ sale }: ProviderOrderFormContentProps) => {
                         }
                       />
                       <CardContent>
-                        <Grid container columnSpacing={2}>
-                          <Grid size={{ xs: 12, md: 6, lg: 6, xl: 3 }}>
+                        <Grid container spacing={2}>
+                          {/* Primera fila: 4 campos principales */}
+                          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                             <Form.Item name={[field.name, 'transporte']} rules={[requiredField]}>
                               <SelectTransports label="Transporte" />
                             </Form.Item>
                           </Grid>
-                          <Grid size={{ xs: 12, md: 6, lg: 6, xl: 3 }}>
+                          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                             <Form.Item name={[field.name, 'contacto']} rules={[requiredField]}>
                               <SelectContacts label="Contacto transporte" />
                             </Form.Item>
                           </Grid>
-                          <Grid size={{ xs: 12, md: 6, lg: 6, xl: 3 }}>
+                          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                             <Form.Item name={[field.name, 'destino']} rules={[requiredField]}>
                               <SelectGeneric label="Destino" options={['CLIENTE', 'ALMACEN'].map((value) => ({ value, label: value }))} />
                             </Form.Item>
                           </Grid>
-                          <Grid size={{ xs: 12, md: 6, lg: 6, xl: 3 }}>
+                          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                             <Form.Item name={[field.name, 'cotizacion']} rules={[requiredField]}>
                               <InputFile label="Adjuntar la cotización" accept="pdf" />
                             </Form.Item>
                           </Grid>
 
-                          {/* asdasd */}
-
-                          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                          {/* Segunda fila: Ubicación (Departamento, Provincia, Distrito) */}
+                          <Grid size={{ xs: 12, sm: 4, md: 4 }}>
                             <Form.Item name={[field.name, 'regionComplete']} noStyle />
                             <Form.Item name={[field.name, 'region']} rules={[requiredField]}>
                               <SelectRegions
@@ -529,7 +668,7 @@ const ProviderOrderFormContent = ({ sale }: ProviderOrderFormContentProps) => {
                               />
                             </Form.Item>
                           </Grid>
-                          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                          <Grid size={{ xs: 12, sm: 4, md: 4 }}>
                             <Form.Item name={[field.name, 'provinciaComplete']} noStyle />
                             <Form.Item noStyle shouldUpdate>
                               {({ getFieldValue, setFieldValue }) => (
@@ -548,7 +687,7 @@ const ProviderOrderFormContent = ({ sale }: ProviderOrderFormContentProps) => {
                               )}
                             </Form.Item>
                           </Grid>
-                          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                          <Grid size={{ xs: 12, sm: 4, md: 4 }}>
                             <Form.Item name={[field.name, 'distritoComplete']} noStyle />
                             <Form.Item noStyle shouldUpdate>
                               {({ getFieldValue, setFieldValue }) => (
@@ -565,14 +704,15 @@ const ProviderOrderFormContent = ({ sale }: ProviderOrderFormContentProps) => {
                               )}
                             </Form.Item>
                           </Grid>
-                          <Grid size={{ xs: 12, sm: 6, md: 12 }}>
+
+                          {/* Tercera fila: Dirección completa */}
+                          <Grid size={12}>
                             <Form.Item name={[field.name, 'direccion']} rules={[requiredField]}>
                               <InputAntd label="Dirección" size="large" />
                             </Form.Item>
                           </Grid>
 
-                          {/* asdasd */}
-
+                          {/* Cuarta fila: Nota */}
                           <Grid size={12}>
                             <Form.Item name={[field.name, 'nota']} rules={[requiredField]}>
                               <InputAntd label="Nota" type="textarea" size="large" />

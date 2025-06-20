@@ -52,7 +52,15 @@ export const StepItemContent = ({
             <Box>{resumeContent}</Box>
           </Stack>
 
-          <IconButton sx={{ border: '1px solid', borderRadius: 1, color }} onClick={onClickSearch}>
+          <IconButton 
+            sx={{ 
+              border: '1px solid', 
+              borderRadius: 1, 
+              color,
+              zIndex: 1200 // Debajo de modales (1300) pero encima del contenido normal
+            }} 
+            onClick={onClickSearch}
+          >
             <ResumeSearchIcon />
           </IconButton>
         </Stack>

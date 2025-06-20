@@ -2,6 +2,9 @@
 
 export interface TrackingProps {
   id: number;
+  codigoOC?: string; // Código de la orden de compra, opcional
+  codigoVenta?: string; // Código de la venta, opcional
+
   saleId: number;
   clientRuc: string;
   companyRuc: string;
@@ -21,4 +24,5 @@ export interface TrackingProps {
   deliveryDateOC?: string;
   utility?: number;
   status: 'pending' | 'in_progress' | 'delivered' | 'canceled';
+  createdAt?: string; // Fecha de creación para ordenamiento
 }

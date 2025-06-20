@@ -2,20 +2,50 @@ import PageContent from '@/components/PageContent';
 import TrackingsTable from './components/TrackingsTable';
 import { TrackingProps } from '@/services/trackings/trackings.d';
 import { useNavigate } from 'react-router-dom';
-import { useGlobalInformation } from '@/context/GlobalInformationProvider';
+import { useEffect, useState } from 'react';
+import { getTrackings } from '@/services/trackings/trackings.request';
+import { notification } from 'antd';
 
 const TrackingsPage = () => {
   const router = useNavigate();
-  const { trackings, loadingTrackings } = useGlobalInformation();
+  const [trackings, setTrackings] = useState<TrackingProps[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadTrackings();
+  }, []);
+
+  const loadTrackings = async () => {
+    try {
+      setLoading(true);
+      const data = await getTrackings();
+      setTrackings(data);
+    } catch (error) {
+      notification.error({ 
+        message: 'Error al cargar seguimientos',
+        description: 'No se pudieron cargar los datos de seguimiento'
+      });
+      console.error('Error al cargar trackings:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const onRowClick = (data: TrackingProps) => {
-    console.log('Row clicked', data);
+    console.log('Navegando a seguimiento:', data);
     router('/tracking/' + data.id);
   };
 
   return (
-    <PageContent>
-      <TrackingsTable data={trackings} loading={loadingTrackings} onRowClick={onRowClick} />
+    <PageContent
+      title="Seguimientos"
+      helper="SEGUIMIENTO / ÓRDENES"
+    >
+      <TrackingsTable 
+        data={trackings} 
+        loading={loading} 
+        onRowClick={onRowClick} 
+      />
     </PageContent>
   );
 };

@@ -23,10 +23,14 @@ const ProviderOrdersListDrawer = ({ handleClose, data }: ProviderOrdersListDrawe
   }, []);
 
   const handleSelected = (id?: number) => {
-    setSelectedSale(data);
-
-    if (!id) navigate('/provider-orders/create');
-    else navigate(`/provider-orders/${id}/update`);
+    if (!id) {
+      // Crear nueva OP
+      setSelectedSale(data);
+      navigate('/provider-orders/create');
+    } else {
+      // Ver detalle de OP existente - navegar a la nueva ruta
+      navigate(`/provider-orders/${id}`);
+    }
   };
 
   const handleGetData = async () => {
@@ -44,7 +48,7 @@ const ProviderOrdersListDrawer = ({ handleClose, data }: ProviderOrdersListDrawe
   return (
     <Drawer anchor="right" open onClose={handleClose}>
       <Card sx={{ borderRadius: 0, width: { xs: '100%', sm: 400 } }} variant="outlined">
-        <CardHeader title="DETALLE DE LA ÓRDEN DEL PROVEEDOR" slotProps={{ title: { fontWeight: 700, fontSize: 20, textAlign: 'center' } }} />
+        <CardHeader title="OPs DE LA ORDEN DEL COMPRA" slotProps={{ title: { fontWeight: 700, fontSize: 20, textAlign: 'center' } }} />
         <CardContent sx={{ height: 'calc((100vh) - 225px)', overflow: 'auto', pt: 0.1 }}>
           <Spin spinning={loading}>
             {orderProvidersCodes.length ? (
@@ -60,7 +64,6 @@ const ProviderOrdersListDrawer = ({ handleClose, data }: ProviderOrdersListDrawe
                         variant="outlined"
                         startIcon={<RemoveRedEye />}
                         onClick={() => handleSelected(item.id)}
-                        disabled
                       >
                         VER DETALLE
                       </Button>

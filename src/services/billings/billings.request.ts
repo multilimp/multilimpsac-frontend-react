@@ -4,10 +4,37 @@ import { BillingProps } from './billings.d';
 
 export const getBillings = async (): Promise<BillingProps[]> => {
   try {
-    const response = await apiClient.get('/billings');
-    return Array.isArray(response.data) ? response.data : [];
+    // Obtenemos las órdenes de compra para crear la data de facturación
+    const response = await apiClient.get('/ordenes-compra');
+    const ordenesCompra = response.data;
+    
+    // Transformamos las OCs en datos de facturación
+    const billings: BillingProps[] = ordenesCompra.map((oc: any) => ({
+      id: oc.id,
+      saleId: oc.id,
+      clientBusinessName: oc.cliente?.razonSocial || '',
+      clientRuc: oc.cliente?.ruc || '',
+      companyRuc: oc.empresa?.ruc || '',
+      companyBusinessName: oc.empresa?.razonSocial || '',
+      contact: oc.contactoCliente?.nombre || '',
+      registerDate: oc.fechaEmision || new Date().toISOString(),
+      maxDeliveryDate: oc.fechaMaxForm || new Date().toISOString(),
+      deliveryDateOC: oc.fechaEntrega || undefined,
+      saleAmount: parseFloat(oc.montoVenta || '0'),
+      oce: oc.documentoOce || '',
+      ocf: oc.documentoOcf || '',
+      receptionDate: oc.fechaEntrega || new Date().toISOString(),
+      programmingDate: oc.fechaMaxForm || new Date().toISOString(),
+      invoiceNumber: undefined, // Campo pendiente de implementar
+      invoiceDate: undefined, // Campo pendiente de implementar
+      grr: undefined, // Campo pendiente de implementar
+      isRefact: false, // Campo calculado o predeterminado
+      status: oc.estadoActivo ? 'pending' : 'processed',
+    }));
+    
+    return billings;
   } catch (error) {
-    console.error('Error fetching billings:', error);
+    console.error('Error al obtener billings:', error);
     return [];
   }
 };

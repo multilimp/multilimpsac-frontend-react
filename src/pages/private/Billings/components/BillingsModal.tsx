@@ -77,7 +77,7 @@ const BillingsModal: React.FC<BillingsModalProps> = ({ data, open, onClose, onSa
           <Form form={form} layout="vertical" onFinish={handleFinish} style={{ marginTop: 16 }}>
             <Grid container columnSpacing={2}>
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <Form.Item name="saleId" label="ID Venta" rules={[{ required: true }]}>
+                <Form.Item name="saleId" label="Codigo OC" rules={[{ required: true }]}>
                   <InputNumber style={{ width: '100%' }} />
                 </Form.Item>
               </Grid>

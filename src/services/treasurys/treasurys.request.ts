@@ -3,8 +3,28 @@ import apiClient from '../apiClient';
 import { TreasurysProps } from './treasurys.d';
 
 export const getTreasurys = async (): Promise<TreasurysProps[]> => {
-  const res = await apiClient.get('/treasurys');
-  return res.data;
+  try {
+    // Obtenemos las órdenes de compra para crear la data de tesorería
+    const response = await apiClient.get('/ordenes-compra');
+    const ordenesCompra = response.data;
+    
+    // Transformamos las OCs en datos de tesorería
+    const treasurys: TreasurysProps[] = ordenesCompra.map((oc: any) => ({
+      id: oc.id,
+      saleCode: oc.codigoVenta || `OC-${oc.id}`,
+      clientBusinessName: oc.cliente?.razonSocial || '',
+      clientRuc: oc.cliente?.ruc || '',
+      companyRuc: oc.empresa?.ruc || '',
+      companyBusinessName: oc.empresa?.razonSocial || '',
+      contact: oc.contactoCliente?.nombre || '',
+      status: oc.estadoActivo ? 'pending' : 'processed',
+    }));
+    
+    return treasurys;
+  } catch (error) {
+    console.error('Error al obtener treasurys:', error);
+    return [];
+  }
 };
 
 export const createTreasury = async (
@@ -24,4 +44,26 @@ export const updateTreasury = async (
 
 export const deleteTreasury = async (id: number): Promise<void> => {
   await apiClient.delete(`/treasurys/${id}`);
+};
+
+export const getOrdenCompraByTreasuryId = async (treasuryId: number) => {
+  try {
+    // Obtenemos la orden de compra específica por ID
+    const response = await apiClient.get(`/ordenes-compra/${treasuryId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error al obtener orden de compra para tesorería:', error);
+    throw error;
+  }
+};
+
+export const getOpsByOrdenCompra = async (ordenCompraId: number) => {
+  try {
+    // Obtenemos las órdenes de proveedor relacionadas a la orden de compra
+    const response = await apiClient.get(`/ordenes-proveedores/${ordenCompraId}/op`);
+    return response.data;
+  } catch (error) {
+    console.error('Error al obtener órdenes de proveedor:', error);
+    return [];
+  }
 };

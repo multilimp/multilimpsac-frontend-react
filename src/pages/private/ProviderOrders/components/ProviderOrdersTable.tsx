@@ -26,6 +26,7 @@ interface ProviderOrdersDataTable {
   fechaMaxForm: string;
   montoVenta: string;
   cue: string;
+  departamentoEntrega?: string;
 }
 
 const defaultText = 'N/A';
@@ -46,6 +47,7 @@ const ProviderOrdersTable = ({ data, loading, onRowClick }: ProviderOrdersTableP
     fechaMaxForm: formattedDate(item.fechaMaxForm, undefined, defaultText),
     montoVenta: formatCurrency(parseInt(item.montoVenta, 10)),
     cue: item.cliente?.codigoUnidadEjecutora ?? defaultText,
+    departamentoEntrega: item.departamentoEntrega ?? defaultText,
   }));
 
   const columns: Array<AntColumnType<ProviderOrdersDataTable>> = [
@@ -57,7 +59,6 @@ const ProviderOrdersTable = ({ data, loading, onRowClick }: ProviderOrdersTableP
         <Button
           variant="contained"
           onClick={() => {
-            console.log('Abriendo detalles de orden proveedor:', record.rawdata.id);
             onRowClick(record.rawdata);
           }}
           startIcon={<Visibility />}
@@ -82,19 +83,9 @@ const ProviderOrdersTable = ({ data, loading, onRowClick }: ProviderOrdersTableP
     { title: 'Monto Venta', dataIndex: 'montoVenta', width: 150, filter: true, sort: true },
     { title: 'CUE', dataIndex: 'cue', width: 150, filter: true, sort: true },
     {
-      title: 'Dirección',
-      dataIndex: 'id',
-      width: 300,
-      render: (_, record) => {
-        return (
-          <>
-            {record.rawdata?.direccionEntrega} - {record.rawdata?.referenciaEntrega}
-            <br />
-            {record.rawdata?.departamentoEntrega ?? defaultText} -{record.rawdata?.provinciaEntrega ?? defaultText} -
-            {record.rawdata?.distritoEntrega ?? defaultText}
-          </>
-        );
-      },
+      title: 'Departamento Entrega',
+      dataIndex: 'departamentoEntrega',
+      width: 150,
     },
     {
       title: 'OCE',
@@ -129,14 +120,6 @@ const ProviderOrdersTable = ({ data, loading, onRowClick }: ProviderOrdersTableP
       columns={columns}
       data={formattedData}
       loading={loading}
-      onRow={(record) => {
-        return {
-          onClick: () => onRowClick(record.rawdata),
-          style: {
-            cursor: 'pointer',
-          },
-        };
-      }}
     />
   );
 };

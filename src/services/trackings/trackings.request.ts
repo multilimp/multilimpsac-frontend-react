@@ -1,88 +1,114 @@
 // src/services/trackings/trackings.request.ts
 
+import apiClient from '../apiClient';
 import { TrackingProps } from './trackings.d';
 
-// ——— Datos de prueba ———
-const mockTrackings: TrackingProps[] = [
-  {
-    id: 1,
-    saleId: 101,
-    clientRuc: '12345678901',
-    companyRuc: '10987654321',
-    companyBusinessName: 'Acme S.A.',
-    clientName: 'Juan Pérez',
-    maxDeliveryDate: '2025-06-01T00:00:00.000Z',
-    saleAmount: 1500.5,
-    cue: 'CUE-001',
-    department: 'Lima',
-    oce: 'http://localhost:4000/files/oce-1.pdf',
-    ocf: undefined,
-    peruPurchases: false,
-    grr: 'GRR-123',
-    invoiceNumber: 'F001-0001',
-    isRefact: false,
-    peruPurchasesDate: undefined,
-    deliveryDateOC: '2025-06-05T00:00:00.000Z',
-    utility: 12,
-    status: 'pending',
-  },
-  {
-    id: 2,
-    saleId: 102,
-    clientRuc: '10987654321',
-    companyRuc: '11223344556',
-    companyBusinessName: 'Widgets SAC',
-    clientName: 'María Gómez',
-    maxDeliveryDate: '2025-05-25T00:00:00.000Z',
-    saleAmount: 800,
-    cue: 'CUE-002',
-    department: 'Arequipa',
-    oce: undefined,
-    ocf: 'http://localhost:4000/files/ocf-2.pdf',
-    peruPurchases: true,
-    grr: undefined,
-    invoiceNumber: 'F002-0002',
-    isRefact: true,
-    peruPurchasesDate: '2025-05-18T00:00:00.000Z',
-    deliveryDateOC: undefined,
-    utility: 5,
-    status: 'in_progress',
-  },
-];
-
-// ——— Servicios mock para desarrollo ———
+// ——— Servicios reales conectados al backend ———
 export const getTrackings = async (): Promise<TrackingProps[]> => {
-  // Simular retardo de red
-  await new Promise((res) => setTimeout(res, 300));
-  return mockTrackings;
+  try {
+    // Obtenemos las órdenes de compra para crear el tracking
+    const response = await apiClient.get('/ordenes-compra');
+    const ordenesCompra = response.data;
+    
+    // Transformamos las OCs en datos de tracking
+    const trackings: TrackingProps[] = ordenesCompra.map((oc: any) => ({
+      id: oc.id,
+      saleId: oc.id,
+      clientRuc: oc.cliente?.ruc || '',
+      companyRuc: oc.empresa?.ruc || '',
+      companyBusinessName: oc.empresa?.razonSocial || '',
+      clientName: oc.cliente?.razonSocial || '',
+      maxDeliveryDate: oc.fechaMaxForm || new Date().toISOString(),
+      saleAmount: parseFloat(oc.montoVenta || '0'),
+      cue: oc.cliente?.codigoUnidadEjecutora || '',
+      department: oc.departamentoEntrega || '',
+      oce: oc.documentoOce || undefined,
+      ocf: oc.documentoOcf || undefined,
+      peruPurchases: false, // Campo calculado o predeterminado
+      grr: undefined, // Campo pendiente de implementar
+      invoiceNumber: undefined, // Campo pendiente de implementar
+      isRefact: false, // Campo calculado o predeterminado
+      peruPurchasesDate: undefined, // Campo pendiente de implementar
+      deliveryDateOC: undefined, // Campo pendiente de implementar
+      utility: 0, // Campo calculado o predeterminado
+      status: 'pending' as const, // Estado inicial
+      createdAt: oc.createdAt || oc.fechaEmision || new Date().toISOString(), // Fecha de creación para ordenamiento
+    }));
+    
+    // Ordenar por fecha de creación descendente (más recientes primero)
+    const sortedTrackings = trackings.sort((a, b) => {
+      const dateA = new Date(a.createdAt || '').getTime();
+      const dateB = new Date(b.createdAt || '').getTime();
+      return dateB - dateA; // Orden descendente
+    });
+    
+    return sortedTrackings;
+  } catch (error) {
+    console.error('Error al obtener trackings:', error);
+    return [];
+  }
 };
 
 export const createTracking = async (
   payload: Omit<TrackingProps, 'id'>
 ): Promise<TrackingProps> => {
-  // Opcional: simular la creación y asignar un ID incremental
-  const next: TrackingProps = { id: mockTrackings.length + 1, ...payload };
-  mockTrackings.push(next);
-  return new Promise((res) => setTimeout(() => res(next), 300));
+  try {
+    // Por ahora retornamos un mock hasta implementar endpoint de creación
+    const newTracking: TrackingProps = { 
+      id: Date.now(), // ID temporal
+      ...payload 
+    };
+    return newTracking;
+  } catch (error) {
+    console.error('Error al crear tracking:', error);
+    throw error;
+  }
 };
 
 export const updateTracking = async (
   id: number,
   payload: Partial<TrackingProps>
 ): Promise<TrackingProps> => {
-  const idx = mockTrackings.findIndex((t) => t.id === id);
-  if (idx !== -1) {
-    mockTrackings[idx] = { ...mockTrackings[idx], ...payload };
-    return new Promise((res) => setTimeout(() => res(mockTrackings[idx]), 300));
+  try {
+    // Por ahora retornamos un mock hasta implementar endpoint de actualización
+    const updatedTracking: TrackingProps = { 
+      ...payload as TrackingProps,
+      id // Aseguramos que el ID se mantenga
+    };
+    return updatedTracking;
+  } catch (error) {
+    console.error('Error al actualizar tracking:', error);
+    throw error;
   }
-  return Promise.reject(new Error('Tracking no encontrado'));
 };
 
 export const deleteTracking = async (id: number): Promise<void> => {
-  const idx = mockTrackings.findIndex((t) => t.id === id);
-  if (idx !== -1) {
-    mockTrackings.splice(idx, 1);
-    return new Promise((res) => setTimeout(res, 300));
+  try {
+    // Por ahora solo loggeamos hasta implementar endpoint de eliminación
+    console.log('Eliminando tracking:', id);
+  } catch (error) {
+    console.error('Error al eliminar tracking:', error);
+    throw error;
   }
-  return Promise.reject(new Error('Tracking no encontrado'));
+};
+
+// Servicios específicos para TrackingsOrdersPage
+export const getOrdenCompraByTrackingId = async (trackingId: number) => {
+  try {
+    const response = await apiClient.get(`/ordenes-compra/${trackingId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error al obtener orden de compra:', error);
+    throw error;
+  }
+};
+
+export const getOpsByOrdenCompra = async (ordenCompraId: number) => {
+  try {
+    const response = await apiClient.get(`/ordenes-proveedores/${ordenCompraId}/op`);
+    return response.data;
+  } catch (error) {
+    console.error('Error al obtener órdenes de proveedor:', error);
+    throw error;
+  }
 };
