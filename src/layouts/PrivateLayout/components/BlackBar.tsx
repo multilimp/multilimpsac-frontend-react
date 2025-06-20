@@ -23,7 +23,7 @@ const BlackBar = () => {
     setTempFile(undefined);
   };
 
-  console.log(selectedSale?.productos);
+  console.log(selectedSale?.productos || 'No hay productos disponibles');
 
   const components = {
     [BlackBarKeyEnum.OC]: (

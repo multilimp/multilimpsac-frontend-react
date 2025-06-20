@@ -1,5 +1,5 @@
 
-import { QuoteProps } from '@/services/quotes/quotes';
+import { CotizacionProps, CreateCotizacionData, TipoPago, CotizacionEstado } from '@/types/cotizacion.types';
 import {
   Box,
   Button,
@@ -14,14 +14,30 @@ import { Close, Save } from '@mui/icons-material';
 import { useState, useEffect } from 'react';
 import { Form } from 'antd';
 import InputAntd from '@/components/InputAntd';
-import { createQuote, updateQuote } from '@/services/quotes/quotes.request';
+import SelectGeneric from '@/components/selects/SelectGeneric';
+import SelectCompanies from '@/components/selects/SelectCompanies';
+import SelectClients from '@/components/selects/SelectClients';
+import DatePickerAntd from '@/components/DatePickerAnt';
+import { createCotizacion, updateCotizacion } from '@/services/quotes/quotes.request';
 
 interface QuotesModalProps {
-  data: QuoteProps | null;
+  data: CotizacionProps | null;
   open: boolean;
   onClose: () => void;
   onSuccess?: () => void;
 }
+
+const tiposPagoOptions = [
+  { label: 'Contado', value: TipoPago.CONTADO },
+  { label: 'Crédito', value: TipoPago.CREDITO },
+  { label: 'Consignación', value: TipoPago.CONSIGNACION },
+];
+
+const estadosCotizacionOptions = [
+  { label: 'Pendiente', value: CotizacionEstado.PENDIENTE },
+  { label: 'Aceptada', value: CotizacionEstado.ACEPTADA },
+  { label: 'Rechazada', value: CotizacionEstado.RECHAZADA },
+];
 
 const QuotesModal = ({ data, open, onClose, onSuccess }: QuotesModalProps) => {
   const [form] = Form.useForm();
@@ -30,14 +46,22 @@ const QuotesModal = ({ data, open, onClose, onSuccess }: QuotesModalProps) => {
   useEffect(() => {
     if (data) {
       form.setFieldsValue({
-        quoteNumber: data.quoteNumber,
-        ruc: data.ruc,
-        razonSocial: data.razonSocial,
-        departamento: data.departamento,
-        plazaEntrega: data.plazaEntrega,
-        date: data.date,
-        total: data.total,
-        status: data.status,
+        codigoCotizacion: data.codigoCotizacion,
+        empresaId: data.empresaId,
+        clienteId: data.clienteId,
+        contactoClienteId: data.contactoClienteId,
+        montoTotal: data.montoTotal,
+        tipoPago: data.tipoPago,
+        notaPago: data.notaPago,
+        notaPedido: data.notaPedido,
+        direccionEntrega: data.direccionEntrega,
+        distritoEntrega: data.distritoEntrega,
+        provinciaEntrega: data.provinciaEntrega,
+        departamentoEntrega: data.departamentoEntrega,
+        referenciaEntrega: data.referenciaEntrega,
+        estado: data.estado,
+        fechaCotizacion: data.fechaCotizacion,
+        fechaEntrega: data.fechaEntrega,
       });
     } else {
       form.resetFields();
@@ -48,21 +72,29 @@ const QuotesModal = ({ data, open, onClose, onSuccess }: QuotesModalProps) => {
     try {
       setLoading(true);
       const values = await form.validateFields();
-      const payload: Omit<QuoteProps, 'id'> = {
-        quoteNumber: values.quoteNumber,
-        ruc: values.ruc,
-        razonSocial: values.razonSocial,
-        departamento: values.departamento,
-        plazaEntrega: values.plazaEntrega,
-        date: values.date,
-        total: values.total,
-        status: values.status,
+      
+      const payload: CreateCotizacionData = {
+        codigoCotizacion: values.codigoCotizacion,
+        empresaId: values.empresaId,
+        clienteId: values.clienteId,
+        contactoClienteId: values.contactoClienteId,
+        montoTotal: values.montoTotal,
+        tipoPago: values.tipoPago,
+        notaPago: values.notaPago,
+        notaPedido: values.notaPedido,
+        direccionEntrega: values.direccionEntrega,
+        distritoEntrega: values.distritoEntrega,
+        provinciaEntrega: values.provinciaEntrega,
+        departamentoEntrega: values.departamentoEntrega,
+        referenciaEntrega: values.referenciaEntrega,
+        fechaCotizacion: values.fechaCotizacion,
+        fechaEntrega: values.fechaEntrega,
       };
 
       if (data?.id) {
-        await updateQuote(data.id, payload);
+        await updateCotizacion(data.id, payload);
       } else {
-        await createQuote(payload);
+        await createCotizacion(payload);
       }
 
       onSuccess?.();
@@ -116,7 +148,7 @@ const QuotesModal = ({ data, open, onClose, onSuccess }: QuotesModalProps) => {
             }}
           >
             <Form.Item
-              name="quoteNumber"
+              name="codigoCotizacion"
               rules={[{ required: true, message: 'Código de cotización obligatorio' }]}
             >
               <InputAntd
@@ -126,55 +158,102 @@ const QuotesModal = ({ data, open, onClose, onSuccess }: QuotesModalProps) => {
             </Form.Item>
 
             <Form.Item
-              name="ruc"
-              rules={[{ required: true, message: 'RUC del cliente obligatorio' }]}
+              name="empresaId"
+              rules={[{ required: true, message: 'Empresa obligatoria' }]}
             >
-              <InputAntd
-                label="RUC Cliente"
-                placeholder="Ej. 20601234567"
+              <SelectCompanies
+                label="Empresa"
+                onChange={(_, option: any) => {
+                  form.setFieldValue('empresaId', option?.optiondata?.id);
+                }}
               />
             </Form.Item>
 
             <Form.Item
-              name="razonSocial"
-              rules={[{ required: true, message: 'Razón social obligatoria' }]}
+              name="clienteId"
+              rules={[{ required: true, message: 'Cliente obligatorio' }]}
             >
-              <InputAntd label="Razón Social Cliente" />
+              <SelectClients
+                label="Cliente"
+                onChange={(_, option: any) => {
+                  form.setFieldValue('clienteId', option?.optiondata?.id);
+                }}
+              />
             </Form.Item>
 
             <Form.Item
-              name="departamento"
-              rules={[{ required: true, message: 'Departamento obligatorio' }]}
+              name="montoTotal"
+              rules={[{ required: true, message: 'Monto total obligatorio' }]}
             >
-              <InputAntd label="Departamento" />
+              <InputAntd
+                label="Monto Total (S/.)"
+                type="number"
+              />
             </Form.Item>
 
             <Form.Item
-              name="plazaEntrega"
-              rules={[{ required: true, message: 'Plaza de entrega obligatoria' }]}
+              name="tipoPago"
+              rules={[{ required: true, message: 'Tipo de pago obligatorio' }]}
             >
-              <InputAntd label="Plaza de Entrega" />
+              <SelectGeneric
+                label="Tipo de Pago"
+                options={tiposPagoOptions}
+              />
             </Form.Item>
 
             <Form.Item
-              name="date"
-              rules={[{ required: true, message: 'Fecha obligatorio' }]}
-            >
-              <InputAntd label="Fecha Cotización" type="date" />
-            </Form.Item>
-
-            <Form.Item
-              name="total"
-              rules={[{ required: true, message: 'Monto obligatorio' }]}
-            >
-              <InputAntd label="Monto (S/.)" type="number" />
-            </Form.Item>
-
-            <Form.Item
-              name="status"
+              name="estado"
               rules={[{ required: true, message: 'Estado obligatorio' }]}
             >
-              <InputAntd label="Estado" />
+              <SelectGeneric
+                label="Estado"
+                options={estadosCotizacionOptions}
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="fechaCotizacion"
+              rules={[{ required: true, message: 'Fecha de cotización obligatoria' }]}
+            >
+              <DatePickerAntd
+                label="Fecha Cotización"
+                type="date"
+              />
+            </Form.Item>
+
+            <Form.Item name="fechaEntrega">
+              <DatePickerAntd
+                label="Fecha de Entrega"
+                type="date"
+              />
+            </Form.Item>
+
+            <Form.Item name="direccionEntrega">
+              <InputAntd label="Dirección de Entrega" />
+            </Form.Item>
+
+            <Form.Item name="distritoEntrega">
+              <InputAntd label="Distrito de Entrega" />
+            </Form.Item>
+
+            <Form.Item name="provinciaEntrega">
+              <InputAntd label="Provincia de Entrega" />
+            </Form.Item>
+
+            <Form.Item name="departamentoEntrega">
+              <InputAntd label="Departamento de Entrega" />
+            </Form.Item>
+
+            <Form.Item name="referenciaEntrega">
+              <InputAntd label="Referencia de Entrega" />
+            </Form.Item>
+
+            <Form.Item name="notaPago">
+              <InputAntd label="Nota de Pago" type="textarea" />
+            </Form.Item>
+
+            <Form.Item name="notaPedido">
+              <InputAntd label="Nota de Pedido" type="textarea" />
             </Form.Item>
           </Box>
         </Form>

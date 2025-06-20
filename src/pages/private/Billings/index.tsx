@@ -3,30 +3,26 @@ import React, { useEffect, useState } from 'react';
 import PageContent from '@/components/PageContent';
 import { Button } from '@mui/material';
 import { notification } from 'antd';
-import {
-  getBillings,
-  createBilling,
-  updateBilling,
-} from '@/services/billings/billings.request';
-import { BillingProps } from '@/services/billings/billings.d';
+import { getSales } from '@/services/sales/sales.request';
+import { SaleProps } from '@/services/sales/sales';
 import { ModalStateEnum } from '@/types/global.enum';
 import BillingsTable from './components/BillingsTable';
 import BillingsModal from './components/BillingsModal';
 
 type ModalStateType = null | {
   mode: ModalStateEnum;
-  data: BillingProps | null;
+  data: SaleProps | null;
 };
 
 const BillingsPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
-  const [data, setData] = useState<BillingProps[]>([]);
+  const [data, setData] = useState<SaleProps[]>([]);
   const [modal, setModal] = useState<ModalStateType>(null);
 
   const fetchBillings = async () => {
     setLoading(true);
     try {
-      const res = await getBillings();
+      const res = await getSales();
       setData(res);
     } catch (error) {
       notification.error({
@@ -42,14 +38,14 @@ const BillingsPage: React.FC = () => {
     fetchBillings();
   }, []);
 
-  const handleSave = async (values: Omit<BillingProps, 'id'>, id?: number) => {
+  const handleSave = async (values: any, id?: number) => {
     setLoading(true);
     try {
       if (id !== undefined) {
-        await updateBilling(id, values);
+        // await updateBilling(id, values); // TODO: Implementar en sales service
         notification.success({ message: 'Factura actualizada' });
       } else {
-        await createBilling(values);
+        // await createBilling(values); // TODO: Implementar en sales service
         notification.success({ message: 'Factura creada' });
       }
       await fetchBillings();

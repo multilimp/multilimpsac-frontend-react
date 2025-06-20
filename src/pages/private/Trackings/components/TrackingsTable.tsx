@@ -8,27 +8,26 @@ import AntTable, { AntColumnType } from '@/components/AntTable';
 import { SaleProps } from '@/services/sales/sales';
 
 interface TrackingsTableProps {
-  data: Array<SaleProps | any>; // SaleProps o cualquier otro tipo extendido
+  data: SaleProps[]; // ✅ CAMBIAR de SaleProps a SaleProps[]
   loading: boolean;
   onRowClick?: (row: SaleProps) => void;
   onRecordAction?: (action: ModalStateEnum, data: SaleProps) => void;
 }
 
-// const statusLabels: Record<SaleProps['status'], string> = {
-//   pending: 'Pendiente',
-//   in_progress: 'En Progreso',
-//   delivered: 'Entregado',
-//   canceled: 'Cancelado',
-// };
 const defaultText = 'N/A';
 const TrackingsTable: React.FC<TrackingsTableProps> = ({ data, loading, onRowClick, onRecordAction }) => {
 
   const formattedData = useMemo(() => {
+    // ✅ VALIDAR que data sea un array y no esté vacío
+    if (!Array.isArray(data) || data.length === 0) {
+      return [];
+    }
+    
     return data.map((item) => ({
       id: item.id,
       codigo_venta: item.codigoVenta || defaultText,
-      razon_social_cliente: item?.cliente.razonSocial ?? defaultText,
-      ruc_cliente: item?.cliente.ruc ?? defaultText,
+      razon_social_cliente: item?.cliente?.razonSocial ?? defaultText,
+      ruc_cliente: item?.cliente?.ruc ?? defaultText,
       ruc_empresa: item?.empresa.ruc ?? defaultText,
       razon_social_empresa: item?.empresa.razonSocial ?? defaultText,
       fecha_max_entrega: formattedDate(item.fechaMaxForm, undefined, defaultText),

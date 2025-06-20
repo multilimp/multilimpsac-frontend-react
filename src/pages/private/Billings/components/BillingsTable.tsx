@@ -5,46 +5,49 @@ import { Visibility, PictureAsPdf } from '@mui/icons-material';
 import { formatCurrency, formattedDate } from '@/utils/functions';
 import { ModalStateEnum } from '@/types/global.enum';
 import AntTable, { AntColumnType } from '@/components/AntTable';
-import { BillingProps } from '@/services/billings/billings.d';
+import { SaleProps } from '@/services/sales/sales';
 
 interface BillingsTableProps {
-  data: BillingProps[];
+  data: SaleProps[];
   loading: boolean;
-  onRecordAction?: (action: ModalStateEnum, data: BillingProps) => void;
+  onRecordAction?: (action: ModalStateEnum, data: SaleProps) => void;
 }
 
-const statusMap: Record<BillingProps['status'], string> = {
-  pending: 'Pendiente',
-  paid: 'Pagado',
-  canceled: 'Cancelado',
-  processing: 'Procesando',
+const statusMap = {
+  'pendiente': 'Pendiente',
+  'pagado': 'Pagado',
+  'cancelado': 'Cancelado',
+  'procesando': 'Procesando',
 };
+
+const defaultText = 'N/A';
 
 const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onRecordAction }) => {
 
   const formattedData = useMemo(() => {
+    // ✅ VALIDAR que data sea un array y no esté vacío
+    if (!Array.isArray(data) || data.length === 0) {
+      return [];
+    }
+    
     return data.map((item) => ({
       id: item.id,
-      codigo_venta: item.saleId?.toString() || 'N/A',
-      razon_social_cliente: item.clientBusinessName || '',
-      ruc_cliente: item.clientRuc || '',
-      ruc_empresa: item.companyRuc || '',
-      razon_social_empresa: item.companyBusinessName || '',
-      contacto: item.contact || '',
-      catalogo: 'N/A', // Campo no disponible en BillingProps
-      fecha_formalizacion: formattedDate(item.registerDate),
-      fecha_max_entrega: formattedDate(item.maxDeliveryDate),
-      monto_venta: formatCurrency(item.saleAmount),
-      cue: 'N/A', // Campo no disponible en BillingProps
-      direccion_entrega: 'N/A', // Campo no disponible en BillingProps
-      fecha_factura: formattedDate(item.invoiceDate),
-      numero_factura: item.invoiceNumber || 'N/A',
-      grr: item.grr || 'N/A',
-      estado_facturacion: item.status || 'pending',
-      oce: item.oce,
-      ocf: item.ocf,
-      refact: item.isRefact ? 'Sí' : 'No',
-
+      codigo_venta: item.codigoVenta || defaultText,
+      razon_social_cliente: item?.cliente?.razonSocial ?? defaultText,
+      ruc_cliente: item?.cliente?.ruc ?? defaultText,
+      ruc_empresa: item?.empresa?.ruc ?? defaultText,
+      razon_social_empresa: item?.empresa?.razonSocial ?? defaultText,
+      contacto: item?.contactoCliente?.nombre ?? defaultText,
+      fecha_formalizacion: formattedDate(item.fechaForm, undefined, defaultText),
+      fecha_max_entrega: formattedDate(item.fechaEntrega, undefined, defaultText),
+      monto_venta: formatCurrency(item.montoVenta ? parseInt(item.montoVenta, 10) : 0),
+      fecha_factura: formattedDate(item.fechaEmision, undefined, defaultText),
+      numero_factura: item.codigoVenta || defaultText, // Usando código de venta como número de factura
+      grr: item.siaf || defaultText,
+      estado_facturacion: item.estadoVenta || 'pendiente',
+      oce: item.documentoOce || null,
+      ocf: item.documentoOcf || null,
+      refact: item.ventaPrivada ? 'Sí' : 'No', // Usando ventaPrivada como indicador de refacturación
       rawdata: item,
     }));
   }, [data]);

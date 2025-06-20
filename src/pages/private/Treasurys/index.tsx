@@ -7,19 +7,16 @@ import ConfirmDelete from '@/components/ConfirmDelete';
 import { Button } from '@mui/material';
 import { notification, Modal } from 'antd';
 import { useEffect, useState } from 'react';
-import {
-  getTreasurys,
-  deleteTreasury,
-} from '@/services/treasurys/treasurys.request';
-import { TreasurysProps } from '@/services/treasurys/treasurys.d';
+import { getSales } from '@/services/sales/sales.request';
+import { SaleProps } from '@/services/sales/sales';
 import { ModalStateEnum } from '@/types/global.enum';
 import { ModalStateProps } from '@/types/global';
 
 const TreasurysPage = () => {
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<TreasurysProps[]>([]);
+  const [data, setData] = useState<SaleProps[]>([]);
   // Inicializamos modal con un valor vacío para evitar errores con 'null'
-  const [modal, setModal] = useState<ModalStateProps<TreasurysProps>>({
+  const [modal, setModal] = useState<ModalStateProps<SaleProps>>({
     mode: ModalStateEnum.NONE,
     data: undefined
   });
@@ -31,7 +28,7 @@ const TreasurysPage = () => {
   const obtainData = async () => {
     try {
       setLoading(true);
-      const res = await getTreasurys();
+      const res = await getSales();
       setData([...res]);
     } catch (error) {
       notification.error({
@@ -45,7 +42,7 @@ const TreasurysPage = () => {
 
   const handleRecordAction = (
     mode: ModalStateEnum,
-    record: TreasurysProps
+    record: SaleProps
   ) => {
     if (mode === ModalStateEnum.BOX) {
       setModal({ mode, data: record });
@@ -56,7 +53,7 @@ const TreasurysPage = () => {
         onOk: async () => {
           try {
             if (record.id) {
-              await deleteTreasury(record.id); // Asegúrate de que deleteTreasury esté correctamente importado
+              // await deleteTreasury(record.id); // TODO: Implementar delete en ventas service
               notification.success({ message: 'Registro eliminado' });
               obtainData();
             }

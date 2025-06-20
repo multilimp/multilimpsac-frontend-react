@@ -2,11 +2,10 @@ import { useAppContext } from '@/context';
 import StorageService from '@/services/storageService';
 import { authUser } from '@/services/users/user.requests';
 import { EMAIL_PATTERN, STORAGE_KEY } from '@/utils/constants';
-import { HeroButton } from '@/components/ui/HeroButton';
 import { HeroInput } from '@/components/ui/HeroInput';
 import { heroUIColors, alpha } from '@/styles/theme/heroui-colors';
-import { Visibility, VisibilityOff, Login as LoginIcon } from '@mui/icons-material';
-import { Box, CardContent, IconButton, Stack, Typography, Button } from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
+import { Box, IconButton, Stack, Typography, Button } from '@mui/material';
 import { Form } from 'antd';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -46,35 +45,44 @@ const LoginForm = () => {
   };
 
   return (
-    <Box sx={{ p: 0 }}>
-      {/* Header estilizado */}
-      <Box sx={{ textAlign: 'center', mb: 4 }}>
+    <Box 
+      sx={{ 
+        width: '100%',
+        maxWidth: '380px',
+        mx: 'auto',
+        my: 5,
+        p: 0,
+      }}
+    >
+      {/* Header ultra minimalista */}
+      <Stack spacing={0.5} sx={{ textAlign: 'center', mb: 6 }}>
         <Typography 
-          variant="h4" 
+          variant="h3" 
           sx={{ 
-            fontWeight: 800,
-            background: heroUIColors.gradients.primary,
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            mb: 1,
+            fontWeight: 300,
+            fontSize: '2rem',
+            color: heroUIColors.neutral[800],
+            letterSpacing: '-0.02em',
           }}
         >
           Iniciar Sesión
         </Typography>
         <Typography 
-          variant="body1" 
+          variant="body2" 
           sx={{ 
-            color: heroUIColors.neutral[600],
+            color: heroUIColors.neutral[500],
             fontWeight: 400,
+            fontSize: '0.875rem',
           }}
         >
-          Ingrese sus credenciales para continuar
+          Accede a tu cuenta
         </Typography>
-      </Box>
+      </Stack>
 
-      <CardContent sx={{ p: 4 }}>
-        <Form form={form} onFinish={handleSubmit} layout="vertical">
+      {/* Formulario limpio */}
+      <Form form={form} onFinish={handleSubmit} layout="vertical">
+        <Stack spacing={4}>
+          {/* Campo Email - Sin label visible */}
           <Form.Item
             name="email"
             rules={[
@@ -82,134 +90,129 @@ const LoginForm = () => {
               { pattern: EMAIL_PATTERN, message: 'Ingrese un email válido' },
             ]}
           >
-            <Box sx={{ mb: 2 }}>
-              <Typography 
-                variant="body2" 
-                sx={{ 
-                  fontWeight: 600, 
-                  mb: 1, 
-                  color: heroUIColors.neutral[700] 
-                }}
-              >
-                Email
-              </Typography>
-              <HeroInput 
-                variant="soft"
-                heroSize="large"
-                placeholder="ejemplo@multilimp.com"
-                autoComplete="username" 
-                disabled={loading}
-              />
-            </Box>
+            <HeroInput 
+              variant="soft"
+              heroSize="large"
+              placeholder="tu.email@multilimp.com"
+              autoComplete="username" 
+              disabled={loading}
+              style={{
+                fontSize: '15px',
+                padding: '16px 20px',
+                border: `1px solid ${heroUIColors.neutral[200]}`,
+                borderRadius: '8px',
+                backgroundColor: '#ffffff',
+                transition: 'all 0.2s ease',
+              }}
+            />
           </Form.Item>
 
+          {/* Campo Contraseña - Sin label visible */}
           <Form.Item 
             name="password" 
             rules={[{ required: true, message: 'La contraseña es requerida' }]}
           >
-            <Box sx={{ mb: 3 }}>
-              <Typography 
-                variant="body2" 
-                sx={{ 
-                  fontWeight: 600, 
-                  mb: 1, 
-                  color: heroUIColors.neutral[700] 
-                }}
-              >
-                Contraseña
-              </Typography>
-              <HeroInput
-                variant="soft"
-                heroSize="large"
-                placeholder="Ingrese su contraseña"
-                autoComplete="password"
-                type={show ? 'text' : 'password'}
-                suffix={
-                  <IconButton 
-                    size="small" 
-                    onClick={() => setShow(!show)} 
-                    disabled={loading}
-                    sx={{
-                      color: heroUIColors.neutral[500],
-                      '&:hover': {
-                        color: heroUIColors.primary[500],
-                        background: alpha(heroUIColors.primary[500], 0.1),
-                      }
-                    }}
-                  >
-                    {show ? <Visibility /> : <VisibilityOff />}
-                  </IconButton>
-                }
-                disabled={loading}
-              />
-            </Box>
+            <HeroInput
+              variant="soft"
+              heroSize="large"
+              placeholder="Contraseña"
+              autoComplete="current-password"
+              type={show ? 'text' : 'password'}
+              suffix={
+                <IconButton 
+                  size="small" 
+                  onClick={() => setShow(!show)} 
+                  disabled={loading}
+                  sx={{
+                    color: heroUIColors.neutral[400],
+                    transition: 'color 0.2s ease',
+                    '&:hover': {
+                      color: heroUIColors.neutral[600],
+                      backgroundColor: 'transparent',
+                    }
+                  }}
+                >
+                  {show ? <Visibility fontSize="small" /> : <VisibilityOff fontSize="small" />}
+                </IconButton>
+              }
+              disabled={loading}
+              style={{
+                fontSize: '15px',
+                padding: '16px 20px',
+                border: `1px solid ${heroUIColors.neutral[200]}`,
+                borderRadius: '8px',
+                backgroundColor: '#ffffff',
+                transition: 'all 0.2s ease',
+              }}
+            />
           </Form.Item>
 
-          <HeroButton 
-            variant="gradient"
-            glow
-            loading={loading}
+          {/* Botón de envío ultra limpio */}
+          <Button
             type="submit"
-            style={{ 
+            disabled={loading}
+            onClick={() => form.submit()}
+            sx={{
               width: '100%',
               height: '48px',
-              fontSize: '16px',
-              fontWeight: 600,
-              marginBottom: '16px'
-            }}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <LoginIcon />
-              {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
-            </Box>
-          </HeroButton>
-        </Form>
-
-        <Stack justifyContent="center" alignItems="center" mt={2}>
-          <Button 
-            component={Link} 
-            to="/recovery-password" 
-            variant="text"
-            sx={{
-              color: heroUIColors.neutral[600],
-              textTransform: 'none',
+              fontSize: '15px',
               fontWeight: 500,
-              textDecoration: 'none',
+              borderRadius: '8px',
+              backgroundColor: heroUIColors.neutral[900],
+              color: '#ffffff',
+              textTransform: 'none',
+              border: 'none',
+              boxShadow: 'none',
+              transition: 'all 0.2s ease',
+              
               '&:hover': {
-                color: heroUIColors.primary[500],
-                background: 'transparent',
-                textDecoration: 'underline',
+                backgroundColor: heroUIColors.neutral[800],
+                boxShadow: 'none',
+                transform: 'none',
+              },
+              
+              '&:active': {
+                backgroundColor: heroUIColors.neutral[900],
+                transform: 'scale(0.98)',
+              },
+              
+              '&:disabled': {
+                backgroundColor: heroUIColors.neutral[300],
+                color: heroUIColors.neutral[500],
+                cursor: 'not-allowed',
               }
             }}
           >
-            ¿Olvidaste tu contraseña?
+            {loading ? 'Iniciando...' : 'Continuar'}
           </Button>
         </Stack>
+      </Form>
 
-        {/* Información adicional */}
-        <Box 
-          sx={{ 
-            mt: 4, 
-            p: 2, 
-            borderRadius: heroUIColors.radius.md,
-            background: alpha(heroUIColors.primary[50], 0.5),
-            border: `1px solid ${alpha(heroUIColors.primary[200], 0.3)}`,
+      {/* Link de recuperación ultra sutil */}
+      <Stack alignItems="center" sx={{ mt: 4 }}>
+        <Button 
+          component={Link} 
+          to="/recovery-password" 
+          variant="text"
+          size="small"
+          sx={{
+            color: heroUIColors.neutral[500],
+            textTransform: 'none',
+            fontWeight: 400,
+            fontSize: '0.875rem',
+            textDecoration: 'none',
+            padding: '4px 8px',
+            
+            '&:hover': {
+              color: heroUIColors.neutral[700],
+              backgroundColor: 'transparent',
+              textDecoration: 'none',
+            }
           }}
         >
-          <Typography 
-            variant="caption" 
-            sx={{ 
-              color: heroUIColors.neutral[600],
-              display: 'block',
-              textAlign: 'center',
-              lineHeight: 1.4,
-            }}
-          >
-            🔒 Conexión segura mediante SSL<br/>
-            💼 Sistema ERP empresarial
-          </Typography>
-        </Box>
-      </CardContent>
+          ¿Olvidaste tu contraseña?
+        </Button>
+      </Stack>
     </Box>
   );
 };

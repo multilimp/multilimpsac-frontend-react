@@ -5,7 +5,6 @@ import { Stack, Typography, Button } from '@mui/material';
 import { ArrowBack } from '@mui/icons-material';
 import { getOrderProviderById } from '@/services/providerOrders/providerOrders.requests';
 import { ProviderOrderProps } from '@/services/providerOrders/providerOrders';
-import ProviderOrderDetailContent from './components/ProviderOrderDetailContent';
 import PageContent from '@/components/PageContent';
 
 const ProviderOrderDetail = () => {
@@ -80,7 +79,7 @@ const ProviderOrderDetail = () => {
         </Button>
       }
     >
-      <ProviderOrderDetailContent orderData={orderData} />
+      {/* <ProviderOrderDetailContent orderData={orderData} /> */}
     </PageContent>
   );
 };

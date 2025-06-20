@@ -17,54 +17,7 @@ const Login = () => {
           ${heroUIColors.success[50]} 100%)`,
       }}
     >
-      {/* Formulario de Login */}
-      <Box 
-        sx={{ 
-          display: 'flex', 
-          flex: '1 1 auto', 
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          p: 3,
-          position: 'relative',
-        }} 
-      >
-        {/* Efectos de fondo */}
-        <Box
-          sx={{
-            position: 'absolute',
-            top: '10%',
-            left: '10%',
-            width: '100px',
-            height: '100px',
-            borderRadius: '50%',
-            background: heroUIColors.gradients.primary,
-            opacity: 0.1,
-            filter: 'blur(40px)',
-          }}
-        />
-        <Box
-          sx={{
-            position: 'absolute',
-            bottom: '20%',
-            right: '15%',
-            width: '150px',
-            height: '150px',
-            borderRadius: '50%',
-            background: heroUIColors.gradients.success,
-            opacity: 0.1,
-            filter: 'blur(60px)',
-          }}
-        />
-
-        <Box sx={{ maxWidth: '450px', width: '100%', zIndex: 1 }}>
-          <HeroCard variant="glass" glow>
-            <LoginForm />
-          </HeroCard>
-        </Box>
-      </Box>
-
-      {/* Panel lateral */}
+            {/* Panel lateral */}
       <Box
         sx={{
           alignItems: 'center',
@@ -201,6 +154,52 @@ const Login = () => {
             ))}
           </Stack>
         </Stack>
+      </Box>
+      {/* Formulario de Login */}
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          flex: '1 1 auto', 
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          p: 3,
+          position: 'relative',
+        }} 
+      >
+        {/* Efectos de fondo */}
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '10%',
+            left: '10%',
+            width: '100px',
+            height: '100px',
+            borderRadius: '50%',
+            background: heroUIColors.gradients.primary,
+            opacity: 0.1,
+            filter: 'blur(40px)',
+          }}
+        />
+        <Box
+          sx={{
+            position: 'absolute',
+            bottom: '20%',
+            right: '15%',
+            width: '150px',
+            height: '150px',
+            borderRadius: '50%',
+            background: heroUIColors.gradients.success,
+            opacity: 0.1,
+            filter: 'blur(60px)',
+          }}
+        />
+
+        <Box sx={{ maxWidth: '450px', width: '100%', zIndex: 1 }}>
+          <HeroCard variant="glass">
+            <LoginForm />
+          </HeroCard>
+        </Box>
       </Box>
     </Box>
   );

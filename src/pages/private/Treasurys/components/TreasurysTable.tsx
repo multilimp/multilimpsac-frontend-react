@@ -4,15 +4,18 @@ import { Button, ButtonGroup } from '@mui/material';
 import { Visibility, PaymentOutlined } from '@mui/icons-material';
 import { ModalStateEnum } from '@/types/global.enum';
 import AntTable, { AntColumnType } from '@/components/AntTable';
-import { TreasurysProps } from '@/services/treasurys/treasurys.d';
+import { SaleProps } from '@/services/sales/sales';
 import { useNavigate } from 'react-router-dom';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
+import { formatCurrency, formattedDate } from '@/utils/functions';
 
 interface TreasurysTableProps {
-  data: TreasurysProps[];
+  data: SaleProps[];
   loading: boolean;
-  onRecordAction?: (action: ModalStateEnum, data: TreasurysProps) => void;
+  onRecordAction?: (action: ModalStateEnum, data: SaleProps) => void;
 }
+
+const defaultText = 'N/A';
 
 export default function TreasurysTable({
   data,
@@ -23,51 +26,29 @@ export default function TreasurysTable({
   const { setSelectedSale } = useGlobalInformation();
 
   const formattedData = useMemo(() => {
+    // ✅ VALIDAR que data sea un array y no esté vacío
+    if (!Array.isArray(data) || data.length === 0) {
+      return [];
+    }
+    
     return data.map((item) => ({
       id: item.id,
-      codigo_venta: item.saleCode || 'N/A',
-      razon_social_cliente: item.clientBusinessName || '',
-      ruc_cliente: item.clientRuc || '',
-      ruc_empresa: item.companyRuc || '',
-      razon_social_empresa: item.companyBusinessName || '',
-      contacto: item.contact || '',
-      estado_tesoreria: item.status || 'pendiente',
-
+      codigo_venta: item.codigoVenta || defaultText,
+      razon_social_cliente: item?.cliente?.razonSocial ?? defaultText,
+      ruc_cliente: item?.cliente?.ruc ?? defaultText,
+      ruc_empresa: item?.empresa?.ruc ?? defaultText,
+      razon_social_empresa: item?.empresa?.razonSocial ?? defaultText,
+      contacto: item?.contactoCliente?.nombre ?? defaultText,
+      estado_tesoreria: item.estadoVenta || 'pendiente',
+      monto_venta: formatCurrency(item.montoVenta ? parseInt(item.montoVenta, 10) : 0),
+      fecha_emision: formattedDate(item.fechaEmision, undefined, defaultText),
       rawdata: item,
     }));
   }, [data]);
 
-  const handleManagePayments = (record: TreasurysProps) => {
-    // Crear un mock de SaleProps basado en TreasurysProps para demo
-    const mockSale = {
-      id: record.id,
-      codigoVenta: record.saleCode,
-      empresaRuc: record.companyRuc,
-      empresaRazonSocial: record.companyBusinessName,
-      clienteRuc: record.clientRuc,
-      clienteRazonSocial: record.clientBusinessName,
-      contacto: record.contact,
-      fechaEmision: new Date().toISOString(),
-      ventaPrivada: false,
-      direccionEntrega: '',
-      referenciaEntrega: '',
-      fechaEntrega: new Date().toISOString(),
-      montoVenta: '0',
-      fechaForm: new Date().toISOString(),
-      fechaMaxForm: new Date().toISOString(),
-      productos: [],
-      documentoOce: '',
-      documentoOcf: '',
-      siaf: '',
-      etapaSiaf: '',
-      fechaSiaf: new Date().toISOString(),
-      etapaActual: 'treasury',
-      estadoActivo: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    
-    setSelectedSale(mockSale as any);
+  const handleManagePayments = (record: SaleProps) => {
+    // Usar la venta real
+    setSelectedSale(record);
     navigate(`/treasury/${record.id}/update`);
   };
 
@@ -97,6 +78,8 @@ export default function TreasurysTable({
     { title: 'RUC Empresa', dataIndex: 'ruc_empresa', width: 150, sort: true, filter: true },
     { title: 'Razón Social Empresa', dataIndex: 'razon_social_empresa', width: 200, sort: true, filter: true },
     { title: 'Contacto', dataIndex: 'contacto', width: 200, sort: true, filter: true },
+    { title: 'Monto Venta', dataIndex: 'monto_venta', width: 130, sort: true, filter: true },
+    { title: 'Fecha Emisión', dataIndex: 'fecha_emision', width: 150, sort: true, filter: true },
     { 
       title: 'Estado Tesorería', 
       dataIndex: 'estado_tesoreria', 

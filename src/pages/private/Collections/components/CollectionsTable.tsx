@@ -5,83 +5,54 @@ import { PictureAsPdf, Visibility } from '@mui/icons-material';
 import { formatCurrency, formattedDate } from '@/utils/functions';
 import { ModalStateEnum } from '@/types/global.enum';
 import AntTable, { AntColumnType } from '@/components/AntTable';
+import { SaleProps } from '@/services/sales/sales';
 
-// Interface basada en SaleProps - los mismos campos base que ventas
-export interface CollectionProps {
-  id: number;
-  codigoVenta: string;
-  cliente: {
-    razonSocial: string;
-    ruc: string;
-    codigoUnidadEjecutora: string;
-  };
-  empresa: {
-    ruc: string;
-    razonSocial: string;
-  };
-  contactoCliente?: {
-    nombre: string;
-    cargo: string;
-  };
-  catalogoEmpresa?: {
-    nombre: string;
-  };
-  fechaForm: string;
-  fechaMaxForm: string;
-  montoVenta: string;
-  direccionEntrega?: string;
-  departamentoEntrega?: string;
-  provinciaEntrega?: string;
-  distritoEntrega?: string;
-  referenciaEntrega?: string;
-  estadoVenta?: string;
-  documentoOce?: string;
-  documentoOcf?: string;
-  // Campos específicos de cobranza (se pueden agregar después)
-  estadoCobranza?: string;
-  fechaEstadoCobranza?: string;
-  netoCobrado?: string;
-  penalidad?: string;
-  fechaProximaGestion?: string;
+interface CollectionsTableProps {
+  data: SaleProps[];
+  loading: boolean;
+  onRecordAction?: (action: ModalStateEnum, data: SaleProps) => void;
 }
 
 interface CollectionsTableProps {
-  data: CollectionProps[];
+  data: SaleProps[];
   loading: boolean;
-  onRecordAction?: (action: ModalStateEnum, data: CollectionProps) => void;
+  onRecordAction?: (action: ModalStateEnum, data: SaleProps) => void;
 }
+
+const defaultText = 'N/A';
 
 const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRecordAction }) => {
 
   const formattedData = useMemo(() => {
+    // ✅ VALIDAR que data sea un array y no esté vacío
+    if (!Array.isArray(data) || data.length === 0) {
+      return [];
+    }
+    
     return data.map((item) => ({
       id: item.id,
-      codigo_venta: item.codigoVenta,
-      razon_social_cliente: item.cliente.razonSocial,
-      ruc_cliente: item.cliente.ruc,
-      ruc_empresa: item.empresa.ruc,
-      razon_social_empresa: item.empresa.razonSocial,
-      contacto: item.contactoCliente ? `${item.contactoCliente.nombre} - ${item.contactoCliente.cargo}` : '',
-      catalogo: item.catalogoEmpresa?.nombre ?? '',
-      fecha_formalizacion: formattedDate(item.fechaForm),
-      fecha_max_entrega: formattedDate(item.fechaMaxForm),
-      monto_venta: formatCurrency(Number(item.montoVenta)),
-      cue: item.cliente.codigoUnidadEjecutora,
-      direccion_entrega: `${item.direccionEntrega ?? ''} -
-                          ${item.departamentoEntrega ?? ''}
-                          ${item.provinciaEntrega ?? ''}
-                          ${item.distritoEntrega ?? ''} -
-                          ${item.referenciaEntrega ?? ''}`,
+      codigo_venta: item.codigoVenta || defaultText,
+      razon_social_cliente: item?.cliente?.razonSocial ?? defaultText,
+      ruc_cliente: item?.cliente?.ruc ?? defaultText,
+      ruc_empresa: item?.empresa?.ruc ?? defaultText,
+      razon_social_empresa: item?.empresa?.razonSocial ?? defaultText,
+      contacto: item?.contactoCliente?.nombre ?? defaultText,
+      catalogo: item?.catalogoEmpresa?.nombre ?? defaultText,
+      fecha_formalizacion: formattedDate(item.fechaForm, undefined, defaultText),
+      fecha_max_entrega: formattedDate(item.fechaMaxForm, undefined, defaultText),
+      monto_venta: formatCurrency(item.montoVenta ? parseInt(item.montoVenta, 10) : 0),
+      cue: item?.cliente?.codigoUnidadEjecutora ?? defaultText,
+      direccion_entrega: `${item.direccionEntrega ?? ''} - ${item.departamentoEntrega ?? ''} ${item.provinciaEntrega ?? ''} ${item.distritoEntrega ?? ''} - ${item.referenciaEntrega ?? ''}`,
       
       // Campos específicos de cobranza
       estado_cobranza: item.estadoCobranza || 'pendiente',
-      fecha_estado_cobranza: formattedDate(item.fechaEstadoCobranza),
-      neto_cobrado: formatCurrency(Number(item.netoCobrado || 0)),
-      penalidad: formatCurrency(Number(item.penalidad || 0)),
-      fecha_proxima_gestion: formattedDate(item.fechaProximaGestion),
+      fecha_estado_cobranza: formattedDate(item.fechaEstadoCobranza, undefined, defaultText),
+      neto_cobrado: formatCurrency(item.netoCobrado ? parseInt(item.netoCobrado, 10) : 0),
+      penalidad: formatCurrency(item.penalidad ? parseInt(item.penalidad, 10) : 0),
+      fecha_proxima_gestion: formattedDate(item.fechaProximaGestion, undefined, defaultText),
       
-      oce: item.documentoOce,
-      ocf: item.documentoOcf,
+      oce: item.documentoOce || null,
+      ocf: item.documentoOcf || null,
 
       rawdata: item,
     }));

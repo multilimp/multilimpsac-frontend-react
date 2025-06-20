@@ -6,12 +6,16 @@ import { TrackingProps } from './trackings.d';
 // ——— Servicios reales conectados al backend ———
 export const getTrackings = async (): Promise<TrackingProps[]> => {
   try {
-    // Obtenemos las órdenes de compra para crear el tracking
     const response = await apiClient.get('/ordenes-compra');
     const ordenesCompra = response.data;
     
-    // Transformamos las OCs en datos de tracking
-    const trackings: TrackingProps[] = ordenesCompra.map((oc: any) => ({
+    // ✅ ASEGURAR que siempre retorne un array
+    if (!Array.isArray(ordenesCompra)) {
+      console.warn('Backend no retornó un array:', ordenesCompra);
+      return [];
+    }
+    
+    return ordenesCompra.map((oc: any) => ({
       id: oc.id,
       saleId: oc.id,
       clientRuc: oc.cliente?.ruc || '',
@@ -34,18 +38,9 @@ export const getTrackings = async (): Promise<TrackingProps[]> => {
       status: 'pending' as const, // Estado inicial
       createdAt: oc.createdAt || oc.fechaEmision || new Date().toISOString(), // Fecha de creación para ordenamiento
     }));
-    
-    // Ordenar por fecha de creación descendente (más recientes primero)
-    const sortedTrackings = trackings.sort((a, b) => {
-      const dateA = new Date(a.createdAt || '').getTime();
-      const dateB = new Date(b.createdAt || '').getTime();
-      return dateB - dateA; // Orden descendente
-    });
-    
-    return sortedTrackings;
   } catch (error) {
     console.error('Error al obtener trackings:', error);
-    return [];
+    return []; // ✅ Retornar array vacío en caso de error
   }
 };
 

@@ -1,14 +1,14 @@
 import PageContent from '@/components/PageContent';
 import TrackingsTable from './components/TrackingsTable';
-import { TrackingProps } from '@/services/trackings/trackings.d';
+import { SaleProps } from '@/services/sales/sales';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { getTrackings } from '@/services/trackings/trackings.request';
+import { getSales } from '@/services/sales/sales.request';
 import { notification } from 'antd';
 
 const TrackingsPage = () => {
   const router = useNavigate();
-  const [trackings, setTrackings] = useState<TrackingProps[]>([]);
+  const [trackings, setTrackings] = useState<SaleProps[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -18,7 +18,7 @@ const TrackingsPage = () => {
   const loadTrackings = async () => {
     try {
       setLoading(true);
-      const data = await getTrackings();
+      const data = await getSales();
       setTrackings(data);
     } catch (error) {
       notification.error({ 
@@ -31,7 +31,7 @@ const TrackingsPage = () => {
     }
   };
 
-  const onRowClick = (data: TrackingProps) => {
+  const onRowClick = (data: SaleProps) => {
     console.log('Navegando a seguimiento:', data);
     router('/tracking/' + data.id);
   };
