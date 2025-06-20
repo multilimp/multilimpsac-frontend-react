@@ -11,4 +11,5 @@ export enum ModalStateEnum {
 export enum BlackBarKeyEnum {
   OC = 'OC',
   OP = 'OP',
+  SEGUIMIENTO = 'SEGUIMIENTO',
 }

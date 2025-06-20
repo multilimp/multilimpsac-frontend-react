@@ -4,7 +4,7 @@ import { SaleProps } from '@/services/sales/sales';
 import { heroUIColors, alpha } from '@/styles/theme/heroui-colors';
 import { Delete, RemoveRedEye, Add, Close, Inventory2, ShoppingCart } from '@mui/icons-material';
 import { Button, Card, CardActions, CardContent, CardHeader, Drawer, Stack, Box, Typography, IconButton, Chip, Divider } from '@mui/material';
-import { Empty, notification, Spin } from 'antd';
+import { notification, Spin } from 'antd';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 

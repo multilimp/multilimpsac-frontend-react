@@ -1,68 +1,82 @@
-// src/components/TrackingsTable.tsx
-import React, { useMemo } from 'react';
-import { IconButton, Button } from '@mui/material';
-import { PictureAsPdf, Visibility } from '@mui/icons-material';
-import { formatCurrency, formattedDate } from '@/utils/functions';
-import { ModalStateEnum } from '@/types/global.enum';
 import AntTable, { AntColumnType } from '@/components/AntTable';
 import { SaleProps } from '@/services/sales/sales';
+import { formatCurrency, formattedDate } from '@/utils/functions';
+import { IconButton, Button } from '@mui/material';
+import { PictureAsPdf, Visibility } from '@mui/icons-material';
+import { useGlobalInformation } from '@/context/GlobalInformationProvider';
+import { useNavigate } from 'react-router-dom';
 
 interface TrackingsTableProps {
-  data: SaleProps[]; // ✅ CAMBIAR de SaleProps a SaleProps[]
+  data: Array<SaleProps>;
   loading: boolean;
-  onRowClick?: (row: SaleProps) => void;
-  onRecordAction?: (action: ModalStateEnum, data: SaleProps) => void;
+  onRowClick?: (sale: SaleProps) => void;
+}
+
+interface TrackingsDataTable {
+  id: number;
+  rawdata: SaleProps;
+  codigoVenta: string;
+  clienteRuc: string;
+  clienteNombre: string;
+  empresaRuc: string;
+  empresaNombre: string;
+  contactoCargo: string;
+  contactoNombre: string;
+  catalogoNombre: string;
+  catalogoDescripcion: string;
+  fechaEmision: string;
+  fechaMaxForm: string;
+  montoVenta: string;
+  cue: string;
+  departamentoEntrega?: string;
 }
 
 const defaultText = 'N/A';
-const TrackingsTable: React.FC<TrackingsTableProps> = ({ data, loading, onRowClick, onRecordAction }) => {
+const TrackingsTable = ({ data, loading, onRowClick }: TrackingsTableProps) => {
+  const { setSelectedSale } = useGlobalInformation();
+  const navigate = useNavigate();
 
-  const formattedData = useMemo(() => {
-    // ✅ VALIDAR que data sea un array y no esté vacío
-    if (!Array.isArray(data) || data.length === 0) {
-      return [];
-    }
+  const handleRowClick = (sale: SaleProps) => {
+    // Establecer la venta seleccionada en el contexto global
+    setSelectedSale(sale);
     
-    return data.map((item) => ({
-      id: item.id,
-      codigo_venta: item.codigoVenta || defaultText,
-      razon_social_cliente: item?.cliente?.razonSocial ?? defaultText,
-      ruc_cliente: item?.cliente?.ruc ?? defaultText,
-      ruc_empresa: item?.empresa.ruc ?? defaultText,
-      razon_social_empresa: item?.empresa.razonSocial ?? defaultText,
-      fecha_max_entrega: formattedDate(item.fechaMaxForm, undefined, defaultText),
-      monto_venta: formatCurrency(item.montoVenta ? parseInt(item.montoVenta, 10) : 0),
-      cue: item?.cliente.codigoUnidadEjecutora || defaultText,
-      departamento: item.departamentoEntrega || defaultText,
-      // estado: statusLabels[item.status],
-      peru_compras: item.documentoPeruCompras || defaultText,
-      fecha_peru_compras: item.fechaPeruCompras ? formattedDate(item.fechaPeruCompras) : defaultText,
-      fecha_entrega_oc: item.fechaEntregaOc ? formattedDate(item.fechaEntregaOc) : defaultText,
-      // utilidad: item ? `${item.utility}%` : defaultText,
-      // grr: item.grr || defaultText,
-      // factura: item.invoiceNumber || defaultText,
-      oce: item.documentoOce || defaultText,
-      ocf: item.documentoOcf || defaultText,
-      rawdata: item,
-    }));
-  }, [data]);
+    // Navegar al formulario de seguimiento
+    navigate('/tracking/details');
+    
+    // También llamar al callback original si existe
+    if (onRowClick) {
+      onRowClick(sale);
+    }
+  };
 
-  const columns: Array<AntColumnType<any>> = [
+  const formattedData: Array<TrackingsDataTable> = data.map((item) => ({
+    id: item.id,
+    rawdata: item,
+    codigoVenta: item.codigoVenta,
+    clienteRuc: item?.cliente.ruc ?? defaultText,
+    clienteNombre: item?.cliente.razonSocial ?? defaultText,
+    empresaRuc: item?.empresa.ruc ?? defaultText,
+    empresaNombre: item?.empresa.razonSocial ?? defaultText,
+    contactoCargo: item?.contactoCliente?.cargo ?? defaultText,
+    contactoNombre: item?.contactoCliente?.nombre ?? defaultText,
+    catalogoNombre: item?.catalogoEmpresa?.nombre ?? defaultText,
+    catalogoDescripcion: item?.catalogoEmpresa?.descripcion ?? defaultText,
+    fechaEmision: formattedDate(item.fechaEmision, undefined, defaultText),
+    fechaMaxForm: formattedDate(item.fechaMaxForm, undefined, defaultText),
+    montoVenta: formatCurrency(parseInt(item.montoVenta, 10)),
+    cue: item.cliente?.codigoUnidadEjecutora ?? defaultText,
+    departamentoEntrega: item.departamentoEntrega ?? defaultText,
+  }));
+
+  const columns: Array<AntColumnType<TrackingsDataTable>> = [
     {
       title: 'Código OC',
-      dataIndex: 'codigo_venta',
+      dataIndex: 'codigoVenta',
       width: 200,
       render: (value, record) => (
         <Button
           variant="contained"
-          onClick={() => {
-            console.log('Abriendo detalles de seguimiento:', record.rawdata.id);
-            if (onRecordAction) {
-              onRecordAction(ModalStateEnum.DETAILS, record.rawdata);
-            } else if (onRowClick) {
-              onRowClick(record.rawdata);
-            }
-          }}
+          onClick={() => handleRowClick(record.rawdata)}
           startIcon={<Visibility />}
           size="small"
           color="info"
@@ -72,79 +86,56 @@ const TrackingsTable: React.FC<TrackingsTableProps> = ({ data, loading, onRowCli
         </Button>
       )
     },
-    { title: 'Razón Social Cliente', dataIndex: 'razon_social_cliente', width: 200, sort: true, filter: true },
-    { title: 'RUC Cliente', dataIndex: 'ruc_cliente', width: 150, sort: true, filter: true },
-    { title: 'RUC Empresa', dataIndex: 'ruc_empresa', width: 150, sort: true, filter: true },
-    { title: 'Razón Social Empresa', dataIndex: 'razon_social_empresa', width: 200, sort: true, filter: true },
-    { title: 'Fecha Máx. Entrega', dataIndex: 'fecha_max_entrega', width: 150, sort: true, filter: true },
-    { title: 'Monto Venta', dataIndex: 'monto_venta', width: 130, sort: true, filter: true },
-    { title: 'CUE', dataIndex: 'cue', width: 120, sort: true, filter: true },
-    { title: 'Departamento', dataIndex: 'departamento', width: 130, sort: true, filter: true },
+    { title: 'RUC Cliente', dataIndex: 'clienteRuc', width: 150, filter: true, sort: true },
+    { title: 'Nombre Cliente', dataIndex: 'clienteNombre', width: 150, filter: true, sort: true },
+    { title: 'RUC Empresa', dataIndex: 'empresaRuc', width: 150, filter: true, sort: true },
+    { title: 'Nombre Empresa', dataIndex: 'empresaNombre', width: 150, filter: true, sort: true },
+    { title: 'Cargo Contacto', dataIndex: 'contactoCargo', width: 150, filter: true, sort: true },
+    { title: 'Nombre Contacto', dataIndex: 'contactoNombre', width: 150, filter: true, sort: true },
+    { title: 'Nombre Catálogo', dataIndex: 'catalogoNombre', width: 150, filter: true, sort: true },
+    { title: 'Descripción Catálogo', dataIndex: 'catalogoDescripcion', width: 150, filter: true, sort: true },
+    { title: 'Fecha Emisión', dataIndex: 'fechaEmision', width: 150, filter: true, sort: true },
+    { title: 'Fecha Máxima Entrega', dataIndex: 'fechaMaxForm', width: 150, filter: true, sort: true },
+    { title: 'Monto Venta', dataIndex: 'montoVenta', width: 150, filter: true, sort: true },
+    { title: 'CUE', dataIndex: 'cue', width: 150, filter: true, sort: true },
     {
-      title: 'Estado',
-      dataIndex: 'estado',
-      width: 120,
-      sort: true,
-      filter: true,
-      render: (value) => {
-        const colorMap: Record<string, string> = {
-          'Pendiente': '#f5a524', // amarillo
-          'En Progreso': '#006fee', // azul
-          'Entregado': '#17c964', // verde
-          'Cancelado': '#f31260', // rojo
-        };
-        return (
-          <span style={{
-            color: colorMap[value] || '#000',
-            fontWeight: 600,
-            padding: '4px 8px',
-            backgroundColor: `${colorMap[value] || '#000'}20`,
-            borderRadius: '4px',
-            fontSize: '12px'
-          }}>
-            {value}
-          </span>
-        );
-      }
+      title: 'Departamento Entrega',
+      dataIndex: 'departamentoEntrega',
+      width: 150,
     },
-    { title: 'Perú Compras', dataIndex: 'peru_compras', width: 120, sort: true, filter: true },
-    { title: 'Fecha Perú Compras', dataIndex: 'fecha_peru_compras', width: 150, sort: true, filter: true },
-    { title: 'Fecha Entrega OC', dataIndex: 'fecha_entrega_oc', width: 150, sort: true, filter: true },
-    { title: 'Utilidad (%)', dataIndex: 'utilidad', width: 100, sort: true, filter: true },
-    { title: 'GRR', dataIndex: 'grr', width: 100, sort: true, filter: true },
-    { title: 'Factura', dataIndex: 'factura', width: 120, sort: true, filter: true },
-    { title: 'Refact', dataIndex: 'refact', width: 80, sort: true, filter: true },
     {
       title: 'OCE',
-      dataIndex: 'oce',
-      width: 80,
-      render: (value) =>
-        value && (
-          <IconButton color="error" component="a" href={value} target="_blank" size="small">
+      dataIndex: 'id',
+      width: 100,
+      render: (_, record) =>
+        record.rawdata?.documentoOce ? (
+          <IconButton color="error" component="a" href={record.rawdata?.documentoOce} target="_blank">
             <PictureAsPdf />
           </IconButton>
+        ) : (
+          defaultText
         ),
     },
     {
       title: 'OCF',
-      dataIndex: 'ocf',
-      width: 80,
-      render: (value) =>
-        value && (
-          <IconButton color="error" component="a" href={value} target="_blank" size="small">
+      dataIndex: 'id',
+      width: 100,
+      render: (_, record) =>
+        record.rawdata?.documentoOcf ? (
+          <IconButton color="error" component="a" href={record.rawdata?.documentoOcf} target="_blank">
             <PictureAsPdf />
           </IconButton>
+        ) : (
+          defaultText
         ),
     },
   ];
 
   return (
     <AntTable
-      data={formattedData}
       columns={columns}
+      data={formattedData}
       loading={loading}
-      scroll={{ x: 2200 }}
-      size="small"
     />
   );
 };

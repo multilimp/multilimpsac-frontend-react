@@ -3,18 +3,18 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Stack } from '@mui/material';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
-import ProviderOrderFormContent from './components/ProviderOrderFormContent';
+import TrackingFormContent from './TrackingFormContent';
 import { BlackBarKeyEnum } from '@/types/global.enum';
 
-const ProviderOrderForm = () => {
+const TrackingOrderForm = () => {
   const { selectedSale, setSelectedSale, setBlackBarKey } = useGlobalInformation();
   const navigate = useNavigate();
 
   useEffect(() => {
-    setBlackBarKey(BlackBarKeyEnum.OP);
+    setBlackBarKey(BlackBarKeyEnum.SEGUIMIENTO);
     if (!selectedSale) {
-      message.error('Venta no seleccionada');
-      navigate('/provider-orders');
+      message.error('Venta no seleccionada para seguimiento');
+      navigate('/tracking');
       setBlackBarKey(null);
       return;
     }
@@ -23,13 +23,13 @@ const ProviderOrderForm = () => {
       setSelectedSale(null);
       setBlackBarKey(null);
     };
-  }, [selectedSale]);
+  }, [selectedSale, navigate, setSelectedSale, setBlackBarKey]);
 
   return (
     <Stack direction="column" spacing={2}>
-      {selectedSale ? <ProviderOrderFormContent sale={selectedSale} /> : <Empty />}
+      {selectedSale ? <TrackingFormContent sale={selectedSale} /> : <Empty />}
     </Stack>
   );
 };
 
-export default ProviderOrderForm;
+export default TrackingOrderForm;

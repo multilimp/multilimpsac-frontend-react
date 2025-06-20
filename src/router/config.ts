@@ -27,10 +27,9 @@ const Treasurys = Loadable(lazy(() => import('@/pages/private/Treasurys')));
 const Billings = Loadable(lazy(() => import('@/pages/private/Billings')));
 const Collections = Loadable(lazy(() => import('@/pages/private/Collections/CollectionOrdersPage')));
 const Trackings = Loadable(lazy(() => import('@/pages/private/Trackings')));
-const TrackingsOrders = Loadable(lazy(() => import('@/pages/private/Trackings/TrackingsOrdersPage')));
 const ProviderOrders = Loadable(lazy(() => import('@/pages/private/ProviderOrders')));
 const ProviderOrderForm = Loadable(lazy(() => import('@/pages/private/ProviderOrders/ProviderOrderForm')));
-const ProviderOrderDetail = Loadable(lazy(() => import('@/pages/private/ProviderOrders/ProviderOrderEditPage')));
+const TrackingForm = Loadable(lazy(() => import('@/pages/private/Trackings/TrackingForm')));
 const TreasuryForm = Loadable(lazy(() => import('@/pages/private/Treasurys/TreasuryForm')));
 
 const rolesArr = Object.values(RolesEnum);
@@ -166,7 +165,7 @@ const routes: Array<PropsRoutes> = [
       },
       {
         path: 'tracking/:trackingId',
-        element: TrackingsOrders, // Actualizado a PascalCase
+        element: TrackingForm, // Actualizado a PascalCase
         roles: rolesArr,
       },
       {

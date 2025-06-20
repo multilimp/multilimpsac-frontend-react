@@ -227,6 +227,95 @@ const BlackBar = () => {
         )}
       </Fragment>
     ),
+    [BlackBarKeyEnum.SEGUIMIENTO]: (
+      <Fragment>
+        {selectedSale ? (
+          <Stack direction="column" spacing={3}>
+            <Stack spacing={0.5}>
+              <Typography variant="body1">Seguimiento de Órden</Typography>
+              <Typography variant="h5">{selectedSale.codigoVenta}</Typography>
+              <Typography variant="body2">Fecha {formattedDate(selectedSale.createdAt)}</Typography>
+            </Stack>
+
+            <Divider />
+
+            <List>
+              <ListItem
+                divider
+                disablePadding
+                secondaryAction={formattedDate(selectedSale.fechaMaxForm, undefined, '-')}
+                sx={{ borderBottomColor: 'blue', py: 1 }}
+              >
+                <ListItemText primary="F. Máxima Entrega:" />
+              </ListItem>
+              <ListItem divider disablePadding secondaryAction="En Proceso" sx={{ borderBottomColor: 'blue', py: 1 }}>
+                <ListItemText primary="Estado Actual:" />
+              </ListItem>
+              <ListItem
+                divider
+                disablePadding
+                secondaryAction={formatCurrency(Number(selectedSale.montoVenta))}
+                sx={{ borderBottomColor: 'green', py: 1 }}
+              >
+                <ListItemText primary="Monto Total:" />
+              </ListItem>
+            </List>
+
+            <AccordionStyled title="Información General">
+              <Stack direction="column" spacing={2}>
+                {[
+                  { label: 'Cliente', value: selectedSale.cliente?.razonSocial ?? '-' },
+                  { label: 'RUC Cliente', value: selectedSale.cliente?.ruc ?? '-' },
+                  { label: 'Empresa', value: selectedSale.empresa?.razonSocial ?? '-' },
+                  { label: 'CUE', value: selectedSale.cliente?.codigoUnidadEjecutora ?? '-' },
+                ].map((item, index) => (
+                  <Box key={index + 1}>
+                    <Typography variant="body2" fontWeight={600} children={item.label} />
+                    <Typography variant="body2" color="#bababa" children={item.value} />
+                  </Box>
+                ))}
+              </Stack>
+            </AccordionStyled>
+
+            <AccordionStyled title="Estado de Seguimiento">
+              <Stack direction="column" spacing={2}>
+                <Box>
+                  <Typography variant="body2" fontWeight={600}>Progreso</Typography>
+                  <Typography variant="body2" color="#bababa">65% completado</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="body2" fontWeight={600}>Última Actualización</Typography>
+                  <Typography variant="body2" color="#bababa">{formattedDate(new Date().toISOString())}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="body2" fontWeight={600}>Observaciones</Typography>
+                  <Typography variant="body2" color="#bababa">Seguimiento en proceso normal</Typography>
+                </Box>
+              </Stack>
+            </AccordionStyled>
+
+            <AccordionStyled title="Entrega">
+              <Stack direction="column" spacing={2}>
+                {[
+                  { label: 'Dirección', value: selectedSale.direccionEntrega?.toUpperCase() ?? '-' },
+                  { label: 'Distrito', value: selectedSale.distritoEntrega ?? '-' },
+                  { label: 'Provincia', value: selectedSale.provinciaEntrega ?? '-' },
+                  { label: 'Departamento', value: selectedSale.departamentoEntrega ?? '-' },
+                  { label: 'Referencia', value: selectedSale.referenciaEntrega ?? '-' },
+                ].map((item, index) => (
+                  <Box key={index + 1}>
+                    <Typography variant="body2" fontWeight={600} children={item.label} />
+                    <Typography variant="body2" color="#bababa" children={item.value} />
+                  </Box>
+                ))}
+              </Stack>
+            </AccordionStyled>
+          </Stack>
+        ) : (
+          <Typography color="textSecondary" textAlign="center" children="Venta no seleccionada para seguimiento" />
+        )}
+      </Fragment>
+    ),
   };
 
   return (
