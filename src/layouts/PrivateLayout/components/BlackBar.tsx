@@ -1,4 +1,4 @@
-import { Fragment, ReactNode, useState } from 'react';
+import { Fragment, ReactNode, useState, useEffect, useMemo, memo } from 'react';
 import { Dropdown } from 'antd';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Divider, List, ListItem, ListItemText, Stack, Typography } from '@mui/material';
 import SelectCompanies from '@/components/selects/SelectCompanies';
@@ -13,7 +13,7 @@ const saleTypeOptions = [
   { label: 'Venta Privada', value: 'privada' },
 ];
 
-const BlackBar = () => {
+const BlackBar = memo(() => {
   const { saleInputValues, setSaleInputValues, blackBarKey, selectedSale } = useGlobalInformation();
   const [openDD, setOpenDD] = useState(false);
   const [tempFile, setTempFile] = useState<File>();
@@ -23,9 +23,21 @@ const BlackBar = () => {
     setTempFile(undefined);
   };
 
-  console.log(selectedSale?.productos || 'No hay productos disponibles');
+  // ✅ OPTIMIZACIÓN: Memoizar el parseo de productos
+  const parsedProductos = useMemo(() => {
+    if (!selectedSale?.productos) return [];
+    if (typeof selectedSale.productos === 'string') {
+      try {
+        return JSON.parse(selectedSale.productos);
+      } catch {
+        return [];
+      }
+    }
+    return Array.isArray(selectedSale.productos) ? selectedSale.productos : [];
+  }, [selectedSale?.productos]);
 
-  const components = {
+  // ✅ OPTIMIZACIÓN: Memoizar componentes pesados
+  const components = useMemo(() => ({
     [BlackBarKeyEnum.OC]: (
       <Stack direction="column" spacing={3}>
         <Box
@@ -205,7 +217,7 @@ const BlackBar = () => {
 
             <AccordionStyled title="Productos">
               <Stack direction="column" spacing={3}>
-                {selectedSale.productos.map((item, index) => (
+                {parsedProductos.map((item: any, index: number) => (
                   <Box key={index + 1}>
                     <Typography variant="body2">
                       Código: <b>{item.codigo}</b>
@@ -316,7 +328,7 @@ const BlackBar = () => {
         )}
       </Fragment>
     ),
-  };
+  }), [selectedSale, parsedProductos, saleInputValues]); // Dependencias específicas
 
   return (
     <Fragment>
@@ -333,7 +345,9 @@ const BlackBar = () => {
       ) : null}
     </Fragment>
   );
-};
+});
+
+BlackBar.displayName = 'BlackBar';
 
 export default BlackBar;
 

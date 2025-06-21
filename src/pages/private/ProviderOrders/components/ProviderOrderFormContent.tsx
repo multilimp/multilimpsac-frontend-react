@@ -28,9 +28,6 @@ import SelectCompanies from '@/components/selects/SelectCompanies';
 import DatePickerAntd from '@/components/DatePickerAnt';
 import { SaleProps } from '@/services/sales/sales';
 import { formatCurrency } from '@/utils/functions';
-import SelectRegions from '@/components/selects/SelectRegions';
-import SelectProvinces from '@/components/selects/SelectProvinces';
-import SelectDistricts from '@/components/selects/SelectDistricts';
 import SelectContacts from '@/components/selects/SelectContacts';
 import SelectContactsByProvider from '@/components/selects/SelectContactsByProvider';
 import { createOrderProvider, updateOrderProvider } from '@/services/providerOrders/providerOrders.requests';
@@ -41,7 +38,6 @@ import dayjs from 'dayjs';
 import { ProviderProps } from '@/services/providers/providers';
 import ProviderSelectorModal from '../../Providers/components/ProviderSelectorModal';
 import { ProviderOrderProps } from '@/services/providerOrders/providerOrders';
-import { formattedDate } from '@/utils/functions';
 
 interface ProviderOrderFormContentProps {
   sale: SaleProps;
@@ -63,6 +59,11 @@ const getEmptyProductRecord = () => ({
 const getEmptyTransformRecord = () => ({
   transporte: null,
   destino: null,
+  region: '',
+  provincia: '',
+  distrito: '',
+  direccion: '',
+  nota: '',
   flete: '',
   cotizacion: null,
 });
@@ -85,6 +86,7 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
         fechaDespacho: orderData.fechaDespacho ? dayjs(orderData.fechaDespacho) : null,
         fechaProgramada: orderData.fechaProgramada ? dayjs(orderData.fechaProgramada) : null,
         fechaRecepcion: orderData.fechaRecepcion ? dayjs(orderData.fechaRecepcion) : null,
+        montoProveedor: orderData.totalProveedor,
         productosNota: orderData.notaPedido,
         productos: orderData.productos?.map(producto => ({
           codigo: producto.codigo,
@@ -99,12 +101,14 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
         transportes: orderData.transportesAsignados?.map(transporte => ({
           transporte: transporte.transporte,
           contacto: transporte.contactoTransporte,
-          region: transporte.region,
-          provincia: transporte.provincia,
-          destino: transporte.distrito,
-          direccion: transporte.direccion,
-          nota: transporte.notaTransporte,
-          cotizacion: transporte.cotizacionTransporte,
+          region: transporte.region || '',
+          provincia: transporte.provincia || '',
+          distrito: transporte.distrito || '',
+          destino: transporte.tipoDestino,
+          direccion: transporte.direccion || '',
+          nota: transporte.notaTransporte || '',
+          flete: transporte.montoFlete || '',
+          cotizacion: transporte.cotizacionTransporte || null,
         })) || [getEmptyTransformRecord()],
       });
     }
@@ -128,38 +132,27 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
       const transportesArr = values.transportes.map((item: Record<string, any>) => ({
         transporteId: typeof item.transporte === 'object' ? item.transporte?.id : item.transporte,
         contactoTransporteId: typeof item.contacto === 'object' ? item.contacto?.id : item.contacto,
-        region: item.region,
-        provincia: item.provincia,
-        distrito: item.destino,
-        direccion: item.direccion,
-        notaTransporte: item.nota,
-        cotizacionTransporte: item.cotizacion,
-        tipoDestino: item.destino,
+        region: item.region || null,
+        provincia: item.provincia || null,
+        distrito: item.distrito || null,
+        direccion: item.direccion || null,
+        notaTransporte: item.nota || null,
+        tipoDestino: item.destino === 'CLIENTE' ? 'CLIENTE' : 'ALMACEN',
+        montoFlete: Number(item.flete) || null,
+        cotizacionTransporte: item.cotizacion || null,
       }));
 
       const body = {
-        empresa: {
-          connect: {
-            id: values.empresa,
-          },
-        },
-        proveedor: {
-          connect: {
-            id: typeof values.proveedor === 'object' ? values.proveedor.id : values.proveedor,
-          },
-        },
-        contactoProveedor: {
-          connect: {
-            id: typeof values.contactoProveedor === 'object' ? values.contactoProveedor.id : values.contactoProveedor,
-          },
-        },
-        fechaDespacho: values.fechaDespacho.toISOString(),
-        fechaProgramada: values.fechaProgramada.toISOString(),
-        fechaRecepcion: values.fechaRecepcion.toISOString(),
-        notaPedido: values.productosNota,
-        // totalProveedor: '2000',
-        // notaPago: 'nota',
-        // tipoPago: 'tipo',
+        // ✅ CORRECCIÓN: Agregar ordenCompraId al body
+        ordenCompraId: sale.id,
+        empresaId: sale.empresa.id,
+        proveedorId: typeof values.proveedor === 'object' ? values.proveedor?.id : values.proveedor,
+        contactoProveedorId: values.contactoProveedor,
+        fechaProgramada: values.fechaProgramada?.toISOString(),
+        fechaDespacho: values.fechaDespacho?.toISOString(),
+        fechaRecepcion: values.fechaRecepcion?.toISOString(),
+        fechaEntrega: values.fechaEntrega || null,
+        totalProveedor: Number(values.montoProveedor) || 0,
         // estadoOp: 'pendiente',
         // activo: true,
         productos: isEditing ? { deleteMany: {}, create: productosArr } : { create: productosArr },
@@ -170,6 +163,7 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
         await updateOrderProvider(orderData.id, body);
         notification.success({ message: 'La orden del proveedor se actualizó correctamente' });
       } else {
+        // ✅ NOTA: Aquí se pasa sale.id como ordenCompraId en la URL y en el body para consistencia
         await createOrderProvider(sale.id, body);
         notification.success({ message: 'La orden del proveedor se registró correctamente' });
       }
@@ -194,89 +188,6 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
         <Form.Item name="proveedor" noStyle />
 
         <Stack direction="column" spacing={2}>
-          {/* Información de la OC (solo en modo edición) */}
-          {isEditing && orderData?.ordenCompra && (
-            <StepItemContent
-              showHeader
-              showFooter
-              ResumeIcon={ShoppingCart}
-              color="#006DFA"
-              headerLeft={
-                <Fragment>
-                  {'Creado: '}
-                  <Typography component="span" color="inherit" variant="inherit" fontWeight={600}>
-                    {formattedDate(orderData.ordenCompra.fechaEmision)}
-                  </Typography>
-                </Fragment>
-              }
-              headerRight={
-                <Fragment>
-                  {'OC ID: '}
-                  <Typography component="span" color="inherit" variant="inherit" fontWeight={600}>
-                    {orderData.ordenCompra.id}
-                  </Typography>
-                </Fragment>
-              }
-              resumeContent={
-                <Fragment>
-                  <Typography variant="h5">{orderData.ordenCompra.codigoVenta}</Typography>
-                  <Typography fontWeight={300}>
-                    {orderData.ordenCompra.cliente?.razonSocial || 'N/A'}
-                  </Typography>
-                  <Typography fontWeight={300}>
-                    RUC: {orderData.ordenCompra.cliente?.ruc || 'N/A'}
-                  </Typography>
-                </Fragment>
-              }
-            >
-              <Typography variant="h5" fontWeight={700} component={Stack} direction="row" alignItems="flex-end" spacing={1} mb={2}>
-                <Person />
-                Información de Entrega (Solo Lectura)
-              </Typography>
-
-              <Grid container spacing={3}>
-                <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                    Responsable de Recepción
-                  </Typography>
-                  <Typography variant="body1" fontWeight={600}>
-                    {orderData.ordenCompra.contactoCliente?.nombre || 'N/A'}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {orderData.ordenCompra.contactoCliente?.cargo || 'N/A'}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Tel: {orderData.ordenCompra.contactoCliente?.telefono || 'N/A'}
-                  </Typography>
-                </Grid>
-                
-                <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                    Lugar de Entrega
-                  </Typography>
-                  <Typography variant="body1" fontWeight={600}>
-                    {orderData.ordenCompra.departamentoEntrega || 'N/A'}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {orderData.ordenCompra.provinciaEntrega || 'N/A'} - {orderData.ordenCompra.distritoEntrega || 'N/A'}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {orderData.ordenCompra.direccionEntrega || 'N/A'}
-                  </Typography>
-                </Grid>
-
-                <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                    Referencia de Entrega
-                  </Typography>
-                  <Typography variant="body1">
-                    {orderData.ordenCompra.referenciaEntrega || 'Sin referencia'}
-                  </Typography>
-                </Grid>
-              </Grid>
-            </StepItemContent>
-          )}
-
           {/* Select de empresa compradora */}
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, sm: 6, md: 4 }}>
@@ -327,7 +238,9 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
                   const provider: null | ProviderProps = getFieldValue('proveedor');
                   return (
                     <Fragment>
-                      <Typography variant="h5">OCGRU660</Typography>
+                      <Typography variant="h5">
+                        {isEditing && orderData?.codigoOp ? orderData.codigoOp : 'Nuevo OP'}
+                      </Typography>
                       <Typography fontWeight={300} color={provider ? undefined : 'textSecondary'}>
                         {provider?.razonSocial ?? 'Seleccione un proveedor'}
                       </Typography>
@@ -354,6 +267,17 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                 <Form.Item name="fechaDespacho" rules={[requiredField]}>
                   <DatePickerAntd label="Fecha de despacho" />
+                </Form.Item>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                <Form.Item name="montoProveedor" rules={[requiredField]}>
+                  <InputNumber
+                    min={0}
+                    step={0.01}
+                    placeholder="Monto del proveedor"
+                    style={{ width: '100%' }}
+                    prefix="S/ "
+                  />
                 </Form.Item>
               </Grid>
               <Grid size={12}>
@@ -629,90 +553,66 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
                       />
                       <CardContent>
                         <Grid container spacing={2}>
-                          {/* Primera fila: 4 campos principales */}
-                          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                          {/* Primera fila: Empresa de Transporte y Dirección */}
+                          <Grid size={{ xs: 12, sm: 6 }}>
                             <Form.Item name={[field.name, 'transporte']} rules={[requiredField]}>
-                              <SelectTransports label="Transporte" />
+                              <SelectTransports label="Empresa de Transporte" />
                             </Form.Item>
                           </Grid>
-                          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                            <Form.Item name={[field.name, 'contacto']} rules={[requiredField]}>
-                              <SelectContacts label="Contacto transporte" />
-                            </Form.Item>
-                          </Grid>
-                          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                            <Form.Item name={[field.name, 'destino']} rules={[requiredField]}>
-                              <SelectGeneric label="Destino" options={['CLIENTE', 'ALMACEN'].map((value) => ({ value, label: value }))} />
-                            </Form.Item>
-                          </Grid>
-                          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                            <Form.Item name={[field.name, 'cotizacion']} rules={[requiredField]}>
-                              <InputFile label="Adjuntar la cotización" accept="pdf" />
-                            </Form.Item>
-                          </Grid>
-
-                          {/* Segunda fila: Ubicación (Departamento, Provincia, Distrito) */}
-                          <Grid size={{ xs: 12, sm: 4, md: 4 }}>
-                            <Form.Item name={[field.name, 'regionComplete']} noStyle />
-                            <Form.Item name={[field.name, 'region']} rules={[requiredField]}>
-                              <SelectRegions
-                                label="Departamento"
-                                onChange={(value, record: any) => {
-                                  form.setFieldValue([field.name, 'region'], value);
-                                  form.setFieldValue([field.name, 'regionComplete'], record?.optiondata);
-                                  form.setFieldValue([field.name, 'provincia'], null);
-                                  form.setFieldValue([field.name, 'provinciaComplete'], null);
-                                  form.setFieldValue([field.name, 'distrito'], null);
-                                  form.setFieldValue([field.name, 'distritoComplete'], null);
-                                }}
-                              />
-                            </Form.Item>
-                          </Grid>
-                          <Grid size={{ xs: 12, sm: 4, md: 4 }}>
-                            <Form.Item name={[field.name, 'provinciaComplete']} noStyle />
-                            <Form.Item noStyle shouldUpdate>
-                              {({ getFieldValue, setFieldValue }) => (
-                                <Form.Item name={[field.name, 'provincia']} rules={[requiredField]}>
-                                  <SelectProvinces
-                                    label="Provincia"
-                                    regionId={getFieldValue([field.name, 'region'])}
-                                    onChange={(value, record: any) => {
-                                      setFieldValue([field.name, 'provincia'], value);
-                                      setFieldValue([field.name, 'provinciaComplete'], record?.optiondata);
-                                      setFieldValue([field.name, 'distrito'], null);
-                                      setFieldValue([field.name, 'distritoComplete'], null);
-                                    }}
-                                  />
-                                </Form.Item>
-                              )}
-                            </Form.Item>
-                          </Grid>
-                          <Grid size={{ xs: 12, sm: 4, md: 4 }}>
-                            <Form.Item name={[field.name, 'distritoComplete']} noStyle />
-                            <Form.Item noStyle shouldUpdate>
-                              {({ getFieldValue, setFieldValue }) => (
-                                <Form.Item name={[field.name, 'distrito']} rules={[requiredField]}>
-                                  <SelectDistricts
-                                    label="Distrito"
-                                    provinceId={getFieldValue([field.name, 'provincia'])}
-                                    onChange={(value, record: any) => {
-                                      setFieldValue([field.name, 'distrito'], value);
-                                      setFieldValue([field.name, 'distritoComplete'], record?.optiondata);
-                                    }}
-                                  />
-                                </Form.Item>
-                              )}
-                            </Form.Item>
-                          </Grid>
-
-                          {/* Tercera fila: Dirección completa */}
-                          <Grid size={12}>
+                          <Grid size={{ xs: 12, sm: 6 }}>
                             <Form.Item name={[field.name, 'direccion']} rules={[requiredField]}>
                               <InputAntd label="Dirección" size="large" />
                             </Form.Item>
                           </Grid>
 
-                          {/* Cuarta fila: Nota */}
+                          {/* Segunda fila: Contacto y Destino */}
+                          <Grid size={{ xs: 12, sm: 6 }}>
+                            <Form.Item name={[field.name, 'contacto']} rules={[requiredField]}>
+                              <SelectContacts label="Contacto transporte" />
+                            </Form.Item>
+                          </Grid>
+                          <Grid size={{ xs: 12, sm: 6 }}>
+                            <Form.Item name={[field.name, 'destino']} rules={[requiredField]}>
+                              <SelectGeneric label="Destino" options={['CLIENTE', 'ALMACEN'].map((value) => ({ value, label: value }))} />
+                            </Form.Item>
+                          </Grid>
+
+                          {/* Tercera fila: Ubicación como inputs de texto (no obligatorios) */}
+                          <Grid size={{ xs: 12, sm: 4 }}>
+                            <Form.Item name={[field.name, 'region']}>
+                              <InputAntd label="Departamento" size="large" />
+                            </Form.Item>
+                          </Grid>
+                          <Grid size={{ xs: 12, sm: 4 }}>
+                            <Form.Item name={[field.name, 'provincia']}>
+                              <InputAntd label="Provincia" size="large" />
+                            </Form.Item>
+                          </Grid>
+                          <Grid size={{ xs: 12, sm: 4 }}>
+                            <Form.Item name={[field.name, 'distrito']}>
+                              <InputAntd label="Distrito" size="large" />
+                            </Form.Item>
+                          </Grid>
+
+                          {/* Cuarta fila: Subir Cotización y Flete Cotizado */}
+                          <Grid size={{ xs: 12, sm: 6 }}>
+                            <Form.Item name={[field.name, 'cotizacion']} rules={[requiredField]}>
+                              <InputFile label="Adjuntar la cotización" accept="pdf" />
+                            </Form.Item>
+                          </Grid>
+                          <Grid size={{ xs: 12, sm: 6 }}>
+                            <Form.Item name={[field.name, 'flete']} rules={[requiredField]}>
+                              <InputNumber
+                                min={0}
+                                step={0.01}
+                                placeholder="0.00"
+                                style={{ width: '100%' }}
+                                prefix="S/ "
+                              />
+                            </Form.Item>
+                          </Grid>
+
+                          {/* Quinta fila: Nota */}
                           <Grid size={12}>
                             <Form.Item name={[field.name, 'nota']} rules={[requiredField]}>
                               <InputAntd label="Nota" type="textarea" size="large" />

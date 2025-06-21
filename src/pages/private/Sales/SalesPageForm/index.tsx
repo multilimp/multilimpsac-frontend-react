@@ -182,7 +182,7 @@ const SalesPageForm = () => {
           estadoVenta: values.estadoVenta || 'incompleto',
           documentoOce: values.ordenCompraElectronica || null,
           documentoOcf: values.ordenCompraFisica || null,
-          productos: values.productos || [],
+          productos: JSON.stringify(values.productos || []),
         };
 
         // Si es venta privada, incluir datos específicos
@@ -289,7 +289,7 @@ const SalesPageForm = () => {
           estadoVenta: values.estadoVenta || 'incompleto',
           documentoOce: values.ordenCompraElectronica || null,
           documentoOcf: values.ordenCompraFisica || null,
-          productos: values.productos || [],
+          productos: JSON.stringify(values.productos || []),
         };
 
         console.log('Datos a enviar:', bodyVentaDirecta);

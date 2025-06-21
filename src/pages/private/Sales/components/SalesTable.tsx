@@ -97,16 +97,26 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading }) => {
     {
       title: '',
       dataIndex: 'estado_indicador',
-      width: 20,
+      width: 40,
       render: (value: string) => (
         <Box
           sx={{
-            width: 12,
-            height: 12,
-            borderRadius: '50%',
-            backgroundColor: getStatusBackgroundColor(value),
-            margin: '0 auto',
-            boxShadow: `0 2px 4px ${getStatusBackgroundColor(value)}40`,
+            width: '100%', 
+            height: '100%', 
+            minHeight: '60px', // ✅ Altura mínima garantizada
+            backgroundColor: `${getStatusBackgroundColor(value)} !important`,
+            margin: '-16px !important', // ✅ Compensa el padding de la celda
+            padding: '12px !important', // ✅ Restaura el padding interno
+            display: 'flex !important',
+            alignItems: 'center !important',
+            justifyContent: 'center !important',
+            borderRadius: '0 !important', // ✅ Sin bordes redondeados para ocupar toda la celda
+            
+            // ✅ Forzar que sobrescriba estilos de tabla
+            '&:hover': {
+              backgroundColor: `${getStatusBackgroundColor(value)} !important`,
+              opacity: '0.9 !important',
+            }
           }}
         />
       ),
