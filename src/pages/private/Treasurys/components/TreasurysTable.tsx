@@ -61,7 +61,7 @@ export default function TreasurysTable({
         <Button
           variant="contained"
           onClick={() => {
-            console.log('Abriendo detalles de tesorería:', record.rawdata.id);
+            console.log('Abriendo drawer de OPs para:', record.rawdata.id);
             onRecordAction?.(ModalStateEnum.DETAILS, record.rawdata);
           }}
           startIcon={<Visibility />}

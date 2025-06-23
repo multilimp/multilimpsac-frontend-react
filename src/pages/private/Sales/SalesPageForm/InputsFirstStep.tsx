@@ -1,15 +1,14 @@
 import { Fragment, useState } from 'react';
 import { Form, FormInstance } from 'antd';
-import { Button, FormHelperText, Grid, IconButton, Stack, Typography, Box } from '@mui/material';
+import { Box, Grid, Stack, Typography } from '@mui/material';
 import { StepItemContent } from './smallcomponents';
 import SelectGeneric from '@/components/selects/SelectGeneric';
 import InputFile from '@/components/InputFile';
-import InputAntd from '@/components/InputAntd';
-import { Delete, Add, Payment, Handshake } from '@mui/icons-material';
-import { formatCurrency } from '@/utils/functions';
+import { Handshake } from '@mui/icons-material';
 import DatePickerAntd from '@/components/DatePickerAnt';
-import SelectContactsByClient from '@/components/selects/SelectContactsByClient';
 import ClientSelectorModal from '../../Clients/components/ClientSelectorModal';
+import PaymentsList from '@/components/PaymentsList';
+import SelectContactsByClient from '@/components/selects/SelectContactsByClient';
 import { ClientProps } from '@/services/clients/clients';
 
 export const requiredField = { required: true, message: 'Campo requerido' };
@@ -20,23 +19,38 @@ const facturaStatusOptions = [
   { label: 'Urgente', value: 'URGENTE' },
 ];
 
-const statusOptions = [
-  { label: 'Activo', value: 'activo' },
-  { label: 'Inactivo', value: 'inactivo' },
-];
-
-const getEmptyPaymentRecord = () => ({
-  date: null,
-  bank: '',
-  description: '',
-  file: null,
-  amount: '',
-  status: 'activo',
-});
-
 const InputsFirstStep = ({ form }: { form: FormInstance }) => {
   const [openClients, setOpenClients] = useState(false);
-
+  const renderFooterContent = () => {
+    return (
+      <Form.Item noStyle shouldUpdate>
+        {({ getFieldValue }) => {
+          const clientePrivate: ClientProps | null = getFieldValue('clientePrivate');
+          return (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 4, width: '100%' }}>
+             
+              {/* Selector de contacto */}
+              <Box sx={{ flex: 1, maxWidth: 300 }}>
+                <Form.Item name="privateContact" noStyle>
+                  <SelectContactsByClient 
+                    label="" 
+                    placeholder="Seleccionar contacto"
+                    clientId={clientePrivate?.id}
+                    size="small"
+                    style={{ 
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      borderRadius: '4px'
+                    }}
+                  />
+                </Form.Item>
+              </Box>
+            </Box>
+          );
+        }}
+      </Form.Item>
+    );
+  };
   return (
     <Stack direction="column" spacing={2}>
       <StepItemContent
@@ -46,169 +60,67 @@ const InputsFirstStep = ({ form }: { form: FormInstance }) => {
         color="#006DFA"
         onClickSearch={() => setOpenClients(true)}
         resumeContent={
-          <Form.Item noStyle shouldUpdate>
-            {({ getFieldValue }) => {
-              const clientePrivate: null | ClientProps = getFieldValue('clientePrivate');
-              return (
-                <Fragment>
-                  <Typography variant="h5">Venta Privada</Typography>
-                  <Typography fontWeight={300} color={clientePrivate ? undefined : 'textSecondary'}>
-                    {clientePrivate?.razonSocial ?? 'Seleccione a un cliente'}
-                  </Typography>
-                  <Typography fontWeight={300} color={clientePrivate ? undefined : 'textSecondary'}>
-                    {clientePrivate ? `RUC: ${clientePrivate.ruc}` : 'Seleccione a un cliente'}
-                  </Typography>
-                </Fragment>
-              );
-            }}
-          </Form.Item>
+          <Fragment>
+            <Typography variant="h5" sx={{ fontWeight: 600, color: '#ffffff' }}>
+              Venta Privada
+            </Typography>
+            <Typography sx={{ fontWeight: 300, color: '#ffffff', opacity: 0.8, fontSize: '0.875rem' }}>
+              Cliente no seleccionado
+            </Typography>
+          </Fragment>
+        }
+        footerContent={
+          renderFooterContent()
         }
       >
         <Form.Item name="clientePrivate" noStyle />
 
-        <Grid container columnSpacing={3}>
-          <Grid size={{ xs: 12, md: 6 }}>
-            <Form.Item name="privateContact" rules={[requiredField]} shouldUpdate>
-              {({ getFieldValue }) => {
-                const clientePrivate = getFieldValue('clientePrivate');
-                return (
-                  <SelectContactsByClient 
-                    label="Cargo contacto" 
-                    clientId={clientePrivate?.id}
-                  />
-                );
-              }}
-            </Form.Item>
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
+        <Grid container columnSpacing={2} rowSpacing={2}>
+          {/* Fila única: Estado de Factura, Fecha Factura y Documento PDF */}
+          <Grid size={{ xs: 12, md: 4 }}>
             <Form.Item name="facturaStatus" rules={[requiredField]}>
               <SelectGeneric label="Estado de Factura" options={facturaStatusOptions} />
             </Form.Item>
           </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <Form.Item name="dateFactura" rules={[requiredField]}>
-              <DatePickerAntd label="Fecha factura" />
+          <Grid size={{ xs: 12, md: 4 }}>
+            <Form.Item name="documentoFactura" rules={[requiredField]}>
+              <InputFile
+                onChange={(file) => form.setFieldValue('documentoFactura', file)}
+                accept="pdf"
+                label="Factura PDF"
+              />
             </Form.Item>
           </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <Form.Item name="documentoFactura" rules={[requiredField]}>
-              <InputFile onChange={(file) => form.setFieldValue('documentoFactura', file)} accept="pdf" label="Factura PDF" />
+          <Grid size={{ xs: 12, md: 4 }}>
+            <Form.Item name="dateFactura" rules={[requiredField]}>
+              <DatePickerAntd label="Fecha factura" />
             </Form.Item>
           </Grid>
         </Grid>
       </StepItemContent>
 
-      <StepItemContent>
-        <Typography variant="h5" fontWeight={700} component={Stack} direction="row" alignItems="flex-end" spacing={1} mb={2}>
-          <Payment />
-          Pagos Recibidos
-        </Typography>
-
-        <Form.List
-          name="pagos"
-          initialValue={[getEmptyPaymentRecord()]}
-          rules={[
-            {
-              validator(_, arr) {
-                if (!arr.length) {
-                  return Promise.reject(new Error('Debe ingresar por lo menos 1 pago para continuar.'));
-                }
-                return Promise.resolve();
-              },
-            },
-          ]}
-        >
-          {(fields, { add, remove }, { errors }) => (
-            <Fragment>
-              {fields.map((field) => (
-                <Stack key={field.name} direction="row" spacing={2} alignItems="flex-start">
-                  <Grid container columnSpacing={2} sx={{ flex: 1 }}>
-                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                      <Form.Item name={[field.name, 'date']} rules={[requiredField]}>
-                        <DatePickerAntd label="Fecha" />
-                      </Form.Item>
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                      <Form.Item name={[field.name, 'bank']} rules={[requiredField]}>
-                        <InputAntd label="Banco" />
-                      </Form.Item>
-                    </Grid>
-
-                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                      <Form.Item name={[field.name, 'amount']} rules={[requiredField]}>
-                        <InputAntd label="Monto" type="number" />
-                      </Form.Item>
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                      <Form.Item name={[field.name, 'status']} rules={[requiredField]}>
-                        <SelectGeneric label="Estado" options={statusOptions} />
-                      </Form.Item>
-                    </Grid>
-                    <Grid size={{ xs: 12, md: 6 }}>
-                      <Form.Item name={[field.name, 'description']} rules={[requiredField]}>
-                        <InputAntd label="Descripción" />
-                      </Form.Item>
-                    </Grid>
-                    <Grid size={{ xs: 12, md: 6 }}>
-                      <Form.Item name={[field.name, 'file']} rules={[requiredField]}>
-                        <InputFile onChange={(file) => form.setFieldValue('file', file)} accept="pdf" />
-                      </Form.Item>
-                    </Grid>
-                  </Grid>
-                  {fields.length > 1 && (
-                    <IconButton size="small" color="error" onClick={() => remove(field.name)} sx={{ mt: 1 }}>
-                      <Delete />
-                    </IconButton>
-                  )}
-                </Stack>
-              ))}
-
-              <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mt: 2 }}>
-                <Button
-                  size="medium"
-                  variant="outlined"
-                  startIcon={<Add />}
-                  onClick={() => add(getEmptyPaymentRecord())}
-                  sx={{
-                    borderColor: '#006DFA',
-                    color: '#006DFA',
-                    '&:hover': {
-                      borderColor: '#111826',
-                      bgcolor: '#006DFA',
-                      color: 'white',
-                    },
-                  }}
-                >
-                  AGREGAR PAGO
-                </Button>
-                {errors.length ? <FormHelperText error>{(errors as Array<string>).join(' - ')}</FormHelperText> : null}
-                <Box sx={{ textAlign: 'right' }}>
-                  <Typography variant="caption" color="textSecondary" display="block">
-                    Total Pagos
-                  </Typography>
-                  <Form.Item noStyle shouldUpdate>
-                    {({ getFieldValue }) => {
-                      const sumPayments = (getFieldValue('pagos') ?? []).reduce(
-                        (acum: number, next: { amount: string }) => acum + (next.amount ? parseFloat(next.amount) : 0),
-                        0
-                      );
-
-                      return (
-                        <Typography variant="h5" color={errors.length ? 'error' : 'primary'} sx={{ fontWeight: 600 }}>
-                          {formatCurrency(sumPayments)}
-                        </Typography>
-                      );
-                    }}
-                  </Form.Item>
-                </Box>
-              </Stack>
-            </Fragment>
-          )}
-        </Form.List>
-      </StepItemContent>
+      {/* Pagos Recibidos - Componente Reutilizable */}
+      <PaymentsList
+        name="pagos"
+        title="Pagos Recibidos"
+        mode="edit"
+        color="#006DFA"
+        required={true}
+        initialValue={[{
+          date: null,
+          bank: '',
+          description: '',
+          file: null,
+          amount: '',
+          status: 'false',
+        }]}
+      />
 
       {openClients ? (
-        <ClientSelectorModal onClose={() => setOpenClients(false)} onSelected={(data) => form.setFieldValue('clientePrivate', data)} />
+        <ClientSelectorModal
+          onClose={() => setOpenClients(false)}
+          onSelected={(data) => form.setFieldValue('clientePrivate', data)}
+        />
       ) : null}
     </Stack>
   );

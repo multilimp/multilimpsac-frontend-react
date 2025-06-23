@@ -18,8 +18,16 @@ const ProviderOrderForm = () => {
   const isEditing = Boolean(providerOrderId);
 
   useEffect(() => {
+    // 🔧 SOLO establecer BlackBarKey una vez al montar
     setBlackBarKey(BlackBarKeyEnum.OP);
     
+    // 🔧 Limpiar BlackBarKey solo al desmontar
+    return () => {
+      setBlackBarKey(null);
+    };
+  }, []); // ← Sin dependencias para evitar re-ejecuciones
+
+  useEffect(() => {
     if (isEditing) {
       // Modo edición: cargar datos de la OP
       loadOrderData();
@@ -28,18 +36,19 @@ const ProviderOrderForm = () => {
       if (!selectedSale) {
         message.error('Venta no seleccionada');
         navigate('/provider-orders');
-        setBlackBarKey(null);
         return;
       }
     }
+  }, [isEditing, providerOrderId]); // ← Dependencias mínimas
 
+  useEffect(() => {
+    // 🔧 Limpiar selectedSale solo cuando sea necesario
     return () => {
       if (!isEditing) {
         setSelectedSale(null);
       }
-      setBlackBarKey(null);
     };
-  }, [selectedSale, providerOrderId, isEditing]);
+  }, [isEditing]); // ← Solo depende de isEditing
 
   const loadOrderData = async () => {
     try {

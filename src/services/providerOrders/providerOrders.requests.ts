@@ -17,11 +17,11 @@ export const getOrderProvidersByOC = async (saleId: number) => {
 };
 
 export const getOrderProviderById = async (ordenProveedorId: number): Promise<ProviderOrderProps> => {
-  const response = await apiClient.get(`/ordenes-proveedores/${ordenProveedorId}`);
+  const response = await apiClient.get(`/ordenes-proveedores/op/${ordenProveedorId}`);
   return response.data;
 };
 
 export const updateOrderProvider = async (ordenProveedorId: number, data: Record<string, any>): Promise<ProviderOrderProps> => {
-  const response = await apiClient.put(`/ordenes-proveedores/${ordenProveedorId}`, data);
+  const response = await apiClient.put(`/ordenes-proveedores/op/${ordenProveedorId}`, data);
   return response.data;
 };

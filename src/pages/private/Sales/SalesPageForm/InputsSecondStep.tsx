@@ -20,6 +20,27 @@ interface InputsSecondStepProps {
 const InputsSecondStep = ({ form, isEditing = false, currentSale }: InputsSecondStepProps) => {
   const [openClients, setOpenClients] = useState(false);
 
+  // Footer con CUE - siempre visible para ventas directas y privadas
+  const renderFooterContent = () => {
+    return (
+      <Form.Item noStyle shouldUpdate>
+        {({ getFieldValue }) => {
+          const clienteEstado: ClientProps | null = getFieldValue('clienteEstado');
+          return (
+            <Box>
+              <Typography component="span" fontSize={13} color="#ccc">
+                Código UE:
+              </Typography>
+              <Typography component="span" fontSize={13} color="#fff" sx={{ ml: 1, fontWeight: 500 }}>
+                {clienteEstado?.codigoUnidadEjecutora || 'N/A'}
+              </Typography>
+            </Box>
+          );
+        }}
+      </Form.Item>
+    );
+  };
+
   return (
     <Fragment>
       <Form.Item name="clienteEstado" noStyle />
@@ -27,6 +48,7 @@ const InputsSecondStep = ({ form, isEditing = false, currentSale }: InputsSecond
       <StepItemContent
         showHeader
         showFooter
+        footerContent={renderFooterContent()}
         ResumeIcon={Business}
         onClickSearch={() => setOpenClients(true)}
         headerLeft={
@@ -72,7 +94,7 @@ const InputsSecondStep = ({ form, isEditing = false, currentSale }: InputsSecond
                     {clienteEstado?.razonSocial ?? 'Seleccione a un cliente'}
                   </Typography>
                   <Typography fontWeight={300} color={clienteEstado ? undefined : 'textSecondary'}>
-                    {clienteEstado ? `RUC: ${clienteEstado.ruc}` : 'Seleccione a un cliente'}
+                    {clienteEstado ? `RUC: ${clienteEstado.ruc}` : 'RUC:'}
                   </Typography>
                 </Fragment>
               );

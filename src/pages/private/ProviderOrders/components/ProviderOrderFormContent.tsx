@@ -88,6 +88,9 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
         fechaRecepcion: orderData.fechaRecepcion ? dayjs(orderData.fechaRecepcion) : null,
         montoProveedor: orderData.totalProveedor,
         productosNota: orderData.notaPedido,
+        // Campos de pago de la orden proveedor
+        tipoPago: orderData.tipoPago || '',
+        notaPago: orderData.notaPago || '',
         productos: orderData.productos?.map(producto => ({
           codigo: producto.codigo,
           descripcion: producto.descripcion,
@@ -98,6 +101,17 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
           precioUnitario: producto.precioUnitario,
           total: producto.total,
         })) || [getEmptyProductRecord()],
+        // Mapear pagos existentes del proveedor (si los hay)
+        pagosProveedor: Array.isArray(orderData.pagos) && orderData.pagos.length > 0 
+          ? (orderData.pagos as any[]).map((pago: any) => ({
+              date: pago.fechaPago ? dayjs(pago.fechaPago) : null,
+              bank: pago.bancoPago || '',
+              description: pago.descripcionPago || '',
+              file: pago.archivoPago || null,
+              amount: pago.montoPago || '',
+              status: pago.estadoPago ? 'true' : 'false',
+            }))
+          : [],
         transportes: orderData.transportesAsignados?.map(transporte => ({
           transporte: transporte.transporte,
           contacto: transporte.contactoTransporte,
@@ -153,6 +167,9 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
         fechaRecepcion: values.fechaRecepcion?.toISOString(),
         fechaEntrega: values.fechaEntrega || null,
         totalProveedor: Number(values.montoProveedor) || 0,
+        // Campos de pago de la orden proveedor
+        tipoPago: values.tipoPago || null,
+        notaPago: values.notaPago || null,
         // estadoOp: 'pendiente',
         // activo: true,
         productos: isEditing ? { deleteMany: {}, create: productosArr } : { create: productosArr },
@@ -269,17 +286,7 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
                   <DatePickerAntd label="Fecha de despacho" />
                 </Form.Item>
               </Grid>
-              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <Form.Item name="montoProveedor" rules={[requiredField]}>
-                  <InputNumber
-                    min={0}
-                    step={0.01}
-                    placeholder="Monto del proveedor"
-                    style={{ width: '100%' }}
-                    prefix="S/ "
-                  />
-                </Form.Item>
-              </Grid>
+        
               <Grid size={12}>
                 <Form.Item noStyle shouldUpdate>
                   {({ getFieldValue }) => {
@@ -502,15 +509,22 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
           {/* Sección de Pagos Proveedor */}
           <PaymentsList
             name="pagosProveedor"
+            tipoPagoName="tipoPago"
+            notaPagoName="notaPago"
             title="Pagos Proveedor"
-            readonly={true}
-            color="#9932CC"
-            borderColor="#9932CC"
-            buttonColor="#9932CC"
+            mode="readonly"
+            color="#006DFA"
             required={false}
-            initialValue={[]}
+            initialValue={[{
+              date: null,
+              bank: '',
+              description: '',
+              file: null,
+              amount: '',
+              status: 'false'
+            }]}
           />
-
+          
           <Form.List
             name="transportes"
             initialValue={[getEmptyTransformRecord()]}

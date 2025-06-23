@@ -10,6 +10,7 @@ interface StepItemContentProps {
   headerRight?: ReactNode;
   showHeader?: boolean;
   showFooter?: boolean;
+  footerContent?: ReactNode;
   ResumeIcon?: OverridableComponent<SvgIconTypeMap<{}, 'svg'>>;
   ResumeSearchIcon?: OverridableComponent<SvgIconTypeMap<{}, 'svg'>>;
   resumeContent?: ReactNode;
@@ -22,6 +23,7 @@ export const StepItemContent = ({
   headerRight,
   showHeader,
   showFooter,
+  footerContent,
   ResumeIcon = Search,
   ResumeSearchIcon = Search,
   color = '#04BA6B',
@@ -57,7 +59,7 @@ export const StepItemContent = ({
               border: '1px solid', 
               borderRadius: 1, 
               color,
-              zIndex: 1200 // Debajo de modales (1300) pero encima del contenido normal
+              zIndex: 900 
             }} 
             onClick={onClickSearch}
           >
@@ -67,14 +69,9 @@ export const StepItemContent = ({
       </Fragment>
     ) : null}
 
-    {showFooter ? (
+    {showFooter && footerContent ? (
       <Stack direction="row" justifyContent="space-between" alignItems="center" bgcolor="#00101e" color="#ffffff" px={2} py={1.5}>
-        <Typography component="span" fontSize={13} color="#ccc">
-          Código UE:
-        </Typography>
-        <Typography component="span" fontSize={13} color="#ccc">
-          Dependencia:
-        </Typography>
+        {footerContent}
       </Stack>
     ) : null}
     <Box p={2}>{children}</Box>

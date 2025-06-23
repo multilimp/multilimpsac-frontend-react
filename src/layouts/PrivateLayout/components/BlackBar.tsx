@@ -1,4 +1,4 @@
-import { Fragment, ReactNode, useState, useEffect, useMemo, memo } from 'react';
+import { Fragment, ReactNode, useState, useEffect, useMemo, memo, useCallback } from 'react';
 import { Dropdown } from 'antd';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Divider, List, ListItem, ListItemText, Stack, Typography } from '@mui/material';
 import SelectCompanies from '@/components/selects/SelectCompanies';
@@ -19,9 +19,19 @@ const BlackBar = memo(() => {
   const [tempFile, setTempFile] = useState<File>();
 
   const handleClear = () => {
+    console.log('🔴 BlackBar handleClear called'); // Debug
     setOpenDD(false);
     setTempFile(undefined);
   };
+
+  // 🔧 Debug para detectar cambios no deseados
+  useEffect(() => {
+    console.log('🔍 BlackBar - openDD changed:', openDD); // Debug
+  }, [openDD]);
+
+  useEffect(() => {
+    console.log('🔍 BlackBar - blackBarKey changed:', blackBarKey); // Debug
+  }, [blackBarKey]);
 
   // ✅ OPTIMIZACIÓN: Memoizar el parseo de productos
   const parsedProductos = useMemo(() => {
@@ -144,8 +154,16 @@ const BlackBar = memo(() => {
               type="file"
               style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0, cursor: 'pointer' }}
               onChange={(event) => {
-                setTempFile(event.target.files?.[0]);
-                setOpenDD(true);
+                console.log('🔍 File input onChange triggered:', {
+                  file: event.target.files?.[0]?.name,
+                  blackBarKey,
+                  currentContext: 'PDF_UPLOAD'
+                }); // Debug
+                const file = event.target.files?.[0];
+                if (file) {
+                  setTempFile(file);
+                  setOpenDD(true);
+                }
               }}
               accept="application/pdf"
             />

@@ -3,6 +3,7 @@
 import PageContent from '@/components/PageContent';
 import TreasurysTable from './components/TreasurysTable';
 import TreasurysModal from './components/TreasurysModal';
+import { TreasurysProps } from '@/services/treasurys/treasurys.d';
 import ConfirmDelete from '@/components/ConfirmDelete';
 import { Button } from '@mui/material';
 import { notification, Modal } from 'antd';
@@ -11,6 +12,7 @@ import { getSales } from '@/services/sales/sales.request';
 import { SaleProps } from '@/services/sales/sales';
 import { ModalStateEnum } from '@/types/global.enum';
 import { ModalStateProps } from '@/types/global';
+import ProviderOrdersListDrawer from '../ProviderOrders/components/ProviderOrdersListDrawer';
 
 const TreasurysPage = () => {
   const [loading, setLoading] = useState(false);
@@ -19,6 +21,28 @@ const TreasurysPage = () => {
   const [modal, setModal] = useState<ModalStateProps<SaleProps>>({
     mode: ModalStateEnum.NONE,
     data: undefined
+  });
+  // Estado específico para el drawer de OPs (órdenes de proveedor)
+  const [opDrawerModal, setOpDrawerModal] = useState<ModalStateProps<SaleProps>>({
+    mode: ModalStateEnum.NONE,
+    data: undefined
+  });
+  // Estado específico para el modal de TreasurysModal
+  const [treasuryModal, setTreasuryModal] = useState<ModalStateProps<TreasurysProps>>({
+    mode: ModalStateEnum.NONE,
+    data: undefined
+  });
+
+  // Función para convertir SaleProps a TreasurysProps
+  const convertSaleToTreasury = (sale: SaleProps): TreasurysProps => ({
+    id: sale.id,
+    saleCode: sale.codigoVenta || '',
+    clientBusinessName: sale.cliente?.razonSocial || '',
+    clientRuc: sale.cliente?.ruc || '',
+    companyRuc: sale.empresa?.ruc || '',
+    companyBusinessName: sale.empresa?.razonSocial || '',
+    contact: sale.contactoCliente?.nombre || '',
+    status: 'pending' as const
   });
 
   useEffect(() => {
@@ -45,7 +69,9 @@ const TreasurysPage = () => {
     record: SaleProps
   ) => {
     if (mode === ModalStateEnum.BOX) {
-      setModal({ mode, data: record });
+      // Convertir SaleProps a TreasurysProps para el modal de edición
+      const treasuryData = convertSaleToTreasury(record);
+      setTreasuryModal({ mode, data: treasuryData });
     } else if (mode === ModalStateEnum.DELETE) {
       // Usamos Modal.confirm correctamente para eliminar
       Modal.confirm({
@@ -65,6 +91,9 @@ const TreasurysPage = () => {
           }
         },
       });
+    } else if (mode === ModalStateEnum.DETAILS) {
+      // Activar el drawer de OPs (órdenes de proveedor)
+      setOpDrawerModal({ mode: ModalStateEnum.BOX, data: record });
     }
   };
 
@@ -74,7 +103,7 @@ const TreasurysPage = () => {
         <Button
           variant="contained"
           color="primary"
-          onClick={() => setModal({ mode: ModalStateEnum.BOX, data: undefined })}
+          onClick={() => setTreasuryModal({ mode: ModalStateEnum.BOX, data: undefined })}
         >
           Agregar
         </Button>
@@ -87,11 +116,11 @@ const TreasurysPage = () => {
       />
 
       {/* Modal de crear/editar */}
-      {modal?.mode === ModalStateEnum.BOX && (
+      {treasuryModal?.mode === ModalStateEnum.BOX && (
         <TreasurysModal
-          data={modal.data}
+          data={treasuryModal.data}
           open={true}
-          onClose={() => setModal({ mode: ModalStateEnum.NONE, data: undefined })}
+          onClose={() => setTreasuryModal({ mode: ModalStateEnum.NONE, data: undefined })}
           onReload={obtainData}
         />
       )}
@@ -102,6 +131,14 @@ const TreasurysPage = () => {
           endpoint={`/treasurys/${modal.data.id}`}
           handleClose={() => setModal({ mode: ModalStateEnum.NONE, data: undefined })}
           handleReload={obtainData}
+        />
+      )}
+
+      {/* Drawer de Órdenes de Proveedor (OPs) - Replicado desde el módulo de OC */}
+      {opDrawerModal?.mode === ModalStateEnum.BOX && opDrawerModal.data && (
+        <ProviderOrdersListDrawer 
+          handleClose={() => setOpDrawerModal({ mode: ModalStateEnum.NONE, data: undefined })} 
+          data={opDrawerModal.data} 
         />
       )}
     </PageContent>
