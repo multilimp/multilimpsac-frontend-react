@@ -67,3 +67,38 @@ export const getOpsByOrdenCompra = async (ordenCompraId: number) => {
     return [];
   }
 };
+
+// ✅ NUEVO: Servicios para gestión de pagos de transporte desde tesorería
+export const getTransportesByOrdenCompraForTesoreria = async (ordenCompraId: number) => {
+  try {
+    const response = await apiClient.get(`/tesoreria/transportes/orden-compra/${ordenCompraId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error al obtener transportes para tesorería:', error);
+    return [];
+  }
+};
+
+export const getTransporteAsignadoForTesoreria = async (transporteAsignadoId: number) => {
+  try {
+    const response = await apiClient.get(`/tesoreria/transporte/${transporteAsignadoId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error al obtener transporte asignado para tesorería:', error);
+    throw error;
+  }
+};
+
+export const updatePagoTransporteFromTesoreria = async (transporteAsignadoId: number, paymentData: any) => {
+  try {
+    const response = await apiClient.post('/tesoreria/transporte', {
+      transporteAsignadoId,
+      pagos: paymentData.pagos,
+      updatesForTransporteAsignado: paymentData.updatesForTransporteAsignado
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error al actualizar pago de transporte desde tesorería:', error);
+    throw error;
+  }
+};

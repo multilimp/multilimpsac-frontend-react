@@ -1,4 +1,4 @@
-import { Fragment, ReactNode, useState, useEffect, useMemo, memo, useCallback } from 'react';
+import { Fragment, ReactNode, useState, useEffect, useMemo, memo } from 'react';
 import { Dropdown } from 'antd';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Divider, List, ListItem, ListItemText, Stack, Typography } from '@mui/material';
 import SelectCompanies from '@/components/selects/SelectCompanies';
@@ -19,31 +19,32 @@ const BlackBar = memo(() => {
   const [tempFile, setTempFile] = useState<File>();
 
   const handleClear = () => {
-    console.log('🔴 BlackBar handleClear called'); // Debug
     setOpenDD(false);
     setTempFile(undefined);
   };
 
-  // 🔧 Debug para detectar cambios no deseados
-  useEffect(() => {
-    console.log('🔍 BlackBar - openDD changed:', openDD); // Debug
-  }, [openDD]);
-
-  useEffect(() => {
-    console.log('🔍 BlackBar - blackBarKey changed:', blackBarKey); // Debug
-  }, [blackBarKey]);
-
-  // ✅ OPTIMIZACIÓN: Memoizar el parseo de productos
+  // ✅ OPTIMIZACIÓN: Memoizar el parseo de productos con validación robusta
   const parsedProductos = useMemo(() => {
-    if (!selectedSale?.productos) return [];
-    if (typeof selectedSale.productos === 'string') {
-      try {
-        return JSON.parse(selectedSale.productos);
-      } catch {
-        return [];
+    try {
+      if (!selectedSale?.productos) return [];
+      
+      let productos = selectedSale.productos;
+      
+      // Si es string, parsearlo
+      if (typeof productos === 'string') {
+        productos = JSON.parse(productos);
       }
+      
+      // Verificar que sea array y tenga elementos válidos
+      if (Array.isArray(productos)) {
+        return productos.filter(item => item && typeof item === 'object');
+      }
+      
+      return [];
+    } catch (error) {
+      console.error('🚨 Error parsing productos:', error);
+      return [];
     }
-    return Array.isArray(selectedSale.productos) ? selectedSale.productos : [];
   }, [selectedSale?.productos]);
 
   // ✅ OPTIMIZACIÓN: Memoizar componentes pesados
@@ -152,17 +153,23 @@ const BlackBar = memo(() => {
             <img src="/images/book_ai.png" alt="book ai icon" width={28} />
             <input
               type="file"
+              key={`file-input-${saleInputValues.enterprise?.id || 'default'}`} // 🔧 Key único para reiniciar el input
               style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0, cursor: 'pointer' }}
               onChange={(event) => {
                 console.log('🔍 File input onChange triggered:', {
                   file: event.target.files?.[0]?.name,
                   blackBarKey,
                   currentContext: 'PDF_UPLOAD'
-                }); // Debug
+                });
+                
                 const file = event.target.files?.[0];
-                if (file) {
+                if (file && file.type === 'application/pdf') {
                   setTempFile(file);
                   setOpenDD(true);
+                } else if (file) {
+                  console.warn('⚠️ Archivo no válido - debe ser PDF');
+                  // Limpiar el input
+                  event.target.value = '';
                 }
               }}
               accept="application/pdf"
@@ -346,7 +353,15 @@ const BlackBar = memo(() => {
         )}
       </Fragment>
     ),
-  }), [selectedSale, parsedProductos, saleInputValues]); // Dependencias específicas
+  }), [
+    selectedSale?.id, 
+    selectedSale?.codigoVenta, 
+    selectedSale?.montoVenta,
+    selectedSale?.productos, // ✅ Usar el valor original en lugar de parsedProductos.length
+    saleInputValues.enterprise?.id,
+    saleInputValues.tipoVenta,
+    saleInputValues.file?.name
+  ]); // ✅ Dependencias optimizadas
 
   return (
     <Fragment>

@@ -28,7 +28,7 @@ import SelectCompanies from '@/components/selects/SelectCompanies';
 import DatePickerAntd from '@/components/DatePickerAnt';
 import { SaleProps } from '@/services/sales/sales';
 import { formatCurrency } from '@/utils/functions';
-import SelectContacts from '@/components/selects/SelectContacts';
+import SelectContactsByTransport from '@/components/selects/SelectContactsByTransport';
 import SelectContactsByProvider from '@/components/selects/SelectContactsByProvider';
 import { createOrderProvider, updateOrderProvider } from '@/services/providerOrders/providerOrders.requests';
 import { useNavigate } from 'react-router-dom';
@@ -305,19 +305,28 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
                 </Form.Item>
               </Grid>
               {/* Nueva sección: Datos del Cliente, Responsable Recepción y Lugar de Entrega */}
-              <Grid size={12}>
+              <Grid 
+                size={12} 
+                sx={{ 
+                  bgcolor: 'white', 
+                  borderRadius: 1, 
+                  p: 2,
+                  my: 2,
+                  border: '1px solid #e0e0e0'
+                }}
+              >
                 <Stack direction={{ xs: 'column', lg: 'row' }} spacing={2}>
                   <Box flex={1}>
-                    <Typography textTransform="uppercase" fontSize={10} color="#9932CC" fontWeight={600} textAlign="center" mb={1}>
+                    <Typography textTransform="uppercase" fontSize={14} color="#8377a8" fontWeight={600} textAlign="center" mb={1}>
                       Datos del cliente
                     </Typography>
-                    <Typography textTransform="uppercase" fontSize={10} fontWeight={700}>
+                    <Typography textTransform="uppercase" fontSize={13} fontWeight={700}>
                       {sale?.cliente?.razonSocial ?? '---'}
                     </Typography>
-                    <Typography textTransform="uppercase" fontSize={10} color="textSecondary">
+                    <Typography textTransform="uppercase" fontSize={12} color="textSecondary">
                       RUC: {sale?.cliente?.ruc ?? '---'}
                     </Typography>
-                    <Typography textTransform="uppercase" fontSize={10} color="textSecondary">
+                    <Typography textTransform="uppercase" fontSize={12} color="textSecondary">
                       CUE: {sale?.cliente?.codigoUnidadEjecutora ?? '---'}
                     </Typography>
                   </Box>
@@ -325,13 +334,13 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
                     <Divider orientation="vertical" />
                   </Box>
                   <Box flex={1}>
-                    <Typography textTransform="uppercase" fontSize={10} color="#9932CC" fontWeight={600} textAlign="center" mb={1}>
+                    <Typography textTransform="uppercase" fontSize={14} color="#8377a8" fontWeight={600} textAlign="center" mb={1}>
                       Responsable recepción
                     </Typography>
-                    <Typography textTransform="uppercase" fontSize={10} fontWeight={700}>
+                    <Typography textTransform="uppercase" fontSize={13} fontWeight={700}>
                       {sale?.contactoCliente?.cargo ?? '---'}
                     </Typography>
-                    <Typography textTransform="uppercase" fontSize={10} color="textSecondary">
+                    <Typography textTransform="uppercase" fontSize={12} color="textSecondary">
                       {sale?.contactoCliente?.nombre ?? '---'} <br />
                       {sale?.contactoCliente?.telefono ?? '---'} - {sale?.contactoCliente?.email ?? '---'}
                     </Typography>
@@ -340,13 +349,13 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
                     <Divider orientation="vertical" />
                   </Box>
                   <Box flex={1}>
-                    <Typography textTransform="uppercase" fontSize={10} color="#9932CC" fontWeight={600} textAlign="center" mb={1}>
+                    <Typography textTransform="uppercase" fontSize={14} color="#8377a8" fontWeight={600} textAlign="center" mb={1}>
                       Lugar de entrega
                     </Typography>
-                    <Typography textTransform="uppercase" fontSize={10} fontWeight={700}>
+                    <Typography textTransform="uppercase" fontSize={13} fontWeight={700}>
                       {sale?.direccionEntrega ?? '---'}
                     </Typography>
-                    <Typography textTransform="uppercase" fontSize={10} color="textSecondary">
+                    <Typography textTransform="uppercase" fontSize={12} color="textSecondary">
                       {sale?.departamentoEntrega ?? '---'} - {sale?.provinciaEntrega ?? '---'} - {sale?.distritoEntrega ?? '---'} <br />
                       Ref: {sale?.referenciaEntrega ?? '---'}
                     </Typography>
@@ -398,27 +407,27 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
                           <TableRow key={field.name} sx={{ '&:hover': { bgcolor: 'transparent !important' } }}>
                             <TableCell sx={{ p: 0.25 }}>
                               <Form.Item className="m-0" name={[field.name, 'codigo']} rules={[requiredField]}>
-                                <Input size="middle" style={{ width: '100%', borderRadius: 0, borderColor: '#9932CC90' }} />
+                                <Input size="middle" style={{ width: '100%', borderRadius: 0, borderColor: '#8377a890' }} />
                               </Form.Item>
                             </TableCell>
                             <TableCell sx={{ p: 0.25 }}>
                               <Form.Item className="m-0" name={[field.name, 'descripcion']} rules={[requiredField]}>
-                                <Input size="middle" style={{ width: '100%', borderRadius: 0, borderColor: '#9932CC90' }} />
+                                <Input size="middle" style={{ width: '100%', borderRadius: 0, borderColor: '#8377a890' }} />
                               </Form.Item>
                             </TableCell>
                             <TableCell sx={{ p: 0.25 }}>
                               <Form.Item className="m-0" name={[field.name, 'uMedida']} rules={[requiredField]}>
-                                <Input size="middle" style={{ width: '100%', borderRadius: 0, borderColor: '#9932CC90' }} />
+                                <Input size="middle" style={{ width: '100%', borderRadius: 0, borderColor: '#8377a890' }} />
                               </Form.Item>
                             </TableCell>
                             <TableCell sx={{ p: 0.25 }}>
                               <Form.Item className="m-0" name={[field.name, 'cantidad']} rules={[requiredField]}>
-                                <InputNumber size="middle" min={0} style={{ width: '100%', borderRadius: 0, borderColor: '#9932CC90' }} />
+                                <InputNumber size="middle" min={0} style={{ width: '100%', borderRadius: 0, borderColor: '#8377a890' }} />
                               </Form.Item>
                             </TableCell>
                             <TableCell sx={{ p: 0.25 }}>
                               <Form.Item className="m-0" name={[field.name, 'cAlmacen']} rules={[requiredField]}>
-                                <InputNumber size="middle" min={0} style={{ width: '100%', borderRadius: 0, borderColor: '#9932CC90' }} />
+                                <InputNumber size="middle" min={0} style={{ width: '100%', borderRadius: 0, borderColor: '#8377a890' }} />
                               </Form.Item>
                             </TableCell>
                             <TableCell sx={{ p: 0.25 }}>
@@ -426,7 +435,7 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
                                 <InputNumber
                                   size="middle"
                                   min={0}
-                                  style={{ width: '100%', borderRadius: 0, borderColor: '#9932CC90' }}
+                                  style={{ width: '100%', borderRadius: 0, borderColor: '#8377a890' }}
                                   onChange={() => calculateProductSubTotal(field.name)}
                                 />
                               </Form.Item>
@@ -436,7 +445,7 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
                                 <InputNumber
                                   size="middle"
                                   min={0}
-                                  style={{ width: '100%', borderRadius: 0, borderColor: '#9932CC90' }}
+                                  style={{ width: '100%', borderRadius: 0, borderColor: '#8377a890' }}
                                   onChange={() => calculateProductSubTotal(field.name)}
                                 />
                               </Form.Item>
@@ -446,7 +455,7 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
                                 <InputNumber
                                   size="middle"
                                   min={0}
-                                  style={{ width: '100%', borderRadius: 0, borderColor: '#9932CC90' }}
+                                  style={{ width: '100%', borderRadius: 0, borderColor: '#8377a890' }}
                                   readOnly
                                   disabled
                                 />
@@ -582,7 +591,19 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
                           {/* Segunda fila: Contacto y Destino */}
                           <Grid size={{ xs: 12, sm: 6 }}>
                             <Form.Item name={[field.name, 'contacto']} rules={[requiredField]}>
-                              <SelectContacts label="Contacto transporte" />
+                              <Form.Item noStyle shouldUpdate>
+                                {({ getFieldValue }) => {
+                                  const transporteId = getFieldValue(['transportes', field.name, 'transporte']);
+                                  return (
+                                    <SelectContactsByTransport 
+                                      transportId={transporteId}
+                                      onContactCreated={() => {
+                                        // Recargar contactos si es necesario
+                                      }}
+                                    />
+                                  );
+                                }}
+                              </Form.Item>
                             </Form.Item>
                           </Grid>
                           <Grid size={{ xs: 12, sm: 6 }}>

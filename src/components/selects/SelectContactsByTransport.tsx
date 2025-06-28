@@ -7,24 +7,24 @@ import useContactsByEntity from '@/hooks/useContactsByEntity';
 import ContactsDrawer from '@/components/ContactsDrawer';
 import { ContactTypeEnum } from '@/services/contacts/contacts.enum';
 
-interface SelectContactsByClientProps extends SelectProps {
+interface SelectContactsByTransportProps extends SelectProps {
   label?: string;
-  clientId?: number;
+  transportId?: number;
   onContactCreated?: () => void;
 }
 
-const SelectContactsByClient = ({ 
+const SelectContactsByTransport = ({ 
   label, 
-  clientId, 
+  transportId, 
   onContactCreated,
   size = 'large', 
   ...props 
-}: SelectContactsByClientProps) => {
+}: SelectContactsByTransportProps) => {
   const [openContactsDrawer, setOpenContactsDrawer] = useState(false);
   
   const { contacts, loadingContacts, obtainContacts } = useContactsByEntity(
-    'cliente', 
-    clientId || 0
+    'transporte', 
+    transportId || 0
   );
 
   const handleContactCreated = () => {
@@ -34,7 +34,7 @@ const SelectContactsByClient = ({
   };
 
   const hasContacts = contacts.length > 0;
-  const isDisabled = !clientId || loadingContacts;
+  const isDisabled = !transportId || loadingContacts;
 
   return (
     <>
@@ -48,15 +48,15 @@ const SelectContactsByClient = ({
             loading={loadingContacts}
             disabled={isDisabled}
             placeholder={
-              !clientId 
-                ? 'Primero seleccione un cliente' 
+              !transportId 
+                ? 'Primero seleccione un transporte' 
                 : !hasContacts 
                   ? 'No hay contactos disponibles'
                   : 'Seleccione un contacto'
             }
             notFoundContent={
-              !clientId 
-                ? 'Primero seleccione un cliente'
+              !transportId 
+                ? 'Primero seleccione un transporte'
                 : 'No hay contactos disponibles'
             }
             {...props}
@@ -64,7 +64,8 @@ const SelectContactsByClient = ({
             {contacts.map((item) => (
               <Select.Option 
                 key={item.id} 
-                value={item.id}
+                value={item.id} 
+                optiondata={item} 
                 title={`${item.nombre} - ${item.cargo}`}
               >
                 {item.cargo} - {item.nombre}
@@ -75,9 +76,9 @@ const SelectContactsByClient = ({
           <Button
             icon={<SearchOutlined />}
             size={size}
-            disabled={!clientId}
+            disabled={!transportId}
             onClick={() => setOpenContactsDrawer(true)}
-            title={!clientId ? 'Primero seleccione un cliente' : 'Agregar contacto'}
+            title={!transportId ? 'Primero seleccione un transporte' : 'Agregar contacto'}
             style={{ 
               display: 'flex', 
               alignItems: 'center', 
@@ -88,11 +89,11 @@ const SelectContactsByClient = ({
         </div>
       </SelectContainer>
 
-      {openContactsDrawer && clientId && (
+      {openContactsDrawer && transportId && (
         <ContactsDrawer 
-          referenceId={clientId}
+          referenceId={transportId}
           handleClose={() => setOpenContactsDrawer(false)}
-          tipo={ContactTypeEnum.CLIENTE}
+          tipo={ContactTypeEnum.TRANSPORTE}
           onContactCreated={handleContactCreated}
         />
       )}
@@ -100,4 +101,4 @@ const SelectContactsByClient = ({
   );
 };
 
-export default SelectContactsByClient;
+export default SelectContactsByTransport;

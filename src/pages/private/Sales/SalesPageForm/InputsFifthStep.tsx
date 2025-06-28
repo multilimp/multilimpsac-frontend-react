@@ -27,7 +27,8 @@ const InputsFifthStep = () => {
         rules={[
           {
             validator(_, arr) {
-              if (!arr.length) {
+              // 🔧 Validación robusta para asegurar que arr es un array
+              if (!Array.isArray(arr) || !arr.length) {
                 return Promise.reject(new Error('Debe ingresar por lo menos 1 producto para continuar.'));
               }
               return Promise.resolve();
@@ -37,7 +38,7 @@ const InputsFifthStep = () => {
       >
         {(fields, { add, remove }, { errors }) => (
           <Fragment>
-            {fields.map((field, index) => (
+            {fields.map((field) => (
               <Stack 
                 key={field.name} 
                 direction="row" 

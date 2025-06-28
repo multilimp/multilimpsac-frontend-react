@@ -9,7 +9,9 @@ import {
   CardHeader, 
   CardContent, 
   Chip, 
-  Stack
+  Stack,
+  Tabs,
+  Tab
 } from '@mui/material';
 import { Form, notification } from 'antd';
 import DatePickerAntd from '@/components/DatePickerAnt';
@@ -17,6 +19,7 @@ import InputFile from '@/components/InputFile';
 import { formatCurrency } from '@/utils/functions';
 import { getOrdenCompraByTreasuryId, getOpsByOrdenCompraForTreasury } from '@/services/treasury/treasury.request';
 import { StepItemContent } from '../Sales/SalesPageForm/smallcomponents';
+import TreasuryTransportPayments from './components/TreasuryTransportPayments';
 
 const TreasuryOrdersPage: React.FC = () => {
   const { treasuryId } = useParams<{ treasuryId: string }>();
@@ -24,6 +27,7 @@ const TreasuryOrdersPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [ordenCompra, setOrdenCompra] = useState<any>(null);
   const [ordenesProveedor, setOrdenesProveedor] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState(0);
 
   useEffect(() => {
     if (treasuryId) {
@@ -155,65 +159,84 @@ const TreasuryOrdersPage: React.FC = () => {
                   </Box>
                 )}
 
-                {/* Formulario de Pagos */}
-                <Stack spacing={2}>
-                  <Box display="flex" gap={2}>
-                    <Box flex={1}>
+                {/* ✅ NUEVO: Tabs para diferentes tipos de pagos */}
+                <Box sx={{ mb: 3 }}>
+                  <Tabs 
+                    value={activeTab} 
+                    onChange={(_, newValue) => setActiveTab(newValue)}
+                    sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}
+                  >
+                    <Tab label="Pagos Generales" />
+                    <Tab label="Pagos de Transporte" />
+                  </Tabs>
+
+                  {/* Panel de Pagos Generales */}
+                  {activeTab === 0 && (
+                    <Stack spacing={2}>
+                      <Box display="flex" gap={2}>
+                        <Box flex={1}>
+                          <Form.Item
+                            name="fechaPago"
+                            label="Fecha de Pago"
+                            rules={[{ required: true, message: 'Fecha requerida' }]}
+                          >
+                            <DatePickerAntd label="Fecha de Pago" placeholder="Seleccionar fecha" />
+                          </Form.Item>
+                        </Box>
+                        <Box flex={1}>
+                          <Form.Item
+                            name="montoPago"
+                            label="Monto de Pago"
+                            rules={[{ required: true, message: 'Monto requerido' }]}
+                          >
+                            <input
+                              type="number"
+                              step="0.01"
+                              placeholder="0.00"
+                              style={{
+                                width: '100%',
+                                padding: '8px 12px',
+                                border: '1px solid #d9d9d9',
+                                borderRadius: '6px',
+                              }}
+                            />
+                          </Form.Item>
+                        </Box>
+                      </Box>
+                      
                       <Form.Item
-                        name="fechaPago"
-                        label="Fecha de Pago"
-                        rules={[{ required: true, message: 'Fecha requerida' }]}
+                        name="comprobantePago"
+                        label="Comprobante de Pago"
                       >
-                        <DatePickerAntd label="Fecha de Pago" placeholder="Seleccionar fecha" />
+                        <InputFile 
+                          accept="pdf"
+                        />
                       </Form.Item>
-                    </Box>
-                    <Box flex={1}>
+                      
                       <Form.Item
-                        name="montoPago"
-                        label="Monto de Pago"
-                        rules={[{ required: true, message: 'Monto requerido' }]}
+                        name="observaciones"
+                        label="Observaciones"
                       >
-                        <input
-                          type="number"
-                          step="0.01"
-                          placeholder="0.00"
+                        <textarea
+                          placeholder="Notas adicionales sobre el pago..."
+                          rows={3}
                           style={{
                             width: '100%',
                             padding: '8px 12px',
                             border: '1px solid #d9d9d9',
                             borderRadius: '6px',
+                            resize: 'vertical',
                           }}
                         />
                       </Form.Item>
-                    </Box>
-                  </Box>
-                  
-                  <Form.Item
-                    name="comprobantePago"
-                    label="Comprobante de Pago"
-                  >
-                    <InputFile 
-                      accept="pdf"
-                    />
-                  </Form.Item>
-                  
-                  <Form.Item
-                    name="observaciones"
-                    label="Observaciones"
-                  >
-                    <textarea
-                      placeholder="Notas adicionales sobre el pago..."
-                      rows={3}
-                      style={{
-                        width: '100%',
-                        padding: '8px 12px',
-                        border: '1px solid #d9d9d9',
-                        borderRadius: '6px',
-                        resize: 'vertical',
-                      }}
-                    />
-                  </Form.Item>
-                </Stack>
+                    </Stack>
+                  )}
+
+                  {/* Panel de Pagos de Transporte */}
+                  {activeTab === 1 && ordenCompra && (
+                    <TreasuryTransportPayments ordenCompraId={ordenCompra.id} />
+                  )}
+                </Box>
 
                 <Box display="flex" gap={2} justifyContent="flex-end" mt={3}>
                   <Button variant="outlined" onClick={() => form.resetFields()}>
