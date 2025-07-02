@@ -1,12 +1,10 @@
 // src/components/treasurys/TreasurysTable.tsx
 import { useMemo } from 'react';
-import { Button, ButtonGroup } from '@mui/material';
-import { Visibility, PaymentOutlined } from '@mui/icons-material';
+import { Button } from '@mui/material';
+import { Visibility } from '@mui/icons-material';
 import { ModalStateEnum } from '@/types/global.enum';
 import AntTable, { AntColumnType } from '@/components/AntTable';
 import { SaleProps } from '@/services/sales/sales';
-import { useNavigate } from 'react-router-dom';
-import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 import { formatCurrency, formattedDate } from '@/utils/functions';
 
 interface TreasurysTableProps {
@@ -22,8 +20,8 @@ export default function TreasurysTable({
   loading,
   onRecordAction,
 }: TreasurysTableProps) {
-  const navigate = useNavigate();
-  const { setSelectedSale } = useGlobalInformation();
+  // const navigate = useNavigate();
+  // const { setSelectedSale } = useGlobalInformation();
 
   const formattedData = useMemo(() => {
     // ✅ VALIDAR que data sea un array y no esté vacío
@@ -45,13 +43,6 @@ export default function TreasurysTable({
       rawdata: item,
     }));
   }, [data]);
-
-  const handleManagePayments = (record: SaleProps) => {
-    // Usar la venta real
-    setSelectedSale(record);
-    navigate(`/treasury/${record.id}/update`);
-  };
-
   const columns: Array<AntColumnType<any>> = [
     {
       title: 'Código OC',
@@ -61,7 +52,6 @@ export default function TreasurysTable({
         <Button
           variant="contained"
           onClick={() => {
-            console.log('Abriendo drawer de OPs para:', record.rawdata.id);
             onRecordAction?.(ModalStateEnum.DETAILS, record.rawdata);
           }}
           startIcon={<Visibility />}
@@ -79,52 +69,7 @@ export default function TreasurysTable({
     { title: 'Razón Social Empresa', dataIndex: 'razon_social_empresa', width: 200, sort: true, filter: true },
     { title: 'Contacto', dataIndex: 'contacto', width: 200, sort: true, filter: true },
     { title: 'Monto Venta', dataIndex: 'monto_venta', width: 130, sort: true, filter: true },
-    { title: 'Fecha Emisión', dataIndex: 'fecha_emision', width: 150, sort: true, filter: true },
-    { 
-      title: 'Estado Tesorería', 
-      dataIndex: 'estado_tesoreria', 
-      width: 150, 
-      sort: true, 
-      filter: true,
-      render: (value) => {
-        const colorMap: Record<string, string> = {
-          'pendiente': '#f5a524', // amarillo
-          'pagado': '#17c964', // verde
-          'procesando': '#006fee', // azul
-          'cancelado': '#f31260', // rojo
-        };
-        return (
-          <span style={{ 
-            color: colorMap[value] || '#000', 
-            fontWeight: 600,
-            padding: '4px 8px',
-            backgroundColor: `${colorMap[value] || '#000'}20`,
-            borderRadius: '4px',
-            fontSize: '12px'
-          }}>
-            {value}
-          </span>
-        );
-      }
-    },
-    {
-      title: 'Acciones',
-      dataIndex: 'id',
-      fixed: 'right',
-      width: 120,
-      render: (_, record) => (
-        <ButtonGroup size="small">
-          <Button 
-            color="warning" 
-            onClick={() => handleManagePayments(record.rawdata)}
-            startIcon={<PaymentOutlined />}
-            size="small"
-          >
-            Pagos
-          </Button>
-        </ButtonGroup>
-      ),
-    },
+    { title: 'Fecha Emisión', dataIndex: 'fecha_emision', width: 150, sort: true, filter: true }
   ];
 
   return (

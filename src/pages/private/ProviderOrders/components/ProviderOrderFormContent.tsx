@@ -1,6 +1,6 @@
 import { Fragment, useState, useEffect } from 'react';
-import { Form, Input, InputNumber, notification, Spin } from 'antd';
-import { AddCircle, Business, Delete, LocalShipping, ShoppingCart, Person } from '@mui/icons-material';
+import { Form, InputNumber, notification, Spin } from 'antd';
+import { AddCircle, Business, Delete, LocalShipping } from '@mui/icons-material';
 import {
   Box,
   Card,
@@ -11,12 +11,6 @@ import {
   FormHelperText,
   Grid,
   IconButton,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Typography,
   Divider,
 } from '@mui/material';
@@ -27,7 +21,6 @@ import SelectTransports from '@/components/selects/SelectTransports';
 import SelectCompanies from '@/components/selects/SelectCompanies';
 import DatePickerAntd from '@/components/DatePickerAnt';
 import { SaleProps } from '@/services/sales/sales';
-import { formatCurrency } from '@/utils/functions';
 import SelectContactsByTransport from '@/components/selects/SelectContactsByTransport';
 import SelectContactsByProvider from '@/components/selects/SelectContactsByProvider';
 import { createOrderProvider, updateOrderProvider } from '@/services/providerOrders/providerOrders.requests';
@@ -193,11 +186,11 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
     }
   };
 
-  const calculateProductSubTotal = (index: number) => {
-    const record = form.getFieldValue(['productos', index]);
-    const sum = parseInt(record.cTotal || '0', 10) * parseInt(record.precioUnitario || '0', 10);
-    form.setFieldValue(['productos', index, 'total'], sum);
-  };
+  // const calculateProductSubTotal = (index: number) => {
+  //   const record = form.getFieldValue(['productos', index]);
+  //   const sum = parseInt(record.cTotal || '0', 10) * parseInt(record.precioUnitario || '0', 10);
+  //   form.setFieldValue(['productos', index, 'total'], sum);
+  // };
 
   return (
     <Spin spinning={loading}>
@@ -364,157 +357,6 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
               </Grid>
             </Grid>
           </StepItemContent>
-
-          <StepItemContent>
-            <Typography variant="h5" fontWeight={700} component={Stack} direction="row" alignItems="flex-end" spacing={1} mb={2}>
-              <ShoppingCart />
-              PRODUCTOS
-            </Typography>
-
-            <TableContainer sx={{ mb: 3 }}>
-              <Table size="small">
-                <TableHead sx={{ bgcolor: 'red !important' }}>
-                  <TableRow sx={{ bgcolor: 'red !important' }}>
-                    <TableCell sx={{ p: 0, fontSize: 12 }}>COD.</TableCell>
-                    <TableCell sx={{ p: 0, fontSize: 12 }}>Descripción</TableCell>
-                    <TableCell sx={{ p: 0, fontSize: 12 }}>U.Medida</TableCell>
-                    <TableCell sx={{ p: 0, fontSize: 12 }}>Cantidad</TableCell>
-                    <TableCell sx={{ p: 0, fontSize: 12 }}>C.Almacen</TableCell>
-                    <TableCell sx={{ p: 0, fontSize: 12 }}>C.Total</TableCell>
-                    <TableCell sx={{ p: 0, fontSize: 12 }}>Precio U.</TableCell>
-                    <TableCell sx={{ p: 0, fontSize: 12 }}>Total</TableCell>
-                    <TableCell sx={{ p: 0, fontSize: 12 }}></TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  <Form.List
-                    name="productos"
-                    initialValue={[getEmptyProductRecord()]}
-                    rules={[
-                      {
-                        validator(_, arr) {
-                          if (!arr.length) {
-                            return Promise.reject(new Error('Debe ingresar por lo menos 1 producto para continuar.'));
-                          }
-                          return Promise.resolve();
-                        },
-                      },
-                    ]}
-                  >
-                    {(fields, { add, remove }, { errors }) => (
-                      <Fragment>
-                        {fields.map((field) => (
-                          <TableRow key={field.name} sx={{ '&:hover': { bgcolor: 'transparent !important' } }}>
-                            <TableCell sx={{ p: 0.25 }}>
-                              <Form.Item className="m-0" name={[field.name, 'codigo']} rules={[requiredField]}>
-                                <Input size="middle" style={{ width: '100%', borderRadius: 0, borderColor: '#8377a890' }} />
-                              </Form.Item>
-                            </TableCell>
-                            <TableCell sx={{ p: 0.25 }}>
-                              <Form.Item className="m-0" name={[field.name, 'descripcion']} rules={[requiredField]}>
-                                <Input size="middle" style={{ width: '100%', borderRadius: 0, borderColor: '#8377a890' }} />
-                              </Form.Item>
-                            </TableCell>
-                            <TableCell sx={{ p: 0.25 }}>
-                              <Form.Item className="m-0" name={[field.name, 'uMedida']} rules={[requiredField]}>
-                                <Input size="middle" style={{ width: '100%', borderRadius: 0, borderColor: '#8377a890' }} />
-                              </Form.Item>
-                            </TableCell>
-                            <TableCell sx={{ p: 0.25 }}>
-                              <Form.Item className="m-0" name={[field.name, 'cantidad']} rules={[requiredField]}>
-                                <InputNumber size="middle" min={0} style={{ width: '100%', borderRadius: 0, borderColor: '#8377a890' }} />
-                              </Form.Item>
-                            </TableCell>
-                            <TableCell sx={{ p: 0.25 }}>
-                              <Form.Item className="m-0" name={[field.name, 'cAlmacen']} rules={[requiredField]}>
-                                <InputNumber size="middle" min={0} style={{ width: '100%', borderRadius: 0, borderColor: '#8377a890' }} />
-                              </Form.Item>
-                            </TableCell>
-                            <TableCell sx={{ p: 0.25 }}>
-                              <Form.Item className="m-0" name={[field.name, 'cTotal']} rules={[requiredField]}>
-                                <InputNumber
-                                  size="middle"
-                                  min={0}
-                                  style={{ width: '100%', borderRadius: 0, borderColor: '#8377a890' }}
-                                  onChange={() => calculateProductSubTotal(field.name)}
-                                />
-                              </Form.Item>
-                            </TableCell>
-                            <TableCell sx={{ p: 0.25 }}>
-                              <Form.Item className="m-0" name={[field.name, 'precioUnitario']} rules={[requiredField]}>
-                                <InputNumber
-                                  size="middle"
-                                  min={0}
-                                  style={{ width: '100%', borderRadius: 0, borderColor: '#8377a890' }}
-                                  onChange={() => calculateProductSubTotal(field.name)}
-                                />
-                              </Form.Item>
-                            </TableCell>
-                            <TableCell sx={{ p: 0.25 }}>
-                              <Form.Item className="m-0" name={[field.name, 'total']}>
-                                <InputNumber
-                                  size="middle"
-                                  min={0}
-                                  style={{ width: '100%', borderRadius: 0, borderColor: '#8377a890' }}
-                                  readOnly
-                                  disabled
-                                />
-                              </Form.Item>
-                            </TableCell>
-                            <TableCell sx={{ p: 0.25 }}>
-                              <IconButton size="small" color="error" onClick={() => remove(field.name)}>
-                                <Delete fontSize="medium" />
-                              </IconButton>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                        <TableRow sx={{ '&:hover': { bgcolor: 'transparent !important' } }}>
-                          <TableCell colSpan={2}>
-                            {errors.length ? <FormHelperText error>{(errors as Array<string>).join(' - ')}</FormHelperText> : null}
-                          </TableCell>
-                          <TableCell colSpan={3} sx={{ p: 0.25 }}>
-                            <Button fullWidth size="small" onClick={() => add(getEmptyProductRecord())} sx={{ borderRadius: 0.75 }}>
-                              AÑADIR PRODUCTOS
-                            </Button>
-                          </TableCell>
-                          <TableCell sx={{ p: 0 }} align="right" colSpan={3}>
-                            <Form.Item noStyle shouldUpdate>
-                              {() => {
-                                const arr = form.getFieldValue('productos');
-                                const sum: number = arr.reduce(
-                                  (acum: number, next: Record<string, string>) => (acum += parseInt(next.total || '0', 10)),
-                                  0
-                                );
-                                return (
-                                  <Stack
-                                    direction="row"
-                                    justifyContent="space-between"
-                                    bgcolor="secondary.main"
-                                    color="#fff"
-                                    px={1}
-                                    py={0.8}
-                                    borderRadius={0.5}
-                                  >
-                                    <Typography component="span" variant="body2" children="Pago Total" />
-                                    <Typography component="span" variant="body2" children={formatCurrency(sum)} />
-                                  </Stack>
-                                );
-                              }}
-                            </Form.Item>
-                          </TableCell>
-                          <TableCell />
-                        </TableRow>
-                      </Fragment>
-                    )}
-                  </Form.List>
-                </TableBody>
-              </Table>
-            </TableContainer>
-            <Form.Item name="productosNota" rules={[requiredField]}>
-              <InputAntd label="Nota" type="textarea" size="large" />
-            </Form.Item>
-          </StepItemContent>
-
           {/* Sección de Pagos Proveedor */}
           <PaymentsList
             name="pagosProveedor"

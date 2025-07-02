@@ -3,24 +3,24 @@ import PageContent from '@/components/PageContent';
 import QuotesTable from './components/QuotesTable';
 import QuotesModal from './components/QuotesModal';
 import { useEffect, useState } from 'react';
-import { QuoteProps } from '@/services/quotes/quotes';
-import { getQuotes } from '@/services/quotes/quotes.request';
+import { CotizacionProps } from '@/types/cotizacion.types';
+import { getCotizaciones } from '@/services/quotes/quotes.request';
 import { notification } from 'antd';
 import { Box, Button } from '@mui/material';
 import { ModalStateEnum } from '@/types/global.enum';
 import { Add, Refresh } from '@mui/icons-material';
 
-type ModalStateType = { mode: ModalStateEnum; data: QuoteProps | null } | null;
+type ModalStateType = { mode: ModalStateEnum; data: CotizacionProps | null } | null;
 
 const QuotesPage = () => {
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<QuoteProps[]>([]);
+  const [data, setData] = useState<CotizacionProps[]>([]);
   const [modal, setModal] = useState<ModalStateType>(null);
 
   const fetchQuotes = async () => {
     try {
       setLoading(true);
-      const res = await getQuotes();
+      const res = await getCotizaciones();
       setData(res);
     } catch (error) {
       notification.error({

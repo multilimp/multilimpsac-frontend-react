@@ -1,86 +1,21 @@
-// src/pages/BillingsPage.tsx
-import React, { useEffect, useState } from 'react';
 import PageContent from '@/components/PageContent';
-import { Button } from '@mui/material';
-import { notification } from 'antd';
-import { getSales } from '@/services/sales/sales.request';
-import { SaleProps } from '@/services/sales/sales';
-import { ModalStateEnum } from '@/types/global.enum';
+import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 import BillingsTable from './components/BillingsTable';
-import BillingsModal from './components/BillingsModal';
 
-type ModalStateType = null | {
-  mode: ModalStateEnum;
-  data: SaleProps | null;
-};
-
-const BillingsPage: React.FC = () => {
-  const [loading, setLoading] = useState<boolean>(false);
-  const [data, setData] = useState<SaleProps[]>([]);
-  const [modal, setModal] = useState<ModalStateType>(null);
-
-  const fetchBillings = async () => {
-    setLoading(true);
-    try {
-      const res = await getSales();
-      setData(res);
-    } catch (error) {
-      notification.error({
-        message: 'Error al cargar facturas',
-        description: String(error),
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchBillings();
-  }, []);
-
-  const handleSave = async (values: any, id?: number) => {
-    setLoading(true);
-    try {
-      if (id !== undefined) {
-        // await updateBilling(id, values); // TODO: Implementar en sales service
-        notification.success({ message: 'Factura actualizada' });
-      } else {
-        // await createBilling(values); // TODO: Implementar en sales service
-        notification.success({ message: 'Factura creada' });
-      }
-      await fetchBillings();
-      setModal(null);
-    } catch (error) {
-      notification.error({ message: 'Error al guardar', description: String(error) });
-    } finally {
-      setLoading(false);
-    }
-  };
+const TrackingsPage = () => {
+  const { sales, loadingSales } = useGlobalInformation();
 
   return (
     <PageContent
-      component={
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => setModal({ data: null, mode: ModalStateEnum.BOX })}
-        >
-          Nueva Factura
-        </Button>
-      }
+      title="Facturaciones"
+      helper="GESTIÓN DE FACTURAS"
     >
-      <BillingsTable data={data} loading={loading} />
-
-      {modal?.mode === ModalStateEnum.BOX && (
-        <BillingsModal
-          data={modal.data}
-          open
-          onClose={() => setModal(null)}
-          onSave={handleSave}
-        />
-      )}
+      <BillingsTable 
+        data={sales} 
+        loading={loadingSales} 
+      />
     </PageContent>
   );
 };
 
-export default BillingsPage;
+export default TrackingsPage;

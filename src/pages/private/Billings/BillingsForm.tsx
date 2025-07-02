@@ -3,21 +3,23 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Stack } from '@mui/material';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
-import TrackingFormContent from './TrackingFormContent';
 import { BlackBarKeyEnum } from '@/types/global.enum';
+import BillingFormContent from './components/BillingFormContent';
 
-const TrackingOrderForm = () => {
+const BillingsForm = () => {
   const { selectedSale, setSelectedSale, setBlackBarKey } = useGlobalInformation();
   const navigate = useNavigate();
 
   useEffect(() => {
-    setBlackBarKey(BlackBarKeyEnum.SEGUIMIENTO);
+    setBlackBarKey(BlackBarKeyEnum.OP);
     if (!selectedSale) {
-      message.error('Venta no seleccionada para seguimiento');
-      navigate('/tracking');
+      message.error('Venta no seleccionada para facturación');
+      navigate('/billing');
       setBlackBarKey(null);
       return;
     }
+
+    console.log('Facturación cargada para venta:', selectedSale.codigoVenta);
 
     return () => {
       setSelectedSale(null);
@@ -27,9 +29,16 @@ const TrackingOrderForm = () => {
 
   return (
     <Stack direction="column" spacing={2}>
-      {selectedSale ? <TrackingFormContent sale={selectedSale} /> : <Empty />}
+      {selectedSale ? (
+        <BillingFormContent sale={selectedSale} />
+      ) : (
+        <Empty 
+          description="No hay datos de facturación disponibles"
+          style={{ marginTop: '2rem' }}
+        />
+      )}
     </Stack>
   );
 };
 
-export default TrackingOrderForm;
+export default BillingsForm;

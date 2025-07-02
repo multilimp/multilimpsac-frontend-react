@@ -1,4 +1,4 @@
-import { Fragment, ReactNode, useState, useEffect, useMemo, memo } from 'react';
+import { Fragment, ReactNode, useState, useMemo, memo } from 'react';
 import { Dropdown } from 'antd';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Divider, List, ListItem, ListItemText, Stack, Typography } from '@mui/material';
 import SelectCompanies from '@/components/selects/SelectCompanies';

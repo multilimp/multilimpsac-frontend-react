@@ -3,7 +3,7 @@ import StorageService from '@/services/storageService';
 import { authUser } from '@/services/users/user.requests';
 import { EMAIL_PATTERN, STORAGE_KEY } from '@/utils/constants';
 import { HeroInput } from '@/components/ui/HeroInput';
-import { heroUIColors, alpha } from '@/styles/theme/heroui-colors';
+import { heroUIColors } from '@/styles/theme/heroui-colors';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { Box, IconButton, Stack, Typography, Button } from '@mui/material';
 import { Form } from 'antd';

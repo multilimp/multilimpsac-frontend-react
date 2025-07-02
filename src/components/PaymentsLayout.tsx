@@ -18,9 +18,6 @@ interface PaymentsLayoutProps {
   mode?: 'readonly' | 'edit';
   payments?: PaymentData[];
   children?: ReactNode;
-  tipoPagoValue?: string;
-  notaPagoValue?: string;
-  tipoPagoOptions?: Array<{ label: string; value: string }>;
   onAddPayment?: () => void;
   renderTipoPago?: () => ReactNode;
   renderNotaPago?: () => ReactNode;
@@ -34,9 +31,6 @@ const PaymentsLayout = ({
   mode = 'edit',
   payments = [],
   children,
-  tipoPagoValue,
-  notaPagoValue,
-  tipoPagoOptions = [],
   onAddPayment,
   renderTipoPago,
   renderNotaPago,

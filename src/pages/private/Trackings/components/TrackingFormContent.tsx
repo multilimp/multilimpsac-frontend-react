@@ -10,108 +10,65 @@ import {
   Button,
   Chip,
   Divider,
-  Alert,
-  LinearProgress
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
 } from '@mui/material';
 import { 
   ArrowBack, 
   CheckCircle, 
-  Schedule, 
-  Warning,
-  LocalShipping,
-  Assignment,
-  Save
+  Save,
+  Business,
+  Assignment as AssignmentIcon
 } from '@mui/icons-material';
 import { notification, Spin, Form } from 'antd';
+import Grid from '@mui/material/Grid';
 import { SaleProps } from '@/services/sales/sales';
-import { heroUIColors, alpha } from '@/styles/theme/heroui-colors';
+import { alpha } from '@/styles/theme/heroui-colors';
 import { formatCurrency, formattedDate } from '@/utils/functions';
+import { StepItemContent } from '../../Sales/SalesPageForm/smallcomponents';
+import DatePickerAntd from '@/components/DatePickerAnt';
+import InputFile from '@/components/InputFile';
+import { getOrderProvider } from '@/services/providerOrders/providerOrders.requests';
 
 interface TrackingFormContentProps {
   sale: SaleProps;
 }
 
-// Estados de seguimiento con colores y labels
-const trackingStatusConfig = {
-  'PENDIENTE': {
-    label: 'Pendiente',
-    color: heroUIColors.warning[500],
-    bgColor: alpha(heroUIColors.warning[100], 0.3),
-    icon: Schedule
-  },
-  'EN_PROCESO': {
-    label: 'En Proceso',
-    color: heroUIColors.primary[500],
-    bgColor: alpha(heroUIColors.primary[100], 0.3),
-    icon: LocalShipping
-  },
-  'COMPLETADO': {
-    label: 'Completado',
-    color: heroUIColors.success[500],
-    bgColor: alpha(heroUIColors.success[100], 0.3),
-    icon: CheckCircle
-  },
-  'RETRASADO': {
-    label: 'Retrasado',
-    color: heroUIColors.error[500],
-    bgColor: alpha(heroUIColors.error[100], 0.3),
-    icon: Warning
-  },
-  'CANCELADO': {
-    label: 'Cancelado',
-    color: heroUIColors.neutral[500],
-    bgColor: alpha(heroUIColors.neutral[100], 0.3),
-    icon: Assignment
-  }
-};
+// Estados de seguimiento
+const trackingStatusOptions = [
+  { label: 'Pendiente', value: 'PENDIENTE', color: '#f59e0b' },
+  { label: 'En Proceso', value: 'EN_PROCESO', color: '#3b82f6' },
+  { label: 'Completado', value: 'COMPLETADO', color: '#10b981' },
+  { label: 'Retrasado', value: 'RETRASADO', color: '#ef4444' },
+  { label: 'Cancelado', value: 'CANCELADO', color: '#6b7280' }
+];
 
 const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [trackingData, setTrackingData] = useState<any>(null);
-
-  // Estado simulado - en producción vendría del backend
-  const currentStatus = 'EN_PROCESO';
-  const statusInfo = trackingStatusConfig[currentStatus as keyof typeof trackingStatusConfig];
-  const StatusIcon = statusInfo.icon;
+  const [ordenesProveedor, setOrdenesProveedor] = useState<any[]>([]);
+  const [selectedStatus, setSelectedStatus] = useState('EN_PROCESO');
 
   useEffect(() => {
-    loadTrackingDetails();
+    loadProviderOrders();
   }, [sale.id]);
 
-  const loadTrackingDetails = async () => {
+  const loadProviderOrders = async () => {
     try {
       setLoading(true);
-      // TODO: Implementar llamada al servicio de seguimiento
-      // const data = await getTrackingBySaleId(sale.id);
-      
-      // Datos simulados por ahora
-      const mockData = {
-        id: sale.id,
-        status: currentStatus,
-        lastUpdate: new Date().toISOString(),
-        notes: 'Seguimiento en proceso normal',
-        deliveryProgress: 65,
-        estimatedDelivery: sale.fechaMaxForm || new Date().toISOString(),
-      };
-      
-      setTrackingData(mockData);
-
-      // Pre-llenar formulario
-      form.setFieldsValue({
-        estado: currentStatus,
-        progreso: mockData.deliveryProgress,
-        observaciones: mockData.notes,
-        fechaEstimada: mockData.estimatedDelivery,
-      });
-
+      const ops = await getOrderProvider(sale.id);
+      setOrdenesProveedor(ops);
     } catch (error) {
       notification.error({
-        message: 'Error al cargar seguimiento',
-        description: 'No se pudieron cargar los detalles del seguimiento'
+        message: 'Error al cargar órdenes de proveedor',
+        description: 'No se pudieron cargar las órdenes de proveedor'
       });
-      console.error('Error loading tracking:', error);
+      console.error('Error loading provider orders:', error);
     } finally {
       setLoading(false);
     }
@@ -124,11 +81,9 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
   const handleFinish = async (values: Record<string, any>) => {
     try {
       setLoading(true);
-
-      // TODO: Implementar guardado real del seguimiento
       console.log('Guardando seguimiento:', values);
       
-      // Simular guardado
+      // TODO: Implementar guardado real del seguimiento
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       notification.success({
@@ -147,335 +102,429 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
     }
   };
 
-  if (loading && !trackingData) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <Spin size="large" />
-      </Box>
-    );
-  }
+  const handleStatusChange = (status: string) => {
+    setSelectedStatus(status);
+    form.setFieldValue('estado', status);
+  };
 
   return (
     <Spin spinning={loading}>
-      <Box sx={{ maxWidth: '1200px', mx: 'auto', p: 2 }}>
-        {/* Header */}
-        <Box sx={{ mb: 3 }}>
-          <Stack direction="row" alignItems="center" spacing={2} mb={2}>
-            <Button
-              variant="outlined"
-              startIcon={<ArrowBack />}
-              onClick={handleBack}
-              sx={{
-                borderColor: heroUIColors.neutral[300],
-                color: heroUIColors.neutral[700],
-                '&:hover': {
-                  borderColor: heroUIColors.neutral[400],
-                  backgroundColor: alpha(heroUIColors.neutral[100], 0.5),
-                }
-              }}
-            >
-              Volver a Seguimientos
-            </Button>
-          </Stack>
-
-          <Typography 
-            variant="h4" 
-            fontWeight={700}
-            color={heroUIColors.neutral[800]}
-            gutterBottom
-          >
-            Seguimiento de Orden de Compra
-          </Typography>
-          
-          <Typography 
-            variant="h6" 
-            color={heroUIColors.neutral[600]}
-            fontWeight={500}
-          >
-            {sale.codigoVenta}
-          </Typography>
-        </Box>
-
+      <Box sx={{ maxWidth: '1400px', mx: 'auto', p: 2 }}>
         <Form form={form} onFinish={handleFinish} layout="vertical">
-          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
-            {/* Columna Izquierda - Estado Actual */}
-            <Box sx={{ flex: 1 }}>
-              <Card 
-                sx={{ 
-                  mb: 3,
-                  border: `2px solid ${statusInfo.color}`,
-                  borderRadius: heroUIColors.radius.lg,
-                  background: statusInfo.bgColor,
-                }}
-              >
-                <CardContent>
-                  <Stack direction="row" alignItems="center" spacing={2} mb={3}>
-                    <Box
-                      sx={{
-                        width: 48,
-                        height: 48,
-                        borderRadius: '50%',
-                        backgroundColor: statusInfo.color,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'white',
-                      }}
-                    >
-                      <StatusIcon />
-                    </Box>
-                    <Box>
-                      <Typography variant="h6" fontWeight={600}>
-                        Estado: {statusInfo.label}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Última actualización: {formattedDate(trackingData?.lastUpdate)}
-                      </Typography>
-                    </Box>
-                  </Stack>
+          <Stack spacing={3}>
+            {/* Header de la OC */}
+            <StepItemContent
+              showHeader
+              ResumeIcon={Business}
+              color="#12b981"
+              headerLeft={`Fecha creación: ${formattedDate(sale.createdAt)}`}
+              headerRight={`Fecha actualización: ${formattedDate(sale.updatedAt)}`}
+              resumeContent={
+                <Box>
+                  <Typography variant="h5" sx={{ fontWeight: 600, color: '#ffffff' }}>
+                    {sale.codigoVenta}
+                  </Typography>
+                  <Typography sx={{ fontWeight: 300, color: '#ffffff', opacity: 0.8, fontSize: '0.875rem' }}>
+                    Seguimiento de Orden de Compra
+                  </Typography>
+                </Box>
+              }
+            >
+              <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+                Información General de la Orden
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12, md: 4 }}>
+                  <Typography variant="body2" color="text.secondary">Monto de Venta</Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 600, color: '#10b981' }}>
+                    {formatCurrency(parseInt(sale.montoVenta || '0'))}
+                  </Typography>
+                </Grid>
+                <Grid size={{ xs: 12, md: 4 }}>
+                  <Typography variant="body2" color="text.secondary">Fecha Máxima de Entrega</Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                    {formattedDate(sale.fechaMaxForm)}
+                  </Typography>
+                </Grid>
+                <Grid size={{ xs: 12, md: 4 }}>
+                  <Typography variant="body2" color="text.secondary">Estado Actual</Typography>
+                  <Chip 
+                    label={trackingStatusOptions.find(s => s.value === selectedStatus)?.label || 'En Proceso'} 
+                    sx={{ 
+                      backgroundColor: trackingStatusOptions.find(s => s.value === selectedStatus)?.color || '#3b82f6',
+                      color: 'white',
+                      fontWeight: 600
+                    }}
+                  />
+                </Grid>
+              </Grid>
+            </StepItemContent>
 
-                  {/* Progreso Visual */}
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
-                      Progreso de Entrega
+            {/* Cuadro de Datos del Cliente, Responsable de Recepción y Lugar de Entrega */}
+            <Box 
+              sx={{ 
+                bgcolor: 'white', 
+                borderRadius: 2, 
+                p: 3,
+                border: '1px solid #e0e0e0',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+              }}
+            >
+              <Stack direction={{ xs: 'column', lg: 'row' }} spacing={3} divider={<Divider orientation="vertical" flexItem />}>
+                <Box flex={1}>
+                  <Typography 
+                    sx={{ 
+                      textTransform: 'uppercase', 
+                      fontSize: 16, 
+                      color: '#8377a8', 
+                      fontWeight: 600, 
+                      textAlign: 'center', 
+                      mb: 2 
+                    }}
+                  >
+                    Datos del Cliente
+                  </Typography>
+                  <Typography sx={{ textTransform: 'uppercase', fontSize: 14, fontWeight: 700, mb: 1 }}>
+                    {sale?.cliente?.razonSocial ?? '---'}
+                  </Typography>
+                  <Typography sx={{ textTransform: 'uppercase', fontSize: 12, color: 'text.secondary' }}>
+                    RUC: {sale?.cliente?.ruc ?? '---'}
+                  </Typography>
+                  <Typography sx={{ textTransform: 'uppercase', fontSize: 12, color: 'text.secondary' }}>
+                    CUE: {sale?.cliente?.codigoUnidadEjecutora ?? '---'}
+                  </Typography>
+                </Box>
+                
+                <Box flex={1}>
+                  <Typography 
+                    sx={{ 
+                      textTransform: 'uppercase', 
+                      fontSize: 16, 
+                      color: '#8377a8', 
+                      fontWeight: 600, 
+                      textAlign: 'center', 
+                      mb: 2 
+                    }}
+                  >
+                    Responsable Recepción
+                  </Typography>
+                  <Typography sx={{ textTransform: 'uppercase', fontSize: 14, fontWeight: 700, mb: 1 }}>
+                    {sale?.contactoCliente?.cargo ?? '---'}
+                  </Typography>
+                  <Typography sx={{ textTransform: 'uppercase', fontSize: 12, color: 'text.secondary' }}>
+                    {sale?.contactoCliente?.nombre ?? '---'}
+                  </Typography>
+                  <Typography sx={{ textTransform: 'uppercase', fontSize: 12, color: 'text.secondary' }}>
+                    {sale?.contactoCliente?.telefono ?? '---'} - {sale?.contactoCliente?.email ?? '---'}
+                  </Typography>
+                </Box>
+                
+                <Box flex={1}>
+                  <Typography 
+                    sx={{ 
+                      textTransform: 'uppercase', 
+                      fontSize: 16, 
+                      color: '#8377a8', 
+                      fontWeight: 600, 
+                      textAlign: 'center', 
+                      mb: 2 
+                    }}
+                  >
+                    Lugar de Entrega
+                  </Typography>
+                  <Typography sx={{ textTransform: 'uppercase', fontSize: 14, fontWeight: 700, mb: 1 }}>
+                    {sale?.direccionEntrega ?? '---'}
+                  </Typography>
+                  <Typography sx={{ textTransform: 'uppercase', fontSize: 12, color: 'text.secondary' }}>
+                    {sale?.departamentoEntrega ?? '---'} - {sale?.provinciaEntrega ?? '---'} - {sale?.distritoEntrega ?? '---'}
+                  </Typography>
+                  <Typography sx={{ textTransform: 'uppercase', fontSize: 12, color: 'text.secondary' }}>
+                    Ref: {sale?.referenciaEntrega ?? '---'}
+                  </Typography>
+                </Box>
+              </Stack>
+            </Box>
+
+            {/* Lista de Órdenes de Proveedor */}
+            <StepItemContent>
+              <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <AssignmentIcon />
+                Órdenes de Proveedor ({ordenesProveedor.length})
+              </Typography>
+              
+              {ordenesProveedor.length === 0 ? (
+                <Box sx={{ textAlign: 'center', py: 4 }}>
+                  <Typography variant="body1" color="text.secondary">
+                    No hay órdenes de proveedor registradas para esta orden de compra
+                  </Typography>
+                </Box>
+              ) : (
+                <Stack spacing={2}>
+                  {ordenesProveedor.map((op, index) => (
+                    <Card key={op.id} variant="outlined" sx={{ border: '1px solid #e0e0e0' }}>
+                      <CardHeader 
+                        title={`OP ${index + 1}: ${op.codigoOp || `OP-${op.id}`}`}
+                        subheader={`Proveedor: ${op.proveedor?.razonSocial || 'N/A'}`}
+                        sx={{ bgcolor: '#f8fafc', py: 1 }}
+                      />
+                      <CardContent sx={{ pt: 2 }}>
+                        <Grid container spacing={2}>
+                          <Grid size={{ xs: 12, md: 3 }}>
+                            <Typography variant="body2" color="text.secondary">RUC Proveedor</Typography>
+                            <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                              {op.proveedor?.ruc || 'N/A'}
+                            </Typography>
+                          </Grid>
+                          <Grid size={{ xs: 12, md: 3 }}>
+                            <Typography variant="body2" color="text.secondary">Contacto</Typography>
+                            <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                              {op.contactoProveedor?.nombre || 'N/A'}
+                            </Typography>
+                          </Grid>
+                          <Grid size={{ xs: 12, md: 3 }}>
+                            <Typography variant="body2" color="text.secondary">Total Proveedor</Typography>
+                            <Typography variant="body1" sx={{ fontWeight: 600, color: '#10b981' }}>
+                              {formatCurrency(parseFloat(op.totalProveedor || '0'))}
+                            </Typography>
+                          </Grid>
+                          <Grid size={{ xs: 12, md: 3 }}>
+                            <Typography variant="body2" color="text.secondary">Estado</Typography>
+                            <Chip 
+                              label={op.estadoOp || 'Pendiente'} 
+                              size="small" 
+                              color={op.estadoOp === 'COMPLETADO' ? 'success' : 'default'}
+                            />
+                          </Grid>
+                          
+                          {/* Fechas importantes */}
+                          <Grid size={{ xs: 12, md: 4 }}>
+                            <Typography variant="body2" color="text.secondary">Fecha Programada</Typography>
+                            <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                              {formattedDate(op.fechaProgramada) || 'N/A'}
+                            </Typography>
+                          </Grid>
+                          <Grid size={{ xs: 12, md: 4 }}>
+                            <Typography variant="body2" color="text.secondary">Fecha Despacho</Typography>
+                            <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                              {formattedDate(op.fechaDespacho) || 'N/A'}
+                            </Typography>
+                          </Grid>
+                          <Grid size={{ xs: 12, md: 4 }}>
+                            <Typography variant="body2" color="text.secondary">Fecha Recepción</Typography>
+                            <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                              {formattedDate(op.fechaRecepcion) || 'N/A'}
+                            </Typography>
+                          </Grid>
+
+                          {/* Productos de la OP */}
+                          {op.productos && op.productos.length > 0 && (
+                            <Grid size={12}>
+                              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                                Productos ({op.productos.length})
+                              </Typography>
+                              <TableContainer sx={{ border: '1px solid #e0e0e0', borderRadius: 1 }}>
+                                <Table size="small">
+                                  <TableHead sx={{ bgcolor: '#10b981 !important' }}>
+                                    <TableRow>
+                                      <TableCell sx={{ fontSize: 12, fontWeight: 600, color: 'white', p: 0.5 }}>Código</TableCell>
+                                      <TableCell sx={{ fontSize: 12, fontWeight: 600, color: 'white', p: 0.5 }}>Descripción</TableCell>
+                                      <TableCell sx={{ fontSize: 12, fontWeight: 600, color: 'white', p: 0.5 }}>U.Medida</TableCell>
+                                      <TableCell sx={{ fontSize: 12, fontWeight: 600, color: 'white', p: 0.5 }}>Cantidad</TableCell>
+                                      <TableCell sx={{ fontSize: 12, fontWeight: 600, color: 'white', p: 0.5 }}>C.Almacén</TableCell>
+                                      <TableCell sx={{ fontSize: 12, fontWeight: 600, color: 'white', p: 0.5 }}>C.Total</TableCell>
+                                      <TableCell sx={{ fontSize: 12, fontWeight: 600, color: 'white', p: 0.5 }}>P. Unitario</TableCell>
+                                      <TableCell sx={{ fontSize: 12, fontWeight: 600, color: 'white', p: 0.5 }}>Total</TableCell>
+                                    </TableRow>
+                                  </TableHead>
+                                  <TableBody>
+                                    {op.productos.slice(0, 5).map((producto: any, idx: number) => (
+                                      <TableRow key={idx} sx={{ '&:nth-of-type(odd)': { bgcolor: '#f8fafc' } }}>
+                                        <TableCell sx={{ fontSize: 11, p: 0.5 }}>{producto.codigo || 'N/A'}</TableCell>
+                                        <TableCell sx={{ fontSize: 11, p: 0.5 }}>{producto.descripcion || 'N/A'}</TableCell>
+                                        <TableCell sx={{ fontSize: 11, p: 0.5 }}>{producto.uMedida || 'N/A'}</TableCell>
+                                        <TableCell sx={{ fontSize: 11, p: 0.5 }}>{producto.cantidad || 'N/A'}</TableCell>
+                                        <TableCell sx={{ fontSize: 11, p: 0.5 }}>{producto.cAlmacen || 'N/A'}</TableCell>
+                                        <TableCell sx={{ fontSize: 11, p: 0.5 }}>{producto.cTotal || 'N/A'}</TableCell>
+                                        <TableCell sx={{ fontSize: 11, p: 0.5 }}>{formatCurrency(parseFloat(producto.precioUnitario || '0'))}</TableCell>
+                                        <TableCell sx={{ fontSize: 11, fontWeight: 600, p: 0.5, color: '#10b981' }}>
+                                          {formatCurrency(parseFloat(producto.total || '0'))}
+                                        </TableCell>
+                                      </TableRow>
+                                    ))}
+                                    {op.productos.length > 5 && (
+                                      <TableRow>
+                                        <TableCell colSpan={8} sx={{ textAlign: 'center', fontSize: 11, fontStyle: 'italic', p: 1 }}>
+                                          ... y {op.productos.length - 5} productos más
+                                        </TableCell>
+                                      </TableRow>
+                                    )}
+                                  </TableBody>
+                                </Table>
+                              </TableContainer>
+                            </Grid>
+                          )}
+                        </Grid>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </Stack>
+              )}
+            </StepItemContent>
+
+            {/* Sección OC Conforme */}
+            <Card 
+              sx={{ 
+                bgcolor: '#1e293b',
+                borderRadius: 3,
+                overflow: 'hidden',
+                boxShadow: '0 8px 32px rgba(16, 185, 129, 0.2)'
+              }}
+            >
+              <CardContent sx={{ bgcolor: '#1e293b', p: 4 }}>
+                {/* Título centrado */}
+                <Box sx={{ textAlign: 'center', mb: 4, borderBottom: '2px solid #10b981', pb: 2 }}>
+                  <Typography 
+                    variant="h4" 
+                    sx={{ 
+                      fontWeight: 500, 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      gap: 2,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      color: '#10b981',
+                      mb: 1
+                    }}
+                  >
+                    <CheckCircle sx={{ fontSize: 32, color: '#10b981' }} />
+                    OC CONFORME
+                  </Typography>
+                </Box>
+
+                {/* Los 3 campos en una sola fila */}
+                <Grid container spacing={3}>
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <Typography sx={{ color: 'white', mb: 1, fontSize: '0.875rem', fontWeight: 500 }}>
+                      Fecha Entrega OC
                     </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                      <LinearProgress 
-                        variant="determinate" 
-                        value={trackingData?.deliveryProgress || 0}
-                        sx={{ 
-                          flex: 1, 
-                          height: 8, 
-                          borderRadius: 4,
-                          backgroundColor: alpha(statusInfo.color, 0.2),
-                          '& .MuiLinearProgress-bar': {
-                            backgroundColor: statusInfo.color,
-                          }
-                        }} 
+                    <Form.Item 
+                      name="fechaEntregaOC" 
+                      rules={[{ required: true, message: 'Fecha requerida' }]}
+                      style={{ marginBottom: 0 }}
+                    >
+                      <DatePickerAntd placeholder="Seleccionar fecha" />
+                    </Form.Item>
+                  </Grid>
+                  
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <Typography sx={{ color: 'white', mb: 1, fontSize: '0.875rem', fontWeight: 500 }}>
+                      Cargo de Entrega OC PERU COMPRAS
+                    </Typography>
+                    <Form.Item 
+                      name="cargoEntregaOCPeruCompras" 
+                      style={{ marginBottom: 0 }}
+                    >
+                      <InputFile 
+                        accept="pdf"
+                        label=""
                       />
-                      <Typography variant="body2" fontWeight={600} minWidth={40}>
-                        {trackingData?.deliveryProgress || 0}%
-                      </Typography>
-                    </Box>
-                  </Box>
-                </CardContent>
-              </Card>
+                    </Form.Item>
+                  </Grid>                  
+                  
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <Typography sx={{ color: 'white', mb: 1, fontSize: '0.875rem', fontWeight: 500 }}>
+                      Fecha Perú Compras
+                    </Typography>
+                    <Form.Item 
+                      name="fechaPeruCompras" 
+                      style={{ marginBottom: 0 }}
+                    >
+                      <DatePickerAntd placeholder="Seleccionar fecha" />
+                    </Form.Item>
+                  </Grid>
+                </Grid>
+              </CardContent>
+            </Card>
 
-              {/* Información de la Venta */}
-              <Card>
-                <CardHeader 
-                  title="Información de la Orden"
-                  titleTypographyProps={{ fontWeight: 600 }}
-                  sx={{ 
-                    backgroundColor: alpha(heroUIColors.primary[50], 0.5),
-                    borderBottom: `1px solid ${heroUIColors.neutral[200]}`
+            {/* Footer con botones */}
+            <Box sx={{ 
+              display: 'flex', 
+              gap: 2, 
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              mt: 4, 
+              p: 3,
+              bgcolor: '#f8fafc',
+              borderRadius: 2,
+              border: '1px solid #e0e0e0'
+            }}>
+              <Box>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                  Seleccionar Estado de Seguimiento
+                </Typography>
+                <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                  {trackingStatusOptions.map((status) => (
+                    <Chip
+                      key={status.value}
+                      label={status.label}
+                      clickable
+                      variant={selectedStatus === status.value ? 'filled' : 'outlined'}
+                      sx={{
+                        backgroundColor: selectedStatus === status.value ? status.color : 'transparent',
+                        color: selectedStatus === status.value ? 'white' : status.color,
+                        borderColor: status.color,
+                        fontWeight: 600,
+                        '&:hover': {
+                          backgroundColor: alpha(status.color, 0.1),
+                        }
+                      }}
+                      onClick={() => handleStatusChange(status.value)}
+                    />
+                  ))}
+                </Stack>
+              </Box>
+
+              <Stack direction="row" spacing={2}>
+                <Button
+                  variant="outlined"
+                  startIcon={<ArrowBack />}
+                  onClick={handleBack}
+                  sx={{
+                    borderColor: '#d1d5db',
+                    color: '#6b7280',
+                    '&:hover': {
+                      borderColor: '#9ca3af',
+                      backgroundColor: alpha('#f3f4f6', 0.5),
+                    }
                   }}
-                />
-                <CardContent>
-                  <Stack spacing={2}>
-                    <Box>
-                      <Typography variant="body2" color="text.secondary">
-                        Cliente
-                      </Typography>
-                      <Typography variant="body1" fontWeight={500}>
-                        {sale.cliente?.razonSocial || 'N/A'}
-                      </Typography>
-                    </Box>
+                >
+                  Volver
+                </Button>
 
-                    <Box>
-                      <Typography variant="body2" color="text.secondary">
-                        RUC Cliente
-                      </Typography>
-                      <Typography variant="body1" fontWeight={500}>
-                        {sale.cliente?.ruc || 'N/A'}
-                      </Typography>
-                    </Box>
-
-                    <Box>
-                      <Typography variant="body2" color="text.secondary">
-                        Empresa
-                      </Typography>
-                      <Typography variant="body1" fontWeight={500}>
-                        {sale.empresa?.razonSocial || 'N/A'}
-                      </Typography>
-                    </Box>
-
-                    <Divider />
-
-                    <Box>
-                      <Typography variant="body2" color="text.secondary">
-                        Monto de Venta
-                      </Typography>
-                      <Typography variant="h6" fontWeight={600} color={heroUIColors.success[600]}>
-                        {formatCurrency(parseInt(sale.montoVenta || '0'))}
-                      </Typography>
-                    </Box>
-
-                    <Box>
-                      <Typography variant="body2" color="text.secondary">
-                        Fecha Máxima de Entrega
-                      </Typography>
-                      <Typography variant="body1" fontWeight={500}>
-                        {formattedDate(sale.fechaMaxForm)}
-                      </Typography>
-                    </Box>
-
-                    <Box>
-                      <Typography variant="body2" color="text.secondary">
-                        Departamento de Entrega
-                      </Typography>
-                      <Typography variant="body1" fontWeight={500}>
-                        {sale.departamentoEntrega || 'N/A'}
-                      </Typography>
-                    </Box>
-
-                    <Box>
-                      <Typography variant="body2" color="text.secondary">
-                        CUE
-                      </Typography>
-                      <Typography variant="body1" fontWeight={500}>
-                        {sale.cliente?.codigoUnidadEjecutora || 'N/A'}
-                      </Typography>
-                    </Box>
-                  </Stack>
-                </CardContent>
-              </Card>
-            </Box>
-
-            {/* Columna Derecha - Formulario de Actualización */}
-            <Box sx={{ flex: 1 }}>
-              <Card>
-                <CardHeader 
-                  title="Actualizar Seguimiento"
-                  titleTypographyProps={{ fontWeight: 600 }}
-                  sx={{ 
-                    backgroundColor: alpha(heroUIColors.secondary[50], 0.5),
-                    borderBottom: `1px solid ${heroUIColors.neutral[200]}`
+                <Button
+                  variant="contained"
+                  startIcon={<Save />}
+                  onClick={() => form.submit()}
+                  disabled={loading}
+                  sx={{
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    borderRadius: 2,
+                    px: 4,
+                    py: 1,
+                    fontWeight: 600,
+                    boxShadow: '0 4px 15px 0 rgba(102, 126, 234, 0.3)',
+                    '&:hover': {
+                      background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
+                      boxShadow: '0 6px 20px 0 rgba(102, 126, 234, 0.4)',
+                    }
                   }}
-                />
-                <CardContent>
-                  <Stack spacing={3}>
-                    {/* Estado */}
-                    <Form.Item
-                      name="estado"
-                      label={<Typography variant="body2" fontWeight={500}>Estado del Seguimiento</Typography>}
-                      rules={[{ required: true, message: 'Estado requerido' }]}
-                    >
-                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                        {Object.entries(trackingStatusConfig).map(([key, config]) => (
-                          <Chip
-                            key={key}
-                            label={config.label}
-                            clickable
-                            variant={currentStatus === key ? 'filled' : 'outlined'}
-                            sx={{
-                              backgroundColor: currentStatus === key ? config.color : 'transparent',
-                              color: currentStatus === key ? 'white' : config.color,
-                              borderColor: config.color,
-                              '&:hover': {
-                                backgroundColor: alpha(config.color, 0.1),
-                              }
-                            }}
-                            onClick={() => {
-                              form.setFieldValue('estado', key);
-                            }}
-                          />
-                        ))}
-                      </Box>
-                    </Form.Item>
-
-                    {/* Progreso */}
-                    <Form.Item
-                      name="progreso"
-                      label={<Typography variant="body2" fontWeight={500}>Progreso (%)</Typography>}
-                      rules={[{ required: true, message: 'Progreso requerido' }]}
-                    >
-                      <input
-                        type="range"
-                        min="0"
-                        max="100"
-                        defaultValue={trackingData?.deliveryProgress || 0}
-                        onChange={(e) => form.setFieldValue('progreso', parseInt(e.target.value))}
-                        style={{
-                          width: '100%',
-                          height: '8px',
-                          borderRadius: '4px',
-                          background: heroUIColors.neutral[200],
-                          outline: 'none',
-                          appearance: 'none',
-                        }}
-                      />
-                    </Form.Item>
-
-                    {/* Observaciones */}
-                    <Form.Item
-                      name="observaciones"
-                      label={<Typography variant="body2" fontWeight={500}>Observaciones</Typography>}
-                    >
-                      <textarea
-                        rows={4}
-                        placeholder="Agregar observaciones del seguimiento..."
-                        style={{
-                          width: '100%',
-                          padding: '12px',
-                          border: `1px solid ${heroUIColors.neutral[300]}`,
-                          borderRadius: '8px',
-                          resize: 'vertical',
-                          fontFamily: 'inherit',
-                          fontSize: '14px',
-                        }}
-                        onChange={(e) => form.setFieldValue('observaciones', e.target.value)}
-                      />
-                    </Form.Item>
-
-                    {trackingData?.notes && (
-                      <Alert 
-                        severity="info" 
-                        icon={<Assignment />}
-                        sx={{ mt: 2 }}
-                      >
-                        <Typography variant="body2">
-                          <strong>Nota anterior:</strong> {trackingData.notes}
-                        </Typography>
-                      </Alert>
-                    )}
-                  </Stack>
-                </CardContent>
-              </Card>
+                >
+                  Guardar Seguimiento
+                </Button>
+              </Stack>
             </Box>
-          </Box>
-
-          {/* Acciones */}
-          <Box sx={{ mt: 3, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-            <Button
-              variant="outlined"
-              onClick={handleBack}
-              sx={{
-                borderColor: heroUIColors.neutral[300],
-                color: heroUIColors.neutral[600],
-                '&:hover': {
-                  borderColor: heroUIColors.neutral[400],
-                  backgroundColor: alpha(heroUIColors.neutral[100], 0.5),
-                }
-              }}
-            >
-              Cancelar
-            </Button>
-
-            <Button
-              variant="contained"
-              startIcon={<Save />}
-              onClick={() => form.submit()}
-              disabled={loading}
-              sx={{
-                background: heroUIColors.gradients.primary,
-                borderRadius: heroUIColors.radius.md,
-                px: 3,
-              }}
-            >
-              Guardar Seguimiento
-            </Button>
-          </Box>
+          </Stack>
         </Form>
       </Box>
     </Spin>

@@ -106,7 +106,7 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading }) => {
             minHeight: '60px', // ✅ Altura mínima garantizada
             backgroundColor: `${getStatusBackgroundColor(value)} !important`,
             margin: '-16px !important', // ✅ Compensa el padding de la celda
-            padding: '12px !important', // ✅ Restaura el padding interno
+            padding: '6px !important', 
             display: 'flex !important',
             alignItems: 'center !important',
             justifyContent: 'center !important',

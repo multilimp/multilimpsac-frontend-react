@@ -2,6 +2,7 @@ import { lazy } from 'react';
 import Loadable from './Loadable';
 import { PropsRoutes } from '@/types/global';
 import { RolesEnum } from '@/services/users/user.enum';
+import BillingsForm from '@/pages/private/Billings/BillingsForm';
 
 // ERRORS -------------------------------------------------------------------------------
 const Page404 = Loadable(lazy(() => import('@/pages/errors/Page404')));
@@ -30,7 +31,6 @@ const Trackings = Loadable(lazy(() => import('@/pages/private/Trackings')));
 const ProviderOrders = Loadable(lazy(() => import('@/pages/private/ProviderOrders')));
 const ProviderOrderForm = Loadable(lazy(() => import('@/pages/private/ProviderOrders/ProviderOrderForm')));
 const TrackingForm = Loadable(lazy(() => import('@/pages/private/Trackings/TrackingForm')));
-const TreasuryForm = Loadable(lazy(() => import('@/pages/private/Treasurys/TreasuryForm')));
 
 const rolesArr = Object.values(RolesEnum);
 
@@ -133,24 +133,25 @@ const routes: Array<PropsRoutes> = [
         path: 'transports',
         element: Transports, // Actualizado a PascalCase
         roles: rolesArr,
-      },      {
+      },      
+      {
         path: 'treasury',
         element: Treasurys, // Actualizado a PascalCase
         roles: rolesArr,
       },
       {
-        path: 'treasury/create',
-        element: TreasuryForm,
-        roles: rolesArr,
-      },
-      {
-        path: 'treasury/:saleId/update',
-        element: TreasuryForm,
-        roles: rolesArr,
-      },
-      {
         path: 'billing',
         element: Billings, // Actualizado a PascalCase
+        roles: rolesArr,
+      },
+      {
+        path: 'billing-form',
+        element: BillingsForm,
+        roles: rolesArr,
+      },
+      {
+        path: 'billing/:saleId/update',
+        element: BillingsForm,
         roles: rolesArr,
       },
       {

@@ -1,4 +1,4 @@
-import { Input, InputNumber, InputProps } from 'antd';
+import { Input, InputNumber } from 'antd';
 import { useState } from 'react';
 
 type CommonProps = {

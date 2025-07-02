@@ -11,7 +11,7 @@ const TrackingForm = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    setBlackBarKey(BlackBarKeyEnum.SEGUIMIENTO);
+    setBlackBarKey(BlackBarKeyEnum.OP);
     if (!selectedSale) {
       message.error('Venta no seleccionada para seguimiento');
       navigate('/tracking');

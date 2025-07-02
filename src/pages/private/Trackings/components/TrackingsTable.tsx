@@ -41,7 +41,7 @@ const TrackingsTable = ({ data, loading, onRowClick }: TrackingsTableProps) => {
     setSelectedSale(sale);
     
     // Navegar al formulario de seguimiento
-    navigate('/tracking/details');
+    navigate(`/tracking/${sale.id}`);
     
     // También llamar al callback original si existe
     if (onRowClick) {

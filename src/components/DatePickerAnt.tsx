@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { DatePicker, DatePickerProps } from 'antd';
 
 interface DatePickerAntdProps extends DatePickerProps {
-  label: string;
+  label?: string;
   isFloating?: boolean;
   hasError?: boolean;
   isAddonBefore?: boolean;

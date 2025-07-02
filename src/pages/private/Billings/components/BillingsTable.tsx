@@ -2,15 +2,15 @@
 import { useMemo } from 'react';
 import { Button, IconButton } from '@mui/material';
 import { Visibility, PictureAsPdf } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import { formatCurrency, formattedDate } from '@/utils/functions';
-import { ModalStateEnum } from '@/types/global.enum';
 import AntTable, { AntColumnType } from '@/components/AntTable';
 import { SaleProps } from '@/services/sales/sales';
+import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 
 interface BillingsTableProps {
   data: SaleProps[];
   loading: boolean;
-  onRecordAction?: (action: ModalStateEnum, data: SaleProps) => void;
 }
 
 const statusMap = {
@@ -22,7 +22,9 @@ const statusMap = {
 
 const defaultText = 'N/A';
 
-const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onRecordAction }) => {
+const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading }) => {
+  const navigate = useNavigate();
+  const { setSelectedSale } = useGlobalInformation();
 
   const formattedData = useMemo(() => {
     // ✅ VALIDAR que data sea un array y no esté vacío
@@ -61,8 +63,9 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onRecordAc
         <Button
           variant="contained"
           onClick={() => {
-            console.log('Abriendo detalles de facturación:', record.rawdata.id);
-            onRecordAction?.(ModalStateEnum.DETAILS, record.rawdata);
+            console.log('Abriendo facturación para:', record.rawdata.id);
+            setSelectedSale(record.rawdata);
+            navigate('/billing-form');
           }}
           startIcon={<Visibility />}
           size="small"

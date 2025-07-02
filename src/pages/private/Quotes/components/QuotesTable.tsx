@@ -1,6 +1,6 @@
 
 import AntTable from '@/components/AntTable';
-import { QuoteProps } from '@/services/quotes/quotes';
+import { CotizacionProps } from '@/types/cotizacion.types';
 import { TableColumnsType } from 'antd';
 import { Button, Space } from 'antd';
 import { Edit } from '@mui/icons-material';
@@ -8,26 +8,26 @@ import { Box } from '@mui/material';
 import { formatCurrency } from '@/utils/functions';
 
 interface QuotesTableProps {
-  data: QuoteProps[];
+  data: CotizacionProps[];
   loading: boolean;
-  onEdit: (quote: QuoteProps) => void;
+  onEdit: (quote: CotizacionProps) => void;
 }
 
 const QuotesTable = ({ data, loading, onEdit }: QuotesTableProps) => {
-  const columns: TableColumnsType<QuoteProps> = [
-    { title: 'Código', dataIndex: 'quoteNumber', sorter: (a, b) => a.quoteNumber.localeCompare(b.quoteNumber) },
-    { title: 'RUC Cliente', dataIndex: 'ruc' },
-    { title: 'Razón Social', dataIndex: 'razonSocial', sorter: (a, b) => a.razonSocial.localeCompare(b.razonSocial) },
-    { title: 'Departamento', dataIndex: 'departamento' },
+  const columns: TableColumnsType<CotizacionProps> = [
+    { title: 'Código', dataIndex: 'codigoCotizacion', sorter: (a, b) => a.codigoCotizacion.localeCompare(b.codigoCotizacion) },
+    { title: 'RUC Cliente', render: (record) => record.cliente?.ruc || 'N/A' },
+    { title: 'Razón Social', render: (record) => record.cliente?.razonSocial || 'N/A' },
+    { title: 'Departamento', dataIndex: 'departamentoEntrega' },
     { 
       title: 'Monto', 
-      dataIndex: 'total',
-      sorter: (a, b) => a.total - b.total,
-      render: v => <strong>{formatCurrency(v)}</strong>
+      dataIndex: 'montoTotal',
+      sorter: (a, b) => parseFloat(a.montoTotal) - parseFloat(b.montoTotal),
+      render: v => <strong>{formatCurrency(parseFloat(v || '0'))}</strong>
     },
-    { title: 'Plaza de Entrega', dataIndex: 'plazaEntrega' },
-    { title: 'Fecha', dataIndex: 'date', sorter: (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime() },
-    { title: 'Estado', dataIndex: 'status' },
+    { title: 'Plaza de Entrega', dataIndex: 'distritoEntrega' },
+    { title: 'Fecha', dataIndex: 'fechaCotizacion', sorter: (a, b) => new Date(a.fechaCotizacion).getTime() - new Date(b.fechaCotizacion).getTime() },
+    { title: 'Estado', dataIndex: 'estado' },
     {
       title: 'Acciones',
       key: 'actions',
