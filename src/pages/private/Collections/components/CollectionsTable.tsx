@@ -13,12 +13,6 @@ interface CollectionsTableProps {
   onRecordAction?: (action: ModalStateEnum, data: SaleProps) => void;
 }
 
-interface CollectionsTableProps {
-  data: SaleProps[];
-  loading: boolean;
-  onRecordAction?: (action: ModalStateEnum, data: SaleProps) => void;
-}
-
 const defaultText = 'N/A';
 
 const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRecordAction }) => {
@@ -88,9 +82,33 @@ const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRe
     { title: 'Fecha Máx. Entrega', dataIndex: 'fecha_max_entrega', width: 150, sort: true, filter: true },
     { title: 'Monto Venta', dataIndex: 'monto_venta', width: 130, sort: true, filter: true },
     { title: 'CUE', dataIndex: 'cue', width: 120, sort: true, filter: true },
-    
-    // Campos específicos de cobranza
-    { 
+    { title: 'Fecha Estado Cobranza', dataIndex: 'fecha_estado_cobranza', width: 160, sort: true, filter: true },
+    { title: 'Neto Cobrado', dataIndex: 'neto_cobrado', width: 120, sort: true, filter: true },
+    { title: 'Penalidad', dataIndex: 'penalidad', width: 100, sort: true, filter: true },
+    { title: 'Próxima Gestión', dataIndex: 'fecha_proxima_gestion', width: 150, sort: true, filter: true },
+    {
+      title: 'OCE',
+      dataIndex: 'oce',
+      width: 80,
+      render: (value) =>
+        value && (
+          <IconButton color="error" component="a" href={value} target="_blank" size="small">
+            <PictureAsPdf />
+          </IconButton>
+        ),
+    },
+    {
+      title: 'OCF',
+      dataIndex: 'ocf',
+      width: 80,
+      render: (value) =>
+        value && (
+          <IconButton color="error" component="a" href={value} target="_blank" size="small">
+            <PictureAsPdf />
+          </IconButton>
+        ),
+    },
+        { 
       title: 'Estado Cobranza', 
       dataIndex: 'estado_cobranza', 
       width: 150, 
@@ -116,33 +134,6 @@ const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRe
           </span>
         );
       }
-    },
-    { title: 'Fecha Estado Cobranza', dataIndex: 'fecha_estado_cobranza', width: 160, sort: true, filter: true },
-    { title: 'Neto Cobrado', dataIndex: 'neto_cobrado', width: 120, sort: true, filter: true },
-    { title: 'Penalidad', dataIndex: 'penalidad', width: 100, sort: true, filter: true },
-    { title: 'Próxima Gestión', dataIndex: 'fecha_proxima_gestion', width: 150, sort: true, filter: true },
-    
-    {
-      title: 'OCE',
-      dataIndex: 'oce',
-      width: 80,
-      render: (value) =>
-        value && (
-          <IconButton color="error" component="a" href={value} target="_blank" size="small">
-            <PictureAsPdf />
-          </IconButton>
-        ),
-    },
-    {
-      title: 'OCF',
-      dataIndex: 'ocf',
-      width: 80,
-      render: (value) =>
-        value && (
-          <IconButton color="error" component="a" href={value} target="_blank" size="small">
-            <PictureAsPdf />
-          </IconButton>
-        ),
     },
   ];
 

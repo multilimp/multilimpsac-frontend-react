@@ -2,7 +2,6 @@
 import { useMemo } from 'react';
 import { Button } from '@mui/material';
 import { Visibility } from '@mui/icons-material';
-import { ModalStateEnum } from '@/types/global.enum';
 import AntTable, { AntColumnType } from '@/components/AntTable';
 import { SaleProps } from '@/services/sales/sales';
 import { formatCurrency, formattedDate } from '@/utils/functions';
@@ -10,7 +9,7 @@ import { formatCurrency, formattedDate } from '@/utils/functions';
 interface TreasurysTableProps {
   data: SaleProps[];
   loading: boolean;
-  onRecordAction?: (action: ModalStateEnum, data: SaleProps) => void;
+  onRowClick: (sale: SaleProps) => void;
 }
 
 const defaultText = 'N/A';
@@ -18,7 +17,7 @@ const defaultText = 'N/A';
 export default function TreasurysTable({
   data,
   loading,
-  onRecordAction,
+  onRowClick,
 }: TreasurysTableProps) {
   // const navigate = useNavigate();
   // const { setSelectedSale } = useGlobalInformation();
@@ -43,7 +42,7 @@ export default function TreasurysTable({
       rawdata: item,
     }));
   }, [data]);
-  const columns: Array<AntColumnType<any>> = [
+  const columns: Array<AntColumnType<typeof formattedData[0]>> = [
     {
       title: 'Código OC',
       dataIndex: 'codigo_venta',
@@ -52,7 +51,7 @@ export default function TreasurysTable({
         <Button
           variant="contained"
           onClick={() => {
-            onRecordAction?.(ModalStateEnum.DETAILS, record.rawdata);
+            onRowClick?.(record.rawdata);
           }}
           startIcon={<Visibility />}
           size="small"

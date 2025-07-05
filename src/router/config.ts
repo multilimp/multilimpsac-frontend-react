@@ -3,6 +3,8 @@ import Loadable from './Loadable';
 import { PropsRoutes } from '@/types/global';
 import { RolesEnum } from '@/services/users/user.enum';
 import BillingsForm from '@/pages/private/Billings/BillingsForm';
+import CollectionsPage from '@/pages/private/Collections';
+import CollectionForm from '@/pages/private/Collections/CollectionForm';
 
 // ERRORS -------------------------------------------------------------------------------
 const Page404 = Loadable(lazy(() => import('@/pages/errors/Page404')));
@@ -26,7 +28,6 @@ const Providers = Loadable(lazy(() => import('@/pages/private/Providers')));
 const Transports = Loadable(lazy(() => import('@/pages/private/Transports')));
 const Treasurys = Loadable(lazy(() => import('@/pages/private/Treasurys')));
 const Billings = Loadable(lazy(() => import('@/pages/private/Billings')));
-const Collections = Loadable(lazy(() => import('@/pages/private/Collections/CollectionOrdersPage')));
 const Trackings = Loadable(lazy(() => import('@/pages/private/Trackings')));
 const ProviderOrders = Loadable(lazy(() => import('@/pages/private/ProviderOrders')));
 const ProviderOrderForm = Loadable(lazy(() => import('@/pages/private/ProviderOrders/ProviderOrderForm')));
@@ -156,7 +157,12 @@ const routes: Array<PropsRoutes> = [
       },
       {
         path: 'collections',
-        element: Collections,
+        element: CollectionsPage,
+        roles: rolesArr,
+      },
+      {
+        path: 'collections/:saleId',
+        element: CollectionForm,
         roles: rolesArr,
       },
       {
