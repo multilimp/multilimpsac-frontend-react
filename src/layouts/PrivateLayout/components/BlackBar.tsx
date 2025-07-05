@@ -1,6 +1,6 @@
 import { Fragment, ReactNode, useState, useMemo, memo } from 'react';
 import { Dropdown } from 'antd';
-import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Divider, List, ListItem, ListItemText, Stack, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Divider, List, ListItem, ListItemText, Stack, Typography, Checkbox } from '@mui/material';
 import SelectCompanies from '@/components/selects/SelectCompanies';
 import SelectGeneric from '@/components/selects/SelectGeneric';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
@@ -18,6 +18,7 @@ const BlackBar = memo(() => {
   const { saleInputValues, setSaleInputValues, blackBarKey, selectedSale } = useGlobalInformation();
   const [openDD, setOpenDD] = useState(false);
   const [tempFile, setTempFile] = useState<File>();
+  const [completedProducts, setCompletedProducts] = useState<string[]>([]);
 
   const documentosConfig = [
     {
@@ -45,6 +46,14 @@ const BlackBar = memo(() => {
   const handleClear = () => {
     setOpenDD(false);
     setTempFile(undefined);
+  };
+
+  const handleToggleProduct = (codigo: string) => {
+    setCompletedProducts((prev) =>
+      prev.includes(codigo)
+        ? prev.filter((c) => c !== codigo)
+        : [...prev, codigo]
+    );
   };
 
   // ✅ OPTIMIZACIÓN: Memoizar el parseo de productos con validación robusta
@@ -299,20 +308,71 @@ const BlackBar = memo(() => {
 
             <AccordionStyled title="Productos">
               <Stack direction="column" spacing={3}>
-                {parsedProductos.map((item: any, index: number) => (
-                  <Box key={index + 1}>
-                    <Typography variant="body2">
-                      Código: <b>{item.codigo}</b>
-                    </Typography>
-                    <Typography variant="body2">
-                      Cantidad: <b>{item.cantidad}</b>
-                    </Typography>
-                    <Typography variant="body2">
-                      Marca: <b>{item.marca}</b>
-                    </Typography>
-                    <Typography variant="body2">{item.descripcion}</Typography>
-                  </Box>
-                ))}
+                {parsedProductos.map((item: any, index: number) => {
+                  const isCompleted = completedProducts.includes(item.codigo);
+                  return (
+                    <Box
+                      key={item.codigo || index}
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                        cursor: 'pointer',
+                        opacity: isCompleted ? 0.5 : 1,
+                        transition: 'opacity 0.2s',
+                        userSelect: 'none',
+                      }}
+                      onClick={() => handleToggleProduct(item.codigo)}
+                    >
+                      <Checkbox
+                        checked={isCompleted}
+                        onChange={() => handleToggleProduct(item.codigo)}
+                        sx={{ p: 0, mr: 1 }}
+                        color="success"
+                        onClick={e => e.stopPropagation()}
+                      />
+                      <Box>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            textDecoration: isCompleted ? 'line-through' : 'none',
+                            color: isCompleted ? '#bababa' : '#fff',
+                            fontWeight: 600,
+                          }}
+                        >
+                          Código: <b>{item.codigo}</b>
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            textDecoration: isCompleted ? 'line-through' : 'none',
+                            color: isCompleted ? '#bababa' : '#fff',
+                          }}
+                        >
+                          Cantidad: <b>{item.cantidad}</b>
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            textDecoration: isCompleted ? 'line-through' : 'none',
+                            color: isCompleted ? '#bababa' : '#fff',
+                          }}
+                        >
+                          Marca: <b>{item.marca}</b>
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            textDecoration: isCompleted ? 'line-through' : 'none',
+                            color: isCompleted ? '#bababa' : '#fff',
+                          }}
+                        >
+                          {item.descripcion}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  );
+                })}
               </Stack>
             </AccordionStyled>
           </Stack>
@@ -325,11 +385,12 @@ const BlackBar = memo(() => {
     selectedSale?.id,
     selectedSale?.codigoVenta,
     selectedSale?.montoVenta,
-    selectedSale?.productos, // ✅ Usar el valor original en lugar de parsedProductos.length
+    selectedSale?.productos,
     saleInputValues.enterprise?.id,
     saleInputValues.tipoVenta,
-    saleInputValues.file?.name
-  ]); // ✅ Dependencias optimizadas
+    saleInputValues.file?.name,
+    completedProducts, // importante para re-render
+  ]);
 
   return (
     <Fragment>
@@ -383,7 +444,6 @@ const AccordionStyled = ({ title, children }: { title: ReactNode; children: Reac
       '&.Mui-expanded': { margin: 0 },
       // border: '1px solid #3c4351',
     }}
-    defaultExpanded
   >
     <AccordionSummary sx={{ px: 0, fontWeight: 600, fontSize: '15px' }} expandIcon={<ExpandMore fontSize="large" sx={{ color: '#306df7' }} />}>{title}</AccordionSummary>
     <AccordionDetails sx={{ pt: 0 }}>{children}</AccordionDetails>
