@@ -37,7 +37,7 @@
 }
 
 .sidebar-scroll::-webkit-scrollbar-thumb {
-  background: rgba(17, 24, 38, 0.4); /* Azul oscuro con transparencia */
+  background: rgba(17, 24, 38, 0.4);
   border-radius: 3px;
   transition: background 0.3s ease;
 }
@@ -49,7 +49,7 @@
 /* Scroll para Firefox */
 .sidebar-scroll {
   scrollbar-width: thin;
-  scrollbar-color: rgba(17, 24, 38, 0.4) rgba(255, 255, 255, 0.05);
+  scrollbar-color: #01a76a transparent; /* Azul oscuro con transparencia */
 }
 
 /* Animación de entrada para los elementos de menú */

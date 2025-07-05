@@ -15,7 +15,7 @@ const SideNavbar: React.FC = () => {
       sx={{
         '--SideNav-width-collapsed': '72px',
         '--SideNav-width-expanded': '240px',
-        '--SideNav-background': '#00A65A', // Color verde original
+        '--SideNav-background': '#01a76a', // Color verde original
         '--SideNav-color': '#FFFFFF',
         '--NavItem-hover-background': 'rgba(255, 255, 255, 0.1)',
         '--NavItem-active-background': 'rgba(255, 255, 255, 0.15)',

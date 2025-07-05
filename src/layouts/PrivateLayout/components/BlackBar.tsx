@@ -6,7 +6,8 @@ import SelectGeneric from '@/components/selects/SelectGeneric';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 import { BlackBarKeyEnum } from '@/types/global.enum';
 import { formatCurrency, formattedDate } from '@/utils/functions';
-import { ExpandMore } from '@mui/icons-material';
+import { ExpandMore, Visibility } from '@mui/icons-material';
+import Scrollbar from '@/components/Scrollbar';
 
 const saleTypeOptions = [
   { label: 'Venta al Estado', value: 'directa' },
@@ -18,6 +19,29 @@ const BlackBar = memo(() => {
   const [openDD, setOpenDD] = useState(false);
   const [tempFile, setTempFile] = useState<File>();
 
+  const documentosConfig = [
+    {
+      label: 'OCE (Orden de Compra Electrónica)',
+      field: 'documentoOce',
+      value: selectedSale?.documentoOce,
+    },
+    {
+      label: 'OCF (Orden de Compra Física)',
+      field: 'documentoOcf',
+      value: selectedSale?.documentoOcf,
+    },
+    {
+      label: 'PeruCompras',
+      field: 'documentoPeruCompras',
+      value: selectedSale?.documentoPeruCompras,
+    },
+    // Agrega aquí otros documentos si existen en tu modelo
+  ];
+
+  const totalDocs = documentosConfig.length;
+  const docsPresentes = documentosConfig.filter(doc => !!doc.value).length;
+
+
   const handleClear = () => {
     setOpenDD(false);
     setTempFile(undefined);
@@ -27,19 +51,19 @@ const BlackBar = memo(() => {
   const parsedProductos = useMemo(() => {
     try {
       if (!selectedSale?.productos) return [];
-      
+
       let productos = selectedSale.productos;
-      
+
       // Si es string, parsearlo
       if (typeof productos === 'string') {
         productos = JSON.parse(productos);
       }
-      
+
       // Verificar que sea array y tenga elementos válidos
       if (Array.isArray(productos)) {
         return productos.filter(item => item && typeof item === 'object');
       }
-      
+
       return [];
     } catch (error) {
       console.error('🚨 Error parsing productos:', error);
@@ -54,8 +78,8 @@ const BlackBar = memo(() => {
         <Box
           sx={{
             '& .ant-select-single .ant-select-selector': {
-              backgroundColor: '#4F46E5 !important',
-              borderColor: '#4F46E5 !important',
+              backgroundColor: '#306df7 !important',
+              borderColor: '#306df7 !important',
               color: '#ffffff !important',
               borderRadius: '8px !important',
               height: '50px !important',
@@ -82,7 +106,7 @@ const BlackBar = memo(() => {
           sx={{
             '& .ant-select-single .ant-select-selector': {
               backgroundColor: 'transparent !important',
-              borderColor: '#4F46E5 !important',
+              borderColor: '#306df7 !important',
               color: '#ffffff !important',
               borderRadius: '8px !important',
               height: '50px !important',
@@ -146,7 +170,7 @@ const BlackBar = memo(() => {
           )}
         >
           <Button
-            sx={{ border: '2px solid #9932CC', color: '#9932CC', borderRadius: 0.75, position: 'relative' }}
+            sx={{ border: '2px solid #9e31f4', color: '#9e31f4', borderRadius: 0.75, position: 'relative' }}
             color="secondary"
             variant="outlined"
           >
@@ -161,7 +185,7 @@ const BlackBar = memo(() => {
                   blackBarKey,
                   currentContext: 'PDF_UPLOAD'
                 });
-                
+
                 const file = event.target.files?.[0];
                 if (file && file.type === 'application/pdf') {
                   setTempFile(file);
@@ -184,12 +208,12 @@ const BlackBar = memo(() => {
         {selectedSale ? (
           <Stack direction="column" spacing={3}>
             <Stack spacing={0.5}>
-              <Typography variant="body1">Órden de Compra</Typography>
-              <Typography variant="h5">{selectedSale.codigoVenta}</Typography>
-              <Typography variant="body2">Fecha {formattedDate(selectedSale.createdAt)}</Typography>
+              <Typography sx={{ fontWeight: 600, fontSize: '16px', color: '#eaebee' }}>Órden de Compra</Typography>
+              <Typography sx={{ fontWeight: 700, fontSize: '30px' }}>{selectedSale.codigoVenta}</Typography>
+              <Typography sx={{ fontWeight: 600, fontSize: '16px', color: '#eaebee' }}>Fecha {formattedDate(selectedSale.createdAt)}</Typography>
             </Stack>
 
-            <Divider />
+            <Divider sx={{ borderBottomColor: '#3c4351' }} />
 
             <List>
               <ListItem
@@ -207,21 +231,53 @@ const BlackBar = memo(() => {
                 divider
                 disablePadding
                 secondaryAction={formatCurrency(Number(selectedSale.montoVenta))}
-                sx={{ borderBottomColor: 'green', py: 1 }}
+                sx={{ borderBottomColor: '#57c98d', py: 1 }}
               >
                 <ListItemText primary="OC Importe Total:" />
               </ListItem>
             </List>
+            <Divider sx={{ borderBottomColor: '#3c4351', my: 0 }} />
 
             <AccordionStyled title="Datos generales">
               Lorem ipsum dolor sit amet consectetur, adipisicing elit. Maxime, error quaerat aliquam nesciunt cum totam odit, illum possimus ea iusto
               ducimus voluptatum nostrum nam. Corporis fuga ea totam quos illum.
             </AccordionStyled>
+            <Divider sx={{ borderBottomColor: '#3c4351', my: 0, py: 0 }} />
 
-            <AccordionStyled title="Documentos 2/4">
-              Lorem ipsum dolor sit amet consectetur, adipisicing elit. Maxime, error quaerat aliquam nesciunt cum totam odit, illum possimus ea iusto
-              ducimus voluptatum nostrum nam. Corporis fuga ea totam quos illum.
+            <AccordionStyled title={`Documentos  ${docsPresentes}/${totalDocs}`}>
+              <Stack direction="column" spacing={2}>
+                {documentosConfig
+                  .filter(doc => !!doc.value)
+                  .map((doc, idx) => (
+                    <Box key={doc.field} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
+                      <Typography sx={{ fontSize: '14px', color: '#eaebee' }} variant="body2" fontWeight={400}>
+                        {doc.label}
+                      </Typography>
+                      <a
+                        href={doc.value}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          color: '#1890ff',
+                          marginLeft: 8,
+                        }}
+                        title="Ver documento"
+                      >
+                        <Visibility fontSize="small" />
+                      </a>
+                    </Box>
+                  ))}
+                {/* Si no hay documentos */}
+                {![selectedSale?.documentoOce, selectedSale?.documentoOcf, selectedSale?.documentoPeruCompras].some(Boolean) && (
+                  <Typography variant="body2" color="#bababa">
+                    No hay documentos registrados para esta orden de compra.
+                  </Typography>
+                )}
+              </Stack>
             </AccordionStyled>
+            <Divider sx={{ borderBottomColor: '#3c4351', my: 0 }} />
 
             <AccordionStyled title="Entrega">
               <Stack direction="column" spacing={2}>
@@ -239,6 +295,7 @@ const BlackBar = memo(() => {
                 ))}
               </Stack>
             </AccordionStyled>
+            <Divider sx={{ borderBottomColor: '#3c4351', my: 0 }} />
 
             <AccordionStyled title="Productos">
               <Stack direction="column" spacing={3}>
@@ -264,98 +321,9 @@ const BlackBar = memo(() => {
         )}
       </Fragment>
     ),
-    [BlackBarKeyEnum.SEGUIMIENTO]: (
-      <Fragment>
-        {selectedSale ? (
-          <Stack direction="column" spacing={3}>
-            <Stack spacing={0.5}>
-              <Typography variant="body1">Seguimiento de Órden</Typography>
-              <Typography variant="h5">{selectedSale.codigoVenta}</Typography>
-              <Typography variant="body2">Fecha {formattedDate(selectedSale.createdAt)}</Typography>
-            </Stack>
-
-            <Divider />
-
-            <List>
-              <ListItem
-                divider
-                disablePadding
-                secondaryAction={formattedDate(selectedSale.fechaMaxForm, undefined, '-')}
-                sx={{ borderBottomColor: 'blue', py: 1 }}
-              >
-                <ListItemText primary="F. Máxima Entrega:" />
-              </ListItem>
-              <ListItem divider disablePadding secondaryAction="En Proceso" sx={{ borderBottomColor: 'blue', py: 1 }}>
-                <ListItemText primary="Estado Actual:" />
-              </ListItem>
-              <ListItem
-                divider
-                disablePadding
-                secondaryAction={formatCurrency(Number(selectedSale.montoVenta))}
-                sx={{ borderBottomColor: 'green', py: 1 }}
-              >
-                <ListItemText primary="Monto Total:" />
-              </ListItem>
-            </List>
-
-            <AccordionStyled title="Información General">
-              <Stack direction="column" spacing={2}>
-                {[
-                  { label: 'Cliente', value: selectedSale.cliente?.razonSocial ?? '-' },
-                  { label: 'RUC Cliente', value: selectedSale.cliente?.ruc ?? '-' },
-                  { label: 'Empresa', value: selectedSale.empresa?.razonSocial ?? '-' },
-                  { label: 'CUE', value: selectedSale.cliente?.codigoUnidadEjecutora ?? '-' },
-                ].map((item, index) => (
-                  <Box key={index + 1}>
-                    <Typography variant="body2" fontWeight={600} children={item.label} />
-                    <Typography variant="body2" color="#bababa" children={item.value} />
-                  </Box>
-                ))}
-              </Stack>
-            </AccordionStyled>
-
-            <AccordionStyled title="Estado de Seguimiento">
-              <Stack direction="column" spacing={2}>
-                <Box>
-                  <Typography variant="body2" fontWeight={600}>Progreso</Typography>
-                  <Typography variant="body2" color="#bababa">65% completado</Typography>
-                </Box>
-                <Box>
-                  <Typography variant="body2" fontWeight={600}>Última Actualización</Typography>
-                  <Typography variant="body2" color="#bababa">{formattedDate(new Date().toISOString())}</Typography>
-                </Box>
-                <Box>
-                  <Typography variant="body2" fontWeight={600}>Observaciones</Typography>
-                  <Typography variant="body2" color="#bababa">Seguimiento en proceso normal</Typography>
-                </Box>
-              </Stack>
-            </AccordionStyled>
-
-            <AccordionStyled title="Entrega">
-              <Stack direction="column" spacing={2}>
-                {[
-                  { label: 'Dirección', value: selectedSale.direccionEntrega?.toUpperCase() ?? '-' },
-                  { label: 'Distrito', value: selectedSale.distritoEntrega ?? '-' },
-                  { label: 'Provincia', value: selectedSale.provinciaEntrega ?? '-' },
-                  { label: 'Departamento', value: selectedSale.departamentoEntrega ?? '-' },
-                  { label: 'Referencia', value: selectedSale.referenciaEntrega ?? '-' },
-                ].map((item, index) => (
-                  <Box key={index + 1}>
-                    <Typography variant="body2" fontWeight={600} children={item.label} />
-                    <Typography variant="body2" color="#bababa" children={item.value} />
-                  </Box>
-                ))}
-              </Stack>
-            </AccordionStyled>
-          </Stack>
-        ) : (
-          <Typography color="textSecondary" textAlign="center" children="Venta no seleccionada para seguimiento" />
-        )}
-      </Fragment>
-    ),
   }), [
-    selectedSale?.id, 
-    selectedSale?.codigoVenta, 
+    selectedSale?.id,
+    selectedSale?.codigoVenta,
     selectedSale?.montoVenta,
     selectedSale?.productos, // ✅ Usar el valor original en lugar de parsedProductos.length
     saleInputValues.enterprise?.id,
@@ -366,14 +334,36 @@ const BlackBar = memo(() => {
   return (
     <Fragment>
       {blackBarKey ? (
-        <Box 
-          width={300} 
-          bgcolor="#111827" 
-          color="#ffffff" 
-          px={2} 
-          py={3} 
+        <Box
+          width={350}
+          bgcolor="#161e2a"
+          color="#ffffff"
+          p={4}
+          sx={
+            {
+              position: 'sticky',
+              top: 0,
+              height: '100vh',
+              maxHeight: '100vh',
+              display: 'flex',
+              flexDirection: 'column',
+              zIndex: 10,
+              boxShadow: '2px 0 20px rgba(0,0,0,0.12)',
+              overflow: 'hidden',
+            }
+          }
         >
-          {components[blackBarKey]}
+          <Scrollbar
+            sx={{
+              flex: 1,
+              minHeight: 0,
+              maxHeight: '100%',
+            }}
+          >
+            <div className="hero-scrollbar" style={{ height: '100%', overflowY: 'auto' }}>
+              {components[blackBarKey]}
+            </div>
+          </Scrollbar>
         </Box>
       ) : null}
     </Fragment>
@@ -391,11 +381,11 @@ const AccordionStyled = ({ title, children }: { title: ReactNode; children: Reac
       color: 'white',
       '&:before': { display: 'none' },
       '&.Mui-expanded': { margin: 0 },
-      // border: '1px solid red',
+      // border: '1px solid #3c4351',
     }}
     defaultExpanded
   >
-    <AccordionSummary expandIcon={<ExpandMore fontSize="large" sx={{ color: 'blue' }} />}>{title}</AccordionSummary>
+    <AccordionSummary sx={{ px: 0, fontWeight: 600, fontSize: '15px' }} expandIcon={<ExpandMore fontSize="large" sx={{ color: '#306df7' }} />}>{title}</AccordionSummary>
     <AccordionDetails sx={{ pt: 0 }}>{children}</AccordionDetails>
   </Accordion>
 );
