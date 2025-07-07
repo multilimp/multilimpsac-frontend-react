@@ -288,6 +288,14 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
                       <Form.Item name="contactoProveedor" rules={[requiredField]}>
                         <SelectContactsByProvider
                           providerId={provider?.id}
+                          onChange={(value, record: any) => {
+                            // Autocompletar campos de nombre y teléfono del contacto del proveedor
+                            form.setFieldsValue({
+                              contactoProveedor: value,
+                              nombreContactoProveedor: record?.optiondata?.nombre,
+                              telefonoContactoProveedor: record?.optiondata?.telefono,
+                            });
+                          }}
                           onContactCreated={() => {
                             // Recargar contactos si es necesario
                           }}
@@ -354,6 +362,17 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
                     </Typography>
                   </Box>
                 </Stack>
+              </Grid>
+              
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <Form.Item name="nombreContactoProveedor">
+                  <InputAntd label="Nombre del Contacto" disabled />
+                </Form.Item>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <Form.Item name="telefonoContactoProveedor">
+                  <InputAntd label="Teléfono del Contacto" disabled />
+                </Form.Item>
               </Grid>
             </Grid>
           </StepItemContent>
@@ -439,6 +458,14 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
                                   return (
                                     <SelectContactsByTransport 
                                       transportId={transporteId}
+                                      onChange={(value, record: any) => {
+                                        // Autocompletar campos de nombre y teléfono del contacto del transporte
+                                        form.setFieldsValue({
+                                          [`transportes[${field.name}].contacto`]: value,
+                                          [`transportes[${field.name}].nombreContactoTransporte`]: record?.optiondata?.nombre,
+                                          [`transportes[${field.name}].telefonoContactoTransporte`]: record?.optiondata?.telefono,
+                                        });
+                                      }}
                                       onContactCreated={() => {
                                         // Recargar contactos si es necesario
                                       }}

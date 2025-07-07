@@ -12,6 +12,7 @@ import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 import { BlackBarKeyEnum } from '@/types/global.enum';
 import { useParams, useNavigate } from 'react-router-dom';
 import { SaleProps } from '@/services/sales/sales';
+import { parseJSON } from '@/utils/functions';
 
 const SalesPageForm = () => {
   const { companies, clients, saleInputValues, setSaleInputValues, setBlackBarKey, obtainSales } = useGlobalInformation();
@@ -64,8 +65,8 @@ const SalesPageForm = () => {
             nombreContacto: saleData.contactoCliente.nombre,
             celularContacto: saleData.contactoCliente.telefono,
             
-            // Productos
-            productos: saleData.productos,
+            // Productos - asegurar que siempre sea un array usando parseJSON
+            productos: Array.isArray(saleData.productos) ? saleData.productos : parseJSON(saleData.productos) || [],
             
             // Entrega - cargar directamente como strings
             direccionEntrega: saleData.direccionEntrega,

@@ -65,7 +65,7 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading }) => {
           onClick={() => {
             console.log('Abriendo facturación para:', record.rawdata.id);
             setSelectedSale(record.rawdata);
-            navigate('/billing-form');
+            navigate('/billing/' + record.rawdata.id);
           }}
           startIcon={<Visibility />}
           size="small"

@@ -12,7 +12,7 @@ export const getSales = async (params?: SaleFiltersProps): Promise<SaleProps[]> 
     departamentoEntrega: item.departamentoEntrega || null,
     provinciaEntrega: item.provinciaEntrega || null,
     distritoEntrega: item.distritoEntrega || null,
-    productos: parseJSON(item.productos) ?? [],
+    productos: Array.isArray(item.productos) ? item.productos : parseJSON(item.productos) || [],
   }));
 
   return formatted;
@@ -27,7 +27,7 @@ export const getSaleById = async (id: number): Promise<SaleProps> => {
     departamentoEntrega: item.departamentoEntrega || null,
     provinciaEntrega: item.provinciaEntrega || null,
     distritoEntrega: item.distritoEntrega || null,
-    productos: parseJSON(item.productos) ?? [],
+    productos: Array.isArray(item.productos) ? item.productos : parseJSON(item.productos) || [],
   };
 };
 

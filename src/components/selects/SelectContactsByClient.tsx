@@ -65,6 +65,7 @@ const SelectContactsByClient = ({
               <Select.Option 
                 key={item.id} 
                 value={item.id}
+                optiondata={item}
                 title={`${item.nombre} - ${item.cargo}`}
               >
                 {item.cargo} - {item.nombre}

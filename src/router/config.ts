@@ -146,7 +146,7 @@ const routes: Array<PropsRoutes> = [
         roles: rolesArr,
       },
       {
-        path: 'billing-form',
+        path: 'billing/:saleId',
         element: BillingsForm,
         roles: rolesArr,
       },

@@ -11,12 +11,14 @@ interface SelectContactsByProviderProps extends SelectProps {
   label?: string;
   providerId?: number;
   onContactCreated?: () => void;
+  onChange?: (value: any, record?: any) => void;
 }
 
 const SelectContactsByProvider = ({ 
   label, 
   providerId, 
   onContactCreated,
+  onChange,
   size = 'large', 
   ...props 
 }: SelectContactsByProviderProps) => {
@@ -59,10 +61,16 @@ const SelectContactsByProvider = ({
                 ? 'Primero seleccione un proveedor'
                 : 'No hay contactos disponibles'
             }
+            onChange={onChange}
             {...props}
           >
             {contacts.map((item) => (
-              <Select.Option key={item.id} value={item.id} optiondata={item} title={`${item.nombre} - ${item.cargo}`}>
+              <Select.Option 
+                key={item.id} 
+                value={item.id} 
+                optiondata={item} 
+                title={`${item.nombre} - ${item.cargo}`}
+              >
                 {item.cargo} - {item.nombre}
               </Select.Option>
             ))}

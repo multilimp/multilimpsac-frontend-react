@@ -23,12 +23,24 @@ export const filterOptions = (inputValue: string, option: any) => {
   return title.includes(inputValue.toLowerCase());
 };
 
-export const parseJSON = (str?: null | string) => {
+export const parseJSON = (str?: null | string | any[] | object) => {
   try {
-    if (!str) return null;
-    return JSON.parse(str);
+    // Si ya es un array o objeto, retornarlo directamente
+    if (Array.isArray(str) || (typeof str === 'object' && str !== null)) return str;
+    
+    // Si es null, undefined o string vacío, retornar array vacío para productos
+    if (!str || str === '') return [];
+    
+    // Si es string, intentar parsearlo
+    if (typeof str === 'string') {
+      const parsed = JSON.parse(str);
+      return parsed;
+    }
+    
+    return [];
   } catch (error) {
-    return null;
+    console.warn('Error parsing JSON:', error, 'Original value:', str);
+    return [];
   }
 };
 

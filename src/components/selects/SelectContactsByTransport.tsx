@@ -11,12 +11,14 @@ interface SelectContactsByTransportProps extends SelectProps {
   label?: string;
   transportId?: number;
   onContactCreated?: () => void;
+  onChange?: (value: any, record?: any) => void;
 }
 
 const SelectContactsByTransport = ({ 
   label, 
   transportId, 
   onContactCreated,
+  onChange,
   size = 'large', 
   ...props 
 }: SelectContactsByTransportProps) => {
@@ -59,6 +61,7 @@ const SelectContactsByTransport = ({
                 ? 'Primero seleccione un transporte'
                 : 'No hay contactos disponibles'
             }
+            onChange={onChange}
             {...props}
           >
             {contacts.map((item) => (

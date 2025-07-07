@@ -12,6 +12,24 @@ const BillingsForm = () => {
 
   useEffect(() => {
     setBlackBarKey(BlackBarKeyEnum.OP);
+
+    // validad el id venta de la url 
+    const urlParams = new URLSearchParams(window.location.search);
+    const saleId = urlParams.get('saleId');
+    if (saleId) {
+      // Si hay un saleId en la URL, buscar la venta correspondiente
+      // @ts-ignore
+      const sale = selectedSale?.id === saleId ? selectedSale : null;
+      if (sale) {
+        setSelectedSale(sale);
+      } else {
+        message.error('Venta no encontrada');
+        navigate('/billing');
+        setBlackBarKey(null);
+        return;
+      }
+    }
+
     if (!selectedSale) {
       message.error('Venta no seleccionada para facturación');
       navigate('/billing');
