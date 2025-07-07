@@ -5,27 +5,6 @@
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Efecto hover mejorado para los elementos del nav */
-.nav-item {
-  position: relative;
-  overflow: hidden;
-}
-
-.nav-item::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(17, 24, 38, 0.1), transparent); /* Azul oscuro */
-  transition: left 0.3s ease;
-}
-
-.nav-item:hover::before {
-  left: 100%;
-}
-
 /* Scroll personalizado para el sidebar */
 .sidebar-scroll::-webkit-scrollbar {
   width: 6px;
@@ -64,26 +43,6 @@
   }
 }
 
-.menu-item-enter {
-  animation: slideInLeft 0.3s ease forwards;
-}
-
-/* Indicador visual para elemento activo */
-.nav-item-active {
-  position: relative;
-}
-
-.nav-item-active::after {
-  content: '';
-  position: absolute;
-  right: 0;
-  top: 50%;
-  width: 3px;
-  height: 20px;
-  background: #111826; /* Azul oscuro */
-  border-radius: 1.5px 0 0 1.5px;
-  transform: translateY(-50%);
-}
 
 /* Mejoras para tooltips */
 .MuiTooltip-tooltip {

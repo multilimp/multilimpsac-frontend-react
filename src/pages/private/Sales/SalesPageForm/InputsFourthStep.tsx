@@ -47,12 +47,12 @@ const InputsFourthStep = ({ form }: InputsFourthStepProps) => {
           </Form.Item>
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-          <Form.Item name="nombreContacto" rules={[requiredField]}>
+          <Form.Item name="nombreContacto" >
             <InputAntd label="Nombre" disabled />
           </Form.Item>
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-          <Form.Item name="celularContacto" rules={[requiredField]}>
+          <Form.Item name="celularContacto" >
             <InputAntd label="Celular" disabled />
           </Form.Item>
         </Grid>

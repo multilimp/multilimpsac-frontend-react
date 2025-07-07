@@ -1,6 +1,6 @@
 import { Fragment, ReactNode, useState, useMemo, memo } from 'react';
 import { Dropdown } from 'antd';
-import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Divider, List, ListItem, ListItemText, Stack, Typography, Checkbox } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Divider, List, ListItem, ListItemText, Stack, Typography, Checkbox, Skeleton } from '@mui/material';
 import SelectCompanies from '@/components/selects/SelectCompanies';
 import SelectGeneric from '@/components/selects/SelectGeneric';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
@@ -377,7 +377,32 @@ const BlackBar = memo(() => {
             </AccordionStyled>
           </Stack>
         ) : (
-          <Typography color="textSecondary" textAlign="center" children="Venta no fue seleccionada" />
+          <Stack spacing={2} alignItems="center" justifyContent="center" sx={{ minHeight: 220 }}>
+            {[1, 2, 3].map((_, idx) => (
+              <Box
+                key={idx}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 2,
+                  width: '100%',
+                  bgcolor: 'rgba(255,255,255,0.02)',
+                  borderRadius: 2,
+                  p: 2,
+                  mb: 1,
+                  boxShadow: '0 1px 8px 0 rgba(24,144,255,0.03)'
+                }}
+              >
+                <Skeleton variant="circular" width={32} height={32} />
+                <Box sx={{ flex: 1 }}>
+                  <Skeleton variant="text" width="40%" height={22} sx={{ mb: 0.5 }} />
+                  <Skeleton variant="text" width="60%" height={18} sx={{ mb: 0.5 }} />
+                  <Skeleton variant="text" width="30%" height={18} sx={{ mb: 0.5 }} />
+                  <Skeleton variant="text" width="80%" height={18} />
+                </Box>
+              </Box>
+            ))}
+          </Stack>
         )}
       </Fragment>
     ),

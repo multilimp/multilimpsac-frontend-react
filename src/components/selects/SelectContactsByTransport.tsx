@@ -83,7 +83,8 @@ const SelectContactsByTransport = ({
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'center',
-              minWidth: '40px'
+              minWidth: '50px',
+              minHeight: '50px'
             }}
           />
         </div>
