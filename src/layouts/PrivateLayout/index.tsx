@@ -26,7 +26,7 @@ const PrivateLayout = () => {
           minHeight: '100vh',
           width: '100%',
           overflow: 'auto',
-          bgcolor: '#f8fafc', // Fondo más moderno
+          bgcolor: '#edf1f5', // Fondo más moderno
         }}
       >
         <MainNav />

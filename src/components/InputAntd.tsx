@@ -9,6 +9,7 @@ type CommonProps = {
   isAddonBefore?: boolean;
   size?: 'large' | 'middle' | 'small';
   placeholder?: string;
+  style?: React.CSSProperties;
 };
 
 interface TextInputProps extends CommonProps {
@@ -72,11 +73,25 @@ const InputAntd = (props: InputAntdProps) => {
     <div className={containerClasses}>
       <div className="float-label" onBlur={() => setFocus(false)} onFocus={() => setFocus(true)}>
         {props.type === 'textarea' ? (
-          <Input.TextArea {...(props as TextAreaInputProps)} size={size} rows={3} />
+          <Input.TextArea
+            {...(props as TextAreaInputProps)}
+            size={size}
+            rows={3}
+            style={props.style} // <-- Añadir aquí
+          />
         ) : props.type === 'number' ? (
-          <InputNumber {...(props as NumberInputProps)} size={size} style={{ width: '100%' }} />
+          <InputNumber
+            {...(props as NumberInputProps)}
+            size={size}
+            style={{ width: '100%', ...(props.style || {}) }} // <-- Añadir aquí y combinar con width
+          />
         ) : (
-          <Input {...(props as TextInputProps)} size={size} type={props.type || 'text'} />
+          <Input
+            {...(props as TextInputProps)}
+            size={size}
+            type={props.type || 'text'}
+            style={props.style} // <-- Ya estaba aquí
+          />
         )}
         {label && (
           <label htmlFor={label} className={labelClass}>
@@ -93,6 +108,7 @@ InputAntd.defaultProps = {
   isFloating: false,
   isAddonBefore: false,
   type: 'text',
+  style: {},
 };
 
 export default InputAntd;

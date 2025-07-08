@@ -1,4 +1,4 @@
-import { Grid, Stack, Typography } from '@mui/material';
+import { Box, Grid, Stack, Typography } from '@mui/material';
 import { Form, FormInstance } from 'antd';
 import { StepItemContent } from './smallcomponents';
 import { requiredField } from './InputsFirstStep';
@@ -13,7 +13,15 @@ interface InputsFourthStepProps {
 const InputsFourthStep = ({ form }: InputsFourthStepProps) => {
   return (
     <StepItemContent>
-      <Typography variant="h5" fontWeight={700} component={Stack} direction="row" alignItems="flex-end" spacing={1} mb={2}>
+      <Box
+        sx={{
+          backgroundColor: 'white',
+          m: -2,
+          p: 4,
+          borderRadius: 1,
+        }}
+        >
+              <Typography variant="h5" fontWeight={700} component={Stack} direction="row" alignItems="flex-end" spacing={1} mb={2}>
         <Person />
         Contacto
       </Typography>
@@ -57,6 +65,7 @@ const InputsFourthStep = ({ form }: InputsFourthStepProps) => {
           </Form.Item>
         </Grid>
       </Grid>
+      </Box>
     </StepItemContent>
   );
 };

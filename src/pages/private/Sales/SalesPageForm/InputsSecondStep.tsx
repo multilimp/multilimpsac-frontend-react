@@ -102,43 +102,46 @@ const InputsSecondStep = ({ form, isEditing = false, currentSale }: InputsSecond
           </Form.Item>
         }
       >
-        <Typography variant="h5" fontWeight={700} component={Stack} direction="row" alignItems="flex-end" spacing={1} mb={2}>
-          <LocationOn />
-          Lugar de entrega
-        </Typography>
+        <Box sx={{ backgroundColor: 'white', m: -2, p: 4, borderRadius: 1 }}>
+          <Typography variant="h5" fontWeight={700} component={Stack} direction="row" alignItems="flex-end" spacing={1} mb={2}>
+            <LocationOn />
+            Lugar de entrega
+          </Typography>
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        
-          {/* Fila de ubicación geográfica */}
-          <Grid container columnSpacing={2} rowSpacing={2}>
-            {/* Primera fila - Dirección completa */}
-            <Grid size={12}>
-              <Form.Item name="direccionEntrega" rules={[requiredField]}>
-                <InputAntd label="Dirección" />
-              </Form.Item>
-            </Grid>            {/* Segunda fila - Ubicación geográfica con texto libre para AI */}            <Grid size={{ xs: 12, sm: 4 }}>
-              <Form.Item name="regionEntrega" rules={[requiredField]}>
-                <InputAntd label="Región" />
-              </Form.Item>
-            </Grid>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
 
-            <Grid size={{ xs: 12, sm: 4 }}>
-              <Form.Item name="provinciaEntrega" rules={[requiredField]}>
-                <InputAntd label="Provincia" />
-              </Form.Item>
-            </Grid>
+            {/* Fila de ubicación geográfica */}
+            <Grid container columnSpacing={2} rowSpacing={2}>
+              {/* Primera fila - Dirección completa */}
+              <Grid size={12}>
+                <Form.Item name="direccionEntrega" rules={[requiredField]}>
+                  <InputAntd label="Dirección" />
+                </Form.Item>
+              </Grid>            {/* Segunda fila - Ubicación geográfica con texto libre para AI */}            
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <Form.Item name="regionEntrega" rules={[requiredField]}>
+                  <InputAntd label="Región" />
+                </Form.Item>
+              </Grid>
 
-            <Grid size={{ xs: 12, sm: 4 }}>
-              <Form.Item name="distritoEntrega" rules={[requiredField]}>
-                <InputAntd label="Distrito" />
-              </Form.Item>
-            </Grid>{/* Tercera fila - Referencia */}
-            <Grid size={12}>
-              <Form.Item name="referenciaEntrega" rules={[requiredField]}>
-                <InputAntd label="Referencia" />
-              </Form.Item>
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <Form.Item name="provinciaEntrega" rules={[requiredField]}>
+                  <InputAntd label="Provincia" />
+                </Form.Item>
+              </Grid>
+
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <Form.Item name="distritoEntrega" rules={[requiredField]}>
+                  <InputAntd label="Distrito" />
+                </Form.Item>
+              </Grid>{/* Tercera fila - Referencia */}
+              <Grid size={12}>
+                <Form.Item name="referenciaEntrega" rules={[requiredField]}>
+                  <InputAntd label="Referencia" />
+                </Form.Item>
+              </Grid>
             </Grid>
-          </Grid>
+          </Box>
         </Box>
       </StepItemContent>
 

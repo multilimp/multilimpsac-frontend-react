@@ -1,6 +1,6 @@
 import type { ColorSystemOptions } from '@mui/material/styles';
 
-import { california, kepple, multilimpGreen, multilimpBlue, redOrange, shakespeare, stormGrey } from './colors';
+import { california, kepple, multilimpBlue, redOrange, shakespeare, stormGrey } from './colors';
 import type { ColorScheme } from './types';
 
 export const colorSchemes = {
@@ -35,10 +35,9 @@ export const colorSchemes = {
       },
       neutral: { ...multilimpBlue },
       primary: {
-        ...multilimpGreen,
-        light: multilimpGreen[300],
-        main: multilimpGreen[500],
-        dark: multilimpGreen[700],
+        light: '#318af8',
+        main: '#318af8',
+        dark: '#1e5fa3',
         contrastText: 'var(--mui-palette-common-white)',
       },
       secondary: {
@@ -102,10 +101,9 @@ export const colorSchemes = {
       },
       neutral: { ...stormGrey },
       primary: {
-        ...multilimpGreen,
-        light: multilimpGreen[400],
-        main: multilimpGreen[500], // #04BA6B - brand color
-        dark: multilimpGreen[700],
+        light: '#318af8',
+        main: '#318af8', // color corporativo
+        dark: '#1e5fa3',
         contrastText: 'var(--mui-palette-common-white)',
       },
       secondary: {

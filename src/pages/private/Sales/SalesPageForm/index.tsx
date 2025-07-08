@@ -13,6 +13,7 @@ import { BlackBarKeyEnum } from '@/types/global.enum';
 import { useParams, useNavigate } from 'react-router-dom';
 import { SaleProps } from '@/services/sales/sales';
 import { parseJSON } from '@/utils/functions';
+import EstadoSelectAndSubmit from '@/components/EstadoSelectAndSubmit';
 
 const SalesPageForm = () => {
   const { companies, clients, saleInputValues, setSaleInputValues, setBlackBarKey, obtainSales } = useGlobalInformation();
@@ -313,6 +314,12 @@ const SalesPageForm = () => {
     }
   };
 
+  const estadoVentaOptions = [
+    { value: 'completo', label: <span style={{ color: '#04BA6B', fontWeight: 600 }}>Completo</span> },
+    { value: 'procesando', label: <span style={{ color: '#f5a524', fontWeight: 600 }}>En proceso</span> },
+    { value: 'cancelado', label: <span style={{ color: '#f31260', fontWeight: 600 }}>Cancelado</span> },
+  ];
+
   return (
     <Box>
       <Spin spinning={loading} size="large" tip="..:: Espere mientras finaliza la operación ::..">
@@ -330,57 +337,18 @@ const SalesPageForm = () => {
 
             <InputsFifthStep />
             
-            {/* Estado de venta - mantener dentro del Form para sincronización */}
-            <Stack direction="row" spacing={2} justifyContent="center" alignItems="center" mt={3}>
-              <Form.Item 
-                name="estadoVenta" 
-                rules={[{ required: true, message: 'Seleccione un estado' }]}
-                initialValue="incompleto"
-                style={{ margin: 0 }}
-              >
-                <Select
-                  placeholder="Estado de la venta"
-                  size="large"
-                  style={{ minWidth: 200 }}
-                  options={[
-                    { 
-                      value: 'completo', 
-                      label: (
-                        <span style={{ color: '#006fee', fontWeight: 600 }}>
-                          🟢 Completo
-                        </span>
-                      ) 
-                    },
-                    { 
-                      value: 'incompleto', 
-                      label: (
-                        <span style={{ color: '#f5a524', fontWeight: 600 }}>
-                          🟡 Incompleto
-                        </span>
-                      ) 
-                    },
-                    { 
-                      value: 'rechazado', 
-                      label: (
-                        <span style={{ color: '#f31260', fontWeight: 600 }}>
-                          🔴 Rechazado
-                        </span>
-                      ) 
-                    },
-                  ]}
-                />
-              </Form.Item>
-            </Stack>
+            {/* Estado de venta - usando el nuevo componente EstadoSelectAndSubmit */}
+            <EstadoSelectAndSubmit
+              form={form}
+              name="estadoVenta"
+              options={estadoVentaOptions}
+              loading={loading}
+              onSubmit={() => form.submit()}
+            />
           </Stack>
           <Button type="submit" className="d-none"></Button>
         </Form>
       </Spin>
-
-      <Stack direction="row" spacing={2} my={5} justifyContent="center" alignItems="center">
-        <Button loading={loading} onClick={() => form.submit()}>
-          {isEditing ? 'Actualizar venta' : 'Finalizar y registrar venta'}
-        </Button>
-      </Stack>
     </Box>
   );
 };

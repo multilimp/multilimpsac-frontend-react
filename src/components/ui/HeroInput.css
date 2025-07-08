@@ -228,19 +228,19 @@
 }
 
 .hero-select-soft .ant-select-selector {
-  background: linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%) !important;
+  background: var(--estado-bg, linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%)) !important;
   border-color: rgba(229, 229, 229, 0.5) !important;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+  transition: background 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 .hero-select-soft:hover .ant-select-selector {
-  background: #ffffff !important;
+  background: var(--estado-bg-hover, #ffffff) !important;
   border-color: #04BA6B !important;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
 }
 
 .hero-select-soft.ant-select-focused .ant-select-selector {
-  background: #ffffff !important;
+  background: var(--estado-bg-focus, #ffffff) !important;
   border-color: #04BA6B !important;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 0 0 3px rgba(4, 186, 107, 0.2) !important;
 }

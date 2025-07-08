@@ -20,10 +20,10 @@ body {
   width: 100%;
 }
 
+
 .ant-input:focus,
 .ant-select-selector:focus {
   border-color: #306df7 !important;
-  box-shadow: 0 0 0 2px rgba(48, 109, 247, 0.2) !important;
 }
 
 /* Clases personalizadas para Stack con bordes azules */
@@ -154,7 +154,6 @@ body {
 .ant-input-focused,
 .ant-select-focused .ant-select-selector {
   border-color: #306df7 !important;
-  box-shadow: 0 0 0 2px rgba(48, 109, 247, 0.2) !important;
 }
 
 /* Mejoras para botones Ant Design */
