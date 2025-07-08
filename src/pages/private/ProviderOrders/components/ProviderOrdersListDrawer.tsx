@@ -3,7 +3,7 @@ import { getOrderProvidersByOC } from '@/services/providerOrders/providerOrders.
 import { SaleProps } from '@/services/sales/sales';
 import { heroUIColors, alpha } from '@/styles/theme/heroui-colors';
 import { Delete, RemoveRedEye, Add, Close, Inventory2, ShoppingCart } from '@mui/icons-material';
-import { Button, Card, CardActions, CardContent, CardHeader, Drawer, Stack, Box, Typography, IconButton, Chip, Divider } from '@mui/material';
+import { Button, Card, CardActions, CardContent, CardHeader, Drawer, Stack, Box, Typography, IconButton, Chip, Divider, Skeleton } from '@mui/material';
 import { notification, Spin } from 'antd';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -64,15 +64,43 @@ const ProviderOrdersListDrawer = ({ handleClose, data }: ProviderOrdersListDrawe
         }
       }}
     >
-      {/* Header con color primario sólido */}
+      {/* Header con gradiente y efectos glass */}
       <Box
         sx={{
-          background: '#05a867',
+          background: heroUIColors.gradients.primary,
           color: 'white',
           p: 3,
           position: 'relative',
           overflow: 'hidden',
           flexShrink: 0,
+          
+          // Efectos glassmorphism
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: `linear-gradient(135deg, 
+              ${alpha('#ffffff', 0.1)} 0%, 
+              ${alpha('#ffffff', 0.05)} 100%)`,
+            zIndex: 1,
+          },
+          
+          // Patrones decorativos
+          '&::after': {
+            content: '""',
+            position: 'absolute',
+            top: '-50%',
+            right: '-20%',
+            width: '100px',
+            height: '100px',
+            borderRadius: '50%',
+            background: alpha('#ffffff', 0.1),
+            filter: 'blur(40px)',
+            zIndex: 1,
+          }
         }}
       >
         <Box sx={{ position: 'relative', zIndex: 2 }}>
@@ -80,25 +108,26 @@ const ProviderOrdersListDrawer = ({ handleClose, data }: ProviderOrdersListDrawe
             <Stack direction="row" alignItems="center" spacing={2}>
               <Box
                 sx={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: heroUIColors.radius.md,
+                  width: 56,
+                  height: 56,
+                  borderRadius: heroUIColors.radius.lg,
                   background: alpha('#ffffff', 0.2),
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   backdropFilter: 'blur(10px)',
                   border: `1px solid ${alpha('#ffffff', 0.3)}`,
+                  boxShadow: heroUIColors.shadows.md,
                 }}
               >
-                <Inventory2 sx={{ color: 'white', fontSize: 24 }} />
+                <Inventory2 sx={{ color: 'white', fontSize: 28 }} />
               </Box>
               <Box>
-                <Typography variant="h6" fontWeight={700} letterSpacing='-0.02em'>
+                <Typography variant="h5" fontWeight={700} letterSpacing='-0.02em'>
                   Órdenes de Proveedor
                 </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                  Gestión de OPs
+                <Typography variant="body2" sx={{ opacity: 0.9, fontWeight: 500 }}>
+                  Gestión integral de OPs
                 </Typography>
               </Box>
             </Stack>
@@ -109,9 +138,13 @@ const ProviderOrdersListDrawer = ({ handleClose, data }: ProviderOrdersListDrawe
                 color: 'white',
                 background: alpha('#ffffff', 0.15),
                 border: `1px solid ${alpha('#ffffff', 0.2)}`,
+                borderRadius: heroUIColors.radius.md,
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                
                 '&:hover': {
                   background: alpha('#ffffff', 0.25),
-                  transform: 'scale(1.05)',
+                  transform: 'scale(1.05) rotate(90deg)',
+                  boxShadow: heroUIColors.shadows.md,
                 }
               }}
             >
@@ -119,31 +152,52 @@ const ProviderOrdersListDrawer = ({ handleClose, data }: ProviderOrdersListDrawe
             </IconButton>
           </Stack>
 
-          {/* Info de la OC */}
-          <Stack direction="row" alignItems="center" spacing={2}>
-            <ShoppingCart sx={{ fontSize: 18, opacity: 0.8 }} />
-            <Box>
-              <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                Orden de Compra
-              </Typography>
-              <Typography variant="body1" fontWeight={600}>
-                {data.codigoVenta}
-              </Typography>
-            </Box>
-            <Box sx={{ ml: 'auto' }}>
+          {/* Info de la OC mejorada */}
+          <Box
+            sx={{
+              background: alpha('#ffffff', 0.15),
+              borderRadius: heroUIColors.radius.lg,
+              p: 2,
+              backdropFilter: 'blur(10px)',
+              border: `1px solid ${alpha('#ffffff', 0.2)}`,
+            }}
+          >
+            <Stack direction="row" alignItems="center" spacing={2}>
+              <Box
+                sx={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: heroUIColors.radius.md,
+                  background: alpha('#ffffff', 0.2),
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <ShoppingCart sx={{ fontSize: 20, color: 'white' }} />
+              </Box>
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="caption" sx={{ opacity: 0.8, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                  Orden de Compra
+                </Typography>
+                <Typography variant="h6" fontWeight={700}>
+                  {data.codigoVenta}
+                </Typography>
+              </Box>
               <Chip
                 label={`${orderProvidersCodes.length} OPs`}
                 size="small"
                 sx={{
                   background: alpha('#ffffff', 0.2),
                   color: 'white',
-                  fontWeight: 600,
+                  fontWeight: 700,
                   backdropFilter: 'blur(10px)',
                   border: `1px solid ${alpha('#ffffff', 0.3)}`,
+                  borderRadius: heroUIColors.radius.md,
                 }}
               />
-            </Box>
-          </Stack>
+            </Stack>
+          </Box>
         </Box>
       </Box>
 
@@ -178,105 +232,124 @@ const ProviderOrdersListDrawer = ({ handleClose, data }: ProviderOrdersListDrawe
           }}
         >
           <Spin spinning={loading}>
-            {orderProvidersCodes.length ? (
+            {loading ? (
               <Stack direction="column" spacing={3}>
-                {orderProvidersCodes.map((item, index) => (
-                  <Card 
-                    key={item.id} 
+                {[1, 2].map((i) => (
+                  <Card
+                    key={i}
                     sx={{
-                      background: alpha('#ffffff', 0.95),
-                      border: `1px solid ${alpha('#05a867', 0.3)}`,
-                      borderRadius: heroUIColors.radius.lg,
+                      background: alpha('#fff', 0.85),
+                      borderRadius: heroUIColors.radius.xl,
                       boxShadow: heroUIColors.shadows.md,
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      position: 'relative',
-                      overflow: 'hidden',
-                      
-                      '&:hover': {
-                        transform: 'translateY(-4px)',
-                        boxShadow: heroUIColors.shadows.lg,
-                        borderColor: '#05a867',
-                        background: '#ffffff',
-                        
-                        '&::before': {
-                          opacity: 1,
-                        }
-                      },
-                      
-                      '&::before': {
-                        content: '""',
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        height: '3px',
-                        background: '#05a867',
-                        opacity: 0.7,
-                        transition: 'opacity 0.3s ease',
-                      }
+                      p: 2,
                     }}
                   >
-                    <CardHeader 
+                    <Skeleton variant="rectangular" width="100%" height={60} sx={{ mb: 2, borderRadius: 2 }} />
+                    <Skeleton variant="text" width="60%" />
+                    <Skeleton variant="text" width="40%" />
+                    <Skeleton variant="rectangular" width="100%" height={36} sx={{ mt: 2, borderRadius: 2 }} />
+                  </Card>
+                ))}
+              </Stack>
+            ) : orderProvidersCodes.length ? (
+              <Stack direction="column" spacing={3}>
+                {orderProvidersCodes.map((item, index) => (
+                  <Card
+                    key={item.id}
+                    sx={{
+                      background: 'rgba(255,255,255,0.08)',
+                      backdropFilter: 'blur(8px)',
+                      border: `2px solid ${alpha(heroUIColors.secondary[500], 0.13)}`,
+                      borderRadius: heroUIColors.radius.xl,
+                      boxShadow: heroUIColors.shadows.md,
+                      transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      '&:hover': {
+                        transform: 'translateY(-6px) scale(1.01)',
+                        boxShadow: heroUIColors.shadows.xl,
+                        borderColor: heroUIColors.secondary[500],
+                        background: 'rgba(255,255,255,0.13)',
+                      },
+                    }}
+                    elevation={0}
+                  >
+                    <CardHeader
                       avatar={
                         <Box
                           sx={{
-                            width: 40,
-                            height: 40,
-                            borderRadius: heroUIColors.radius.md,
-                            background: '#05a867',
+                            width: 48,
+                            height: 48,
+                            borderRadius: heroUIColors.radius.lg,
+                            background: heroUIColors.gradients.secondary,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             color: 'white',
                             fontWeight: 700,
-                            fontSize: '0.875rem',
-                            boxShadow: heroUIColors.shadows.sm,
+                            fontSize: '1rem',
+                            boxShadow: heroUIColors.shadows.md,
+                            border: `2px solid ${alpha(heroUIColors.primary[500], 0.25)}`,
                           }}
                         >
-                          {String(index + 1).padStart(2, '0')}
+                          OP{String(index + 1).padStart(2, '0')}
                         </Box>
                       }
                       title={
-                        <Typography 
-                          variant="h6" 
+                        <Typography
+                          variant="h6"
                           fontWeight={700}
-                          color={heroUIColors.neutral[800]}
-                          letterSpacing='-0.01em'
+                          color={heroUIColors.secondary[500]}
+                          letterSpacing="-0.01em"
                         >
                           {item.codigoOp}
                         </Typography>
                       }
-                      subheader={
-                        <Typography 
-                          variant="body2" 
-                          color={heroUIColors.neutral[500]}
-                          fontWeight={500}
-                        >
-                          Orden de Proveedor
-                        </Typography>
-                      }
-                      sx={{ pb: 1 }}
+                      // deberia ser un subheader con fecha de modificación
+                      // subheader={
+                      //   <Stack direction="row" alignItems="center" spacing={1} mt={0.5}>
+                      //     <Box
+                      //       sx={{
+                      //         width: 8,
+                      //         height: 8,
+                      //         borderRadius: '50%',
+                      //         background: heroUIColors.success[500],
+                      //         boxShadow: `0 0 0 2px ${alpha(heroUIColors.success[500], 0.2)}`,
+                      //       }}
+                      //     />
+                      //     <Typography
+                      //       variant="body2"
+                      //       color={heroUIColors.neutral[600]}
+                      //       fontWeight={500}
+                      //     >
+                      //       Orden de Proveedor Activa
+                      //     </Typography>
+                      //   </Stack>
+                      // }
+                      // sx={{ pb: 1 }}
                     />
                     
-                    <Divider sx={{ borderColor: alpha('#05a867', 0.3) }} />
+                    <Divider sx={{ borderColor: alpha(heroUIColors.secondary[500], 0.1) }} />
                     
-                    <CardActions sx={{ p: 2, gap: 1 }}>
+                    <CardActions sx={{ p: 2.5, gap: 1.5 }}>
                       <Button
                         fullWidth
                         variant="contained"
                         startIcon={<RemoveRedEye />}
                         onClick={() => handleSelected(item.id)}
                         sx={{
-                          background: '#05a867',
+                          background: heroUIColors.gradients.secondary,
                           fontWeight: 600,
-                          borderRadius: heroUIColors.radius.md,
+                          borderRadius: heroUIColors.radius.lg,
                           textTransform: 'none',
-                          boxShadow: heroUIColors.shadows.sm,
+                          py: 1.5,
+                          fontSize: '0.95rem',
+                          boxShadow: heroUIColors.shadows.md,
                           
                           '&:hover': {
-                            background: '#047856',
                             transform: 'translateY(-2px)',
-                            boxShadow: heroUIColors.shadows.md,
+                            boxShadow: heroUIColors.shadows.lg,
+                            background: heroUIColors.gradients.secondary,
                           }
                         }}
                       >
@@ -287,17 +360,17 @@ const ProviderOrdersListDrawer = ({ handleClose, data }: ProviderOrdersListDrawe
                         variant="outlined" 
                         color="error"
                         startIcon={<Delete />}
-                        disabled
                         sx={{
-                          borderColor: alpha(heroUIColors.error[400], 0.4),
+                          borderColor: alpha(heroUIColors.error[400], 0.3),
                           color: alpha(heroUIColors.error[400], 0.6),
-                          borderRadius: heroUIColors.radius.md,
+                          borderRadius: heroUIColors.radius.lg,
                           textTransform: 'none',
                           fontWeight: 500,
                           minWidth: '120px',
+                          py: 1.5,
                           
                           '&:hover': {
-                            borderColor: alpha(heroUIColors.error[500], 0.6),
+                            borderColor: alpha(heroUIColors.error[500], 0.5),
                             background: alpha(heroUIColors.error[50], 0.3),
                           }
                         }}
@@ -317,38 +390,82 @@ const ProviderOrdersListDrawer = ({ handleClose, data }: ProviderOrdersListDrawe
                   justifyContent: 'center',
                   height: '100%',
                   textAlign: 'center',
+                  p: 4,
                 }}
               >
                 <Box
                   sx={{
-                    width: 80,
-                    height: 80,
+                    width: 120,
+                    height: 120,
                     borderRadius: '50%',
-                    background: alpha('#ffffff', 0.15),
+                    background: `linear-gradient(135deg, 
+                      ${alpha('#ffffff', 0.1)} 0%, 
+                      ${alpha('#ffffff', 0.05)} 100%)`,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     mb: 3,
-                    border: `2px solid ${alpha('#ffffff', 0.2)}`,
+                    border: `3px solid ${alpha('#ffffff', 0.2)}`,
+                    position: 'relative',
+                    
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: '-10px',
+                      left: '-10px',
+                      right: '-10px',
+                      bottom: '-10px',
+                      borderRadius: '50%',
+                      border: `1px solid ${alpha('#ffffff', 0.1)}`,
+                      animation: 'pulse 2s infinite',
+                    }
                   }}
                 >
-                  <Inventory2 sx={{ fontSize: 32, color: alpha('#ffffff', 0.7) }} />
+                  <Inventory2 sx={{ fontSize: 48, color: alpha('#ffffff', 0.7) }} />
                 </Box>
+                
                 <Typography 
-                  variant="h6" 
+                  variant="h5" 
                   color="#ffffff"
-                  fontWeight={600}
-                  mb={1}
+                  fontWeight={700}
+                  mb={2}
+                  letterSpacing='-0.02em'
                 >
                   Sin órdenes de proveedor
                 </Typography>
+                
                 <Typography 
-                  variant="body2" 
+                  variant="body1" 
                   color={alpha('#ffffff', 0.8)}
-                  maxWidth={300}
+                  maxWidth={320}
+                  lineHeight={1.6}
+                  mb={3}
                 >
-                  No hay órdenes de proveedor asociadas a esta orden de compra. Agrega una nueva OP para comenzar.
+                  No hay órdenes de proveedor asociadas a esta orden de compra. Agrega una nueva OP para comenzar el proceso.
                 </Typography>
+                
+                <Button
+                  variant="outlined"
+                  startIcon={<Add />}
+                  onClick={() => handleSelected()}
+                  sx={{
+                    borderColor: alpha('#ffffff', 0.3),
+                    color: '#ffffff',
+                    borderRadius: heroUIColors.radius.lg,
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    px: 3,
+                    py: 1.5,
+                    
+                    '&:hover': {
+                      borderColor: '#ffffff',
+                      background: alpha('#ffffff', 0.1),
+                      color: '#ffffff',
+                    }
+                  }}
+                >
+                  Crear Primera OP
+                </Button>
               </Box>
             )}
           </Spin>

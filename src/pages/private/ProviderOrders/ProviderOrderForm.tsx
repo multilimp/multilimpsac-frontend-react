@@ -7,6 +7,7 @@ import ProviderOrderFormContent from './components/ProviderOrderFormContent';
 import { BlackBarKeyEnum } from '@/types/global.enum';
 import { getOrderProviderById } from '@/services/providerOrders/providerOrders.requests';
 import { ProviderOrderProps } from '@/services/providerOrders/providerOrders';
+import ProviderOrderFormSkeleton from '@/components/ProviderOrderFormSkeleton';
 
 const ProviderOrderForm = () => {
   const { selectedSale, setSelectedSale, setBlackBarKey } = useGlobalInformation();
@@ -82,7 +83,7 @@ const ProviderOrderForm = () => {
           isEditing={isEditing}
         />
       ) : (
-        <Empty description={loading ? "Cargando..." : "No hay datos disponibles"} />
+        <ProviderOrderFormSkeleton />
       )}
     </Stack>
   );
