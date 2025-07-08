@@ -1,4 +1,4 @@
-import { Empty, message } from 'antd';
+import { message } from 'antd';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Stack } from '@mui/material';
@@ -14,7 +14,7 @@ const ProviderOrderForm = () => {
   const { providerOrderId } = useParams();
   const navigate = useNavigate();
   const [orderData, setOrderData] = useState<ProviderOrderProps | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [, setLoading] = useState(false);
   
   const isEditing = Boolean(providerOrderId);
 

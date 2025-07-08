@@ -257,7 +257,7 @@ const BlackBar = memo(() => {
               <Stack direction="column" spacing={2}>
                 {documentosConfig
                   .filter(doc => !!doc.value)
-                  .map((doc, idx) => (
+                  .map((doc, _) => (
                     <Box key={doc.field} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
                       <Typography sx={{ fontSize: '14px', color: '#eaebee' }} variant="body2" fontWeight={400}>
                         {doc.label}

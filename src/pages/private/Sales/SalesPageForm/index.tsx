@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Box, Button, Collapse, Stack } from '@mui/material';
-import { Form, message, notification, Spin, Select } from 'antd';
+import { Form, message, notification, Spin } from 'antd';
 import InputsFirstStep from './InputsFirstStep';
 import InputsSecondStep from './InputsSecondStep';
 import InputsThirdStep from './InputsThirdStep';

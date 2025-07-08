@@ -1,7 +1,7 @@
 import { Spin } from 'antd';
 import { ChangeEvent, useRef, useState } from 'react';
-import { Box, Typography, Button, Chip } from '@mui/material';
-import { CheckCircle, Delete, Upload, Download } from '@mui/icons-material';
+import { Box, Typography, Button } from '@mui/material';
+import { CheckCircle, Delete, Upload } from '@mui/icons-material';
 
 interface InputFileProps {
   label?: string;
