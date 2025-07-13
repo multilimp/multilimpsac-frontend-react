@@ -35,7 +35,10 @@ export const StepItemContent = ({
   <Box sx={{ backgroundColor: bgcolor, borderRadius: 2 }}>
     {showHeader ? (
       <Fragment>
-        <Stack direction="row" justifyContent="space-between" alignItems="center" bgcolor={color} color="#ffffff" px={2} height={32}>
+        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{
+            borderTopLeftRadius: 8,
+            borderTopRightRadius: 8,
+          }} bgcolor={color} color="#ffffff" px={2} height={32}>
           <Typography component="div" fontSize={12}>
             {headerLeft}
           </Typography>

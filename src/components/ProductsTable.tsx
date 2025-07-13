@@ -10,7 +10,8 @@ import {
   Button,
   Stack,
   Typography,
-  FormHelperText
+  FormHelperText,
+  Box
 } from '@mui/material';
 import { Form, Input, InputNumber } from 'antd';
 import { Delete, ShoppingCart } from '@mui/icons-material';
@@ -119,12 +120,6 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
     p: compact ? 0.125 : 0.25
   };
 
-  const inputStyle = {
-    width: '100%',
-    borderRadius: 0,
-    borderColor: '#8377a890'
-  };
-
   const content = (
     <>
       <TableContainer sx={{ mb: 3 }}>
@@ -155,111 +150,258 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                       {showFields.codigo && (
                         <TableCell sx={cellStyle}>
                           <Form.Item className="m-0" name={[field.name, 'codigo']} rules={required ? [requiredField] : []}>
-                            <Input
-                              size="middle"
-                              style={inputStyle}
-                              readOnly={readOnly}
-                              disabled={readOnly}
-                            />
+                            <Box sx={{
+                              bgcolor: '#f3f6f9',
+                              borderRadius: 2,
+                              height: 48,
+                              display: 'flex',
+                              alignItems: 'center',
+                              px: 2,
+                            }}>
+                              <Input
+                                placeholder="Código"
+                                size="small"
+                                style={{
+                                  width: '100%',
+                                  border: 'none',
+                                  background: 'transparent',
+                                  color: 'black',
+                                  fontWeight: 600,
+                                }}
+                                readOnly={readOnly}
+                                disabled={readOnly}
+                              />
+                            </Box>
                           </Form.Item>
                         </TableCell>
                       )}
                       {showFields.descripcion && (
                         <TableCell sx={cellStyle}>
                           <Form.Item className="m-0" name={[field.name, 'descripcion']} rules={required ? [requiredField] : []}>
-                            <Input
-                              size="middle"
-                              style={inputStyle}
-                              readOnly={readOnly}
-                              disabled={readOnly}
-                            />
+                            <Box sx={{
+                              bgcolor: '#f3f6f9',
+                              borderRadius: 2,
+                              height: 48,
+                              display: 'flex',
+                              alignItems: 'center',
+                              px: 2,
+                            }}>
+                              <Input
+                                placeholder="Descripción"
+                                size="small"
+                                style={{
+                                  width: '100%',
+                                  border: 'none',
+                                  background: 'transparent',
+                                  color: 'black',
+                                  fontWeight: 600,
+                                }}
+                                readOnly={readOnly}
+                                disabled={readOnly}
+                              />
+                            </Box>
                           </Form.Item>
                         </TableCell>
                       )}
                       {showFields.uMedida && (
                         <TableCell sx={cellStyle}>
                           <Form.Item className="m-0" name={[field.name, 'uMedida']} rules={required ? [requiredField] : []}>
-                            <Input
-                              size="middle"
-                              style={inputStyle}
-                              readOnly={readOnly}
-                              disabled={readOnly}
-                            />
+                            <Box sx={{
+                              bgcolor: '#f3f6f9',
+                              borderRadius: 2,
+                              height: 48,
+                              display: 'flex',
+                              alignItems: 'center',
+                              px: 2,
+                            }}>
+                              <Input
+                                placeholder="U.Medida"
+                                size="small"
+                                style={{
+                                  width: '100%',
+                                  border: 'none',
+                                  background: 'transparent',
+                                  color: 'black',
+                                  fontWeight: 600,
+                                }}
+                                readOnly={readOnly}
+                                disabled={readOnly}
+                              />
+                            </Box>
                           </Form.Item>
                         </TableCell>
                       )}
                       {showFields.cantidad && (
                         <TableCell sx={cellStyle}>
                           <Form.Item className="m-0" name={[field.name, 'cantidad']} rules={required ? [requiredField] : []}>
-                            <InputNumber
-                              size="middle"
-                              min={0}
-                              style={inputStyle}
-                              readOnly={readOnly}
-                              disabled={readOnly}
-                            />
+                            <Box sx={{
+                              bgcolor: '#f3f6f9',
+                              borderRadius: 2,
+                              height: 48,
+                              display: 'flex',
+                              alignItems: 'center',
+                              px: 2,
+                            }}>
+                              <InputNumber
+                                placeholder="0"
+                                size="small"
+                                min={0}
+                                style={{
+                                  width: '100%',
+                                  border: 'none',
+                                  background: 'transparent',
+                                  color: 'black',
+                                  fontWeight: 600,
+                                }}
+                                readOnly={readOnly}
+                                disabled={readOnly}
+                              />
+                            </Box>
                           </Form.Item>
                         </TableCell>
                       )}
                       {showFields.cAlmacen && (
                         <TableCell sx={cellStyle}>
                           <Form.Item className="m-0" name={[field.name, 'cAlmacen']} rules={required ? [requiredField] : []}>
-                            <InputNumber
-                              size="middle"
-                              min={0}
-                              style={inputStyle}
-                              readOnly={readOnly}
-                              disabled={readOnly}
-                            />
+                            <Box sx={{
+                              bgcolor: '#f3f6f9',
+                              borderRadius: 2,
+                              height: 48,
+                              display: 'flex',
+                              alignItems: 'center',
+                              px: 2,
+                            }}>
+                              <InputNumber
+                                placeholder="0"
+                                size="small"
+                                min={0}
+                                style={{
+                                  width: '100%',
+                                  border: 'none',
+                                  background: 'transparent',
+                                  color: 'black',
+                                  fontWeight: 600,
+                                }}
+                                readOnly={readOnly}
+                                disabled={readOnly}
+                              />
+                            </Box>
                           </Form.Item>
                         </TableCell>
                       )}
                       {showFields.cTotal && (
                         <TableCell sx={cellStyle}>
                           <Form.Item className="m-0" name={[field.name, 'cTotal']} rules={required ? [requiredField] : []}>
-                            <InputNumber
-                              size="middle"
-                              min={0}
-                              style={inputStyle}
-                              onChange={() => calculateProductSubTotal(field.name)}
-                              readOnly={readOnly}
-                              disabled={readOnly}
-                            />
+                            <Box sx={{
+                              bgcolor: '#f3f6f9',
+                              borderRadius: 2,
+                              height: 48,
+                              display: 'flex',
+                              alignItems: 'center',
+                              px: 2,
+                            }}>
+                              <InputNumber
+                                placeholder="0"
+                                size="small"
+                                min={0}
+                                style={{
+                                  width: '100%',
+                                  border: 'none',
+                                  background: 'transparent',
+                                  color: 'black',
+                                  fontWeight: 600,
+                                }}
+                                onChange={() => calculateProductSubTotal(field.name)}
+                                readOnly={readOnly}
+                                disabled={readOnly}
+                              />
+                            </Box>
                           </Form.Item>
                         </TableCell>
                       )}
                       {showFields.precioUnitario && (
                         <TableCell sx={cellStyle}>
                           <Form.Item className="m-0" name={[field.name, 'precioUnitario']} rules={required ? [requiredField] : []}>
-                            <InputNumber
-                              size="middle"
-                              min={0}
-                              style={inputStyle}
-                              onChange={() => calculateProductSubTotal(field.name)}
-                              readOnly={readOnly}
-                              disabled={readOnly}
-                            />
+                            <Box sx={{
+                              bgcolor: '#f3f6f9',
+                              borderRadius: 2,
+                              height: 48,
+                              display: 'flex',
+                              alignItems: 'center',
+                              px: 2,
+                            }}>
+                              <InputNumber
+                                placeholder="0.00"
+                                size="small"
+                                min={0}
+                                style={{
+                                  width: '100%',
+                                  border: 'none',
+                                  background: 'transparent',
+                                  color: 'black',
+                                  fontWeight: 600,
+                                }}
+                                onChange={() => calculateProductSubTotal(field.name)}
+                                readOnly={readOnly}
+                                disabled={readOnly}
+                              />
+                            </Box>
                           </Form.Item>
                         </TableCell>
                       )}
                       {showFields.total && (
                         <TableCell sx={cellStyle}>
                           <Form.Item className="m-0" name={[field.name, 'total']}>
-                            <InputNumber
-                              size="middle"
-                              min={0}
-                              style={inputStyle}
-                              readOnly
-                              disabled
-                            />
+                            <Box sx={{
+                              bgcolor: '#f3f6f9',
+                              borderRadius: 2,
+                              height: 48,
+                              display: 'flex',
+                              alignItems: 'center',
+                              px: 2,
+                            }}>
+                              <InputNumber
+                                placeholder="0.00"
+                                size="small"
+                                min={0}
+                                style={{
+                                  width: '100%',
+                                  border: 'none',
+                                  background: 'transparent',
+                                  color: '#bdbdbd',
+                                  fontWeight: 600,
+                                }}
+                                readOnly
+                                disabled
+                              />
+                            </Box>
                           </Form.Item>
                         </TableCell>
                       )}
                       {!readOnly && showDeleteButton && (
                         <TableCell sx={cellStyle}>
-                          <IconButton size="small" color="error" onClick={() => remove(field.name)}>
-                            <Delete fontSize="medium" />
-                          </IconButton>
+                          <Box sx={{
+                            bgcolor: '#f3f6f9',
+                            borderRadius: 2,
+                            height: 48,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}>
+                            <IconButton 
+                              size="small" 
+                              color="error" 
+                              onClick={() => remove(field.name)}
+                              sx={{
+                                color: '#dc2626',
+                                '&:hover': {
+                                  bgcolor: 'rgba(220, 38, 38, 0.1)'
+                                }
+                              }}
+                            >
+                              <Delete fontSize="medium" />
+                            </IconButton>
+                          </Box>
                         </TableCell>
                       )}
                     </TableRow>
@@ -272,7 +414,20 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                       </TableCell>
                       {!readOnly && showAddButton && (
                         <TableCell colSpan={3} sx={cellStyle}>
-                          <Button fullWidth size="small" onClick={() => add(getEmptyProductRecord())} sx={{ borderRadius: 0.75 }}>
+                          <Button 
+                            fullWidth 
+                            size="large" 
+                            onClick={() => add(getEmptyProductRecord())} 
+                            style={{
+                              background: '#1777ff',
+                              borderColor: '#f3f6f9',
+                              color: 'white',
+                              fontWeight: 700,
+                              borderRadius: 8,
+                              height: 48,
+                              fontSize: 14,
+                            }}
+                          >
                             AÑADIR PRODUCTOS
                           </Button>
                         </TableCell>
@@ -296,8 +451,8 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                                   bgcolor="secondary.main"
                                   color="#fff"
                                   px={1}
-                                  py={0.8}
-                                  borderRadius={0.5}
+                                  py={1.5}
+                                  borderRadius={1}
                                 >
                                   <Typography component="span" variant="body2" children="Pago Total" />
                                   <Typography component="span" variant="body2" children={formatCurrency(sum)} />
@@ -336,15 +491,15 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
     return <>{content}</>;
   }
 
-  // Si showTitle es true, envolver en StepItemContent
+  // Si showTitle es true
   return (
-    <StepItemContent>
+    <Box sx={{ bgcolor: '#fff', borderRadius: 2, p: 4 }}>
       <Typography variant="h5" fontWeight={700} component={Stack} direction="row" alignItems="flex-end" spacing={1} mb={2}>
         <ShoppingCart />
         {title}
       </Typography>
       {content}
-    </StepItemContent>
+    </Box>
   );
 };
 

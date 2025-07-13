@@ -1,11 +1,9 @@
 import { Fragment, useCallback, useMemo } from 'react';
-import { Form, Select } from 'antd';
-import { Grid, IconButton, Stack, Typography, Box, FormHelperText } from '@mui/material';
-import { Delete, Add } from '@mui/icons-material';
-import InputFile from '@/components/InputFile';
+import { Form, Select, Button, Checkbox } from 'antd';
+import { Grid, Stack, Typography, Box } from '@mui/material';
+import { Delete, Payment } from '@mui/icons-material';
 import InputAntd from '@/components/InputAntd';
 import DatePickerAntd from '@/components/DatePickerAnt';
-import { formatCurrency } from '@/utils/functions';
 import PaymentsLayout from './PaymentsLayout';
 import SimpleFileUpload from './SimpleFileUpload';
 
@@ -20,17 +18,18 @@ interface PaymentsListProps {
   color?: string;
   required?: boolean;
   initialValue?: any[];
+  saldoFavor?: number;
+  montoTotal?: number;
+  estadoPago?: string;
+  form?: any;
 }
 
 // Opciones del enum TipoPago del backend
 const TIPO_PAGO_OPTIONS = [
-  { label: 'Contado', value: 'CONTADO' },
-  { label: 'Crédito', value: 'CREDITO' },
-  { label: 'Anticipado', value: 'ANTICIPADO' },
-  { label: 'Otros', value: 'OTROS' },
+  { label: 'Pagado', value: 'PAGADO' },
+  { label: 'Urgente', value: 'URGENTE' },
+  { label: 'Pendiente', value: 'PENDIENTE' }
 ];
-
-const requiredField = { required: true, message: 'Campo requerido' };
 
 const getEmptyPaymentRecord = () => ({
   date: null,
@@ -38,7 +37,7 @@ const getEmptyPaymentRecord = () => ({
   description: '',
   file: null,
   amount: '',
-  status: 'true',
+  status: true, // Cambiar a boolean para checkbox
 });
 
 const PaymentsList: React.FC<PaymentsListProps> = ({
@@ -47,9 +46,12 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
   notaPagoName = 'notaPago',
   title = 'Pagos',
   mode = 'edit',
-  color = '#006DFA',
   required = false,
   initialValue = [getEmptyPaymentRecord()],
+  saldoFavor = 0,
+  montoTotal = 0,
+  estadoPago = 'Completo',
+  form,
 }) => {
   const isArrayReadonly = mode === 'readonly';
   
@@ -73,6 +75,19 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
     add(getEmptyPaymentRecord());
   }, []);
 
+  // Calcular suma total de pagos
+  const calculateTotalPayments = useCallback(() => {
+    if (!form) return 0;
+    const payments = form.getFieldValue(name) || [];
+    return payments.reduce((total: number, payment: any) => {
+      const amount = parseFloat(payment?.amount || '0');
+      return total + (isNaN(amount) ? 0 : amount);
+    }, 0);
+  }, [form, name]);
+
+  const totalPayments = calculateTotalPayments();
+  const saldoPendiente = Math.max(0, (montoTotal || 0) - totalPayments);
+
   // Componente renderizado para tipoPago
   const renderTipoPago = useCallback(() => (
     <Form.Item name={tipoPagoName} label="Tipo de Pago">
@@ -89,21 +104,35 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
     </Form.Item>
   ), [tipoPagoName]);
 
-  // Componente renderizado para notaPago
+  // Componente renderizado para notaPago - Replicando el estilo de PaymentsProveedor
   const renderNotaPago = useCallback(() => (
-    <Form.Item name={notaPagoName} label="Nota de Pago">
-      <InputAntd 
-        label="" 
-        type="textarea"
-        placeholder="Observaciones o notas adicionales..."
-        size="middle"
-        disabled={false} // Siempre editable
-      />
-    </Form.Item>
+    <Box sx={{ mt: 3 }}>
+      <Typography fontWeight={700} color="#6c5ebf" mb={1} fontSize={16}>
+        Nota privada para Tesoreria
+      </Typography>
+      <Form.Item name={notaPagoName} noStyle>
+        <Box
+          component="textarea"
+          rows={4}
+          style={{
+            width: '100%',
+            borderRadius: 8,
+            border: '1.5px solid #6c5ebf',
+            padding: 16,
+            fontSize: 14,
+            color: '#222',
+            background: '#fff',
+            resize: 'vertical',
+            fontFamily: 'inherit',
+          }}
+          placeholder="Escribe una nota privada para tesorería..."
+        />
+      </Form.Item>
+    </Box>
   ), [notaPagoName]);
 
   if (isArrayReadonly) {
-    // Modo readonly: mostrar datos de forma presentacional
+    // Modo readonly: usar PaymentsLayout con el nuevo diseño
     return (
       <Form.Item noStyle shouldUpdate={(prev, curr) => {
         const prevPayments = prev?.[name] || [];
@@ -117,9 +146,11 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
           return (
             <PaymentsLayout
               title={title}
-              color={color}
               mode="readonly"
               payments={payments}
+              saldoFavor={saldoFavor}
+              montoTotal={montoTotal}
+              estadoPago={estadoPago}
               renderTipoPago={renderTipoPago}
               renderNotaPago={renderNotaPago}
               showAddButton={false}
@@ -131,18 +162,70 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
     );
   }
 
-  // Modo edición: usar Form.List con PaymentsLayout
+  // Modo edición: replicar el diseño de PaymentsProveedor
   return (
-    <PaymentsLayout
-      title={title}
-      color={color}
-      mode="edit"
-      onAddPayment={undefined} // Se maneja internamente en Form.List
-      renderTipoPago={renderTipoPago}
-      renderNotaPago={renderNotaPago}
-      showAddButton={false} // Se maneja internamente
-      showExtraFields={true}
-    >
+    <Box sx={{ bgcolor: '#fff', borderRadius: 2, p: 4 }}>
+      {/* HEADER - Replicando el diseño de PaymentsProveedor */}
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+        <Stack direction="row" alignItems="center" spacing={2}>
+          <Typography variant="h5" fontWeight={700} sx={{ color: '#1a1a1a', display: 'flex', alignItems: 'center' }}>
+            <Payment sx={{ fontSize: 28, mr: 1 }} />
+            {title}
+          </Typography>
+          {saldoFavor > 0 && (
+            <Typography variant="h5" sx={{ color: '#04BA6B', fontWeight: 700 }}>
+              saldo a favor: S/ {saldoFavor.toFixed(2)}
+            </Typography>
+          )}
+        </Stack>
+        <Stack direction="row" alignItems="center" spacing={2}>
+          {/* Estado de Pago al costado del chip */}
+          <Form.Item name={tipoPagoName} noStyle>
+            <Select 
+              placeholder="Estado de pago"
+              size="large"
+              options={TIPO_PAGO_OPTIONS}
+              style={{ 
+                width: 200,
+                height: 48,
+              }}
+              disabled={false} 
+              dropdownStyle={
+                { maxHeight: 400, overflowY: 'auto' } 
+              }
+            />
+          </Form.Item>
+          <Box
+            sx={{
+              bgcolor: '#f3f6f9',
+              color: '#222',
+              fontWeight: 700,
+              fontSize: 18,
+              px: 3,
+              py: 1,
+              borderRadius: 5,
+              display: 'flex',
+              alignItems: 'center',
+              minWidth: 120,
+              justifyContent: 'center',
+              height: 48,
+            }}
+          >
+            {estadoPago}
+            <Box
+              sx={{
+                width: 16,
+                height: 16,
+                borderRadius: '50%',
+                bgcolor: '#222',
+                ml: 1.5,
+              }}
+            />
+          </Box>
+        </Stack>
+      </Box>
+
+      {/* INPUTS DE PAGOS */}
       <Form.List 
         name={name} 
         initialValue={initialValue} 
@@ -150,222 +233,248 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
       >
         {(fields, { add, remove }, { errors }) => (
           <Fragment>
-            <Stack spacing={3}>
-              {fields.map((field) => (
-                <Box 
-                  key={field.key}
-                  sx={{ 
-                    border: '1px solid',
-                    borderColor: 'grey.200',
-                    borderRadius: 2,
-                    p: 3,
-                    bgcolor: 'grey.50',
-                    position: 'relative',
-                    transition: 'all 0.2s ease',
-                    '&:hover': {
-                      borderColor: color,
-                      bgcolor: 'background.paper'
-                    }
-                  }}
-                >
-                  {/* Header del pago */}
-                  <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
-                    <Typography variant="subtitle2" fontWeight={600} color="text.primary">
-                      Pago #{field.name + 1}
-                    </Typography>
-                    
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      {/* Status simple */}
-                      <Form.Item name={[field.name, 'status']} initialValue="true">
-                        <Select 
-                          size="small"
-                          options={[
-                            { label: 'Activo', value: 'true' },
-                            { label: 'Inactivo', value: 'false' }
-                          ]}
-                          style={{ width: 100 }}
-                        />
-                      </Form.Item>
-
-                      {/* Botón eliminar */}
-                      {fields.length > 1 && (
-                        <IconButton 
-                          size="small" 
-                          onClick={() => remove(field.name)}
-                          sx={{
-                            color: 'text.secondary',
-                            '&:hover': {
-                              color: 'error.main',
-                              bgcolor: 'error.light'
-                            },
-                          }}
-                        >
-                          <Delete fontSize="small" />
-                        </IconButton>
-                      )}
-                    </Stack>
-                  </Stack>
-
-                  {/* Campos principales */}
-                  <Grid container spacing={2} sx={{ mb: 2 }}>
+            <Stack spacing={2} sx={{ mb: 3 }}>
+              {fields.map((field) => {
+                const fileValue = form?.getFieldValue?.([name, field.name, 'file']);
+                return (
+                  <Grid container spacing={2} key={field.key}>
                     {/* Fecha */}
-                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                      <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, mb: 1, display: 'block' }}>
-                        Fecha
-                      </Typography>
-                      <Form.Item name={[field.name, 'date']} rules={required ? [requiredField] : []}>
-                        <DatePickerAntd 
-                          label="" 
-                          placeholder="Seleccionar fecha"
-                          size="small"
-                          style={{ width: '100%' }}
-                        />
+                    <Grid size={2}>
+                      <Form.Item name={[field.name, 'date']} noStyle>
+                        <Box sx={{
+                          bgcolor: '#f3f6f9',
+                          borderRadius: 2,
+                          height: 48,
+                          display: 'flex',
+                          alignItems: 'center',
+                          px: 2,
+                        }}>
+                          <DatePickerAntd
+                            placeholder="-- / -- / ----"
+                            size="small"
+                            style={{
+                              width: '100%',
+                              border: 'none',
+                              background: 'transparent',
+                              color: 'black',
+                              fontWeight: 600,
+                            }}
+                          />
+                        </Box>
                       </Form.Item>
                     </Grid>
 
                     {/* Banco */}
-                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                      <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, mb: 1, display: 'block' }}>
-                        Banco
-                      </Typography>
-                      <Form.Item name={[field.name, 'bank']} rules={required ? [requiredField] : []}>
-                        <InputAntd 
-                          label="" 
-                          placeholder="Nombre del banco"
-                          size="small"
+                    <Grid size={2}>
+                      <Form.Item name={[field.name, 'bank']} noStyle>
+                        <Box sx={{
+                          bgcolor: '#f3f6f9',
+                          borderRadius: 2,
+                          height: 48,
+                          display: 'flex',
+                          alignItems: 'center',
+                          px: 2,
+                        }}>
+                          <InputAntd
+                            placeholder="Banco"
+                            size="small"
+                            style={{
+                              width: '100%',
+                              border: 'none',
+                              background: 'transparent',
+                              color: 'black',
+                              fontWeight: 600,
+                            }}
+                          />
+                        </Box>
+                      </Form.Item>
+                    </Grid>
+
+                    {/* Descripción */}
+                    <Grid size={3}>
+                      <Form.Item name={[field.name, 'description']} noStyle>
+                        <Box sx={{
+                          bgcolor: '#f3f6f9',
+                          borderRadius: 2,
+                          height: 48,
+                          display: 'flex',
+                          alignItems: 'center',
+                          px: 2,
+                        }}>
+                          <InputAntd
+                            placeholder="Descripción"
+                            size="small"
+                            style={{
+                              width: '100%',
+                              border: 'none',
+                              background: 'transparent',
+                              color: 'black',
+                              fontWeight: 600,
+                            }}
+                          />
+                        </Box>
+                      </Form.Item>
+                    </Grid>
+
+                    {/* Archivo */}
+                    <Grid size={1.5}>
+                      <Form.Item name={[field.name, 'file']} noStyle>
+                        <SimpleFileUpload
+                          label=""
+                          accept="application/pdf"
+                          value={fileValue}
+                          onChange={file => {
+                            form?.setFieldValue?.([name, field.name, 'file'], file);
+                          }}
                         />
                       </Form.Item>
                     </Grid>
 
                     {/* Monto */}
-                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                      <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, mb: 1, display: 'block' }}>
-                        Monto
-                      </Typography>
-                      <Form.Item name={[field.name, 'amount']} rules={required ? [requiredField] : []}>
-                        <InputAntd 
-                          label="" 
-                          placeholder="0.00"
-                          type="number"
-                          size="small"
-                        />
+                    <Grid size={2}>
+                      <Form.Item name={[field.name, 'amount']} noStyle>
+                        <Box sx={{
+                          bgcolor: '#f3f6f9',
+                          borderRadius: 2,
+                          height: 48,
+                          display: 'flex',
+                          alignItems: 'center',
+                          px: 2,
+                        }}>
+                          <InputAntd
+                            placeholder="s/"
+                            type="number"
+                            size="small"
+                            style={{
+                              width: '100%',
+                              border: 'none',
+                              background: 'transparent',
+                              color: '#bdbdbd',
+                              fontWeight: 600,
+                            }}
+                          />
+                        </Box>
                       </Form.Item>
                     </Grid>
-
-                    {/* Descripción */}
-                    <Grid size={{ xs: 12, md: 3 }}>
-                      <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, mb: 1, display: 'block' }}>
-                        Descripción
-                      </Typography>
-                      <Form.Item name={[field.name, 'description']} rules={required ? [requiredField] : []}>
-                        <InputAntd 
-                          label="" 
-                          placeholder="Descripción del pago"
-                          size="small"
-                        />
+                    
+                    {/* Status - Checkbox como botón */}
+                    <Grid size={0.5}>
+                      <Form.Item name={[field.name, 'status']} valuePropName="checked" noStyle>
+                        <Box sx={{
+                          bgcolor: '#f3f6f9',
+                          borderRadius: 2,
+                          height: 48,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          px: 2,
+                        }}>
+                          <Checkbox 
+                            defaultChecked={true}
+                            style={{ 
+                              transform: 'scale(1.2)',
+                              color: '#04BA6B',
+                            }}
+                          />
+                        </Box>
                       </Form.Item>
+                    </Grid>
+                    
+                    {/* Eliminar pago */}
+                    <Grid size={1}>
+                      <Box sx={{
+                        bgcolor: '#f3f6f9',
+                        borderRadius: 2,
+                        height: 48,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}>
+                        <Button
+                          type="text"
+                          danger
+                          icon={<Delete />}
+                          onClick={() => remove(field.name)}
+                          style={{ 
+                            width: '100%',
+                            height: '100%',
+                            border: 'none',
+                            background: 'transparent',
+                          }}
+                        />
+                      </Box>
                     </Grid>
                   </Grid>
-
-                  {/* Segunda fila */}
-                  <Grid container spacing={2}>
-                    {/* Archivo */}
-                    <Grid size={{ xs: 12, md: 6 }}>
-                      <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, mb: 1, display: 'block' }}>
-                        Comprobante
-                      </Typography>
-                      <Form.Item name={[field.name, 'file']} rules={required ? [requiredField] : []}>
-                        <SimpleFileUpload 
-                          onChange={() => {}} 
-                          accept="pdf" 
-                          label=""
-                        />
-                      </Form.Item>
-                    </Grid>
-                  </Grid>
-                </Box>
-              ))}
+                );
+              })}
             </Stack>
 
-            {/* Footer con botón y total */}
-            <Box sx={{ 
-              mt: 4,
-              pt: 3,
-              borderTop: '1px solid',
-              borderColor: 'divider'
-            }}>
-              <Stack direction={{ xs: 'column', md: 'row' }} spacing={3} alignItems={{ md: 'center' }} justifyContent="space-between">
-                <Box
-                  component="button"
-                  type="button"
-                  onClick={() => addNewPayment(add)}
-                  sx={{
-                    border: `1px solid ${color}`,
-                    color: color,
-                    bgcolor: 'transparent',
-                    textTransform: 'none',
-                    fontWeight: 500,
-                    px: 3,
-                    py: 1.5,
-                    borderRadius: 1.5,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1,
-                    '&:hover': {
-                      bgcolor: `${color}10`,
-                    },
-                  }}
+            {/* ACCIONES Y SALDO PENDIENTE */}
+            <Stack direction="row" spacing={2} sx={{ mt: 3, mb: 3 }}>
+              <Button
+                onClick={() => addNewPayment(add)}
+                size="large"
+                style={{
+                  background: '#6c5fbf',
+                  borderColor: '#f3f6f9',
+                  color: 'white',
+                  fontWeight: 700,
+                  borderRadius: 8,
+                  height: 48,
+                  paddingLeft: 24,
+                  paddingRight: 24,
+                  fontSize: 16,
+                  width: '100%',
+                  minWidth: 0,
+                  flex: 1,
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+              >
+                Agregar Pago
+              </Button>
+
+              <Box
+                sx={{
+                  flex: 1,
+                  bgcolor: '#f3f6f9',
+                  borderRadius: 1,
+                  px: 3,
+                  py: 1.5,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  height: 48,
+                  minWidth: 0,
+                }}
+              >
+                <Typography fontWeight={700} fontSize={16}>Saldo Pendiente</Typography>
+                <Typography 
+                  fontWeight={700} 
+                  fontSize={18}
+                  color={saldoPendiente > 0 ? '#DC2626' : '#059669'}
                 >
-                  <Add />
-                  Agregar Pago
-                </Box>
-                
-                <Box sx={{ textAlign: { xs: 'center', md: 'right' } }}>
-                  <Form.Item noStyle shouldUpdate={(prev, curr) => {
-                    const prevPayments = prev?.[name] || [];
-                    const currPayments = curr?.[name] || [];
-                    
-                    if (prevPayments.length !== currPayments.length) return true;
-                    
-                    return prevPayments.some((prevPayment: any, index: number) => {
-                      const currPayment = currPayments[index];
-                      return prevPayment?.amount !== currPayment?.amount;
-                    });
-                  }}>
-                    {({ getFieldValue }) => {
-                      const sumPayments = (getFieldValue(name) ?? []).reduce(
-                        (acum: number, next: { amount: string }) => acum + (next.amount ? parseFloat(next.amount) : 0),
-                        0
-                      );
+                  S/ {saldoPendiente.toFixed(2)}
+                </Typography>
+              </Box>
+            </Stack>
 
-                      return (
-                        <Box>
-                          <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                            Total de Pagos
-                          </Typography>
-                          <Typography variant="h5" sx={{ fontWeight: 700, color: errors.length ? 'error.main' : color, mt: 0.5 }}>
-                            {formatCurrency(sumPayments)}
-                          </Typography>
-                        </Box>
-                      );
-                    }}
-                  </Form.Item>
-                </Box>
-              </Stack>
-
-              {errors.length ? (
-                <Box sx={{ mt: 2 }}>
-                  <FormHelperText error sx={{ fontSize: '0.875rem' }}>
-                    {(errors as Array<string>).join(' - ')}
-                  </FormHelperText>
-                </Box>
-              ) : null}
-            </Box>
+            {/* Mostrar errores */}
+            {errors.length ? (
+              <Box sx={{ mb: 2 }}>
+                <Typography color="error" variant="body2">
+                  {(errors as Array<string>).join(' - ')}
+                </Typography>
+              </Box>
+            ) : null}
           </Fragment>
         )}
       </Form.List>
-    </PaymentsLayout>
+
+      {/* NOTA PRIVADA */}
+      {renderNotaPago()}
+    </Box>
   );
 };
 

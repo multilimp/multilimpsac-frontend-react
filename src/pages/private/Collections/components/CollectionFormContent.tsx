@@ -273,35 +273,27 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
   return (
     <Box sx={{ p: 3 }}>
       <Spin spinning={loading}>
-        {/* Header */}
-        <Box sx={{ mb: 3 }}>
-          <Stack direction="row" alignItems="center" spacing={2}>
-            <IconButton onClick={handleBack} color="primary">
-              <ArrowBack />
-            </IconButton>
-            <Box sx={{ flexGrow: 1 }}>
-              <Typography variant="h4" component="h1" sx={{ fontWeight: 600, color: '#1a1a1a' }}>
-                Gestión de Cobranza
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {sale.codigoVenta} • {sale.cliente?.razonSocial}
-              </Typography>
-            </Box>
-          </Stack>
-        </Box>
-
         {/* Barra Negra de OP */}
         <StepItemContent 
           showHeader={true} 
           headerLeft={`OP: ${sale.codigoVenta}`}
           headerRight={`Cliente: ${sale.cliente?.razonSocial}`}
-          color="#2c3e50"
-        >
-          <Box sx={{ p: 2 }}>
-            <Typography variant="body2" color="text.secondary">
-              Información de la Orden de Proveedor para Cobranza
-            </Typography>
+          color="#1071d1ff"
+          resumeContent={
+          <Box sx={{ mb: 3 }}>
+            <Stack direction="row" alignItems="center" spacing={2}>
+              <Box sx={{ flexGrow: 1 }}>
+                <Typography variant="h4" component="h1" sx={{ fontWeight: 600, color: '#1a1a1a' }}>
+                  Gestión de Cobranza
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {sale.codigoVenta} • {sale.cliente?.razonSocial}
+                </Typography>
+              </Box>
+            </Stack>
           </Box>
+          }
+        >
         </StepItemContent>
 
         {/* Información General de la OC */}

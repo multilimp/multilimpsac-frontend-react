@@ -1,13 +1,14 @@
 import { Fragment, ReactNode, useState, useMemo, memo } from 'react';
 import { Dropdown } from 'antd';
-import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Divider, List, ListItem, ListItemText, Stack, Typography, Checkbox, Skeleton } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Divider, List, ListItem, ListItemText, Stack, Typography, Checkbox, Skeleton, IconButton } from '@mui/material';
 import SelectCompanies from '@/components/selects/SelectCompanies';
 import SelectGeneric from '@/components/selects/SelectGeneric';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 import { BlackBarKeyEnum } from '@/types/global.enum';
 import { formatCurrency, formattedDate } from '@/utils/functions';
-import { ExpandMore, Visibility } from '@mui/icons-material';
+import { ExpandMore, Visibility, ContentCopy } from '@mui/icons-material';
 import Scrollbar from '@/components/Scrollbar';
+import ClipboardJS from 'clipboard';
 
 const saleTypeOptions = [
   { label: 'Venta al Estado', value: 'directa' },
@@ -54,6 +55,76 @@ const BlackBar = memo(() => {
         ? prev.filter((c) => c !== codigo)
         : [...prev, codigo]
     );
+  };
+
+  const handleCopyDescription = (descripcion: string) => {
+    // Crear un elemento temporal para clipboard.js
+    const tempElement = document.createElement('button');
+    tempElement.setAttribute('data-clipboard-text', descripcion);
+    tempElement.style.position = 'absolute';
+    tempElement.style.left = '-9999px';
+    document.body.appendChild(tempElement);
+
+    // Inicializar clipboard.js en el elemento temporal
+    const clipboard = new ClipboardJS(tempElement);
+    
+    clipboard.on('success', () => {
+      // Mostrar notificación de éxito usando antd notification
+      import('antd').then(({ notification }) => {
+        notification.success({
+          message: 'Descripción copiada',
+          description: 'La descripción del producto se ha copiado al portapapeles',
+          placement: 'topRight',
+          duration: 2,
+        });
+      });
+      
+      // Limpiar
+      clipboard.destroy();
+      document.body.removeChild(tempElement);
+    });
+
+    clipboard.on('error', (e) => {
+      console.error('Error al copiar al portapapeles:', e);
+      
+      // Fallback manual
+      try {
+        const textArea = document.createElement('textarea');
+        textArea.value = descripcion;
+        textArea.style.position = 'absolute';
+        textArea.style.left = '-9999px';
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        import('antd').then(({ notification }) => {
+          notification.success({
+            message: 'Descripción copiada',
+            description: 'La descripción del producto se ha copiado al portapapeles (fallback)',
+            placement: 'topRight',
+            duration: 2,
+          });
+        });
+      } catch (fallbackError) {
+        console.error('Error en fallback:', fallbackError);
+        import('antd').then(({ notification }) => {
+          notification.error({
+            message: 'Error al copiar',
+            description: 'No se pudo copiar la descripción al portapapeles',
+            placement: 'topRight',
+            duration: 3,
+          });
+        });
+      }
+      
+      // Limpiar
+      clipboard.destroy();
+      document.body.removeChild(tempElement);
+    });
+
+    // Ejecutar el copiado
+    tempElement.click();
   };
 
   // ✅ OPTIMIZACIÓN: Memoizar el parseo de productos con validación robusta
@@ -307,7 +378,7 @@ const BlackBar = memo(() => {
             <Divider sx={{ borderBottomColor: '#3c4351', my: 0 }} />
 
             <AccordionStyled title="Productos">
-              <Stack direction="column" spacing={3}>
+              <Stack direction="column" spacing={1}>
                 {parsedProductos.map((item: any, index: number) => {
                   const isCompleted = completedProducts.includes(item.codigo);
                   return (
@@ -315,23 +386,29 @@ const BlackBar = memo(() => {
                       key={item.codigo || index}
                       sx={{
                         display: 'flex',
-                        alignItems: 'center',
+                        alignItems: 'flex-start',
                         gap: 1,
                         cursor: 'pointer',
                         opacity: isCompleted ? 0.5 : 1,
                         transition: 'opacity 0.2s',
                         userSelect: 'none',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: 1,
+                        p: 2,
+                        '&:hover': {
+                          bgcolor: 'rgba(255,255,255,0.05)',
+                        }
                       }}
                       onClick={() => handleToggleProduct(item.codigo)}
                     >
                       <Checkbox
                         checked={isCompleted}
                         onChange={() => handleToggleProduct(item.codigo)}
-                        sx={{ p: 0, mr: 1 }}
+                        sx={{ p: 0, mr: 1, mt: 0.5 }}
                         color="success"
                         onClick={e => e.stopPropagation()}
                       />
-                      <Box>
+                      <Box sx={{ flex: 1 }}>
                         <Typography
                           variant="body2"
                           sx={{
@@ -360,15 +437,39 @@ const BlackBar = memo(() => {
                         >
                           Marca: <b>{item.marca}</b>
                         </Typography>
-                        <Typography
-                          variant="body2"
-                          sx={{
-                            textDecoration: isCompleted ? 'line-through' : 'none',
-                            color: isCompleted ? '#bababa' : '#fff',
-                          }}
-                        >
-                          {item.descripcion}
-                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mt: 0.5 }}>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              textDecoration: isCompleted ? 'line-through' : 'none',
+                              color: isCompleted ? '#bababa' : '#fff',
+                              flex: 1,
+                              lineHeight: 1.4,
+                            }}
+                          >
+                            {item.descripcion}
+                          </Typography>
+                          <IconButton
+                            size="small"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleCopyDescription(item.descripcion);
+                            }}
+                            sx={{
+                              color: '#306df7',
+                              bgcolor: 'rgba(48, 109, 247, 0.1)',
+                              '&:hover': {
+                                bgcolor: 'rgba(48, 109, 247, 0.2)',
+                              },
+                              width: 24,
+                              height: 24,
+                              mt: -0.5,
+                            }}
+                            title="Copiar descripción"
+                          >
+                            <ContentCopy sx={{ fontSize: 14 }} />
+                          </IconButton>
+                        </Box>
                       </Box>
                     </Box>
                   );
@@ -471,6 +572,6 @@ const AccordionStyled = ({ title, children }: { title: ReactNode; children: Reac
     }}
   >
     <AccordionSummary sx={{ px: 0, fontWeight: 600, fontSize: '15px' }} expandIcon={<ExpandMore fontSize="large" sx={{ color: '#306df7' }} />}>{title}</AccordionSummary>
-    <AccordionDetails sx={{ pt: 0 }}>{children}</AccordionDetails>
+    <AccordionDetails sx={{ pt: 0, px: 0   }}>{children}</AccordionDetails>
   </Accordion>
 );
