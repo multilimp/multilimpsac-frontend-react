@@ -7,6 +7,7 @@ import InputAntd from '@/components/InputAntd';
 import DatePickerAntd from '@/components/DatePickerAnt';
 import { formatCurrency } from '@/utils/functions';
 import PaymentsLayout from './PaymentsLayout';
+import SimpleFileUpload from './SimpleFileUpload';
 
 type PaymentMode = 'readonly' | 'edit';
 
@@ -80,7 +81,10 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
         size="middle"
         options={TIPO_PAGO_OPTIONS}
         style={{ width: '100%' }}
-        disabled={false} // Siempre editable
+        disabled={false} 
+        dropdownStyle={
+          { maxHeight: 400, overflowY: 'auto' } 
+        }
       />
     </Form.Item>
   ), [tipoPagoName]);
@@ -271,7 +275,7 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
                         Comprobante
                       </Typography>
                       <Form.Item name={[field.name, 'file']} rules={required ? [requiredField] : []}>
-                        <InputFile 
+                        <SimpleFileUpload 
                           onChange={() => {}} 
                           accept="pdf" 
                           label=""

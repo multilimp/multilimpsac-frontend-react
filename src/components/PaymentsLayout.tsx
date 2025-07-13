@@ -239,9 +239,6 @@ const PaymentsLayout = ({
             borderTop: '1px solid',
             borderColor: 'divider'
           }}>
-            <Typography variant="subtitle2" fontWeight={600} color="text.primary" sx={{ mb: 2 }}>
-              Información Adicional
-            </Typography>
             <Grid container spacing={3}>
               {renderTipoPago && (
                 <Grid size={{ xs: 12, sm: 6, md: 4 }}>

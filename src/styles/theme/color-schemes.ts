@@ -35,9 +35,9 @@ export const colorSchemes = {
       },
       neutral: { ...multilimpBlue },
       primary: {
-        light: '#318af8',
-        main: '#318af8',
-        dark: '#1e5fa3',
+        light: '#3B6EF6',
+        main: '#3B6EF6', // color corporativo HeroUI azul
+        dark: '#306df7',
         contrastText: 'var(--mui-palette-common-white)',
       },
       secondary: {
@@ -101,9 +101,9 @@ export const colorSchemes = {
       },
       neutral: { ...stormGrey },
       primary: {
-        light: '#318af8',
-        main: '#318af8', // color corporativo
-        dark: '#1e5fa3',
+        light: '#3B6EF6',
+        main: '#3B6EF6', // color corporativo HeroUI azul
+        dark: '#306df7',
         contrastText: 'var(--mui-palette-common-white)',
       },
       secondary: {

@@ -17,7 +17,7 @@ const SelectContactsByClient = ({
   label, 
   clientId, 
   onContactCreated,
-  size = 'large', 
+  size = 'large',
   ...props 
 }: SelectContactsByClientProps) => {
   const [openContactsDrawer, setOpenContactsDrawer] = useState(false);
@@ -59,6 +59,11 @@ const SelectContactsByClient = ({
                 ? 'Primero seleccione un cliente'
                 : 'No hay contactos disponibles'
             }
+            popupClassName="hero-select-contact-dropdown"
+            dropdownStyle={{
+              borderRadius: 12,
+              border: '1px solid #e5e5e5',
+            }}
             {...props}
           >
             {contacts.map((item) => (
@@ -79,13 +84,6 @@ const SelectContactsByClient = ({
             disabled={!clientId}
             onClick={() => setOpenContactsDrawer(true)}
             title={!clientId ? 'Primero seleccione un cliente' : 'Agregar contacto'}
-            style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center',
-              minWidth: '50px',
-              minHeight: '50px',
-            }}
           />
         </div>
       </SelectContainer>

@@ -67,7 +67,7 @@ body {
 }
 
 .hero-gradient-primary {
-  background: linear-gradient(135deg, #04BA6B 0%, #03a861 50%, #039354 100%) !important;
+  background: linear-gradient(135deg, #3B6EF6 0%, #306df7 50%, #254bb5 100%) !important;
 }
 
 .hero-gradient-secondary {
@@ -94,7 +94,7 @@ body {
 
 /* Texto con gradiente */
 .hero-text-gradient {
-  background: linear-gradient(135deg, #04BA6B 0%, #1890ff 50%, #667eea 100%);
+  background: linear-gradient(135deg, #3B6EF6 0%, #306df7 50%, #254bb5 100%);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -158,16 +158,16 @@ body {
 
 /* Mejoras para botones Ant Design */
 .ant-btn-primary {
-  background: linear-gradient(135deg, #04BA6B 0%, #03a861 100%) !important;
+  background: linear-gradient(135deg, #3B6EF6 0%, #306df7 100%) !important;
   border: none !important;
-  box-shadow: 0 4px 15px rgba(4, 186, 107, 0.4) !important;
+  box-shadow: 0 4px 15px rgba(59, 110, 246, 0.4) !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 .ant-btn-primary:hover {
   transform: translateY(-2px) !important;
-  box-shadow: 0 8px 25px rgba(4, 186, 107, 0.6) !important;
-  background: linear-gradient(135deg, #03a861 0%, #039354 100%) !important;
+  box-shadow: 0 8px 25px rgba(59, 110, 246, 0.6) !important;
+  background: linear-gradient(135deg, #306df7 0%, #254bb5 100%) !important;
 }
 
 /* Notificaciones estilo HeroUI */
