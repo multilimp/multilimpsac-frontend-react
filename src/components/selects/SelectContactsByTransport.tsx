@@ -68,7 +68,7 @@ const SelectContactsByTransport = ({
               <Select.Option 
                 key={item.id} 
                 value={item.id} 
-                optiondata={item} 
+                label={`${item.cargo} - ${item.nombre}`}
                 title={`${item.nombre} - ${item.cargo}`}
               >
                 {item.cargo} - {item.nombre}

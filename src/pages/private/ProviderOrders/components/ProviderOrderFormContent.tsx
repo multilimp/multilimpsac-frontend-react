@@ -18,6 +18,7 @@ import DatePickerAntd from '@/components/DatePickerAnt';
 import { SaleProps } from '@/services/sales/sales';
 import SelectContactsByProvider from '@/components/selects/SelectContactsByProvider';
 import { createOrderProvider, updateOrderProvider } from '@/services/providerOrders/providerOrders.requests';
+import { uploadFile } from '@/services/files/file.requests';
 import { useNavigate } from 'react-router-dom';
 import { StepItemContent } from '../../Sales/SalesPageForm/smallcomponents';
 import PaymentsList from '@/components/PaymentsList';
@@ -75,7 +76,7 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
   useEffect(() => {
     if (isEditing && orderData) {
       form.setFieldsValue({
-        empresa: 1, // Valor por defecto
+        empresa: (orderData.empresa as any)?.id || 1, // Usar empresa de la orden o valor por defecto
         proveedor: orderData.proveedor,
         contactoProveedor: orderData.contactoProveedor,
         fechaDespacho: orderData.fechaDespacho ? dayjs(orderData.fechaDespacho) : null,
@@ -120,41 +121,63 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
           cotizacion: transporte.cotizacionTransporte || null,
         })) || [getEmptyTransformRecord()],
       });
+    } else {
+      // Modo creación: establecer valores por defecto
+      form.setFieldsValue({
+        empresa: sale.empresa?.id || 1, // Usar empresa de la venta o valor por defecto
+      });
     }
-  }, [isEditing, orderData, form]);
+  }, [isEditing, orderData, form, sale]);
 
   const handleFinish = async (values: Record<string, any>) => {
     try {
       setLoading(true);
 
       const productosArr = values.productos.map((item: Record<string, any>) => ({
-        codigo: item.codigo,
-        descripcion: item.descripcion,
-        unidadMedida: item.uMedida,
-        cantidad: Number(item.cantidad),
-        cantidadAlmacen: Number(item.cAlmacen),
-        cantidadTotal: Number(item.cTotal),
-        precioUnitario: Number(item.precioUnitario),
-        total: item.total,
+        productoId: typeof item.producto === 'object' ? item.producto?.id : item.producto,
+        codigo: item.codigo || '',
+        descripcion: item.descripcion || '',
+        unidadMedida: item.uMedida || '',
+        cantidad: Number(item.cantidad) || 0,
+        cantidadAlmacen: Number(item.cAlmacen) || 0,
+        cantidadTotal: Number(item.cTotal) || 0,
+        precioUnitario: Number(item.precioUnitario) || 0,
+        total: Number(item.total) || 0,
       }));
 
-      const transportesArr = values.transportes.map((item: Record<string, any>) => ({
-        transporteId: typeof item.transporte === 'object' ? item.transporte?.id : item.transporte,
-        contactoTransporteId: typeof item.contacto === 'object' ? item.contacto?.id : item.contacto,
-        region: item.region || null,
-        provincia: item.provincia || null,
-        distrito: item.distrito || null,
-        direccion: item.direccion || null,
-        notaTransporte: item.nota || null,
-        tipoDestino: item.destino === 'CLIENTE' ? 'CLIENTE' : 'ALMACEN',
-        montoFlete: Number(item.flete) || null,
-        cotizacionTransporte: item.cotizacion || null,
-      }));
+      // Mapear transportes con manejo de cotización
+      const transportesArr = await Promise.all(
+        values.transportes.map(async (item: Record<string, any>) => {
+          let cotizacionUrl = null;
+          
+          // Si hay un archivo de cotización, subirlo a R2
+          if (item.cotizacion && item.cotizacion instanceof File) {
+            cotizacionUrl = await uploadFile(item.cotizacion);
+          } else if (typeof item.cotizacion === 'string') {
+            // Si ya es una URL (modo edición), mantenerla
+            cotizacionUrl = item.cotizacion;
+          }
+
+          return {
+            transporteId: typeof item.transporte === 'object' ? item.transporte?.id : item.transporte,
+            contactoTransporteId: typeof item.contacto === 'object' ? item.contacto?.id : item.contacto,
+            // destino: item.tipoDestino || null,
+            region: item.region || null,
+            provincia: item.provincia || null,
+            distrito: item.distrito || null,
+            direccion: item.direccion || null,
+            notaTransporte: item.nota || null,
+            tipoDestino: item.destino === 'CLIENTE' ? 'CLIENTE' : 'ALMACEN',
+            montoFlete: Number(item.flete) || null,
+            cotizacionTransporte: cotizacionUrl,
+          };
+        })
+      );
 
       const body = {
         // ✅ CORRECCIÓN: Agregar ordenCompraId al body
         ordenCompraId: sale.id,
-        empresaId: sale.empresa.id,
+        empresaId: values.empresa, // ✅ Usar empresa seleccionada del formulario
         proveedorId: typeof values.proveedor === 'object' ? values.proveedor?.id : values.proveedor,
         contactoProveedorId: values.contactoProveedor,
         fechaProgramada: values.fechaProgramada?.toISOString(),
@@ -162,6 +185,8 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
         fechaRecepcion: values.fechaRecepcion?.toISOString(),
         fechaEntrega: values.fechaEntrega || null,
         totalProveedor: Number(values.montoProveedor) || 0,
+        // Nota del pedido
+        notaPedido: values.productosNota || null,
         // Campos de pago de la orden proveedor
         tipoPago: values.tipoPago || null,
         notaPago: values.notaPago || null,
@@ -175,7 +200,6 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
         await updateOrderProvider(orderData.id, body);
         notification.success({ message: 'La orden del proveedor se actualizó correctamente' });
       } else {
-        // ✅ NOTA: Aquí se pasa sale.id como ordenCompraId en la URL y en el body para consistencia
         await createOrderProvider(sale.id, body);
         notification.success({ message: 'La orden del proveedor se registró correctamente' });
       }

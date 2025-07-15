@@ -250,13 +250,21 @@ const TransportsSection = ({ form }: TransportsSectionProps) => {
 
                     {/* Segunda fila: Contacto y Destino */}
                     <Grid size={{ xs: 12, sm: 6 }}>
-                      <Form.Item name={[field.name, 'contacto']} rules={[requiredField]}>
-                        <Form.Item noStyle shouldUpdate>
-                          {({ getFieldValue }) => {
-                            const transporteId = getFieldValue(['transportes', field.name, 'transporte']);
-                            return (
+                      <Form.Item noStyle shouldUpdate>
+                        {({ getFieldValue }) => {
+                          const transporteId = getFieldValue(['transportes', field.name, 'transporte']);
+                          const transporteData = typeof transporteId === 'object' ? transporteId?.id : transporteId;
+                          
+                          return (
+                            <Form.Item 
+                              name={[field.name, 'contacto']} 
+                              // Eliminar validación obligatoria - hacer opcional
+                              rules={[]}
+                            >
                               <SelectContactsByTransport
-                                transportId={transporteId}
+                                label="Contacto de Transporte"
+                                transportId={transporteData}
+                                placeholder="Seleccionar contacto"
                                 onChange={(value, record: any) => {
                                   // Autocompletar campos de nombre y teléfono del contacto del transporte
                                   form.setFieldsValue({
@@ -269,9 +277,9 @@ const TransportsSection = ({ form }: TransportsSectionProps) => {
                                   // Recargar contactos si es necesario
                                 }}
                               />
-                            );
-                          }}
-                        </Form.Item>
+                            </Form.Item>
+                          );
+                        }}
                       </Form.Item>
                     </Grid>
                     <Grid size={{ xs: 12, sm: 6 }}>
@@ -299,11 +307,16 @@ const TransportsSection = ({ form }: TransportsSectionProps) => {
 
                     {/* Quinta fila: Nota de transporte */}
                     <Grid size={12}>
-                      <Form.Item name={[field.name, 'nota']} rules={[requiredField]}>
+                      <Form.Item 
+                        name={[field.name, 'nota']} 
+                        // Hacer nota opcional
+                        rules={[]}
+                      >
                         <InputAntd 
                           label="Nota de transporte" 
                           type="textarea" 
                           size="large"
+                          placeholder="Ingrese detalles del transporte..."
                           style={{
                             border: '1px solid #007bff',
                             borderRadius: '8px',
@@ -315,34 +328,40 @@ const TransportsSection = ({ form }: TransportsSectionProps) => {
 
                     {/* Cuarta fila: Subir Cotización y Flete Cotizado */}
                     <Grid size={{ xs: 12, sm: 6 }}>
-                      <Form.Item name={[field.name, 'cotizacion']} rules={[requiredField]}>
-                        <Typography sx={{ textAlign: 'center' }}>Subir Cotización</Typography>
+                      <Typography sx={{ textAlign: 'center', mb: 1, fontWeight: 600 }}>Subir Cotización</Typography>
+                      <Form.Item 
+                        name={[field.name, 'cotizacion']} 
+                        // Hacer cotización opcional
+                        rules={[]}
+                      >
                         <SimpleFileUpload
-                          accept="pdf"
+                          accept=".pdf,application/pdf"
                         />
                       </Form.Item>
                     </Grid>
                     <Grid size={{ xs: 12, sm: 6 }}>
-                      <Form.Item name={[field.name, 'flete']} rules={[requiredField]}>
-                        <Stack>
-                          <Typography sx={{ textAlign: 'center' }}>
-                            Flete Cotizado
-                          </Typography>
-                          <InputNumber
-                            min={0}
-                            step={0.01}
-                            placeholder="0.00"
-                            style={{ 
-                              width: '100%',
-                              border: '1px solid #007bff',
-                              borderRadius: '8px',
-                              fontWeight: 'bold',
-                              textAlign: 'center',
-                              padding: '6px',
-                            }}
-                            prefix="S/ "
-                          />
-                        </Stack>
+                      <Typography sx={{ textAlign: 'center', mb: 1, fontWeight: 600 }}>
+                        Flete Cotizado
+                      </Typography>
+                      <Form.Item 
+                        name={[field.name, 'flete']} 
+                        // Hacer flete opcional
+                        rules={[]}
+                      >
+                        <InputNumber
+                          min={0}
+                          step={0.01}
+                          placeholder="0.00"
+                          style={{ 
+                            width: '100%',
+                            border: '1px solid #007bff',
+                            borderRadius: '8px',
+                            fontWeight: 'bold',
+                            textAlign: 'center',
+                            padding: '6px',
+                          }}
+                          prefix="S/ "
+                        />
                       </Form.Item>
                     </Grid>
                   </Grid>

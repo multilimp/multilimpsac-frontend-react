@@ -1,6 +1,6 @@
 import { Delete, Edit, PermContactCalendar } from '@mui/icons-material';
 import AntTable, { AntColumnType } from '@/components/AntTable';
-import { Button, ButtonGroup, FormHelperText, Typography } from '@mui/material';
+import { Button, ButtonGroup, Typography } from '@mui/material';
 import { ModalStateEnum } from '@/types/global.enum';
 import { TransportProps } from '@/services/transports/transports';
 
@@ -22,10 +22,12 @@ const TransportsTable = ({ data, loading, onRecordAction }: TransportsTableProps
       dataIndex: 'departamento',
       width: 300,
       render: (_, record) => (
-        <>
+        <div>
           <Typography variant="body2">{record.direccion}</Typography>
-          <FormHelperText>{[record.departamento?.name, record.provincia?.name, record.distrito?.name].filter(Boolean).join(' - ')}</FormHelperText>
-        </>
+          <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>
+            {[record.departamento?.name, record.provincia?.name, record.distrito?.name].filter(Boolean).join(' - ')}
+          </Typography>
+        </div>
       ),
     },
     {

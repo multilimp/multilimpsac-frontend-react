@@ -1,7 +1,6 @@
 import { Box, Typography, IconButton, Stack } from '@mui/material';
 import { Upload, Delete } from '@mui/icons-material';
 import { useRef, useState, useEffect } from 'react';
-import { red } from '@mui/material/colors';
 
 interface SimpleFileUploadProps {
   label?: string;
@@ -12,7 +11,6 @@ interface SimpleFileUploadProps {
 }
 
 const SimpleFileUpload = ({
-  label,
   onChange,
   accept = 'application/pdf',
   value,
@@ -70,8 +68,9 @@ const SimpleFileUpload = ({
             </Typography>
           </Stack>
         ) : (
-          <Stack direction="row" alignItems="center" spacing={1} width="100%" justifyContent="center">
+          <Stack direction="row" alignItems="center" spacing={1} width="100%" justifyContent="center" sx={{ p: 1 }}>
             <Typography
+              component="span"
               sx={{
                 color: '#222',
                 fontSize: 16,
