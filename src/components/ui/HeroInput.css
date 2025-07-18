@@ -329,3 +329,59 @@
 .hero-select.ant-select-focused .ant-select-selector::before {
   left: 100%;
 }
+
+/* Estilos específicos para EstadoSelectAndSubmit */
+.hero-select.hero-select-soft {
+  border: none !important;
+  background: var(--estado-bg) !important;
+  color: var(--estado-text) !important;
+  box-shadow: var(--estado-shadow) !important;
+}
+
+.hero-select.hero-select-soft .ant-select-selector {
+  background: var(--estado-bg) !important;
+  border: none !important;
+  color: var(--estado-text) !important;
+  font-weight: 600 !important;
+}
+
+.hero-select.hero-select-soft .ant-select-selection-item {
+  color: var(--estado-text) !important;
+}
+
+.hero-select.hero-select-soft .ant-select-arrow {
+  color: var(--estado-text) !important;
+}
+
+.hero-select.hero-select-soft:hover .ant-select-selector {
+  background: var(--estado-bg-hover) !important;
+  border: none !important;
+}
+
+.hero-select.hero-select-soft:focus .ant-select-selector,
+.hero-select.hero-select-soft.ant-select-focused .ant-select-selector {
+  background: var(--estado-bg-focus) !important;
+  border: none !important;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Estilos para el dropdown */
+.hero-select.hero-select-soft .ant-select-dropdown {
+  background: white !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.10) !important;
+}
+
+.hero-select.hero-select-soft .ant-select-item {
+  color: #333 !important;
+  font-weight: 500 !important;
+}
+
+.hero-select.hero-select-soft .ant-select-item-option-selected {
+  background: var(--estado-bg) !important;
+  color: white !important;
+}
+
+.hero-select.hero-select-soft .ant-select-item-option-active {
+  background: rgba(0, 0, 0, 0.04) !important;
+}

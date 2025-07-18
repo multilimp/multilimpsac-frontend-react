@@ -87,21 +87,31 @@ const InputsThirdStep = ({ form, companyId }: InputsThirdStepProps) => {
           <Grid container columnSpacing={2} rowSpacing={2} sx={{ mt: 1 }}>
             <Grid size={{ xs: 12, md: 6 }}>
               <Form.Item name="ordenCompraElectronica">
-                <InputFile 
-                  onChange={(file) => form.setFieldValue('ordenCompraElectronica', file)} 
-                  label="Orden de compra electrónica" 
-                  accept="pdf" 
-                />
+                <Form.Item shouldUpdate noStyle>
+                  {({ getFieldValue }) => (
+                    <InputFile 
+                      onChange={(file) => form.setFieldValue('ordenCompraElectronica', file)} 
+                      value={getFieldValue('ordenCompraElectronica')}
+                      label="Orden de compra electrónica" 
+                      accept="pdf" 
+                    />
+                  )}
+                </Form.Item>
               </Form.Item>
             </Grid>
             
             <Grid size={{ xs: 12, md: 6 }}>
-              <Form.Item name="ordenCompraFisica" >
-                <InputFile 
-                  onChange={(file) => form.setFieldValue('ordenCompraFisica', file)} 
-                  label="Orden de compra física" 
-                  accept="pdf" 
-                />
+              <Form.Item name="ordenCompraFisica">
+                <Form.Item shouldUpdate noStyle>
+                  {({ getFieldValue }) => (
+                    <InputFile 
+                      onChange={(file) => form.setFieldValue('ordenCompraFisica', file)} 
+                      value={getFieldValue('ordenCompraFisica')}
+                      label="Orden de compra física" 
+                      accept="pdf" 
+                    />
+                  )}
+                </Form.Item>
               </Form.Item>
             </Grid>
           </Grid>

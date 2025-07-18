@@ -78,7 +78,9 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
       form.setFieldsValue({
         empresa: (orderData.empresa as any)?.id || 1, // Usar empresa de la orden o valor por defecto
         proveedor: orderData.proveedor,
-        contactoProveedor: orderData.contactoProveedor,
+        contactoProveedor: orderData.contactoProveedor?.id || orderData.contactoProveedor,
+        nombreContactoProveedor: orderData.contactoProveedor?.nombre || '',
+        telefonoContactoProveedor: orderData.contactoProveedor?.telefono || '',
         fechaDespacho: orderData.fechaDespacho ? dayjs(orderData.fechaDespacho) : null,
         fechaProgramada: orderData.fechaProgramada ? dayjs(orderData.fechaProgramada) : null,
         fechaRecepcion: orderData.fechaRecepcion ? dayjs(orderData.fechaRecepcion) : null,
@@ -88,6 +90,7 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
         tipoPago: orderData.tipoPago || '',
         notaPago: orderData.notaPago || '',
         productos: orderData.productos?.map(producto => ({
+          producto: null, // En modo edición, no hay producto vinculado de catálogo
           codigo: producto.codigo,
           descripcion: producto.descripcion,
           uMedida: producto.unidadMedida,
@@ -134,7 +137,7 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
       setLoading(true);
 
       const productosArr = values.productos.map((item: Record<string, any>) => ({
-        productoId: typeof item.producto === 'object' ? item.producto?.id : item.producto,
+        productoId: typeof item.producto === 'object' ? item.producto?.id : item.producto || null,
         codigo: item.codigo || '',
         descripcion: item.descripcion || '',
         unidadMedida: item.uMedida || '',
@@ -179,7 +182,7 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
         ordenCompraId: sale.id,
         empresaId: values.empresa, // ✅ Usar empresa seleccionada del formulario
         proveedorId: typeof values.proveedor === 'object' ? values.proveedor?.id : values.proveedor,
-        contactoProveedorId: values.contactoProveedor,
+        contactoProveedorId: typeof values.contactoProveedor === 'object' ? values.contactoProveedor?.id : values.contactoProveedor,
         fechaProgramada: values.fechaProgramada?.toISOString(),
         fechaDespacho: values.fechaDespacho?.toISOString(),
         fechaRecepcion: values.fechaRecepcion?.toISOString(),
