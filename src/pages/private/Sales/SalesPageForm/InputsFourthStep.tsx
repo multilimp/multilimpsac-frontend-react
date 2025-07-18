@@ -36,6 +36,7 @@ const InputsFourthStep = ({ form }: InputsFourthStepProps) => {
                 return (
                   <SelectContactsByClient
                     clientId={clienteEstado?.id}
+                    value={getFieldValue('cargoContacto')} // <-- Esto selecciona el contacto correcto
                     onChange={(value, record: any) =>
                       form.setFieldsValue({
                         cargoContacto: value,
