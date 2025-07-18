@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Stack, Button as MuiButton } from '@mui/material';
 import { Form, Select } from 'antd';
-import heroUIColors, { alpha } from '@/styles/theme/heroui-colors';
+import { alpha } from '@mui/material/styles';
 import '@/components/ui/HeroInput.css';
 
 interface EstadoOption {
@@ -19,14 +19,27 @@ interface EstadoSelectAndSubmitProps {
   buttonText?: string;
 }
 
+// Sistema de colores mejorado sin heroUIColors
 const estadoBgMap: Record<string, string> = {
-  completo: heroUIColors.success[100],
-  procesando: heroUIColors.secondary[100],
-  pendiente: heroUIColors.warning[100],
-  cancelado: heroUIColors.error[100],
-  anulado: heroUIColors.error[100],
-  rechazado: heroUIColors.error[100],
-  incompleto: heroUIColors.warning[100],
+  completo: '#10B981',      // Verde éxito
+  procesando: '#F59E0B',    // Naranja proceso (cambiado de azul)
+  pendiente: '#F59E0B',     // Ámbar advertencia
+  cancelado: '#EF4444',     // Rojo error
+  anulado: '#EF4444',       // Rojo error
+  rechazado: '#EF4444',     // Rojo error
+  incompleto: '#F59E0B',    // Ámbar advertencia
+  // Colores adicionales para otros estados
+  activo: '#10B981',
+  inactivo: '#6B7280',
+  nuevo: '#8B5CF6',
+  en_proceso: '#F59E0B',    // Naranja proceso (cambiado de azul)
+  completado: '#10B981',
+  retrasado: '#EF4444',
+  pagado: '#10B981',
+  facturado: '#10B981',     // Verde (cambiado de azul)
+  cobrado: '#10B981',
+  parcial: '#F59E0B',
+  vencido: '#EF4444',
 };
 
 const EstadoSelectAndSubmit: React.FC<EstadoSelectAndSubmitProps> = ({
@@ -40,6 +53,12 @@ const EstadoSelectAndSubmit: React.FC<EstadoSelectAndSubmitProps> = ({
 }) => {
   const [selected, setSelected] = useState<string | undefined>(form.getFieldValue(name));
 
+  // Efecto para sincronizar con cambios externos del formulario
+  useEffect(() => {
+    const currentValue = form.getFieldValue(name);
+    setSelected(currentValue);
+  }, [form, name, form.getFieldValue(name)]);
+
   // Actualiza el estado local y el valor del form
   const handleChange = (value: string) => {
     setSelected(value);
@@ -47,7 +66,7 @@ const EstadoSelectAndSubmit: React.FC<EstadoSelectAndSubmitProps> = ({
   };
 
   // Determina el background según el estado seleccionado
-  const selectBg = estadoBgMap[selected ?? ''] || heroUIColors.neutral[100];
+  const selectBg = estadoBgMap[selected ?? ''] || '#F3F4F6'; // Gris neutro por defecto
   const selectBgHover = alpha(selectBg, 0.8);
   const selectBgFocus = alpha(selectBg, 0.9);
 
@@ -63,6 +82,8 @@ const EstadoSelectAndSubmit: React.FC<EstadoSelectAndSubmitProps> = ({
             '--estado-bg': selectBg,
             '--estado-bg-hover': selectBgHover,
             '--estado-bg-focus': selectBgFocus,
+            '--estado-text': '#FFFFFF',
+            '--estado-shadow': alpha(selectBg, 0.2),
           } as React.CSSProperties}
         >
           <Select
@@ -76,7 +97,9 @@ const EstadoSelectAndSubmit: React.FC<EstadoSelectAndSubmitProps> = ({
               borderRadius: 12,
               fontWeight: 600,
               fontSize: 16,
-              boxShadow: '0 2px 8px rgba(4,186,107,0.07)',
+              // color: '#FFFFFF',
+              // backgroundColor: selectBg,
+              boxShadow: `0 2px 8px ${alpha(selectBg, 0.3)}`,
               transition: 'all 0.2s cubic-bezier(0.4,0,0.2,1)',
             }}
             dropdownStyle={{
@@ -89,19 +112,28 @@ const EstadoSelectAndSubmit: React.FC<EstadoSelectAndSubmitProps> = ({
           />
         </div>
       </Form.Item>
-      <MuiButton
+            <MuiButton
         variant="contained"
         color="primary"
         onClick={onSubmit}
         disabled={loading || disabled}
         sx={{
           minWidth: 180,
+          height: 48,
           fontWeight: 600,
           fontSize: 16,
           textTransform: 'none',
           borderRadius: 2,
-          backgroundColor: '#4CAF50',
-          boxShadow: '0 4px 15px 0 rgba(102, 126, 234, 0.15)',
+          backgroundColor: '#2114d8ff',
+          boxShadow: '0 4px 15px 0 rgba(76, 175, 80, 0.25)',
+          '&:hover': {
+            backgroundColor: '#45A049',
+            boxShadow: '0 6px 20px 0 rgba(76, 175, 80, 0.35)',
+          },
+          '&:disabled': {
+            backgroundColor: '#E0E0E0',
+            color: '#9E9E9E',
+          },
         }}
       >
         {loading ? 'Guardando...' : buttonText}
