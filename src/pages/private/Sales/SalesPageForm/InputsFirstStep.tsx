@@ -6,14 +6,12 @@ import SelectGeneric from '@/components/selects/SelectGeneric';
 import { Handshake } from '@mui/icons-material';
 import DatePickerAntd from '@/components/DatePickerAnt';
 import ClientSelectorModal from '../../Clients/components/ClientSelectorModal';
-import PaymentsList from '@/components/PaymentsList';
 import SelectContactsByClient from '@/components/selects/SelectContactsByClient';
 import { ClientProps } from '@/services/clients/clients';
 import SimpleFileUpload from '@/components/SimpleFileUpload';
-import InputAntd from '@/components/InputAntd';
 import PersonOutline from '@mui/icons-material/PersonOutline';
 import Phone from '@mui/icons-material/Phone';
-import PaymentsProveedor from '@/components/PaymentsProveedor';
+import PaymentsList from '@/components/PaymentsList';
 
 export const requiredField = { required: true, message: 'Campo requerido' };
 
@@ -92,14 +90,28 @@ const InputsFirstStep = ({ form }: { form: FormInstance }) => {
         color="#006DFA"
         onClickSearch={() => setOpenClients(true)}
         resumeContent={
-          <Fragment>
-            <Typography variant="h5" sx={{ fontWeight: 600, color: '#ffffff' }}>
-              Venta Privada
-            </Typography>
-            <Typography sx={{ fontWeight: 300, color: '#ffffff', opacity: 0.8, fontSize: '0.875rem' }}>
-              Cliente no seleccionado
-            </Typography>
-          </Fragment>
+          <Form.Item noStyle shouldUpdate>
+            {({ getFieldValue }) => {
+              const clientePrivate: ClientProps | null = getFieldValue('clientePrivate');
+              return (
+                <Fragment>
+                  <Typography variant="h5" sx={{ fontWeight: 600, color: '#ffffff' }}>
+                    Venta Privada
+                  </Typography>
+                  <Typography sx={{ fontWeight: 300, color: '#ffffff', opacity: 0.8, fontSize: '0.875rem' }}>
+                    {clientePrivate
+                      ? `${clientePrivate.razonSocial ?? 'Cliente seleccionado'}`
+                      : 'Cliente no seleccionado'}
+                  </Typography>
+                  {clientePrivate && (
+                    <Typography sx={{ fontWeight: 300, color: '#ffffff', opacity: 0.7, fontSize: '0.85rem' }}>
+                      RUC: {clientePrivate.ruc ?? '—'}
+                    </Typography>
+                  )}
+                </Fragment>
+              );
+            }}
+          </Form.Item>
         }
         footerContent={
           renderFooterContent()
@@ -131,19 +143,11 @@ const InputsFirstStep = ({ form }: { form: FormInstance }) => {
       </StepItemContent>
 
       {/* Pagos Recibidos - Componente Reutilizable */}
-      <PaymentsProveedor
+      <PaymentsList
         name="pagos"
         mode="edit"
         form={form}
         required={true}
-        initialValue={[{
-          date: null,
-          bank: '',
-          description: '',
-          file: null,
-          amount: '',
-          status: 'false',
-        }]}
       />
 
       {openClients ? (

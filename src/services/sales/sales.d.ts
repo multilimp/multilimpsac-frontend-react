@@ -61,6 +61,7 @@ export interface SaleProps {
     estadoPago?: string;
     fechaPago?: string;
     documentoPago?: string;
+    notaPago?: string;
     cliente?: ClientProps;
     contactoCliente?: ContactProps;
     pagos?: Array<{

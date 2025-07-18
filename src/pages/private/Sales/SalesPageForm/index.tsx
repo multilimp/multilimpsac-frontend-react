@@ -80,25 +80,26 @@ const SalesPageForm = () => {
 
           // Si es venta privada, cargar datos específicos
           if (isPrivateSale && saleData.ordenCompraPrivada) {
-            formValues.clientePrivate = saleData.ordenCompraPrivada.cliente;
-            formValues.privateContact = saleData.ordenCompraPrivada.contactoClienteId;
-            formValues.facturaStatus = saleData.ordenCompraPrivada.estadoPago;
+            formValues.clientePrivate = saleData.ordenCompraPrivada.cliente; // Objeto completo
+            formValues.privateContact = saleData.ordenCompraPrivada.contactoCliente?.id;
+            formValues.privateContactName = saleData.ordenCompraPrivada.contactoCliente?.nombre ?? '';
+            formValues.privateContactCargo = saleData.ordenCompraPrivada.contactoCliente?.cargo ?? '';
+            formValues.privateContactPhone = saleData.ordenCompraPrivada.contactoCliente?.telefono ?? '';
+            formValues.privateContactComplete = saleData.ordenCompraPrivada.contactoCliente ?? null;
+            formValues.facturaStatus = saleData.ordenCompraPrivada.estadoPago || 'PENDIENTE';
             formValues.dateFactura = saleData.ordenCompraPrivada.fechaPago ? dayjs(saleData.ordenCompraPrivada.fechaPago) : null;
-            formValues.documentoFactura = saleData.ordenCompraPrivada.documentoPago;
-            
-            // Cargar pagos si existen
-            if (saleData.ordenCompraPrivada.pagos && saleData.ordenCompraPrivada.pagos.length > 0) {
-              formValues.pagos = saleData.ordenCompraPrivada.pagos.map((pago: any) => ({
-                date: dayjs(pago.fechaPago),
-                bank: pago.bancoPago,
-                description: pago.descripcionPago,
-                file: pago.archivoPago,
-                amount: pago.montoPago,
-                status: pago.estadoPago ? 'activo' : 'inactivo',
-              }));
-            }
+            formValues.documentoFactura = saleData.ordenCompraPrivada.documentoPago || null;
+            formValues.notaPago = saleData.ordenCompraPrivada.notaPago || ''; // Si existe notaPago
+            formValues.pagos = saleData.ordenCompraPrivada.pagos?.map(payment => ({
+              date: payment.fechaPago ? dayjs(payment.fechaPago) : null,
+              bank: payment.bancoPago,
+              description: payment.descripcionPago,
+              file: payment.archivoPago,
+              amount: payment.montoPago,
+              status: payment.estadoPago ? 'activo' : 'inactivo',
+            })) || [];
           }
-
+          console.log('Form values to set:', saleData.ordenCompraPrivada);
           form.setFieldsValue(formValues);
         } catch (error) {
           console.error('Error al cargar los datos de la venta:', error);
@@ -193,7 +194,7 @@ const SalesPageForm = () => {
           if (values.pagos && Array.isArray(values.pagos)) {
             for (const payment of values.pagos) {
               pagos.push({
-                fechaPago: payment.date.toISOString(),
+                fechaPago: payment.date ? payment.date.toISOString() : null,
                 bancoPago: payment.bank,
                 descripcionPago: payment.description,
                 archivoPago: payment.file,
@@ -209,7 +210,7 @@ const SalesPageForm = () => {
               clienteId: values.clientePrivate?.id,
               contactoClienteId: values.privateContact,
               estadoPago: values.facturaStatus,
-              fechaPago: values.dateFactura?.toISOString(),
+              fechaPago: values.dateFactura ? values.dateFactura.toISOString() : null,
               documentoPago: values.documentoFactura,
               pagos,
             },
@@ -231,7 +232,7 @@ const SalesPageForm = () => {
           const pagos = [];
           for (const payment of values.pagos) {
             pagos.push({
-              fechaPago: payment.date.toISOString(),
+              fechaPago: payment.date ? payment.date.toISOString() : null,
               bancoPago: payment.bank,
               descripcionPago: payment.description,
               archivoPago: payment.file,
