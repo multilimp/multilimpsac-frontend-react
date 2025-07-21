@@ -80,7 +80,7 @@ const SalesPageForm = () => {
 
           // Si es venta privada, cargar datos específicos
           if (isPrivateSale && saleData.ordenCompraPrivada) {
-            formValues.clientePrivate = saleData.ordenCompraPrivada.cliente; // Objeto completo
+            formValues.clientePrivate = saleData.ordenCompraPrivada.cliente;
             formValues.privateContact = saleData.ordenCompraPrivada.contactoCliente?.id;
             formValues.privateContactName = saleData.ordenCompraPrivada.contactoCliente?.nombre ?? '';
             formValues.privateContactCargo = saleData.ordenCompraPrivada.contactoCliente?.cargo ?? '';
@@ -89,17 +89,25 @@ const SalesPageForm = () => {
             formValues.facturaStatus = saleData.ordenCompraPrivada.estadoPago || 'PENDIENTE';
             formValues.dateFactura = saleData.ordenCompraPrivada.fechaPago ? dayjs(saleData.ordenCompraPrivada.fechaPago) : null;
             formValues.documentoFactura = saleData.ordenCompraPrivada.documentoPago || null;
-            formValues.notaPago = saleData.ordenCompraPrivada.notaPago || ''; // Si existe notaPago
-            formValues.pagos = saleData.ordenCompraPrivada.pagos?.map(payment => ({
-              date: payment.fechaPago ? dayjs(payment.fechaPago) : null,
-              bank: payment.bancoPago,
-              description: payment.descripcionPago,
-              file: payment.archivoPago,
-              amount: payment.montoPago,
-              status: payment.estadoPago ? 'activo' : 'inactivo',
-            })) || [];
+            formValues.notaPago = saleData.ordenCompraPrivada.notaPago || '';
+
+            // Mapeo explícito de pagos desde backend a frontend
+            formValues.pagos = Array.isArray(saleData.ordenCompraPrivada.pagos)
+              ? saleData.ordenCompraPrivada.pagos.map((pago: any) => ({
+                  date: pago.fechaPago && pago.fechaPago !== '1970-01-01T00:00:00.000Z' ? pago.fechaPago.split('T')[0] : null,
+                  bank: pago.bancoPago || '',
+                  description: pago.descripcionPago || '',
+                  file: pago.archivoPago || null,
+                  amount: pago.montoPago || '',
+                  status: pago.estadoPago,
+                }))
+              : [];
+
+            // Mapear tipoPago y notaPago
+            formValues.tipoPago = saleData.ordenCompraPrivada.estadoPago || 'PENDIENTE';
+            formValues.notaPago = saleData.ordenCompraPrivada.notaPago || '';
           }
-          console.log('Form values to set:', saleData.ordenCompraPrivada);
+          console.log('Venta privada:', saleData.ordenCompraPrivada);
           form.setFieldsValue(formValues);
         } catch (error) {
           console.error('Error al cargar los datos de la venta:', error);
@@ -190,29 +198,16 @@ const SalesPageForm = () => {
 
         // Si es venta privada, incluir datos específicos
         if (saleInputValues.tipoVenta === 'privada') {
-          const pagos = [];
-          if (values.pagos && Array.isArray(values.pagos)) {
-            for (const payment of values.pagos) {
-              pagos.push({
-                fechaPago: payment.date ? payment.date.toISOString() : null,
-                bancoPago: payment.bank,
-                descripcionPago: payment.description,
-                archivoPago: payment.file,
-                montoPago: Number(payment.amount),
-                estadoPago: payment.status === 'activo',
-              });
-            }
-          }
-
           const bodyVentaPrivada = {
             ...baseVentaData,
             ventaPrivada: {
               clienteId: values.clientePrivate?.id,
               contactoClienteId: values.privateContact,
-              estadoPago: values.facturaStatus,
+              estadoPago: values.tipoPago || 'PENDIENTE',
               fechaPago: values.dateFactura ? values.dateFactura.toISOString() : null,
               documentoPago: values.documentoFactura,
-              pagos,
+              notaPago: values.notaPago || '',
+              pagos: values.pagos || []
             },
           };
 
@@ -230,23 +225,31 @@ const SalesPageForm = () => {
         let bodyVentaPrivada = null;
         if (saleInputValues.tipoVenta === 'privada') {
           const pagos = [];
-          for (const payment of values.pagos) {
-            pagos.push({
-              fechaPago: payment.date ? payment.date.toISOString() : null,
-              bancoPago: payment.bank,
-              descripcionPago: payment.description,
-              archivoPago: payment.file,
-              montoPago: payment.amount,
-              estadoPago: payment.status === 'activo',
-            });
+          for (const payment of values.pagos || []) {
+            // Validar que el pago tenga datos válidos
+            if (payment.amount && parseFloat(payment.amount) > 0) {
+              console.log('Processing payment:', payment); // Debug
+              pagos.push({
+                fechaPago: payment.date && dayjs(payment.date).isValid() 
+                  ? payment.date.toISOString() 
+                  : null,
+                bancoPago: payment.bank || '',
+                descripcionPago: payment.description || '',
+                archivoPago: payment.file || null,
+                montoPago: parseFloat(payment.amount) || 0,
+                estadoPago: Boolean(payment.status),
+              });
+            }
           }
+          console.log('Processed pagos for creation:', pagos); // Debug
 
           bodyVentaPrivada = {
             clienteId: values.clientePrivate.id,
             contactoClienteId: values.privateContact,
-            estadoPago: values.facturaStatus,
-            fechaPago: values.dateFactura.toISOString(),
+            estadoPago: values.tipoPago || 'PENDIENTE',
+            fechaPago: values.dateFactura ? values.dateFactura.toISOString() : null,
             documentoPago: values.documentoFactura,
+            notaPago: values.notaPago || '',
             pagos,
           };
         }

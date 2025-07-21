@@ -143,12 +143,39 @@ const InputsFirstStep = ({ form }: { form: FormInstance }) => {
       </StepItemContent>
 
       {/* Pagos Recibidos - Componente Reutilizable */}
-      <PaymentsList
-        name="pagos"
-        mode="edit"
-        form={form}
-        required={true}
-      />
+      <Form.Item noStyle shouldUpdate={(prev, curr) => 
+        prev.montoVenta !== curr.montoVenta || 
+        prev.pagos !== curr.pagos ||
+        prev.tipoPago !== curr.tipoPago ||
+        prev.notaPago !== curr.notaPago
+      }>
+        {({ getFieldValue, setFieldsValue }) => {
+          const montoVenta = getFieldValue('montoVenta') || 0;
+          const pagos = getFieldValue('pagos') || [];
+          const tipoPago = getFieldValue('tipoPago') || '';
+          const notaPago = getFieldValue('notaPago') || '';
+
+          return (
+            <PaymentsList
+              payments={pagos}
+              tipoPago={tipoPago}
+              notaPago={notaPago}
+              title="Pagos Venta Privada"
+              mode="readonly"
+              montoTotal={Number(montoVenta)}
+              onPaymentsChange={(newPayments) => {
+                setFieldsValue({ pagos: newPayments });
+              }}
+              onTipoPagoChange={(newTipoPago) => {
+                setFieldsValue({ tipoPago: newTipoPago });
+              }}
+              onNotaPagoChange={(newNotaPago) => {
+                setFieldsValue({ notaPago: newNotaPago });
+              }}
+            />
+          );
+        }}
+      </Form.Item>
 
       {openClients ? (
         <ClientSelectorModal
