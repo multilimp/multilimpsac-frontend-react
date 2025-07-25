@@ -316,9 +316,9 @@ const SalesPageForm = () => {
   };
 
   const estadoVentaOptions = [
-    { value: 'completo', label: <span style={{ color: '#04BA6B', fontWeight: 600 }}>Completo</span> },
-    { value: 'procesando', label: <span style={{ color: '#f5a524', fontWeight: 600 }}>En proceso</span> },
-    { value: 'cancelado', label: <span style={{ color: '#f31260', fontWeight: 600 }}>Cancelado</span> },
+    { value: 'completo', label: 'Completo' },
+    { value: 'procesando', label: 'En proceso' },
+    { value: 'cancelado', label: 'Cancelado' },
   ];
 
   return (

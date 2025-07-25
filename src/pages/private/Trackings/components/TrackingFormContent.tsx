@@ -20,7 +20,6 @@ import {
 import { 
   ArrowBack, 
   CheckCircle, 
-  Save,
   Business,
   Assignment as AssignmentIcon
 } from '@mui/icons-material';
@@ -31,28 +30,19 @@ import { alpha } from '@/styles/theme/heroui-colors';
 import { formatCurrency, formattedDate } from '@/utils/functions';
 import { StepItemContent } from '../../Sales/SalesPageForm/smallcomponents';
 import DatePickerAntd from '@/components/DatePickerAnt';
-import InputFile from '@/components/InputFile';
 import { getOrderProvider } from '@/services/providerOrders/providerOrders.requests';
+import SimpleFileUpload from '@/components/SimpleFileUpload';
+import EstadoSelectAndSubmit from '@/components/EstadoSelectAndSubmit';
 
 interface TrackingFormContentProps {
   sale: SaleProps;
 }
-
-// Estados de seguimiento
-const trackingStatusOptions = [
-  { label: 'Pendiente', value: 'PENDIENTE', color: '#f59e0b' },
-  { label: 'En Proceso', value: 'EN_PROCESO', color: '#3b82f6' },
-  { label: 'Completado', value: 'COMPLETADO', color: '#10b981' },
-  { label: 'Retrasado', value: 'RETRASADO', color: '#ef4444' },
-  { label: 'Cancelado', value: 'CANCELADO', color: '#6b7280' }
-];
 
 const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [ordenesProveedor, setOrdenesProveedor] = useState<any[]>([]);
-  const [selectedStatus, setSelectedStatus] = useState('EN_PROCESO');
 
   useEffect(() => {
     loadProviderOrders();
@@ -102,11 +92,6 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
     }
   };
 
-  const handleStatusChange = (status: string) => {
-    setSelectedStatus(status);
-    form.setFieldValue('estado', status);
-  };
-
   return (
     <Spin spinning={loading}>
       <Box sx={{ maxWidth: '1400px', mx: 'auto', p: 2 }}>
@@ -149,9 +134,9 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                 <Grid size={{ xs: 12, md: 4 }}>
                   <Typography variant="body2" color="text.secondary">Estado Actual</Typography>
                   <Chip 
-                    label={trackingStatusOptions.find(s => s.value === selectedStatus)?.label || 'En Proceso'} 
+                    label="En Proceso" 
                     sx={{ 
-                      backgroundColor: trackingStatusOptions.find(s => s.value === selectedStatus)?.color || '#3b82f6',
+                      backgroundColor: '#3b82f6',
                       color: 'white',
                       fontWeight: 600
                     }}
@@ -421,13 +406,10 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                     <Typography sx={{ color: 'white', mb: 1, fontSize: '0.875rem', fontWeight: 500 }}>
                       Cargo de Entrega OC PERU COMPRAS
                     </Typography>
-                    <Form.Item 
-                      name="cargoEntregaOCPeruCompras" 
-                      style={{ marginBottom: 0 }}
-                    >
-                      <InputFile 
-                        accept="pdf"
-                        label=""
+                    <Form.Item name="cargoEntregaOCPeruCompras">
+                      <SimpleFileUpload
+                        onChange={(file) => form.setFieldValue('cargoEntregaOCPeruCompras', file)}
+                        accept="application/pdf"
                       />
                     </Form.Item>
                   </Grid>                  
@@ -459,70 +441,36 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
               borderRadius: 2,
               border: '1px solid #e0e0e0'
             }}>
-              <Box>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                  Seleccionar Estado de Seguimiento
-                </Typography>
-                <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                  {trackingStatusOptions.map((status) => (
-                    <Chip
-                      key={status.value}
-                      label={status.label}
-                      clickable
-                      variant={selectedStatus === status.value ? 'filled' : 'outlined'}
-                      sx={{
-                        backgroundColor: selectedStatus === status.value ? status.color : 'transparent',
-                        color: selectedStatus === status.value ? 'white' : status.color,
-                        borderColor: status.color,
-                        fontWeight: 600,
-                        '&:hover': {
-                          backgroundColor: alpha(status.color, 0.1),
-                        }
-                      }}
-                      onClick={() => handleStatusChange(status.value)}
-                    />
-                  ))}
-                </Stack>
-              </Box>
+              <Button
+                variant="outlined"
+                startIcon={<ArrowBack />}
+                onClick={handleBack}
+                sx={{
+                  borderColor: '#d1d5db',
+                  color: '#6b7280',
+                  '&:hover': {
+                    borderColor: '#9ca3af',
+                    backgroundColor: alpha('#f3f4f6', 0.5),
+                  }
+                }}
+              >
+                Volver
+              </Button>
 
-              <Stack direction="row" spacing={2}>
-                <Button
-                  variant="outlined"
-                  startIcon={<ArrowBack />}
-                  onClick={handleBack}
-                  sx={{
-                    borderColor: '#d1d5db',
-                    color: '#6b7280',
-                    '&:hover': {
-                      borderColor: '#9ca3af',
-                      backgroundColor: alpha('#f3f4f6', 0.5),
-                    }
-                  }}
-                >
-                  Volver
-                </Button>
-
-                <Button
-                  variant="contained"
-                  startIcon={<Save />}
-                  onClick={() => form.submit()}
-                  disabled={loading}
-                  sx={{
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    borderRadius: 2,
-                    px: 4,
-                    py: 1,
-                    fontWeight: 600,
-                    boxShadow: '0 4px 15px 0 rgba(102, 126, 234, 0.3)',
-                    '&:hover': {
-                      background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
-                      boxShadow: '0 6px 20px 0 rgba(102, 126, 234, 0.4)',
-                    }
-                  }}
-                >
-                  Guardar Seguimiento
-                </Button>
-              </Stack>
+              <EstadoSelectAndSubmit
+                form={form}
+                name="estado"
+                options={[
+                  { value: 'pendiente', label: 'Pendiente' },
+                  { value: 'en_proceso', label: 'En Proceso' },
+                  { value: 'completado', label: 'Completado' },
+                  { value: 'retrasado', label: 'Retrasado' },
+                  { value: 'cancelado', label: 'Cancelado' }
+                ]}
+                loading={loading}
+                onSubmit={() => form.submit()}
+                buttonText="Guardar Seguimiento"
+              />
             </Box>
           </Stack>
         </Form>

@@ -97,17 +97,23 @@ const EstadoSelectAndSubmit: React.FC<EstadoSelectAndSubmitProps> = ({
               borderRadius: 12,
               fontWeight: 600,
               fontSize: 16,
-              // color: '#FFFFFF',
-              // backgroundColor: selectBg,
+              color: '#fff', // Color blanco para el valor seleccionado
+              backgroundColor: selectBg,
               boxShadow: `0 2px 8px ${alpha(selectBg, 0.3)}`,
               transition: 'all 0.2s cubic-bezier(0.4,0,0.2,1)',
+              textAlign: 'center', // Centrar el texto
             }}
             dropdownStyle={{
               borderRadius: 12,
               boxShadow: '0 10px 25px rgba(0,0,0,0.10)',
               fontSize: 16,
             }}
-            options={options}
+            optionLabelProp="customLabel"
+            options={options.map(opt => ({
+              ...opt,
+              label: <span style={{ color: estadoBgMap[opt.value] || '#222', fontWeight: 600 }}>{opt.label}</span>,
+              customLabel: <span style={{ color: '#fff', fontWeight: 600 }}>{opt.label}</span>
+            }))}
             showSearch={false}
           />
         </div>
