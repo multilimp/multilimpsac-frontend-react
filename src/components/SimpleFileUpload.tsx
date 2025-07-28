@@ -84,6 +84,7 @@ const SimpleFileUpload = ({
           <Stack direction="row" alignItems="center" spacing={1} width="100%" justifyContent="center" sx={{ p: 1 }}>
             <Link
               component="button"
+              type='button'
               underline="none"
               sx={{
                 color: '#1976d2',

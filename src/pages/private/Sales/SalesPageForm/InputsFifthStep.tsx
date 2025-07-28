@@ -14,11 +14,6 @@ const generateEmptyProductRecord = () => ({
 });
 
 const InputsFifthStep = () => {
-    // Aquí podrías usar un estado o props para manejar los productos si es necesario
-    const productos = Form.useWatch('productos', Form.useFormInstance());
-
-    console.log(productos);
-
   return (
     <StepItemContent>
       <Box
@@ -29,7 +24,7 @@ const InputsFifthStep = () => {
           borderRadius: 1,
         }}
       >
-              <Typography variant="h6" component={Stack} direction="row" alignItems="center" spacing={1} mb={2}>
+      <Typography variant="h6" component={Stack} direction="row" alignItems="center" spacing={1} mb={2}>
         <Inventory />
         Productos
       </Typography>
