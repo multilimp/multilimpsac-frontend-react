@@ -48,9 +48,21 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
   const loadProviderOrders = async () => {
     try {
       setLoading(true);
+      console.log('🔍 DEBUG: Cargando órdenes de proveedor para sale ID:', sale.id);
+      
       const ops = await getOrderProvider(sale.id);
+      
+      console.log('✅ DEBUG: Órdenes de proveedor cargadas:', ops);
+      console.log('🔍 DEBUG: Número de órdenes encontradas:', ops.length);
+      
+      if (ops.length > 0) {
+        console.log('🔍 DEBUG: Primera orden de proveedor:', ops[0]);
+        console.log('🔍 DEBUG: IDs de las órdenes:', ops.map(op => op.id));
+      }
+      
       setOrdenesProveedor(ops);
     } catch (error) {
+      console.error('❌ DEBUG: Error al cargar órdenes de proveedor:', error);
       notification.error({
         message: 'Error al cargar órdenes de proveedor',
         description: 'No se pudieron cargar las órdenes de proveedor'
@@ -63,6 +75,33 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
 
   const handleBack = () => {
     navigate('/billings');
+  };
+
+  const handlePrintFactura = async (opId: number, codigoOp: string) => {
+    try {
+      setLoading(true);
+      console.log('🔍 DEBUG BillingFormContent: Iniciando impresión para OP ID:', opId);
+      console.log('🔍 DEBUG BillingFormContent: Código OP:', codigoOp);
+      console.log('🔍 DEBUG BillingFormContent: Sale ID relacionado:', sale.id);
+      
+      // TODO: Implementar funcionalidad de impresión
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simular proceso
+      
+      notification.success({
+        message: 'Función de impresión',
+        description: `Preparando impresión para ${codigoOp} (Funcionalidad pendiente)`
+      });
+    } catch (error: any) {
+      console.error('❌ DEBUG BillingFormContent: Error completo:', error);
+      console.error('❌ DEBUG BillingFormContent: Mensaje de error:', error?.message);
+      
+      notification.error({
+        message: 'Error en impresión',
+        description: error?.message || 'Error al procesar la impresión'
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleFinish = async (values: Record<string, any>) => {
@@ -96,58 +135,55 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
           <Stack spacing={3}>
             
             {/* Header OC - READONLY */}
-            <StepItemContent>
-              <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Business />
-                Datos de la Orden de Compra
-              </Typography>
-              
-              <Box sx={{ 
-                p: 3, 
-                bgcolor: '#f8fafc', 
-                borderRadius: 2, 
-                border: '1px solid #e0e0e0',
-                mb: 3
-              }}>
-                <Grid container spacing={3}>
-                  <Grid size={{ xs: 12, md: 4 }}>
-                    <Typography variant="body2" color="text.secondary">Código OC</Typography>
-                    <Typography variant="h6" sx={{ fontWeight: 600, color: '#1976d2' }}>
-                      {sale.codigoVenta || 'N/A'}
+            <StepItemContent
+              showHeader
+              ResumeIcon={Business}
+              color="#10b981"
+              headerLeft={`Fecha creación: ${formattedDate(sale.createdAt)}`}
+              headerRight={`Fecha actualización: ${formattedDate(sale.updatedAt)}`}
+              resumeContent={
+                <Box>
+                  <Typography variant="h5">
+                    {sale.codigoVenta}
+                  </Typography>
+                  <Typography fontWeight={300}>
+                    {sale?.cliente?.razonSocial || 'Cliente no especificado'}
+                  </Typography>
+                  <Typography fontWeight={300}>
+                    RUC: {sale?.cliente?.ruc || 'N/A'}
+                  </Typography>
+                </Box>
+              }
+            >
+              <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+                <Box>
+                  <Typography variant="body2" color="text.secondary">
+                    Monto Total
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                    {formatCurrency(parseFloat(sale.montoVenta || '0'))}
+                  </Typography>
+                </Box>
+                {sale.fechaEmision && (
+                  <Box>
+                    <Typography variant="body2" color="text.secondary">
+                      Fecha Emisión
                     </Typography>
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 4 }}>
-                    <Typography variant="body2" color="text.secondary">Cliente</Typography>
                     <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                      {sale?.cliente?.razonSocial || 'N/A'}
+                      {formattedDate(sale.fechaEmision)}
                     </Typography>
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 4 }}>
-                    <Typography variant="body2" color="text.secondary">RUC Cliente</Typography>
+                  </Box>
+                )}
+                {sale?.empresa?.razonSocial && (
+                  <Box>
+                    <Typography variant="body2" color="text.secondary">
+                      Empresa
+                    </Typography>
                     <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                      {sale?.cliente?.ruc || 'N/A'}
+                      {sale.empresa.razonSocial}
                     </Typography>
-                  </Grid>
-                  
-                  <Grid size={{ xs: 12, md: 4 }}>
-                    <Typography variant="body2" color="text.secondary">Empresa</Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                      {sale?.empresa?.razonSocial || 'N/A'}
-                    </Typography>
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 4 }}>
-                    <Typography variant="body2" color="text.secondary">Monto Total</Typography>
-                    <Typography variant="h6" sx={{ fontWeight: 600, color: '#10b981' }}>
-                      {formatCurrency(parseFloat(sale.montoVenta || '0'))}
-                    </Typography>
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 4 }}>
-                    <Typography variant="body2" color="text.secondary">Fecha Emisión</Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                      {formattedDate(sale.fechaEmision) || 'N/A'}
-                    </Typography>
-                  </Grid>
-                </Grid>
+                  </Box>
+                )}
               </Box>
             </StepItemContent>
 
@@ -194,8 +230,9 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                           <TableCell>
                             <IconButton 
                               color="primary" 
-                              disabled 
-                              title="Función de impresión próximamente"
+                              onClick={() => handlePrintFactura(op.id, op.codigoOp || `OP-${op.id}`)}
+                              title="Generar e imprimir factura"
+                              disabled={loading}
                             >
                               <PrintIcon />
                             </IconButton>
