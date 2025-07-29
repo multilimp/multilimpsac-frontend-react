@@ -23,6 +23,18 @@ const SalesPageForm = () => {
   const navigate = useNavigate();
   const isEditing = Boolean(id);
   const [currentSale, setCurrentSale] = useState<SaleProps | null>(null);
+  
+  // Estados para PaymentsList
+  const [payments, setPayments] = useState<any[]>([{
+    date: null,
+    bank: '',
+    description: '',
+    file: null,
+    amount: '',
+    status: true,
+  }]);
+  const [tipoPago, setTipoPago] = useState<string>('PENDIENTE');
+  const [notaPago, setNotaPago] = useState<string>('');
 
   useEffect(() => {
     handleAnalizeFile();
@@ -92,20 +104,32 @@ const SalesPageForm = () => {
             formValues.notaPago = saleData.ordenCompraPrivada.notaPago || '';
 
             // Mapeo explícito de pagos desde backend a frontend
-            formValues.pagos = Array.isArray(saleData.ordenCompraPrivada.pagos)
+            const mappedPayments = Array.isArray(saleData.ordenCompraPrivada.pagos) && saleData.ordenCompraPrivada.pagos.length > 0
               ? saleData.ordenCompraPrivada.pagos.map((pago: any) => ({
-                  date: pago.fechaPago && pago.fechaPago !== '1970-01-01T00:00:00.000Z' ? pago.fechaPago.split('T')[0] : null,
+                  date: pago.fechaPago && pago.fechaPago !== '1970-01-01T00:00:00.000Z' ? dayjs(pago.fechaPago) : null,
                   bank: pago.bancoPago || '',
                   description: pago.descripcionPago || '',
                   file: pago.archivoPago || null,
-                  amount: pago.montoPago || '',
+                  amount: pago.montoPago ? String(pago.montoPago) : '',
                   status: pago.estadoPago,
                 }))
-              : [];
+              : []; // Array vacío si no hay pagos
 
-            // Mapear tipoPago y notaPago
-            formValues.tipoPago = saleData.ordenCompraPrivada.estadoPago || 'PENDIENTE';
-            formValues.notaPago = saleData.ordenCompraPrivada.notaPago || '';
+            // Setear estados de pagos
+            setPayments(mappedPayments.length > 0 ? mappedPayments : [{
+              date: null,
+              bank: '',
+              description: '',
+              file: null,
+              amount: '',
+              status: true,
+            }]);
+            setTipoPago(saleData.ordenCompraPrivada.estadoPago || 'PENDIENTE');
+            setNotaPago(saleData.ordenCompraPrivada.notaPago || '');
+            
+            // Log para depuración
+            console.log('Pagos mapeados para el estado:', mappedPayments);
+            console.log('Datos originales de pagos del backend:', saleData.ordenCompraPrivada.pagos);
           }
           console.log('Venta privada:', saleData.ordenCompraPrivada);
           form.setFieldsValue(formValues);
@@ -198,18 +222,36 @@ const SalesPageForm = () => {
 
         // Si es venta privada, incluir datos específicos
         if (saleInputValues.tipoVenta === 'privada') {
+          console.log('Datos de venta privada para actualización:', {
+            tipoPago: tipoPago,
+            notaPago: notaPago,
+            payments: payments,
+            allValues: values
+          }); // Debug para edición
+
           const bodyVentaPrivada = {
             ...baseVentaData,
             ventaPrivada: {
               clienteId: values.clientePrivate?.id,
               contactoClienteId: values.privateContact,
-              estadoPago: values.tipoPago || 'PENDIENTE',
+              estadoPago: tipoPago || 'PENDIENTE',
               fechaPago: values.dateFactura ? values.dateFactura.toISOString() : null,
               documentoPago: values.documentoFactura,
-              notaPago: values.notaPago || '',
-              pagos: values.pagos || []
+              notaPago: notaPago || '',
+              pagos: payments.filter((p: any) => p.amount && parseFloat(p.amount) > 0).map((payment: any) => ({
+                fechaPago: payment.date && dayjs(payment.date).isValid() 
+                  ? payment.date.toISOString() 
+                  : null,
+                bancoPago: payment.bank || '',
+                descripcionPago: payment.description || '',
+                archivoPago: payment.file || null,
+                montoPago: parseFloat(payment.amount) || 0,
+                estadoPago: Boolean(payment.status),
+              }))
             },
           };
+
+          console.log('Body completo para actualización de venta privada:', bodyVentaPrivada); // Debug
 
           await updateSale(Number(id), bodyVentaPrivada);
         } else {
@@ -224,8 +266,18 @@ const SalesPageForm = () => {
         // Modo creación (código existente)
         let bodyVentaPrivada = null;
         if (saleInputValues.tipoVenta === 'privada') {
+          console.log('Form values para venta privada:', {
+            tipoPago: tipoPago,
+            notaPago: notaPago,
+            payments: payments,
+            allValues: values
+          }); // Debug
+
+          console.log('Pagos del estado antes de procesar:', payments); // Debug adicional
+
           const pagos = [];
-          for (const payment of values.pagos || []) {
+          for (const payment of payments || []) {
+            console.log('Procesando pago individual:', payment); // Debug de cada pago
             // Validar que el pago tenga datos válidos
             if (payment.amount && parseFloat(payment.amount) > 0) {
               console.log('Processing payment:', payment); // Debug
@@ -246,10 +298,10 @@ const SalesPageForm = () => {
           bodyVentaPrivada = {
             clienteId: values.clientePrivate.id,
             contactoClienteId: values.privateContact,
-            estadoPago: values.tipoPago || 'PENDIENTE',
+            estadoPago: tipoPago || 'PENDIENTE',
             fechaPago: values.dateFactura ? values.dateFactura.toISOString() : null,
             documentoPago: values.documentoFactura,
-            notaPago: values.notaPago || '',
+            notaPago: notaPago || '',
             pagos,
           };
         }
@@ -330,7 +382,15 @@ const SalesPageForm = () => {
         <Form form={form} onFinish={handleFinish}>
           <Stack direction="column" spacing={2}>
             <Collapse in={saleInputValues.tipoVenta === 'privada'} unmountOnExit>
-              <InputsFirstStep form={form} />
+              <InputsFirstStep 
+                form={form} 
+                payments={payments}
+                tipoPago={tipoPago}
+                notaPago={notaPago}
+                onPaymentsChange={setPayments}
+                onTipoPagoChange={setTipoPago}
+                onNotaPagoChange={setNotaPago}
+              />
             </Collapse>
 
             <InputsSecondStep form={form} isEditing={isEditing} currentSale={currentSale} />

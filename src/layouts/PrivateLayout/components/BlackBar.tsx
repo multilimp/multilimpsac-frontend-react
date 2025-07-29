@@ -9,6 +9,18 @@ import { formatCurrency, formattedDate } from '@/utils/functions';
 import { ExpandMore, Visibility, ContentCopy } from '@mui/icons-material';
 import Scrollbar from '@/components/Scrollbar';
 import ClipboardJS from 'clipboard';
+import { notification } from 'antd';
+import { validateOcamPdf } from '@/utils/pdfValidation';
+
+interface Producto {
+  codigo: string;
+  cantidad: number;
+  marca: string;
+  descripcion: string;
+  precioUnitario?: number;
+  total?: number;
+  unidadMedida?: string;
+}
 
 const saleTypeOptions = [
   { label: 'Venta al Estado', value: 'directa' },
@@ -42,7 +54,6 @@ const BlackBar = memo(() => {
 
   const totalDocs = documentosConfig.length;
   const docsPresentes = documentosConfig.filter(doc => !!doc.value).length;
-
 
   const handleClear = () => {
     setOpenDD(false);
@@ -267,13 +278,23 @@ const BlackBar = memo(() => {
                 });
 
                 const file = event.target.files?.[0];
-                if (file && file.type === 'application/pdf') {
-                  setTempFile(file);
-                  setOpenDD(true);
-                } else if (file) {
-                  console.warn('⚠️ Archivo no válido - debe ser PDF');
-                  // Limpiar el input
-                  event.target.value = '';
+                if (file) {
+                  const validation = validateOcamPdf(file);
+                  
+                  if (validation.isValid) {
+                    setTempFile(file);
+                    setOpenDD(true);
+                  } else {
+                    console.warn('⚠️ Archivo no válido:', validation.message);
+                    notification.error({
+                      message: 'Archivo no válido',
+                      description: validation.message,
+                      placement: 'topRight',
+                      duration: 4,
+                    });
+                    // Limpiar el input
+                    event.target.value = '';
+                  }
                 }
               }}
               accept="application/pdf"
@@ -377,103 +398,171 @@ const BlackBar = memo(() => {
             </AccordionStyled>
             <Divider sx={{ borderBottomColor: '#3c4351', my: 0 }} />
 
-            <AccordionStyled title="Productos">
-              <Stack direction="column" spacing={1}>
-                {parsedProductos.map((item: any, index: number) => {
-                  const isCompleted = completedProducts.includes(item.codigo);
-                  return (
-                    <Box
-                      key={item.codigo || index}
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'flex-start',
-                        gap: 1,
-                        cursor: 'pointer',
-                        opacity: isCompleted ? 0.5 : 1,
-                        transition: 'opacity 0.2s',
-                        userSelect: 'none',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        borderRadius: 1,
-                        p: 2,
-                        '&:hover': {
-                          bgcolor: 'rgba(255,255,255,0.05)',
-                        }
-                      }}
-                      onClick={() => handleToggleProduct(item.codigo)}
-                    >
-                      <Checkbox
-                        checked={isCompleted}
-                        onChange={() => handleToggleProduct(item.codigo)}
-                        sx={{ p: 0, mr: 1, mt: 0.5 }}
-                        color="success"
-                        onClick={e => e.stopPropagation()}
-                      />
-                      <Box sx={{ flex: 1 }}>
-                        <Typography
-                          variant="body2"
-                          sx={{
-                            textDecoration: isCompleted ? 'line-through' : 'none',
-                            color: isCompleted ? '#bababa' : '#fff',
-                            fontWeight: 600,
+            <AccordionStyled title={`Productos (${parsedProductos.length})`}>
+              <Stack direction="column" spacing={2}>
+                {parsedProductos.length === 0 ? (
+                  <Box sx={{ textAlign: 'center', py: 3 }}>
+                    <Typography variant="body2" color="#bababa">
+                      No hay productos registrados en esta orden de compra.
+                    </Typography>
+                  </Box>
+                ) : (
+                  parsedProductos.map((item: Producto, index: number) => {
+                    const isCompleted = completedProducts.includes(item.codigo);
+                    return (
+                      <Box
+                        key={item.codigo || index}
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          gap: 2,
+                          cursor: 'pointer',
+                          opacity: isCompleted ? 0.6 : 1,
+                          transition: 'all 0.2s',
+                          userSelect: 'none',
+                          border: '1px solid rgba(255,255,255,0.15)',
+                          borderRadius: 2,
+                          p: 2.5,
+                          bgcolor: isCompleted ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.05)',
+                          '&:hover': {
+                            bgcolor: isCompleted ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.08)',
+                            borderColor: 'rgba(255,255,255,0.25)',
+                          }
+                        }}
+                        onClick={() => handleToggleProduct(item.codigo)}
+                      >
+                        <Checkbox
+                          checked={isCompleted}
+                          onChange={() => handleToggleProduct(item.codigo)}
+                          sx={{ 
+                            p: 0, 
+                            mr: 1, 
+                            mt: 0.5,
+                            '&.Mui-checked': {
+                              color: '#57c98d',
+                            }
                           }}
-                        >
-                          Código: <b>{item.codigo}</b>
-                        </Typography>
-                        <Typography
-                          variant="body2"
-                          sx={{
-                            textDecoration: isCompleted ? 'line-through' : 'none',
-                            color: isCompleted ? '#bababa' : '#fff',
-                          }}
-                        >
-                          Cantidad: <b>{item.cantidad}</b>
-                        </Typography>
-                        <Typography
-                          variant="body2"
-                          sx={{
-                            textDecoration: isCompleted ? 'line-through' : 'none',
-                            color: isCompleted ? '#bababa' : '#fff',
-                          }}
-                        >
-                          Marca: <b>{item.marca}</b>
-                        </Typography>
-                        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mt: 0.5 }}>
-                          <Typography
-                            variant="body2"
-                            sx={{
-                              textDecoration: isCompleted ? 'line-through' : 'none',
-                              color: isCompleted ? '#bababa' : '#fff',
-                              flex: 1,
-                              lineHeight: 1.4,
-                            }}
-                          >
-                            {item.descripcion}
-                          </Typography>
-                          <IconButton
-                            size="small"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleCopyDescription(item.descripcion);
-                            }}
-                            sx={{
-                              color: '#306df7',
-                              bgcolor: 'rgba(48, 109, 247, 0.1)',
-                              '&:hover': {
-                                bgcolor: 'rgba(48, 109, 247, 0.2)',
-                              },
-                              width: 24,
-                              height: 24,
-                              mt: -0.5,
-                            }}
-                            title="Copiar descripción"
-                          >
-                            <ContentCopy sx={{ fontSize: 14 }} />
-                          </IconButton>
+                          color="success"
+                          onClick={e => e.stopPropagation()}
+                        />
+                        
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                          {/* Header con código y cantidad */}
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                textDecoration: isCompleted ? 'line-through' : 'none',
+                                color: isCompleted ? '#bababa' : '#fff',
+                                fontWeight: 700,
+                                fontSize: '14px',
+                              }}
+                            >
+                              {item.codigo}
+                            </Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  color: isCompleted ? '#bababa' : '#57c98d',
+                                  fontWeight: 600,
+                                  bgcolor: isCompleted ? 'rgba(186,186,186,0.1)' : 'rgba(87,201,141,0.1)',
+                                  px: 1,
+                                  py: 0.5,
+                                  borderRadius: 1,
+                                  fontSize: '11px',
+                                }}
+                              >
+                                {item.cantidad} {item.unidadMedida || 'unid.'}
+                              </Typography>
+                            </Box>
+                          </Box>
+
+                          {/* Marca */}
+                          {item.marca && (
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                textDecoration: isCompleted ? 'line-through' : 'none',
+                                color: isCompleted ? '#bababa' : '#306df7',
+                                fontWeight: 600,
+                                fontSize: '12px',
+                                mb: 1,
+                              }}
+                            >
+                              Marca: {item.marca}
+                            </Typography>
+                          )}
+
+                          {/* Descripción */}
+                          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                textDecoration: isCompleted ? 'line-through' : 'none',
+                                color: isCompleted ? '#bababa' : '#eaebee',
+                                flex: 1,
+                                lineHeight: 1.5,
+                                fontSize: '13px',
+                              }}
+                            >
+                              {item.descripcion}
+                            </Typography>
+                            <IconButton
+                              size="small"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleCopyDescription(item.descripcion);
+                              }}
+                              sx={{
+                                color: '#306df7',
+                                bgcolor: 'rgba(48, 109, 247, 0.1)',
+                                '&:hover': {
+                                  bgcolor: 'rgba(48, 109, 247, 0.2)',
+                                },
+                                width: 28,
+                                height: 28,
+                                mt: -0.5,
+                              }}
+                              title="Copiar descripción"
+                            >
+                              <ContentCopy sx={{ fontSize: 16 }} />
+                            </IconButton>
+                          </Box>
+
+                          {/* Precios si están disponibles */}
+                          {(item.precioUnitario || item.total) && (
+                            <Box sx={{ display: 'flex', gap: 2, mt: 1, pt: 1, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                              {item.precioUnitario && (
+                                <Typography
+                                  variant="caption"
+                                  sx={{
+                                    color: isCompleted ? '#bababa' : '#eaebee',
+                                    fontSize: '11px',
+                                  }}
+                                >
+                                  Precio: S/ {item.precioUnitario.toFixed(2)}
+                                </Typography>
+                              )}
+                              {item.total && (
+                                <Typography
+                                  variant="caption"
+                                  sx={{
+                                    color: isCompleted ? '#bababa' : '#57c98d',
+                                    fontWeight: 600,
+                                    fontSize: '11px',
+                                  }}
+                                >
+                                  Total: S/ {item.total.toFixed(2)}
+                                </Typography>
+                              )}
+                            </Box>
+                          )}
                         </Box>
                       </Box>
-                    </Box>
-                  );
-                })}
+                    );
+                  })
+                )}
               </Stack>
             </AccordionStyled>
           </Stack>

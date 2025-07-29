@@ -36,7 +36,27 @@ interface ProviderOrderFormContentProps {
   isEditing?: boolean;
 }
 
-const getEmptyProductRecord = () => ({
+type ProductRecord = {
+  codigo: string;
+  descripcion: string;
+  uMedida: string;
+  cantidad: string;
+  cAlmacen: string;
+  cTotal: string;
+  precioUnitario: string;
+  total: string;
+};
+
+type PagoRecord = {
+  date: dayjs.Dayjs | null;
+  bank: string;
+  description: string;
+  file: File | string | null;
+  amount: string;
+  status: boolean;
+};
+
+const getEmptyProductRecord = (): ProductRecord => ({
   codigo: '',
   descripcion: '',
   uMedida: '',
@@ -56,13 +76,10 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
   const [openProvider, setOpenProvider] = useState(false);
   const { companies } = useGlobalInformation();
   
-  // Estado para la empresa seleccionada
-  const [selectedCompany, setSelectedCompany] = useState<any>(null);
+  const [selectedCompany, setSelectedCompany] = useState<{ id: number; razonSocial: string; ruc: string } | null>(null);
 
-  // Monitorear cambios en el campo empresa
   const empresaValue = Form.useWatch('empresa', form);
 
-  // Actualizar empresa seleccionada cuando cambia el valor
   useEffect(() => {
     if (empresaValue && companies.length > 0) {
       const company = companies.find(c => c.id === empresaValue);
@@ -72,11 +89,28 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
     }
   }, [empresaValue, companies]);
 
-  // Inicializar formulario con datos existentes si está en modo edición
   useEffect(() => {
     if (isEditing && orderData) {
+      // Preparar los productos correctamente para el formulario
+      const productosFormatted = orderData.productos?.map(producto => ({
+        codigo: producto.codigo || '',
+        descripcion: producto.descripcion || '',
+        uMedida: producto.unidadMedida || '',
+        cantidad: String(producto.cantidad || 0),
+        cAlmacen: String(producto.cantidadAlmacen || 0),
+        cTotal: String(producto.cantidadTotal || 0),
+        precioUnitario: String(producto.precioUnitario || 0),
+        total: String(producto.total || 0),
+      })) || [getEmptyProductRecord()];
+
+      console.log('🔍 Cargando productos en edición:', {
+        originalProductos: orderData.productos,
+        productosFormatted,
+        orderData
+      });
+
       form.setFieldsValue({
-        empresa: (orderData.empresa as any)?.id || 1, // Usar empresa de la orden o valor por defecto
+        empresa: (orderData.empresa as any)?.id || 1,
         proveedor: orderData.proveedor,
         contactoProveedor: orderData.contactoProveedor?.id || orderData.contactoProveedor,
         nombreContactoProveedor: orderData.contactoProveedor?.nombre || '',
@@ -86,29 +120,17 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
         fechaRecepcion: orderData.fechaRecepcion ? dayjs(orderData.fechaRecepcion) : null,
         montoProveedor: orderData.totalProveedor,
         productosNota: orderData.notaPedido,
-        // Campos de pago de la orden proveedor
         tipoPago: orderData.tipoPago || '',
         notaPago: orderData.notaPago || '',
-        productos: orderData.productos?.map(producto => ({
-          producto: null, // En modo edición, no hay producto vinculado de catálogo
-          codigo: producto.codigo,
-          descripcion: producto.descripcion,
-          uMedida: producto.unidadMedida,
-          cantidad: producto.cantidad,
-          cAlmacen: producto.cantidadAlmacen,
-          cTotal: producto.cantidadTotal,
-          precioUnitario: producto.precioUnitario,
-          total: producto.total,
-        })) || [getEmptyProductRecord()],
-        // Mapear pagos existentes del proveedor (si los hay)
+        productos: productosFormatted,
         pagosProveedor: Array.isArray(orderData.pagos) && orderData.pagos.length > 0
-          ? (orderData.pagos as any[]).map((pago: any) => ({
+          ? (orderData.pagos as any[]).map((pago: any): PagoRecord => ({
             date: pago.fechaPago ? dayjs(pago.fechaPago) : null,
             bank: pago.bancoPago || '',
             description: pago.descripcionPago || '',
             file: pago.archivoPago || null,
             amount: pago.montoPago || '',
-            status: pago.estadoPago ? 'true' : 'false',
+            status: pago.estadoPago ? true : false,
           }))
           : [],
         transportes: orderData.transportesAsignados?.map(transporte => ({
@@ -125,19 +147,21 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
         })) || [getEmptyTransformRecord()],
       });
     } else {
-      // Modo creación: establecer valores por defecto
       form.setFieldsValue({
-        empresa: sale.empresa?.id || 1, // Usar empresa de la venta o valor por defecto
+        empresa: sale.empresa?.id,
+        tipoPago: '',
+        notaPago: '',
+        pagosProveedor: [],
+        productos: [getEmptyProductRecord()],
       });
     }
   }, [isEditing, orderData, form, sale]);
 
-  const handleFinish = async (values: Record<string, any>) => {
+  const handleFinish = async (values: Record<string, unknown>) => {
     try {
       setLoading(true);
 
-      const productosArr = values.productos.map((item: Record<string, any>) => ({
-        productoId: typeof item.producto === 'object' ? item.producto?.id : item.producto || null,
+      const productosArr = (values.productos as ProductRecord[]).map((item: ProductRecord) => ({
         codigo: item.codigo || '',
         descripcion: item.descripcion || '',
         unidadMedida: item.uMedida || '',
@@ -148,23 +172,28 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
         total: Number(item.total) || 0,
       }));
 
-      // Mapear transportes con manejo de cotización
+      const pagosArr = ((values.pagosProveedor as PagoRecord[]) || []).map((pago: PagoRecord) => ({
+        fechaPago: pago.date ? pago.date.toDate() : null,
+        bancoPago: pago.bank || null,
+        descripcionPago: pago.description || null,
+        archivoPago: pago.file || null,
+        montoPago: Number(pago.amount) || null,
+        estadoPago: pago.status,
+      }));
+
       const transportesArr = await Promise.all(
-        values.transportes.map(async (item: Record<string, any>) => {
+        (values.transportes as Record<string, unknown>[]).map(async (item: Record<string, unknown>) => {
           let cotizacionUrl = null;
           
-          // Si hay un archivo de cotización, subirlo a R2
           if (item.cotizacion && item.cotizacion instanceof File) {
             cotizacionUrl = await uploadFile(item.cotizacion);
           } else if (typeof item.cotizacion === 'string') {
-            // Si ya es una URL (modo edición), mantenerla
             cotizacionUrl = item.cotizacion;
           }
 
           return {
-            transporteId: typeof item.transporte === 'object' ? item.transporte?.id : item.transporte,
-            contactoTransporteId: typeof item.contacto === 'object' ? item.contacto?.id : item.contacto,
-            // destino: item.tipoDestino || null,
+            transporteId: typeof item.transporte === 'object' && item.transporte ? (item.transporte as { id: number }).id : item.transporte,
+            contactoTransporteId: typeof item.contacto === 'object' && item.contacto ? (item.contacto as { id: number }).id : item.contacto,
             region: item.region || null,
             provincia: item.provincia || null,
             distrito: item.distrito || null,
@@ -177,25 +206,23 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
         })
       );
 
+      const totalProductos = productosArr.reduce((sum: number, producto: { total: number }) => sum + Number(producto.total), 0);
+
       const body = {
-        // ✅ CORRECCIÓN: Agregar ordenCompraId al body
         ordenCompraId: sale.id,
-        empresaId: values.empresa, // ✅ Usar empresa seleccionada del formulario
-        proveedorId: typeof values.proveedor === 'object' ? values.proveedor?.id : values.proveedor,
-        contactoProveedorId: typeof values.contactoProveedor === 'object' ? values.contactoProveedor?.id : values.contactoProveedor,
-        fechaProgramada: values.fechaProgramada?.toISOString(),
-        fechaDespacho: values.fechaDespacho?.toISOString(),
-        fechaRecepcion: values.fechaRecepcion?.toISOString(),
-        fechaEntrega: values.fechaEntrega || null,
-        totalProveedor: Number(values.montoProveedor) || 0,
-        // Nota del pedido
-        notaPedido: values.productosNota || null,
-        // Campos de pago de la orden proveedor
-        tipoPago: values.tipoPago || null,
-        notaPago: values.notaPago || null,
-        // estadoOp: 'pendiente',
-        // activo: true,
+        empresaId: values.empresa as number,
+        proveedorId: typeof values.proveedor === 'object' ? (values.proveedor as ProviderProps).id : values.proveedor,
+        contactoProveedorId: typeof values.contactoProveedor === 'object' ? (values.contactoProveedor as { id: number }).id : values.contactoProveedor,
+        fechaProgramada: (values.fechaProgramada as dayjs.Dayjs)?.toISOString(),
+        fechaDespacho: (values.fechaDespacho as dayjs.Dayjs)?.toISOString(),
+        fechaRecepcion: (values.fechaRecepcion as dayjs.Dayjs)?.toISOString(),
+        fechaEntrega: values.fechaEntrega as string || null,
+        totalProveedor: totalProductos,
+        notaPedido: values.productosNota as string || null,
+        tipoPago: values.tipoPago as string || null,
+        notaPago: values.notaPago as string || null,
         productos: isEditing ? { deleteMany: {}, create: productosArr } : { create: productosArr },
+        pagos: isEditing ? { deleteMany: {}, create: pagosArr } : { create: pagosArr },
         transportesAsignados: isEditing ? { deleteMany: {}, create: transportesArr } : { create: transportesArr },
       };
 
@@ -215,19 +242,62 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
     }
   };
 
-  // const calculateProductSubTotal = (index: number) => {
-  //   const record = form.getFieldValue(['productos', index]);
-  //   const sum = parseInt(record.cTotal || '0', 10) * parseInt(record.precioUnitario || '0', 10);
-  //   form.setFieldValue(['productos', index, 'total'], sum);
-  // };
+  const handleContactoChange = (value: number, record: { optiondata?: { nombre: string; telefono: string } }) => {
+    form.setFieldsValue({
+      contactoProveedor: value,
+      nombreContactoProveedor: record?.optiondata?.nombre,
+      telefonoContactoProveedor: record?.optiondata?.telefono,
+    });
+  };
+
+  const handleProductChange = (index: number) => {
+    // Calcular automáticamente el total del producto
+    const productos = form.getFieldValue('productos') || [];
+    const producto = productos[index];
+    
+    console.log('🔍 Calculando producto:', { index, producto, productos });
+    
+    if (producto) {
+      const cantidad = Number(producto.cantidad) || 0;
+      const precioUnitario = Number(producto.precioUnitario) || 0;
+      const total = cantidad * precioUnitario;
+      
+      console.log('🔍 Cálculo:', { cantidad, precioUnitario, total });
+      
+      // Actualizar el total del producto
+      form.setFieldValue(['productos', index, 'total'], total);
+      
+      // Calcular el total general
+      const totalGeneral = productos.reduce((sum: number, prod: ProductRecord) => {
+        return sum + (Number(prod.total) || 0);
+      }, 0);
+      
+      console.log('🔍 Total general:', totalGeneral);
+      
+      // Actualizar el monto del proveedor
+      form.setFieldValue('montoProveedor', totalGeneral);
+    }
+  };
+
+  const handleProviderModalClose = () => setOpenProvider(false);
+
+  const handleProviderSelect = (data: ProviderProps) => form.setFieldValue('proveedor', data);
+
+  const handlePaymentsChange = (pagos: PagoRecord[]) => form.setFieldValue('pagosProveedor', pagos);
+
+  const handleTipoPagoChange = (tipo: string) => form.setFieldValue('tipoPago', tipo);
+
+  const handleNotaPagoChange = (nota: string) => form.setFieldValue('notaPago', nota);
 
   return (
     <Spin spinning={loading}>
       <Form form={form} onFinish={handleFinish}>
         <Form.Item name="proveedor" noStyle />
+        <Form.Item name="tipoPago" noStyle />
+        <Form.Item name="notaPago" noStyle />
+        <Form.Item name="pagosProveedor" noStyle />
 
         <Stack direction="column" spacing={2}>
-          {/* EMPRESA COMPRADORA */}
           <Card>
             <CardHeader
               title={
@@ -264,6 +334,7 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
               </Grid>
             </CardContent>
           </Card>
+
           <StepItemContent
             showHeader
             showFooter
@@ -338,7 +409,7 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
               </Grid>
             </Grid>
           </StepItemContent>
-          {/* CONTACTO PROVEEDOR */}
+
           <Card>
             <CardHeader
               title={
@@ -350,7 +421,6 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
               sx={{ pb: 1 }}
             />
             <CardContent>
-              {/* Información del proveedor */}
               <Grid container columnSpacing={2}>
                 <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                   <Form.Item shouldUpdate>
@@ -360,14 +430,7 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
                         <Form.Item name="contactoProveedor" rules={[requiredField]}>
                           <SelectContactsByProvider
                             providerId={provider?.id}
-                            onChange={(value, record: any) => {
-                              // Autocompletar campos de nombre y teléfono del contacto del proveedor
-                              form.setFieldsValue({
-                                contactoProveedor: value,
-                                nombreContactoProveedor: record?.optiondata?.nombre,
-                                telefonoContactoProveedor: record?.optiondata?.telefono,
-                              });
-                            }}
+                            onChange={handleContactoChange}
                           />
                         </Form.Item>
                       );
@@ -387,7 +450,7 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
               </Grid>
             </CardContent>
           </Card>
-          {/* PRODUCTOS DE LA ORDEN */}{/* Nueva sección: Datos del Cliente, Responsable Recepción y Lugar de Entrega */}
+
           <Grid
             size={12}
             sx={{
@@ -445,7 +508,6 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
             </Stack>
           </Grid>
           
-          {/* Productos de la orden proveedor */}
           <ProductsTable
             form={form}
             fieldName="productos"
@@ -472,38 +534,60 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
             minProducts={1}
             compact={false}
             headerColor="#8377a8"
+            onProductChange={handleProductChange}
           />
           
-          {/* Sección de Pagos Proveedor */}
-          <PaymentsList
-            name="pagosProveedor"
-            tipoPagoName="tipoPago"
-            notaPagoName="notaPago"
-            title="Pagos Proveedor"
-            // mode="readonly"
-            color="#006DFA"
-            required={false}
-            initialValue={[{
-              date: null,
-              bank: '',
-              description: '',
-              file: null,
-              amount: '',
-              status: 'false'
-            }]}
-          />          
-          {/* Sección de Transportes */}
+          <Form.Item noStyle shouldUpdate>
+            {({ getFieldValue }) => {
+              const productos = getFieldValue('productos') || [];
+              const totalProductos = productos.reduce((sum: number, producto: ProductRecord) => {
+                return sum + (Number(producto?.total) || 0);
+              }, 0);
+
+              return (
+                <PaymentsList
+                  title="Pagos Proveedor"
+                  payments={getFieldValue('pagosProveedor') || []}
+                  tipoPago={getFieldValue('tipoPago') || ''}
+                  notaPago={getFieldValue('notaPago') || ''}
+                  montoTotal={totalProductos}
+                  mode="readonly"
+                  onPaymentsChange={handlePaymentsChange}
+                  onTipoPagoChange={handleTipoPagoChange}
+                  onNotaPagoChange={handleNotaPagoChange}
+                />
+              );
+            }}
+          </Form.Item>        
+          
           <TransportsSection form={form} />
 
           <Stack alignItems="center" my={2}>
-            <Button disabled={loading} type="submit">
-              GUARDAR CAMBIOS
+            <Button 
+              disabled={loading} 
+              type="submit"
+              variant="contained"
+              size="large"
+              sx={{ 
+                minWidth: 200,
+                height: 48,
+                fontWeight: 600,
+                textTransform: 'uppercase',
+                letterSpacing: 0.5
+              }}
+            >
+              {loading ? 'Guardando...' : 'Guardar Cambios'}
             </Button>
           </Stack>
         </Stack>
       </Form>
 
-      {openProvider && <ProviderSelectorModal onClose={() => setOpenProvider(false)} onSelected={(data) => form.setFieldValue('proveedor', data)} />}
+      {openProvider && (
+        <ProviderSelectorModal 
+          onClose={handleProviderModalClose} 
+          onSelected={handleProviderSelect} 
+        />
+      )}
     </Spin>
   );
 };

@@ -1,14 +1,13 @@
-import { useCallback, useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Button, Checkbox, Input, Select } from 'antd';
 import { Grid, Stack, Typography, Box } from '@mui/material';
-import { Delete, Payment } from '@mui/icons-material';
-import InputAntd from '@/components/InputAntd';
+import { Delete, Payment, AttachFile, Event, AccountBalance, Description, MonetizationOn } from '@mui/icons-material';
 import DatePickerAntd from '@/components/DatePickerAnt';
 import SimpleFileUpload from '@/components/SimpleFileUpload';
 
 type PaymentMode = 'readonly' | 'edit';
 
-interface Payment {
+interface PaymentItem {
   date: any;
   bank: string;
   description: string;
@@ -18,7 +17,7 @@ interface Payment {
 }
 
 interface PaymentsListProps {
-  payments: Payment[];
+  payments: PaymentItem[];
   tipoPago?: string;
   notaPago?: string;
   title?: string;
@@ -26,7 +25,7 @@ interface PaymentsListProps {
   saldoFavor?: number;
   montoTotal?: number;
   estadoPago?: string;
-  onPaymentsChange?: (payments: Payment[]) => void;
+  onPaymentsChange?: (payments: PaymentItem[]) => void;
   onTipoPagoChange?: (tipoPago: string) => void;
   onNotaPagoChange?: (notaPago: string) => void;
 }
@@ -38,7 +37,7 @@ const TIPO_PAGO_OPTIONS = [
   { label: 'Pendiente', value: 'PENDIENTE' }
 ];
 
-const getEmptyPaymentRecord = (): Payment => ({
+const getEmptyPaymentRecord = (): PaymentItem => ({
   date: null,
   bank: '',
   description: '',
@@ -48,68 +47,117 @@ const getEmptyPaymentRecord = (): Payment => ({
 });
 
 const PaymentsList: React.FC<PaymentsListProps> = ({
-  payments = [],
-  tipoPago = '',
-  notaPago = '',
-  title = 'Pagos',
-  mode = 'edit',
-  saldoFavor = 0,
-  montoTotal = 0,
-  estadoPago = 'Completo',
-  onPaymentsChange,
-  onTipoPagoChange,
-  onNotaPagoChange,
+payments = [],
+tipoPago = '',
+notaPago = '',
+title = 'Pagos',
+mode = 'edit',
+saldoFavor = 0,
+montoTotal = 0,
+estadoPago = 'Completo',
+onPaymentsChange,
+onTipoPagoChange,
+onNotaPagoChange,
 }) => {
-  const isArrayReadonly = mode === 'readonly';
+  const isReadonly = mode === 'readonly';
+
+  // Permitir edición de notaPago y tipoPago siempre
+  const [localTipoPago, setLocalTipoPago] = useState<string>(tipoPago);
+  const [localNotaPago, setLocalNotaPago] = useState<string>(notaPago);
+
+  useEffect(() => {
+    setLocalTipoPago(tipoPago);
+    setLocalNotaPago(notaPago);
+  }, [tipoPago, notaPago]);
+
+  // Callback inmediato para cambios en nota/tipo
+  const handleTipoPagoChange = (value: string) => {
+    setLocalTipoPago(value);
+    onTipoPagoChange?.(value);
+  };
+  const handleNotaPagoChange = (value: string) => {
+    setLocalNotaPago(value);
+    onNotaPagoChange?.(value);
+  };
+
+  // Estado local para edición
+  const [localPayments, setLocalPayments] = useState<PaymentItem[]>(payments);
+  const [isDirty, setIsDirty] = useState(false);
+
+
+  // Sincronizar pagos solo cuando cambian los pagos del prop
+  useEffect(() => {
+    setLocalPayments(payments);
+  }, [payments]);
+
+  // Sincronizar tipoPago y notaPago por separado
+  useEffect(() => {
+    setLocalTipoPago(tipoPago);
+  }, [tipoPago]);
+
+  useEffect(() => {
+    setLocalNotaPago(notaPago);
+  }, [notaPago]);
+
+  // Detectar cambios
+  useEffect(() => {
+    const dirty =
+      JSON.stringify(localPayments) !== JSON.stringify(payments) ||
+      localTipoPago !== tipoPago ||
+      localNotaPago !== notaPago;
+    setIsDirty(dirty);
+  }, [localPayments, localTipoPago, localNotaPago, payments, tipoPago, notaPago]);
+
+  // Validaciones básicas
+  const validatePayments = () => {
+    if (!localPayments.length) return false;
+    return localPayments.every((p: PaymentItem) =>
+      p.bank.trim() &&
+      p.amount && !isNaN(Number(p.amount)) && Number(p.amount) > 0
+    );
+  };
 
   // Calcular suma total de pagos
   const totalPayments = useMemo(() => {
-    return payments.reduce((total: number, payment: Payment) => {
+    return localPayments.reduce((total: number, payment: PaymentItem) => {
       const amount = parseFloat(payment?.amount || '0');
       return total + (isNaN(amount) ? 0 : amount);
     }, 0);
-  }, [payments]);
+  }, [localPayments]);
 
-  // Para ventas privadas, saldoPendiente = montoTotal - totalPayments - saldoFavor
+  // Saldo pendiente
   const saldoPendiente = Math.max(0, (montoTotal || 0) - totalPayments - (saldoFavor || 0));
 
-  const addNewPayment = useCallback(() => {
-    if (onPaymentsChange) {
-      const newPayments = [...payments, getEmptyPaymentRecord()];
-      onPaymentsChange(newPayments);
-    }
-  }, [payments, onPaymentsChange]);
+  // Handlers locales
+  const handleAddPayment = () => {
+    setLocalPayments([...localPayments, getEmptyPaymentRecord()]);
+  };
 
-  const removePayment = useCallback((index: number) => {
-    if (onPaymentsChange) {
-      const newPayments = payments.filter((_, i) => i !== index);
-      onPaymentsChange(newPayments);
-    }
-  }, [payments, onPaymentsChange]);
+  const handleRemovePayment = (index: number) => {
+    setLocalPayments(localPayments.filter((_, i: number) => i !== index));
+  };
 
-  const updatePayment = useCallback((index: number, field: keyof Payment, value: any) => {
-    if (onPaymentsChange) {
-      const newPayments = [...payments];
-      newPayments[index] = { ...newPayments[index], [field]: value };
-      onPaymentsChange(newPayments);
-    }
-  }, [payments, onPaymentsChange]);
+  const handleUpdatePayment = (index: number, field: keyof PaymentItem, value: any) => {
+    const newPayments = [...localPayments];
+    newPayments[index] = { ...newPayments[index], [field]: value };
+    setLocalPayments(newPayments);
+  };
 
   // Componente renderizado para tipoPago
-  const renderTipoPago = useCallback(() => (
+  const renderTipoPago = () => (
     <Select 
       placeholder="Seleccionar tipo"
       size="middle"
       options={TIPO_PAGO_OPTIONS}
-      style={{ width: '100%' }}
-      value={tipoPago}
-      onChange={onTipoPagoChange}
+      style={{ width: 200, height: 48 }}
+      value={localTipoPago}
+      onChange={handleTipoPagoChange}
       dropdownStyle={{ maxHeight: 400, overflowY: 'auto' }}
     />
-  ), [tipoPago, onTipoPagoChange, isArrayReadonly]);
+  );
 
   // Componente renderizado para notaPago
-  const renderNotaPago = useCallback(() => (
+  const renderNotaPago = () => (
     <Box sx={{ mt: 3 }}>
       <Typography fontWeight={700} color="#6c5ebf" mb={1} fontSize={16}>
         Nota privada para Tesoreria
@@ -117,8 +165,8 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
       <Box
         component="textarea"
         rows={4}
-        value={notaPago}
-        onChange={(e: any) => onNotaPagoChange?.(e.target.value)}
+        value={localNotaPago}
+        onChange={(e: any) => handleNotaPagoChange(e.target.value)}
         style={{
           width: '100%',
           borderRadius: 8,
@@ -126,14 +174,15 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
           padding: 16,
           fontSize: 14,
           color: '#222',
-          background: '#fff',
+          background: isReadonly ? '#f5f5f5' : '#fff',
           resize: 'vertical',
           fontFamily: 'inherit',
+          opacity: isReadonly ? 0.7 : 1,
         }}
         placeholder="Escribe una nota privada para tesorería..."
       />
     </Box>
-  ), [notaPago, onNotaPagoChange, isArrayReadonly]);
+  );
 
   return (
     <Box sx={{ bgcolor: '#fff', borderRadius: 2, p: 4 }}>
@@ -185,7 +234,7 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
 
       {/* INPUTS DE PAGOS */}
       <Stack spacing={2} sx={{ mb: 3 }}>
-        {payments.map((payment, index) => (
+        {localPayments.map((payment: PaymentItem, index: number) => (
           <Grid container spacing={2} key={index}>
             {/* Fecha */}
             <Grid size={2}>
@@ -197,20 +246,28 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
                 alignItems: 'center',
                 px: 2,
               }}>
-                <DatePickerAntd
-                  placeholder="-- / -- / ----"
-                  size="small"
-                  disabled={isArrayReadonly}
-                  value={payment.date}
-                  onChange={(date) => updatePayment(index, 'date', date)}
-                  style={{
-                    width: '100%',
-                    border: 'none',
-                    background: 'transparent',
-                    color: 'black',
-                    fontWeight: 600,
-                  }}
-                />
+                {isReadonly ? (
+                  <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', color: '#666' }}>
+                    <Event sx={{ fontSize: 20, mr: 1, color: '#999' }} />
+                    <Typography fontSize={14} fontWeight={600}>
+                      {payment.date ? payment.date.format('DD/MM/YYYY') : '-- / -- / ----'}
+                    </Typography>
+                  </Box>
+                ) : (
+                  <DatePickerAntd
+                    placeholder="-- / -- / ----"
+                    size="small"
+                    value={payment.date}
+                    onChange={(date) => handleUpdatePayment(index, 'date', date)}
+                    style={{
+                      width: '100%',
+                      border: 'none',
+                      background: 'transparent',
+                      color: 'black',
+                      fontWeight: 600,
+                    }}
+                  />
+                )}
               </Box>
             </Grid>
 
@@ -224,20 +281,28 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
                 alignItems: 'center',
                 px: 2,
               }}>
-                <InputAntd
-                  placeholder="Banco"
-                  size="small"
-                  disabled={isArrayReadonly}
-                  value={payment.bank}
-                  onChange={(e: any) => updatePayment(index, 'bank', e.target.value)}
-                  style={{
-                    width: '100%',
-                    border: 'none',
-                    background: 'transparent',
-                    color: 'black',
-                    fontWeight: 600,
-                  }}
-                />
+                {isReadonly ? (
+                  <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', color: '#666' }}>
+                    <AccountBalance sx={{ fontSize: 20, mr: 1, color: '#999' }} />
+                    <Typography fontSize={14} fontWeight={600}>
+                      {payment.bank || 'Sin especificar'}
+                    </Typography>
+                  </Box>
+                ) : (
+                  <Input
+                    placeholder="Banco"
+                    size="small"
+                    value={payment.bank}
+                    onChange={(e) => handleUpdatePayment(index, 'bank', e.target.value)}
+                    style={{
+                      width: '100%',
+                      border: 'none',
+                      background: 'transparent',
+                      color: 'black',
+                      fontWeight: 600,
+                    }}
+                  />
+                )}
               </Box>
             </Grid>
 
@@ -251,32 +316,69 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
                 alignItems: 'center',
                 px: 2,
               }}>
-                <InputAntd
-                  placeholder="Descripción"
-                  size="small"
-                  disabled={isArrayReadonly}
-                  value={payment.description}
-                  onChange={(e: any) => updatePayment(index, 'description', e.target.value)}
-                  style={{
-                    width: '100%',
-                    border: 'none',
-                    background: 'transparent',
-                    color: 'black',
-                    fontWeight: 600,
-                  }}
-                />
+                {isReadonly ? (
+                  <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', color: '#666' }}>
+                    <Description sx={{ fontSize: 20, mr: 1, color: '#999' }} />
+                    <Typography fontSize={14} fontWeight={600}>
+                      {payment.description || 'Sin descripción'}
+                    </Typography>
+                  </Box>
+                ) : (
+                  <Input
+                    placeholder="Descripción"
+                    size="small"
+                    value={payment.description}
+                    onChange={(e) => handleUpdatePayment(index, 'description', e.target.value)}
+                    style={{
+                      width: '100%',
+                      border: 'none',
+                      background: 'transparent',
+                      color: 'black',
+                      fontWeight: 600,
+                    }}
+                  />
+                )}
               </Box>
             </Grid>
 
             {/* Archivo */}
             <Grid size={1.5}>
-              <SimpleFileUpload
-                label=""
-                accept="application/pdf"
-                value={payment.file}
-                editable={!isArrayReadonly}
-                onChange={(file) => updatePayment(index, 'file', file)}
-              />
+              {isReadonly && payment.file ? (
+                <Box sx={{
+                  bgcolor: '#f3f6f9',
+                  borderRadius: 2,
+                  height: 48,
+                  display: 'flex',
+                  alignItems: 'center',
+                  px: 2,
+                }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', color: '#666' }}>
+                    <AttachFile sx={{ fontSize: 20, mr: 1, color: '#999' }} />
+                    <Typography fontSize={14} fontWeight={600}>
+                      Archivo
+                    </Typography>
+                  </Box>
+                </Box>
+              ) : !isReadonly ? (
+                <SimpleFileUpload
+                  label=""
+                  accept="application/pdf"
+                  value={payment.file}
+                  onChange={(file) => handleUpdatePayment(index, 'file', file)}
+                />
+              ) : (
+                <Box sx={{
+                  bgcolor: '#f3f6f9',
+                  borderRadius: 2,
+                  height: 48,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#999'
+                }}>
+                  <Typography fontSize={12}>Sin archivo</Typography>
+                </Box>
+              )}
             </Grid>
 
             {/* Monto */}
@@ -289,25 +391,33 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
                 alignItems: 'center',
                 px: 2,
               }}>
-                <Input
-                  placeholder="s/"
-                  type="number"
-                  size="small"
-                  disabled={isArrayReadonly}
-                  value={payment.amount}
-                  onChange={(e) => updatePayment(index, 'amount', e.target.value)}
-                  style={{
-                    width: '100%',
-                    border: 'none',
-                    background: 'transparent',
-                    color: '#000000ff',
-                    fontWeight: 600,
-                  }}
-                />
+                {isReadonly ? (
+                  <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', color: '#666' }}>
+                    <MonetizationOn sx={{ fontSize: 20, mr: 1, color: '#999' }} />
+                    <Typography fontSize={14} fontWeight={600}>
+                      S/ {payment.amount || '0.00'}
+                    </Typography>
+                  </Box>
+                ) : (
+                  <Input
+                    placeholder="s/"
+                    type="number"
+                    size="small"
+                    value={payment.amount}
+                    onChange={(e) => handleUpdatePayment(index, 'amount', e.target.value)}
+                    style={{
+                      width: '100%',
+                      border: 'none',
+                      background: 'transparent',
+                      color: '#000000ff',
+                      fontWeight: 600,
+                    }}
+                  />
+                )}
               </Box>
             </Grid>
             
-            {/* Status - Checkbox como botón */}
+            {/* Status - Checkbox */}
             <Grid size={0.5}>
               <Box sx={{
                 bgcolor: '#f3f6f9',
@@ -320,8 +430,8 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
               }}>
                 <Checkbox 
                   checked={payment.status}
-                  disabled={isArrayReadonly}
-                  onChange={(e) => updatePayment(index, 'status', e.target.checked)}
+                  disabled={isReadonly}
+                  onChange={(e) => handleUpdatePayment(index, 'status', e.target.checked)}
                   style={{ 
                     transform: 'scale(1.2)',
                     color: '#04BA6B',
@@ -331,88 +441,162 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
             </Grid>
             
             {/* Eliminar pago */}
-            <Grid size={1}>
-              <Box sx={{
-                bgcolor: '#f3f6f9',
-                borderRadius: 2,
-                height: 48,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}>
-                <Button
-                  type="text"
-                  danger
-                  icon={<Delete />}
-                  disabled={isArrayReadonly}
-                  onClick={() => removePayment(index)}
-                  style={{ 
-                    width: '100%',
-                    height: '100%',
-                    border: 'none',
-                    background: 'transparent',
-                  }}
-                />
-              </Box>
-            </Grid>
+            {!isReadonly && (
+              <Grid size={1}>
+                <Box sx={{
+                  bgcolor: '#f3f6f9',
+                  borderRadius: 2,
+                  height: 48,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <Button
+                    type="text"
+                    danger
+                    icon={<Delete />}
+                    onClick={() => handleRemovePayment(index)}
+                    style={{ 
+                      width: '100%',
+                      height: '100%',
+                      border: 'none',
+                      background: 'transparent',
+                    }}
+                  />
+                </Box>
+              </Grid>
+            )}
           </Grid>
         ))}
       </Stack>
 
       {/* ACCIONES Y SALDO PENDIENTE */}
-      <Stack direction="row" spacing={2} sx={{ mt: 3, mb: 3 }}>
-        <Button
-          onClick={addNewPayment}
-          size="large"
-          disabled={isArrayReadonly}
-          style={{
-            background: '#6c5fbf',
-            borderColor: '#f3f6f9',
-            color: 'white',
-            fontWeight: 700,
-            borderRadius: 8,
-            height: 48,
-            paddingLeft: 24,
-            paddingRight: 24,
-            fontSize: 16,
-            width: '100%',
-            minWidth: 0,
-            flex: 1,
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          Agregar Pago
-        </Button>
+      {!isReadonly && (
+        <Stack direction="row" spacing={2} sx={{ mt: 3, mb: 3 }}>
+          <Button
+            onClick={handleAddPayment}
+            size="large"
+            style={{
+              background: '#6c5fbf',
+              borderColor: '#f3f6f9',
+              color: 'white',
+              fontWeight: 700,
+              borderRadius: 8,
+              height: 48,
+              paddingLeft: 24,
+              paddingRight: 24,
+              fontSize: 16,
+              width: '100%',
+              minWidth: 0,
+              flex: 1,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            Agregar Pago
+          </Button>
 
+          <Box
+            sx={{
+              flex: 1,
+              bgcolor: '#f3f6f9',
+              borderRadius: 1,
+              px: 3,
+              py: 1.5,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              height: 48,
+              minWidth: 0,
+            }}
+          >
+            <Typography fontWeight={700} fontSize={16}>Saldo Pendiente</Typography>
+            <Typography 
+              fontWeight={700} 
+              fontSize={18}
+              color={saldoPendiente > 0 ? '#DC2626' : '#059669'}
+            >
+              S/ {saldoPendiente.toFixed(2)}
+            </Typography>
+          </Box>
+        </Stack>
+      )}
+
+      {/* Mostrar resumen si es readonly */}
+      {isReadonly && (
         <Box
           sx={{
-            flex: 1,
-            bgcolor: '#f3f6f9',
+            bgcolor: '#f8f9fa',
             borderRadius: 1,
             px: 3,
-            py: 1.5,
+            py: 2,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            height: 48,
-            minWidth: 0,
+            mb: 3,
           }}
         >
-          <Typography fontWeight={700} fontSize={16}>Saldo Pendiente</Typography>
+          <Typography fontWeight={700} fontSize={16}>Total Pagado</Typography>
           <Typography 
             fontWeight={700} 
             fontSize={18}
-            color={saldoPendiente > 0 ? '#DC2626' : '#059669'}
+            color="#059669"
           >
-            S/ {saldoPendiente.toFixed(2)}
+            S/ {totalPayments.toFixed(2)}
           </Typography>
         </Box>
-      </Stack>
+      )}
 
       {/* NOTA PRIVADA */}
       {renderNotaPago()}
+
+      {/* BOTONES GUARDAR/CANCELAR SOLO EN EDITOR Y SI HAY CAMBIOS */}
+      {!isReadonly && isDirty && (
+        <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
+          <Button
+            type="primary"
+            disabled={!validatePayments()}
+            style={{
+              background: '#059669',
+              color: 'white',
+              fontWeight: 700,
+              borderRadius: 8,
+              height: 48,
+              fontSize: 16,
+              flex: 1,
+            }}
+            onClick={() => {
+              onPaymentsChange?.(localPayments);
+              onTipoPagoChange?.(localTipoPago);
+              onNotaPagoChange?.(localNotaPago);
+              setIsDirty(false);
+            }}
+          >
+            Guardar cambios
+          </Button>
+          <Button
+            type="default"
+            style={{
+              background: '#f3f6f9',
+              color: '#222',
+              fontWeight: 700,
+              borderRadius: 8,
+              height: 48,
+              fontSize: 16,
+              flex: 1,
+            }}
+            onClick={() => {
+              setLocalPayments(payments);
+              setLocalTipoPago(tipoPago);
+              setLocalNotaPago(notaPago);
+              setIsDirty(false);
+            }}
+          >
+            Cancelar
+          </Button>
+        </Stack>
+      )}
     </Box>
   );
 };

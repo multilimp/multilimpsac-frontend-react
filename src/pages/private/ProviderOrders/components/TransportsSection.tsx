@@ -316,7 +316,6 @@ const TransportsSection = ({ form }: TransportsSectionProps) => {
                           label="Nota de transporte" 
                           type="textarea" 
                           size="large"
-                          placeholder="Ingrese detalles del transporte..."
                           style={{
                             border: '1px solid #007bff',
                             borderRadius: '8px',
