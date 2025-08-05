@@ -4,7 +4,7 @@ export interface TransportProps {
   id: number;
   ruc: string;
   razonSocial: string;
-
+  codigo: string;
   telefono?: string;
   email?: string;
   estado: boolean;

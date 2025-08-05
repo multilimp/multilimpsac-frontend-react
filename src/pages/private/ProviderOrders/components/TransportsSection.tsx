@@ -1,5 +1,5 @@
 import { Form, InputNumber, FormInstance } from 'antd';
-import { AddCircle, Delete, LocalShipping } from '@mui/icons-material';
+import { Add,DeleteOutlineOutlined, LocalShipping, Search } from '@mui/icons-material';
 import {
   Card,
   CardContent,
@@ -24,6 +24,7 @@ interface TransportsSectionProps {
 
 const getEmptyTransformRecord = () => ({
   transporte: null,
+  codigoTransporte: null, // Campo para mostrar código generado por el backend
   destino: null,
   region: '',
   provincia: '',
@@ -55,20 +56,16 @@ const TransportsSection = ({ form }: TransportsSectionProps) => {
       ]}
     >
       {(fields, { add, remove }, { errors }) => (
-        <Card sx={{ backgroundColor: '#ecf0f4', border: 'none' }}>
+        <div>
           {/* Header similar a StepItemContent */}
           <Stack 
             direction="row" 
             justifyContent="space-between" 
             alignItems="center" 
-            sx={{
-              borderTopLeftRadius: 8,
-              borderTopRightRadius: 8,
-            }} 
             bgcolor="#887bad" 
             color="#ffffff" 
             px={2} 
-            height={32}
+            height={24}
           >
           </Stack>
 
@@ -76,15 +73,11 @@ const TransportsSection = ({ form }: TransportsSectionProps) => {
           <Stack 
             bgcolor="#2f3a4b" 
             color="#ffffff" 
-            p={2} 
+            p={2}
+            mb={3} 
             direction="row" 
             justifyContent="space-between" 
             alignItems="center"
-            sx={{
-              borderBottomLeftRadius: 8,
-              borderBottomRightRadius: 8,
-              mb: 3,
-            }}
           >
             <Stack direction="row" spacing={2}>
               <Stack alignItems="center" justifyContent="center">
@@ -95,7 +88,7 @@ const TransportsSection = ({ form }: TransportsSectionProps) => {
                 <Divider orientation="vertical" sx={{ borderColor: '#887bad' }} />
               </Box>
               
-              <Stack height="100%" justifyContent="center">
+              <Stack height="100%" sx={{ justifyContent: 'center', my: 'auto' }}>
                 <Typography variant="h5">TRANSPORTE</Typography>
                 {errors.length ? <FormHelperText error>{(errors as Array<string>).join(' - ')}</FormHelperText> : null}
               </Stack>
@@ -103,14 +96,16 @@ const TransportsSection = ({ form }: TransportsSectionProps) => {
 
             <IconButton 
               sx={{ 
-                border: '1px solid', 
+                border: 'none',
+                bgcolor: '#887bad',
                 borderRadius: 1, 
-                color: '#887bad',
+                color: 'white',
                 zIndex: 900 
               }} 
               onClick={() => add(getEmptyTransformRecord())}
             >
-              <AddCircle />
+              <Add sx={{ fontWeight: 700 }} />
+              <Typography variant="body2" sx={{ ml: 1, fontWeight: 700 }}>AGREGAR</Typography>
             </IconButton>
           </Stack>
 
@@ -136,30 +131,92 @@ const TransportsSection = ({ form }: TransportsSectionProps) => {
                     borderRadius: '8px 8px 0 0',
                   }}
                   title={
-                    <Form.Item noStyle shouldUpdate>
-                      {({ getFieldValue }) => {
-                        const transporteData = getFieldValue(['transportes', field.name, 'transporte']);
-                        const transporteName = transporteData?.razonSocial || `TRANSPORTE N° ${field.name + 1}`;
-                        return (
-                          <Typography variant="h6" sx={{ fontWeight: 600, color: 'white' }}>
-                            {transporteName}
-                          </Typography>
-                        );
-                      }}
-                    </Form.Item>
+                    <Stack direction="row" alignItems="center" spacing={2} sx={{ width: '100%' }}>
+                      {/* Botón al inicio */}
+                      <IconButton
+                        sx={{
+                          bgcolor: 'rgba(255,255,255,0.2)',
+                          border: '1px solid rgba(255,255,255,0.3)',
+                          borderRadius: 1,
+                          '&:hover': { 
+                            bgcolor: 'rgba(255,255,255,0.3)' 
+                          }
+                        }}
+                        onClick={() => {
+                          // Aquí puedes agregar la funcionalidad del botón
+                          console.log('Botón inicial clickeado para transporte:', field.name);
+                        }}
+                      >
+                        <Search sx={{ color: '#fff', fontSize: 20 }} />
+                      </IconButton>
+
+                      {/* Título del transporte - Mostrar código de transporte o nombre genérico */}
+                      <Form.Item noStyle shouldUpdate>
+                        {({ getFieldValue }) => {
+                          const transporteData = getFieldValue(['transportes', field.name, 'transporte']);
+                          // Buscar si existe código de transporte generado por el backend
+                          const codigoTransporte = getFieldValue(['transportes', field.name, 'codigoTransporte']);
+                          
+                          let displayName;
+                          if (codigoTransporte) {
+                            // Si ya tiene código generado, mostrar el código
+                            displayName = codigoTransporte;
+                          } else {
+                            // Si no tiene código, mostrar nombre genérico
+                            displayName = `TRANSPORTE #${field.name + 1}`;
+                          }
+                          
+                          return (
+                            <Typography variant="h6" sx={{ fontWeight: 600, color: 'white', flexGrow: 1 }}>
+                              {displayName}
+                            </Typography>
+                          );
+                        }}
+                      </Form.Item>
+                    </Stack>
                   }
                   action={
-                    <IconButton 
-                      color="error" 
-                      onClick={() => remove(field.name)} 
-                      sx={{ 
-                        border: '1px solid #fff', 
-                        borderRadius: 1,
-                        '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' }
-                      }}
-                    >
-                      <Delete sx={{ color: '#fff' }} />
-                    </IconButton>
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                      {/* Select de destino al lado izquierdo del botón eliminar */}
+                      <Typography variant="subtitle1" fontWeight={600} color="white">
+                        Destino:
+                      </Typography>
+                      <Form.Item 
+                        name={[field.name, 'destino']} 
+                        style={{ margin: 0, minWidth: 130 }}
+                        initialValue="CLIENTE"
+                      >
+                        <SelectGeneric
+                          label=""
+                          placeholder="Destino"
+                          size="small"
+                          style={{ color: "black" }}
+                          options={[
+                            { value: 'CLIENTE', label: 'Cliente' },
+                            { value: 'ALMACEN', label: 'Almacén' }
+                          ]}
+                        />
+                      </Form.Item>
+
+                      {/* Botón eliminar */}
+                      <IconButton 
+                        color="error" 
+                        onClick={() => remove(field.name)} 
+                        sx={{ 
+                          border: '1px solid #fff', 
+                          borderRadius: 1,
+                          minWidth: '40px',
+                          minHeight: '32px',
+                          '&:hover': { 
+                            bgcolor: 'rgba(255,255,255,0.1)',
+                            transform: 'scale(1.05)',
+                            transition: 'all 0.2s ease'
+                          }
+                        }}
+                      >
+                        <DeleteOutlineOutlined sx={{ color: '#fff', fontSize: 18 }} />
+                      </IconButton>
+                    </Stack>
                   }
                 />
 
@@ -248,8 +305,8 @@ const TransportsSection = ({ form }: TransportsSectionProps) => {
                       </Form.Item>
                     </Grid>
 
-                    {/* Segunda fila: Contacto y Destino */}
-                    <Grid size={{ xs: 12, sm: 6 }}>
+                    {/* Segunda fila: Solo Contacto (destino ya está en el header) */}
+                    <Grid size={{ xs: 12, sm: 12 }}>
                       <Form.Item noStyle shouldUpdate>
                         {({ getFieldValue }) => {
                           const transporteId = getFieldValue(['transportes', field.name, 'transporte']);
@@ -258,7 +315,6 @@ const TransportsSection = ({ form }: TransportsSectionProps) => {
                           return (
                             <Form.Item 
                               name={[field.name, 'contacto']} 
-                              // Eliminar validación obligatoria - hacer opcional
                               rules={[]}
                             >
                               <SelectContactsByTransport
@@ -266,7 +322,6 @@ const TransportsSection = ({ form }: TransportsSectionProps) => {
                                 transportId={transporteData}
                                 placeholder="Seleccionar contacto"
                                 onChange={(value, record: any) => {
-                                  // Autocompletar campos de nombre y teléfono del contacto del transporte
                                   form.setFieldsValue({
                                     [`transportes[${field.name}].contacto`]: value,
                                     [`transportes[${field.name}].nombreContactoTransporte`]: record?.optiondata?.nombre,
@@ -280,11 +335,6 @@ const TransportsSection = ({ form }: TransportsSectionProps) => {
                             </Form.Item>
                           );
                         }}
-                      </Form.Item>
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 6 }}>
-                      <Form.Item name={[field.name, 'destino']} rules={[requiredField]}>
-                        <SelectGeneric label="Destino" options={['CLIENTE', 'ALMACEN'].map((value) => ({ value, label: value }))} />
                       </Form.Item>
                     </Grid>
 
@@ -369,7 +419,7 @@ const TransportsSection = ({ form }: TransportsSectionProps) => {
             ))}
           </Stack>
           </Box>
-        </Card>
+        </div>
       )}
     </Form.List>
   );

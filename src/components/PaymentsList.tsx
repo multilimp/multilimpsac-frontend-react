@@ -194,7 +194,7 @@ onNotaPagoChange,
             {title}
           </Typography>
           {saldoFavor > 0 && (
-            <Typography variant="h5" sx={{ color: '#04BA6B', fontWeight: 700 }}>
+            <Typography variant="h5" sx={{ color: '#1890ff', fontWeight: 700 }}>
               saldo a favor: S/ {saldoFavor.toFixed(2)}
             </Typography>
           )}
@@ -434,7 +434,7 @@ onNotaPagoChange,
                   onChange={(e) => handleUpdatePayment(index, 'status', e.target.checked)}
                   style={{ 
                     transform: 'scale(1.2)',
-                    color: '#04BA6B',
+                    color: '#1890ff',
                   }}
                 />
               </Box>

@@ -23,7 +23,7 @@ body {
 
 .ant-input:focus,
 .ant-select-selector:focus {
-  border-color: #306df7 !important;
+  border-color: #1890ff !important; /* ✅ Azul principal */
 }
 
 /* Clases personalizadas para Stack con bordes azules */
@@ -67,7 +67,7 @@ body {
 }
 
 .hero-gradient-primary {
-  background: linear-gradient(135deg, #3B6EF6 0%, #306df7 50%, #254bb5 100%) !important;
+  background: linear-gradient(135deg, #1890ff 0%, #40a9ff 50%, #096dd9 100%) !important;
 }
 
 .hero-gradient-secondary {
@@ -75,7 +75,7 @@ body {
 }
 
 .hero-gradient-hero {
-  background: linear-gradient(135deg, #04BA6B 0%, #1890ff 50%, #667eea 100%) !important;
+  background: linear-gradient(135deg, #1890ff 0%, #096dd9 50%, #0050b3 100%) !important; /* ✅ Azul */
 }
 
 /* Animaciones suaves */
@@ -89,12 +89,12 @@ body {
 }
 
 .hero-hover-glow:hover {
-  box-shadow: 0 0 30px rgba(4, 186, 107, 0.4) !important;
+  box-shadow: 0 0 30px rgba(24, 144, 255, 0.4) !important; /* ✅ Azul */
 }
 
 /* Texto con gradiente */
 .hero-text-gradient {
-  background: linear-gradient(135deg, #3B6EF6 0%, #306df7 50%, #254bb5 100%);
+  background: linear-gradient(135deg, #1890ff 0%, #40a9ff 50%, #096dd9 100%);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -123,13 +123,13 @@ body {
 }
 
 .hero-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(24, 144, 255, 0.25); /* Azul moderno, opaco */
+  background: rgba(24, 144, 255, 0.25) !important; /* ✅ Azul */
   border-radius: 8px;
   transition: background 0.3s;
 }
 
 .hero-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(24, 144, 255, 0.45);
+  background: rgba(24, 144, 255, 0.45) !important; /* ✅ Azul más intenso */
 }
 
 /* Firefox */
@@ -153,21 +153,21 @@ body {
 .ant-input:focus,
 .ant-input-focused,
 .ant-select-focused .ant-select-selector {
-  border-color: #306df7 !important;
+  border-color: #1890ff !important; /* ✅ Azul principal */
 }
 
 /* Mejoras para botones Ant Design */
 .ant-btn-primary {
-  background: linear-gradient(135deg, #3B6EF6 0%, #306df7 100%) !important;
+  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%) !important; /* ✅ Azul */
   border: none !important;
-  box-shadow: 0 4px 15px rgba(59, 110, 246, 0.4) !important;
+  box-shadow: 0 4px 15px rgba(24, 144, 255, 0.4) !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 .ant-btn-primary:hover {
   transform: translateY(-2px) !important;
-  box-shadow: 0 8px 25px rgba(59, 110, 246, 0.6) !important;
-  background: linear-gradient(135deg, #306df7 0%, #254bb5 100%) !important;
+  box-shadow: 0 8px 25px rgba(24, 144, 255, 0.6) !important;
+  background: linear-gradient(135deg, #40a9ff 0%, #1890ff 100%) !important; /* ✅ Azul hover */
 }
 
 /* Notificaciones estilo HeroUI */

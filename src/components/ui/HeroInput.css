@@ -21,7 +21,7 @@
 
 .hero-input:focus,
 .hero-input:focus-within {
-  box-shadow: 0 0 0 3px rgba(4, 186, 107, 0.2) !important;
+  box-shadow: 0 0 0 3px rgba(24, 144, 255, 0.2) !important; /* ✅ Azul */
   outline: none !important;
 }
 
@@ -51,13 +51,13 @@
 }
 
 .hero-input-default:hover {
-  border-color: #04BA6B !important;
+  border-color: #1890ff !important; /* ✅ Azul */
   background: #ffffff !important;
 }
 
 .hero-input-default:focus,
 .hero-input-default:focus-within {
-  border-color: #04BA6B !important;
+  border-color: #1890ff !important; /* ✅ Azul */
   background: #ffffff !important;
 }
 
@@ -76,7 +76,7 @@
 .hero-input-glass:focus,
 .hero-input-glass:focus-within {
   background: rgba(255, 255, 255, 0.2) !important;
-  border-color: #04BA6B !important;
+  border-color: #1890ff !important;
 }
 
 .hero-input-gradient {
@@ -95,7 +95,7 @@
   bottom: 0;
   border-radius: 12px;
   padding: 2px;
-  background: linear-gradient(135deg, #04BA6B, #1890ff);
+  background: linear-gradient(135deg, #1890ff, #40a9ff);
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask-composite: exclude;
   -webkit-mask-composite: xor;
@@ -168,7 +168,7 @@
 
 .hero-select:hover .ant-select-selector,
 .hero-select.ant-select-focused .ant-select-selector {
-  box-shadow: 0 0 0 3px rgba(4, 186, 107, 0.2) !important;
+  box-shadow: 0 0 0 3px rgba(24, 144, 255, 0.2) !important; /* ✅ Azul */
 }
 
 /* Tamaños para Select */
@@ -197,12 +197,12 @@
 }
 
 .hero-select-default:hover .ant-select-selector {
-  border-color: #04BA6B !important;
+  border-color: #1890ff !important; /* ✅ Azul */
   background: #ffffff !important;
 }
 
 .hero-select-default.ant-select-focused .ant-select-selector {
-  border-color: #04BA6B !important;
+  border-color: #1890ff !important; /* ✅ Azul */
   background: #ffffff !important;
 }
 
@@ -214,12 +214,12 @@
 
 .hero-select-glass:hover .ant-select-selector {
   background: rgba(255, 255, 255, 0.15) !important;
-  border-color: rgba(4, 186, 107, 0.3) !important;
+  border-color: rgba(24, 144, 255, 0.3) !important; /* ✅ Azul */
 }
 
 .hero-select-glass.ant-select-focused .ant-select-selector {
   background: rgba(255, 255, 255, 0.2) !important;
-  border-color: #04BA6B !important;
+  border-color: #1890ff !important; /* ✅ Azul */
 }
 
 .hero-select-gradient .ant-select-selector {
@@ -236,13 +236,13 @@
 
 .hero-select-soft:hover .ant-select-selector {
   background: var(--estado-bg-hover, #ffffff) !important;
-  border-color: #04BA6B !important;
+  border-color: #1890ff !important;
 }
 
 .hero-select-soft.ant-select-focused .ant-select-selector {
   background: var(--estado-bg-focus, #ffffff) !important;
-  border-color: #04BA6B !important;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 0 0 3px rgba(4, 186, 107, 0.2) !important;
+  border-color: #1890ff !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 0 0 3px rgba(24, 144, 255, 0.2) !important;
 }
 
 /* Dropdown personalizado */
@@ -264,8 +264,8 @@
 }
 
 .ant-select-item-option-selected {
-  background: rgba(4, 186, 107, 0.15) !important;
-  color: #04BA6B !important;
+  background: rgba(24, 144, 255, 0.15) !important;
+  color: #1890ff !important;
   font-weight: 600 !important;
 }
 
@@ -280,8 +280,8 @@
 .hero-input:focus,
 .hero-input:focus-within,
 .hero-select.ant-select-focused .ant-select-selector {
-  border-color: #04BA6B !important;
-  box-shadow: 0 0 0 3px rgba(4, 186, 107, 0.2) !important;
+  border-color: #1890ff !important;
+  box-shadow: 0 0 0 3px rgba(24, 144, 255, 0.2) !important;
   outline: none !important;
 }
 

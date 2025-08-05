@@ -140,9 +140,6 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
     }
   };
 
-  const handleBack = () => {
-    navigate('/billing');
-  };
 
   const handlePrintFactura = async (opId: number, codigoOp: string) => {
     try {

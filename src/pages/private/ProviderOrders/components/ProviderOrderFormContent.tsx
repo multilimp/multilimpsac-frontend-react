@@ -1,6 +1,6 @@
 import { Fragment, useState, useEffect } from 'react';
-import { Form, notification, Spin } from 'antd';
-import { Business } from '@mui/icons-material';
+import { Form, notification, Spin, Input, InputNumber } from 'antd';
+import { Business, Delete, Add } from '@mui/icons-material';
 import {
   Box,
   Card,
@@ -11,6 +11,13 @@ import {
   Grid,
   Typography,
   Divider,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  IconButton,
 } from '@mui/material';
 import InputAntd from '@/components/InputAntd';
 import SelectCompanies from '@/components/selects/SelectCompanies';
@@ -22,14 +29,12 @@ import { uploadFile } from '@/services/files/file.requests';
 import { useNavigate } from 'react-router-dom';
 import { StepItemContent } from '../../Sales/SalesPageForm/smallcomponents';
 import PaymentsList from '@/components/PaymentsList';
-import EditableProductsTable from '@/components/EditableProductsTable';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 import dayjs from 'dayjs';
 import { ProviderProps } from '@/services/providers/providers';
 import ProviderSelectorModal from '../../Providers/components/ProviderSelectorModal';
 import { ProviderOrderProps } from '@/services/providerOrders/providerOrders';
 import TransportsSection, { getEmptyTransformRecord } from './TransportsSection';
-import ProductsTable from '@/components/ProductsTable';
 
 interface ProviderOrderFormContentProps {
   sale: SaleProps;
@@ -42,8 +47,7 @@ type ProductRecord = {
   descripcion: string;
   uMedida: string;
   cantidad: string;
-  cAlmacen: string;
-  cTotal: string;
+  // ✅ CAMPOS OCULTOS REMOVIDOS: cAlmacen y cTotal
   precioUnitario: string;
   total: string;
 };
@@ -62,8 +66,7 @@ const getEmptyProductRecord = (): ProductRecord => ({
   descripcion: '',
   uMedida: '',
   cantidad: '',
-  cAlmacen: '',
-  cTotal: '',
+  // ✅ CAMPOS OCULTOS REMOVIDOS
   precioUnitario: '',
   total: '',
 });
@@ -92,14 +95,13 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
 
   useEffect(() => {
     if (isEditing && orderData) {
-      // Preparar los productos correctamente para el formulario
+      // Preparar los productos correctamente para el formulario (campos simplificados)
       const productosFormatted = orderData.productos?.map(producto => ({
         codigo: producto.codigo || '',
         descripcion: producto.descripcion || '',
         uMedida: producto.unidadMedida || '',
         cantidad: String(producto.cantidad || 0),
-        cAlmacen: String(producto.cantidadAlmacen || 0),
-        cTotal: String(producto.cantidadTotal || 0),
+        // ✅ NO incluir cAlmacen y cTotal en el formulario (campos ocultos)
         precioUnitario: String(producto.precioUnitario || 0),
         total: String(producto.total || 0),
       })) || [getEmptyProductRecord()];
@@ -135,8 +137,10 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
           }))
           : [],
         transportes: orderData.transportesAsignados?.map(transporte => ({
+          id: transporte.id, // ✅ AGREGADO: ID único para updates
           transporte: transporte.transporte,
           contacto: transporte.contactoTransporte,
+          codigoTransporte: transporte.codigoTransporte, // ✅ AGREGADO: Mapear código de transporte
           region: transporte.region || '',
           provincia: transporte.provincia || '',
           distrito: transporte.distrito || '',
@@ -153,7 +157,7 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
         tipoPago: '',
         notaPago: '',
         pagosProveedor: [],
-        productos: [getEmptyProductRecord()],
+        productos: [getEmptyProductRecord()], // ✅ USAR función simplificada
       });
     }
   }, [isEditing, orderData, form, sale]);
@@ -167,8 +171,8 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
         descripcion: item.descripcion || '',
         unidadMedida: item.uMedida || '',
         cantidad: Number(item.cantidad) || 0,
-        cantidadAlmacen: Number(item.cAlmacen) || 0,
-        cantidadTotal: Number(item.cTotal) || 0,
+        cantidadAlmacen: 0, // ✅ VALOR POR DEFECTO para campo oculto
+        cantidadTotal: Number(item.cantidad) || 0, // ✅ USAR cantidad como cantidadTotal
         precioUnitario: Number(item.precioUnitario) || 0,
         total: Number(item.total) || 0,
       }));
@@ -207,7 +211,60 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
         })
       );
 
+      // Al procesar transportes, distinguir entre existentes y nuevos
+      const processTransportesForUpdate = (transportes: any[]): any => {
+        const updatedTransportes: any[] = [];
+        const newTransportes: any[] = [];
+
+        transportes.forEach((transporte) => {
+          // ✅ MEJORADO: Verificar si tiene ID (transporte existente)
+          if (transporte.id && transporte.id > 0) {
+            // Transporte existente - UPDATE (usar ID único)
+            updatedTransportes.push({
+              where: { id: transporte.id }, // ✅ USAR ID en lugar de codigoTransporte
+              data: {
+                transporteId: typeof transporte.transporte === 'object' ? transporte.transporte?.id : transporte.transporte,
+                contactoTransporteId: typeof transporte.contacto === 'object' ? transporte.contacto?.id : transporte.contacto,
+                region: transporte.region || null,
+                provincia: transporte.provincia || null,
+                distrito: transporte.distrito || null,
+                direccion: transporte.direccion || null,
+                notaTransporte: transporte.nota || null,
+                montoFlete: transporte.flete ? parseFloat(transporte.flete) : 0,
+                tipoDestino: transporte.destino === 'CLIENTE' ? 'CLIENTE' : 'ALMACEN',
+                // NO incluir codigoTransporte - se mantiene el existente
+              }
+            });
+          } else {  
+            // Transporte nuevo - CREATE (se generará código automáticamente)
+            newTransportes.push({
+              transporteId: typeof transporte.transporte === 'object' ? transporte.transporte?.id : transporte.transporte,
+              contactoTransporteId: typeof transporte.contacto === 'object' ? transporte.contacto?.id : transporte.contacto,
+              region: transporte.region || null,
+              provincia: transporte.provincia || null,
+              distrito: transporte.distrito || null,
+              direccion: transporte.direccion || null,
+              notaTransporte: transporte.nota || null,
+              montoFlete: transporte.flete ? parseFloat(transporte.flete) : 0,
+              tipoDestino: transporte.destino === 'CLIENTE' ? 'CLIENTE' : 'ALMACEN',
+              // codigoTransporte se generará automáticamente en el backend
+            });
+          }
+        });
+
+        return {
+          update: updatedTransportes,
+          create: newTransportes,
+          // deleteMany: { id: { in: transportesToDelete } } // Si implementas eliminación
+        };
+      };
+
       const totalProductos = productosArr.reduce((sum: number, producto: { total: number }) => sum + Number(producto.total), 0);
+
+      // ✅ APLICAR LA LÓGICA CORRECTA PARA TRANSPORTES
+      const transportesData = isEditing 
+        ? processTransportesForUpdate(values.transportes as any[])
+        : { create: transportesArr };
 
       const body = {
         ordenCompraId: sale.id,
@@ -224,7 +281,7 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
         notaPago: values.notaPago as string || null,
         productos: isEditing ? { deleteMany: {}, create: productosArr } : { create: productosArr },
         pagos: isEditing ? { deleteMany: {}, create: pagosArr } : { create: pagosArr },
-        transportesAsignados: isEditing ? { deleteMany: {}, create: transportesArr } : { create: transportesArr },
+        transportesAsignados: transportesData, // ✅ USAR LA LÓGICA CORRECTA
       };
 
       if (isEditing && orderData) {
@@ -252,18 +309,18 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
   };
 
   // Callback para manejar cambios de productos desde EditableProductsTable
-  const handleProductsChange = (productos: any[]) => {
-    // Recalcular el total general
-    const totalGeneral = productos.reduce((sum: number, producto: any) => {
-      return sum + (Number(producto.total) || 0);
-    }, 0);
-    
-    console.log('🔍 Productos actualizados:', productos);
-    console.log('🔍 Total general:', totalGeneral);
-    
-    // Actualizar el monto del proveedor
-    form.setFieldValue('montoProveedor', totalGeneral);
-  };
+  // const handleProductsChange = (productos: any[]) => {
+  //   // Recalcular el total general
+  //   const totalGeneral = productos.reduce((sum: number, producto: any) => {
+  //     return sum + (Number(producto.total) || 0);
+  //   }, 0);
+  //   
+  //   console.log('🔍 Productos actualizados:', productos);
+  //   console.log('🔍 Total general:', totalGeneral);
+  //   
+  //   // Actualizar el monto del proveedor
+  //   form.setFieldValue('montoProveedor', totalGeneral);
+  // };
   //   // Calcular automáticamente el total del producto
   //   const productos = form.getFieldValue('productos') || [];
   //   const producto = productos[index];
@@ -521,13 +578,237 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
             </Stack>
           </Grid>
           
-          <ProductsTable
-            form={form}
-            fieldName="productos"
-            title="PRODUCTOS DE LA ORDEN"
-            showTitle={true}
-            readOnly={false}
-          />
+          {/* Tabla de productos simplificada */}
+          <Card>
+            <CardHeader
+              title={
+                <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Business color="primary" />
+                  Productos de la Orden
+                </Typography>
+              }
+              sx={{ pb: 1 }}
+            />
+            <CardContent>
+              <TableContainer sx={{ maxHeight: 400 }}>
+                <Table stickyHeader >
+                  <TableHead>
+                    <TableRow>
+                      <TableCell sx={{ fontWeight: 600, fontSize: 12 }}>Código</TableCell>
+                      <TableCell sx={{ fontWeight: 600, fontSize: 12 }}>Descripción</TableCell>
+                      <TableCell sx={{ fontWeight: 600, fontSize: 12 }}>U. Medida</TableCell>
+                      <TableCell sx={{ fontWeight: 600, fontSize: 12 }}>Cantidad</TableCell>
+                      <TableCell sx={{ fontWeight: 600, fontSize: 12 }}>Precio Unit.</TableCell>
+                      <TableCell sx={{ fontWeight: 600, fontSize: 12 }}>Total</TableCell>
+                      <TableCell sx={{ fontWeight: 600, fontSize: 12, width: 80 }}>Acciones</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    <Form.List
+                      name="productos"
+                      initialValue={[getEmptyProductRecord()]}
+                      rules={[
+                        {
+                          validator(_, arr) {
+                            if (!arr || arr.length < 1) {
+                              return Promise.reject(new Error('Debe ingresar al menos 1 producto'));
+                            }
+                            return Promise.resolve();
+                          },
+                        },
+                      ]}
+                    >
+                      {(fields, { add, remove }) => (
+                        <>
+                          {fields.map((field) => (
+                            <TableRow key={field.name} sx={{ '&:hover': { bgcolor: 'rgba(25, 118, 210, 0.04)' } }}>
+                              <TableCell sx={{ p: 1 }}>
+                                <Form.Item 
+                                  name={[field.name, 'codigo']} 
+                                  rules={[{ required: true, message: 'Requerido' }]}
+                                  style={{ margin: 0 }}
+                                >
+                                  <Input
+                                    placeholder="Código"
+                                    size="small"
+                                    style={{
+                                      borderRadius: 4,
+                                      border: '1px solid #d9d9d9',
+                                    }}
+                                  />
+                                </Form.Item>
+                              </TableCell>
+                              <TableCell sx={{ p: 1 }}>
+                                <Form.Item 
+                                  name={[field.name, 'descripcion']} 
+                                  rules={[{ required: true, message: 'Requerido' }]}
+                                  style={{ margin: 0 }}
+                                >
+                                  <Input
+                                    placeholder="Descripción"
+                                    size="small"
+                                    style={{
+                                      borderRadius: 4,
+                                      border: '1px solid #d9d9d9',
+                                    }}
+                                  />
+                                </Form.Item>
+                              </TableCell>
+                              <TableCell sx={{ p: 1 }}>
+                                <Form.Item 
+                                  name={[field.name, 'uMedida']} 
+                                  rules={[{ required: true, message: 'Requerido' }]}
+                                  style={{ margin: 0 }}
+                                >
+                                  <Input
+                                    placeholder="UND"
+                                    size="small"
+                                    style={{
+                                      borderRadius: 4,
+                                      border: '1px solid #d9d9d9',
+                                    }}
+                                  />
+                                </Form.Item>
+                              </TableCell>
+                              <TableCell sx={{ p: 1 }}>
+                                <Form.Item 
+                                  name={[field.name, 'cantidad']} 
+                                  rules={[{ required: true, message: 'Requerido' }]}
+                                  style={{ margin: 0 }}
+                                >
+                                  <InputNumber
+                                    placeholder="0"
+                                    size="small"
+                                    min={0}
+                                    style={{
+                                      width: '100%',
+                                      borderRadius: 4,
+                                    }}
+                                    onChange={() => {
+                                      // Calcular total automáticamente
+                                      setTimeout(() => {
+                                        const productos = form.getFieldValue('productos') || [];
+                                        const producto = productos[field.name];
+                                        if (producto) {
+                                          const cantidad = Number(producto.cantidad) || 0;
+                                          const precioUnitario = Number(producto.precioUnitario) || 0;
+                                          const total = cantidad * precioUnitario;
+                                          form.setFieldValue(['productos', field.name, 'total'], total);
+                                        }
+                                      }, 100);
+                                    }}
+                                  />
+                                </Form.Item>
+                              </TableCell>
+                              <TableCell sx={{ p: 1 }}>
+                                <Form.Item 
+                                  name={[field.name, 'precioUnitario']} 
+                                  rules={[{ required: true, message: 'Requerido' }]}
+                                  style={{ margin: 0 }}
+                                >
+                                  <InputNumber
+                                    placeholder="0.00"
+                                    size="small"
+                                    min={0}
+                                    step={0.01}
+                                    style={{
+                                      width: '100%',
+                                      borderRadius: 4,
+                                    }}
+                                    onChange={() => {
+                                      // Calcular total automáticamente
+                                      setTimeout(() => {
+                                        const productos = form.getFieldValue('productos') || [];
+                                        const producto = productos[field.name];
+                                        if (producto) {
+                                          const cantidad = Number(producto.cantidad) || 0;
+                                          const precioUnitario = Number(producto.precioUnitario) || 0;
+                                          const total = cantidad * precioUnitario;
+                                          form.setFieldValue(['productos', field.name, 'total'], total);
+                                        }
+                                      }, 100);
+                                    }}
+                                  />
+                                </Form.Item>
+                              </TableCell>
+                              <TableCell sx={{ p: 1 }}>
+                                <Form.Item 
+                                  name={[field.name, 'total']} 
+                                  style={{ margin: 0 }}
+                                >
+                                  <InputNumber
+                                    placeholder="0.00"
+                                    size="small"
+                                    readOnly
+                                    style={{
+                                      width: '100%',
+                                      borderRadius: 4,
+                                      backgroundColor: '#f5f5f5',
+                                    }}
+                                  />
+                                </Form.Item>
+                              </TableCell>
+                              <TableCell sx={{ p: 1 }}>
+                                <IconButton 
+                                  size="small" 
+                                  color="error" 
+                                  onClick={() => remove(field.name)}
+                                  sx={{ fontSize: 14 }}
+                                >
+                                  <Delete fontSize="small" />
+                                </IconButton>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                          <TableRow>
+                            <TableCell colSpan={5} sx={{ textAlign: 'right' }}>
+                              <Button
+                                onClick={() => add(getEmptyProductRecord())}
+                                startIcon={<Add />}
+                                variant="outlined"
+                                size="small"
+                                sx={{
+                                  width: 'auto',
+                                  py: 1,
+                                  bgcolor: '#189dff',
+                                  color: 'white',
+                                  borderColor: '#1890ff'
+                                }}
+                              >
+                                Agregar Producto
+                              </Button>
+                            </TableCell>
+                            {/* Agregar label: Celda de pago total, bgcolor negra, color white */}
+                            <TableCell>
+                              <Form.Item noStyle shouldUpdate>
+                                {() => {
+                                  const productos = form.getFieldValue('productos') || [];
+                                  const total = productos.reduce((sum: number, prod: ProductRecord) => 
+                                    sum + (Number(prod?.total) || 0), 0
+                                  );
+                                  return (
+                                    
+                                    <Typography 
+                                      variant="body2" 
+                                      fontWeight={700} 
+                                      color="primary"
+                                      sx={{ textAlign: 'center' }}
+                                    >
+                                      S/ {total.toFixed(2)}
+                                    </Typography>
+                                  );
+                                }}
+                              </Form.Item>
+                            </TableCell>
+                          </TableRow>
+                        </>
+                      )}
+                    </Form.List>
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </CardContent>
+          </Card>
 
           <Form.Item noStyle shouldUpdate>
             {({ getFieldValue }) => {

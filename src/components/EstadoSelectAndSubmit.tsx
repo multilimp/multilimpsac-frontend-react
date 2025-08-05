@@ -123,7 +123,7 @@ const EstadoSelectAndSubmit: React.FC<EstadoSelectAndSubmitProps> = ({
           />
         </div>
       </Form.Item>
-            <MuiButton
+      <MuiButton
         variant="contained"
         color="primary"
         onClick={onSubmit}

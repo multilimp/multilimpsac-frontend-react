@@ -191,7 +191,7 @@ export default function GlobalStyles() {
           borderRadius: 6,
         },
         '.float-label .label-float.focus': {
-          color: `${theme.palette.primary.main} !important`,
+          color: '#1890ff !important', // ✅ Azul principal
         },
         '.float-label .label-float.disabled': {
           color: '#aaa !important',

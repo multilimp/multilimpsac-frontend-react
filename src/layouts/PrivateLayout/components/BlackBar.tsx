@@ -169,8 +169,8 @@ const BlackBar = memo(() => {
         <Box
           sx={{
             '& .ant-select-single .ant-select-selector': {
-              backgroundColor: '#306df7 !important',
-              borderColor: '#306df7 !important',
+              backgroundColor: '#1890ff !important', /* ✅ Azul */
+              borderColor: '#1890ff !important',
               color: '#ffffff !important',
               borderRadius: '8px !important',
               height: '50px !important',
@@ -197,7 +197,7 @@ const BlackBar = memo(() => {
           sx={{
             '& .ant-select-single .ant-select-selector': {
               backgroundColor: 'transparent !important',
-              borderColor: '#306df7 !important',
+              borderColor: '#1890ff !important', /* ✅ Azul */
               color: '#ffffff !important',
               borderRadius: '8px !important',
               height: '50px !important',
@@ -484,7 +484,7 @@ const BlackBar = memo(() => {
                               variant="body2"
                               sx={{
                                 textDecoration: isCompleted ? 'line-through' : 'none',
-                                color: isCompleted ? '#bababa' : '#306df7',
+                                color: isCompleted ? '#bababa' : '#1890ff',
                                 fontWeight: 600,
                                 fontSize: '12px',
                                 mb: 1,
@@ -515,10 +515,10 @@ const BlackBar = memo(() => {
                                 handleCopyDescription(item.descripcion);
                               }}
                               sx={{
-                                color: '#306df7',
-                                bgcolor: 'rgba(48, 109, 247, 0.1)',
+                                color: '#1890ff',
+                                bgcolor: 'rgba(24, 144, 255, 0.1)',
                                 '&:hover': {
-                                  bgcolor: 'rgba(48, 109, 247, 0.2)',
+                                  bgcolor: 'rgba(24, 144, 255, 0.2)',
                                 },
                                 width: 28,
                                 height: 28,
@@ -660,7 +660,7 @@ const AccordionStyled = ({ title, children }: { title: ReactNode; children: Reac
       // border: '1px solid #3c4351',
     }}
   >
-    <AccordionSummary sx={{ px: 0, fontWeight: 600, fontSize: '15px' }} expandIcon={<ExpandMore fontSize="large" sx={{ color: '#306df7' }} />}>{title}</AccordionSummary>
+    <AccordionSummary sx={{ px: 0, fontWeight: 600, fontSize: '15px' }} expandIcon={<ExpandMore fontSize="large" sx={{ color: '#1890ff' }} />}>{title}</AccordionSummary>
     <AccordionDetails sx={{ pt: 0, px: 0   }}>{children}</AccordionDetails>
   </Accordion>
 );

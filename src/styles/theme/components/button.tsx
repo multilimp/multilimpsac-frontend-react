@@ -21,9 +21,9 @@ export const MuiButton = {
     textSizeMedium: { padding: '9px 16px' },
     textSizeLarge: { padding: '12px 16px' },
     containedPrimary: {
-      background: 'linear-gradient(45deg, #039354, #04BA6B)',
+      background: 'linear-gradient(45deg, #096dd9, #1890ff)',
       '&:hover': {
-        background: 'linear-gradient(45deg, #027f47, #03a861)',
+        background: 'linear-gradient(45deg, #0050b3, #40a9ff)',
       },
     },
     containedSecondary: {
