@@ -18,7 +18,6 @@ import {
   Chip
 } from '@mui/material';
 import { 
-  ArrowBack, 
   Save,
   Business,
   AttachMoney as MoneyIcon,
@@ -279,7 +278,7 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
           headerLeft={`OP: ${sale.codigoVenta}`}
           headerRight={`Cliente: ${sale.cliente?.razonSocial}`}
           color="#1071d1ff"
-          resumeContent={
+          children={
           <Box sx={{ mb: 3 }}>
             <Stack direction="row" alignItems="center" spacing={2}>
               <Box sx={{ flexGrow: 1 }}>

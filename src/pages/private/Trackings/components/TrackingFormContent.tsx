@@ -21,9 +21,10 @@ import {
   ArrowBack, 
   CheckCircle, 
   Business,
-  Assignment as AssignmentIcon
+  Assignment as AssignmentIcon,
+  Edit as EditIcon
 } from '@mui/icons-material';
-import { notification, Spin, Form } from 'antd';
+import { notification, Spin, Form, Select, Input } from 'antd';
 import Grid from '@mui/material/Grid';
 import { SaleProps } from '@/services/sales/sales';
 import { alpha } from '@/styles/theme/heroui-colors';
@@ -73,12 +74,39 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
       setLoading(true);
       console.log('Guardando seguimiento:', values);
       
-      // TODO: Implementar guardado real del seguimiento
+      // Separar datos de OC y datos de OPs
+      const ocData = {
+        fechaEntregaOc: values.fechaEntregaOC,
+        documentoPeruCompras: values.cargoEntregaOCPeruCompras,
+        fechaPeruCompras: values.fechaPeruCompras
+      };
+      
+      // Procesar datos de cada OP
+      const opsData = [];
+      for (const op of ordenesProveedor) {
+        const opKey = `op_${op.id}`;
+        if (values[opKey]) {
+          opsData.push({
+            id: op.id,
+            ...values[opKey]
+          });
+        }
+      }
+      
+      console.log('📋 Datos de OC:', ocData);
+      console.log('🏭 Datos de OPs:', opsData);
+      
+      // TODO: Implementar servicios para actualizar OC y OPs
+      // await updateOrderCompra(sale.id, ocData);
+      // for (const opData of opsData) {
+      //   await updateOrderProvider(opData.id, opData);
+      // }
+      
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       notification.success({
         message: 'Seguimiento actualizado',
-        description: 'El seguimiento se ha actualizado correctamente'
+        description: `Se actualizaron ${opsData.length} OPs y la información de la OC`
       });
 
       navigate('/tracking');
@@ -277,7 +305,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                             <Chip 
                               label={op.estadoOp || 'Pendiente'} 
                               size="small" 
-                              color={op.estadoOp === 'COMPLETADO' ? 'success' : 'default'}
+                              color={op.estadoOp === 'CONFORME' ? 'success' : op.estadoOp === 'RECHAZADO' ? 'error' : 'warning'}
                             />
                           </Grid>
                           
@@ -301,6 +329,118 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                             </Typography>
                           </Grid>
 
+                          {/* FORMULARIO DE SEGUIMIENTO PARA CADA OP */}
+                          <Grid size={12}>
+                            <Box sx={{ 
+                              bgcolor: '#f8fafc', 
+                              borderRadius: 2, 
+                              p: 3, 
+                              mt: 2,
+                              border: '2px solid #e2e8f0'
+                            }}>
+                              <Typography variant="h6" sx={{ 
+                                fontWeight: 600, 
+                                mb: 3, 
+                                color: '#1e293b',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1
+                              }}>
+                                <EditIcon sx={{ color: '#10b981' }} />
+                                Formulario de Seguimiento - OP {index + 1}
+                              </Typography>
+                              
+                              <Grid container spacing={3}>
+                                {/* Fila 1: Tipo de Entrega, Estado OP, Fecha Entrega */}
+                                <Grid size={{ xs: 12, md: 4 }}>
+                                  <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
+                                    Tipo de Entrega
+                                  </Typography>
+                                  <Form.Item 
+                                    name={[`op_${op.id}`, 'tipoEntrega']} 
+                                    initialValue={op.tipoEntrega}
+                                  >
+                                    <Select
+                                      placeholder="Seleccionar tipo"
+                                      options={[
+                                        { value: 'PARCIAL', label: 'Parcial' },
+                                        { value: 'TOTAL', label: 'Total' }
+                                      ]}
+                                    />
+                                  </Form.Item>
+                                </Grid>
+                                
+                                <Grid size={{ xs: 12, md: 4 }}>
+                                  <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
+                                    Estado OP
+                                  </Typography>
+                                  <Form.Item 
+                                    name={[`op_${op.id}`, 'estadoOp']} 
+                                    initialValue={op.estadoOp}
+                                  >
+                                    <Select
+                                      placeholder="Seleccionar estado"
+                                      options={[
+                                        { value: 'RECHAZADO', label: 'Rechazado' },
+                                        { value: 'CONFORME', label: 'Conforme' },
+                                        { value: 'OBSERVADO', label: 'Observado' }
+                                      ]}
+                                    />
+                                  </Form.Item>
+                                </Grid>
+                                
+                                <Grid size={{ xs: 12, md: 4 }}>
+                                  <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
+                                    Fecha de Entrega
+                                  </Typography>
+                                  <Form.Item 
+                                    name={[`op_${op.id}`, 'fechaEntrega']} 
+                                    initialValue={op.fechaEntrega}
+                                  >
+                                    <Input placeholder="Ingrese fecha de entrega" />
+                                  </Form.Item>
+                                </Grid>
+                                
+                                {/* Fila 2: Cargo OEA, Retorno de Mercadería */}
+                                <Grid size={{ xs: 12, md: 6 }}>
+                                  <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
+                                    Cargo OEA (Texto Libre)
+                                  </Typography>
+                                  <Form.Item 
+                                    name={[`op_${op.id}`, 'cargoOea']} 
+                                    initialValue={op.cargoOea}
+                                  >
+                                    <Input.TextArea 
+                                      placeholder="Ingrese información del cargo OEA" 
+                                      rows={3}
+                                    />
+                                  </Form.Item>
+                                </Grid>
+                                
+                                <Grid size={{ xs: 12, md: 6 }}>
+                                  <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
+                                    Retorno de Mercadería
+                                  </Typography>
+                                  <Form.Item 
+                                    name={[`op_${op.id}`, 'retornoMercaderia']} 
+                                    initialValue={op.retornoMercaderia}
+                                  >
+                                    <Select
+                                      placeholder="Seleccionar retorno"
+                                      options={[
+                                        { value: 'NINGUNO', label: 'Ninguno' },
+                                        { value: 'ENTIDAD', label: 'Entidad' },
+                                        { value: 'TRANSPORTE', label: 'Transporte' },
+                                        { value: 'ALMACEN_LIMA', label: 'Almacén Lima' },
+                                        { value: 'ALMACEN_HUANCAYO', label: 'Almacén Huancayo' }
+                                      ]}
+                                    />
+                                  </Form.Item>
+                                </Grid>
+                              </Grid>
+                            </Box>
+                          </Grid>
+
                           {/* Productos de la OP */}
                           {op.productos && op.productos.length > 0 && (
                             <Grid size={12}>
@@ -315,8 +455,6 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                                       <TableCell sx={{ fontSize: 12, fontWeight: 600, color: 'white', p: 0.5 }}>Descripción</TableCell>
                                       <TableCell sx={{ fontSize: 12, fontWeight: 600, color: 'white', p: 0.5 }}>U.Medida</TableCell>
                                       <TableCell sx={{ fontSize: 12, fontWeight: 600, color: 'white', p: 0.5 }}>Cantidad</TableCell>
-                                      <TableCell sx={{ fontSize: 12, fontWeight: 600, color: 'white', p: 0.5 }}>C.Almacén</TableCell>
-                                      <TableCell sx={{ fontSize: 12, fontWeight: 600, color: 'white', p: 0.5 }}>C.Total</TableCell>
                                       <TableCell sx={{ fontSize: 12, fontWeight: 600, color: 'white', p: 0.5 }}>P. Unitario</TableCell>
                                       <TableCell sx={{ fontSize: 12, fontWeight: 600, color: 'white', p: 0.5 }}>Total</TableCell>
                                     </TableRow>
@@ -326,10 +464,8 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                                       <TableRow key={idx} sx={{ '&:nth-of-type(odd)': { bgcolor: '#f8fafc' } }}>
                                         <TableCell sx={{ fontSize: 11, p: 0.5 }}>{producto.codigo || 'N/A'}</TableCell>
                                         <TableCell sx={{ fontSize: 11, p: 0.5 }}>{producto.descripcion || 'N/A'}</TableCell>
-                                        <TableCell sx={{ fontSize: 11, p: 0.5 }}>{producto.uMedida || 'N/A'}</TableCell>
+                                        <TableCell sx={{ fontSize: 11, p: 0.5 }}>{producto.unidadMedida || 'N/A'}</TableCell>
                                         <TableCell sx={{ fontSize: 11, p: 0.5 }}>{producto.cantidad || 'N/A'}</TableCell>
-                                        <TableCell sx={{ fontSize: 11, p: 0.5 }}>{producto.cAlmacen || 'N/A'}</TableCell>
-                                        <TableCell sx={{ fontSize: 11, p: 0.5 }}>{producto.cTotal || 'N/A'}</TableCell>
                                         <TableCell sx={{ fontSize: 11, p: 0.5 }}>{formatCurrency(parseFloat(producto.precioUnitario || '0'))}</TableCell>
                                         <TableCell sx={{ fontSize: 11, fontWeight: 600, p: 0.5, color: '#10b981' }}>
                                           {formatCurrency(parseFloat(producto.total || '0'))}
@@ -338,7 +474,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                                     ))}
                                     {op.productos.length > 5 && (
                                       <TableRow>
-                                        <TableCell colSpan={8} sx={{ textAlign: 'center', fontSize: 11, fontStyle: 'italic', p: 1 }}>
+                                        <TableCell colSpan={6} sx={{ textAlign: 'center', fontSize: 11, fontStyle: 'italic', p: 1 }}>
                                           ... y {op.productos.length - 5} productos más
                                         </TableCell>
                                       </TableRow>

@@ -153,7 +153,7 @@ const TransportsSection = ({ form }: TransportsSectionProps) => {
                       {/* Título del transporte - Mostrar código de transporte o nombre genérico */}
                       <Form.Item noStyle shouldUpdate>
                         {({ getFieldValue }) => {
-                          const transporteData = getFieldValue(['transportes', field.name, 'transporte']);
+                          // const transporteData = getFieldValue(['transportes', field.name, 'transporte']);
                           // Buscar si existe código de transporte generado por el backend
                           const codigoTransporte = getFieldValue(['transportes', field.name, 'codigoTransporte']);
                           

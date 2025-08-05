@@ -200,7 +200,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
       const billingData = {
         ordenCompraId: sale.id,
         factura: values.numeroFactura,
-        fechaFactura: values.fechaFactura ? values.fechaFactura.format('YYYY-MM-DD') : null,
+        fechaFactura: values.fechaFactura ? values.fechaFactura.toISOString() : null,
         grr: values.grr,
         retencion: values.porcentajeRetencion,
         detraccion: values.porcentajeDetraccion,
@@ -778,8 +778,6 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                       <DatePickerAntd
                         label=""
                         placeholder="Seleccionar fecha"
-                        size="large"
-                        style={{ width: '100%' }}
                       />
                     </Form.Item>
                   </Grid>

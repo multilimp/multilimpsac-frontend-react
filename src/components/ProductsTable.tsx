@@ -16,7 +16,7 @@ import {
   Chip
 } from '@mui/material';
 import { Form, Input, InputNumber, FormInstance } from 'antd';
-import { Delete, ShoppingCart, Calculate, Visibility } from '@mui/icons-material';
+import { Delete, ShoppingCart, Calculate } from '@mui/icons-material';
 import { formatCurrency } from '@/utils/functions';
 
 interface ProductDetail {
