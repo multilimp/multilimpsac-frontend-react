@@ -8,4 +8,10 @@ export interface UserProps {
   role: RolesEnum;
   foto?: string;
   estado: boolean;
+  telefono?: string;
+  departamento?: string;
+  fechaIngreso?: string;
+  ultimoAcceso?: string;
+  permisos?: string[];
+  ubicacion?: string;
 }

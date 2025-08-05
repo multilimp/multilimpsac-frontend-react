@@ -3,6 +3,7 @@ import { Box } from '@mui/material';
 import SideNavbar from './components/SideNav';
 import MainNav from './components/MainNav';
 import BlackBar from './components/BlackBar';
+import ChatbotButton from '@/components/ChatbotButton';
 
 const PrivateLayout = () => {
   return (
@@ -46,6 +47,7 @@ const PrivateLayout = () => {
           <Outlet />
         </Box>
       </Box>
+      <ChatbotButton />
     </Box>
   );
 };
