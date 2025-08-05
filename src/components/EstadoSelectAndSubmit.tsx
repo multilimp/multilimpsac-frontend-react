@@ -40,6 +40,11 @@ const estadoBgMap: Record<string, string> = {
   cobrado: '#10B981',
   parcial: '#F59E0B',
   vencido: '#EF4444',
+  // Estados específicos de facturación
+  '1': '#F59E0B',          // Pendiente - Naranja
+  '2': '#3B82F6',          // En Proceso - Azul
+  '3': '#10B981',          // Completado - Verde
+  '4': '#EF4444',          // Cancelado - Rojo
 };
 
 const EstadoSelectAndSubmit: React.FC<EstadoSelectAndSubmitProps> = ({

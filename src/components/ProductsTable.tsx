@@ -138,6 +138,9 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
         onProductChange(index);
       }
 
+      // Forzar actualización de detalles
+      setTimeout(() => updateProductDetails(), 10);
+
       console.log(`✅ Producto ${index} calculado:`, { cantidad, precioUnitario, total });
     } catch (error) {
       console.error(`❌ Error calculando producto ${index}:`, error);
@@ -146,32 +149,30 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
     }
   };
 
-  // Función para recalcular todos los productos
-  const recalculateAllProducts = () => {
-    const productos = form.getFieldValue(fieldName) || [];
-    productos.forEach((_: unknown, index: number) => {
-      calculateProductSubTotal(index);
-    });
+  // Hook personalizado para manejar cambios del formulario
+  const useFormWatch = () => {
+    const [watchedValues, setWatchedValues] = useState({});
+    
+    useEffect(() => {
+      const interval = setInterval(() => {
+        const currentValues = form.getFieldValue(fieldName);
+        if (JSON.stringify(currentValues) !== JSON.stringify(watchedValues)) {
+          setWatchedValues(currentValues);
+          updateProductDetails();
+        }
+      }, 200);
+      
+      return () => clearInterval(interval);
+    }, [watchedValues]);
+    
+    return watchedValues;
   };
 
-  // Función para mostrar detalles del producto
-  const showProductDetails = (index: number) => {
-    const record = form.getFieldValue([fieldName, index]);
-    const details = productDetails[index];
-    
-    if (details && details.hasData) {
-      console.log(`📋 Detalles del producto ${index}:`, {
-        codigo: record.codigo,
-        descripcion: record.descripcion,
-        cantidad: details.cantidad,
-        precioUnitario: formatCurrency(details.precioUnitario),
-        total: formatCurrency(details.total)
-      });
-    }
-  };
+  // Usar el hook para monitorear cambios
+  useFormWatch();
 
   // Actualizar detalles cuando cambian los productos
-  useEffect(() => {
+  const updateProductDetails = () => {
     const productos = form.getFieldValue(fieldName) || [];
     const newDetails: Record<number, ProductDetail> = {};
     
@@ -189,7 +190,7 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
     });
     
     setProductDetails(newDetails);
-  }, [form.getFieldValue(fieldName)]);
+  };
 
   const validationRules = required ? [
     {
@@ -462,20 +463,6 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                                 px: 2,
                                 position: 'relative',
                               }}>
-                                <InputNumber
-                                  placeholder="0.00"
-                                  size="small"
-                                  min={0}
-                                  style={{
-                                    width: '100%',
-                                    border: 'none',
-                                    background: 'transparent',
-                                    color: productDetail?.total > 0 ? '#1976d2' : '#bdbdbd',
-                                    fontWeight: 600,
-                                  }}
-                                  readOnly
-                                  disabled
-                                />
                                 {isCalculating === field.name && (
                                   <Box sx={{
                                     position: 'absolute',
@@ -486,23 +473,33 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                                     <Calculate sx={{ fontSize: 16, color: '#1976d2' }} />
                                   </Box>
                                 )}
-                                {productDetail?.total > 0 && !isCalculating && (
-                                  <Box sx={{
-                                    position: 'absolute',
-                                    right: 8,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                  }}>
+                                {/* Mostrar siempre el valor del total, aunque sea 0 */}
+                                {!isCalculating && (
                                     <Chip 
-                                      label={formatCurrency(productDetail.total)}
+                                      label={formatCurrency(productDetail?.total || 0)}
                                       size="small"
                                       sx={{ 
                                         fontSize: '0.7rem',
                                         height: 20,
-                                        bgcolor: '#e3f2fd',
-                                        color: '#1976d2'
+                                        bgcolor: productDetail?.total > 0 ? '#e3f2fd' : '#f5f5f5',
+                                        color: productDetail?.total > 0 ? '#1976d2' : '#666666'
                                       }}
                                     />
+                                )}
+                                {/* Debug: mostrar detalles del producto */}
+                                {process.env.NODE_ENV === 'development' && (
+                                  <Box sx={{ 
+                                    position: 'absolute', 
+                                    bottom: -20, 
+                                    fontSize: '10px', 
+                                    color: 'red' 
+                                  }}>
+                                    {JSON.stringify({
+                                      index: field.name,
+                                      hasDetail: !!productDetail,
+                                      total: productDetail?.total,
+                                      calculating: isCalculating === field.name
+                                    })}
                                   </Box>
                                 )}
                               </Box>
@@ -520,23 +517,6 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                               justifyContent: 'center',
                               gap: 1,
                             }}>
-                              {hasData && (
-                                <Tooltip title="Ver detalles del producto">
-                                  <IconButton 
-                                    size="small" 
-                                    color="primary" 
-                                    onClick={() => showProductDetails(field.name)}
-                                    sx={{
-                                      color: '#1976d2',
-                                      '&:hover': {
-                                        bgcolor: 'rgba(25, 118, 210, 0.1)'
-                                      }
-                                    }}
-                                  >
-                                    <Visibility fontSize="small" />
-                                  </IconButton>
-                                </Tooltip>
-                              )}
                               {showDeleteButton && (
                                 <Tooltip title="Eliminar producto">
                                   <IconButton 
@@ -585,30 +565,8 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                             >
                               AÑADIR PRODUCTOS
                             </Button>
-                            <Tooltip title="Recalcular todos los productos">
-                              <Button
-                                variant="outlined"
-                                size="large"
-                                onClick={recalculateAllProducts}
-                                sx={{
-                                  height: 48,
-                                  minWidth: 48,
-                                  borderColor: '#1777ff',
-                                  color: '#1777ff',
-                                  '&:hover': {
-                                    borderColor: '#1976d2',
-                                    color: '#1976d2',
-                                  }
-                                }}
-                              >
-                                <Calculate />
-                              </Button>
-                            </Tooltip>
                           </Stack>
                         </TableCell>
-                      )}
-                      {readOnly && (
-                        <TableCell colSpan={3} />
                       )}
                       {showTotal && (
                         <TableCell sx={{ p: 0 }} align="right" colSpan={3}>

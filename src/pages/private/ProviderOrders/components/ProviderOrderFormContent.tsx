@@ -22,13 +22,14 @@ import { uploadFile } from '@/services/files/file.requests';
 import { useNavigate } from 'react-router-dom';
 import { StepItemContent } from '../../Sales/SalesPageForm/smallcomponents';
 import PaymentsList from '@/components/PaymentsList';
-import ProductsTable from '@/components/ProductsTable';
+import EditableProductsTable from '@/components/EditableProductsTable';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 import dayjs from 'dayjs';
 import { ProviderProps } from '@/services/providers/providers';
 import ProviderSelectorModal from '../../Providers/components/ProviderSelectorModal';
 import { ProviderOrderProps } from '@/services/providerOrders/providerOrders';
 import TransportsSection, { getEmptyTransformRecord } from './TransportsSection';
+import ProductsTable from '@/components/ProductsTable';
 
 interface ProviderOrderFormContentProps {
   sale: SaleProps;
@@ -250,34 +251,46 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
     });
   };
 
-  const handleProductChange = (index: number) => {
-    // Calcular automáticamente el total del producto
-    const productos = form.getFieldValue('productos') || [];
-    const producto = productos[index];
+  // Callback para manejar cambios de productos desde EditableProductsTable
+  const handleProductsChange = (productos: any[]) => {
+    // Recalcular el total general
+    const totalGeneral = productos.reduce((sum: number, producto: any) => {
+      return sum + (Number(producto.total) || 0);
+    }, 0);
     
-    console.log('🔍 Calculando producto:', { index, producto, productos });
+    console.log('🔍 Productos actualizados:', productos);
+    console.log('🔍 Total general:', totalGeneral);
     
-    if (producto) {
-      const cantidad = Number(producto.cantidad) || 0;
-      const precioUnitario = Number(producto.precioUnitario) || 0;
-      const total = cantidad * precioUnitario;
-      
-      console.log('🔍 Cálculo:', { cantidad, precioUnitario, total });
-      
-      // Actualizar el total del producto
-      form.setFieldValue(['productos', index, 'total'], total);
-      
-      // Calcular el total general
-      const totalGeneral = productos.reduce((sum: number, prod: ProductRecord) => {
-        return sum + (Number(prod.total) || 0);
-      }, 0);
-      
-      console.log('🔍 Total general:', totalGeneral);
-      
-      // Actualizar el monto del proveedor
-      form.setFieldValue('montoProveedor', totalGeneral);
-    }
+    // Actualizar el monto del proveedor
+    form.setFieldValue('montoProveedor', totalGeneral);
   };
+  //   // Calcular automáticamente el total del producto
+  //   const productos = form.getFieldValue('productos') || [];
+  //   const producto = productos[index];
+  //   
+  //   console.log('🔍 Calculando producto:', { index, producto, productos });
+  //   
+  //   if (producto) {
+  //     const cantidad = Number(producto.cantidad) || 0;
+  //     const precioUnitario = Number(producto.precioUnitario) || 0;
+  //     const total = cantidad * precioUnitario;
+  //     
+  //     console.log('🔍 Cálculo:', { cantidad, precioUnitario, total });
+  //     
+  //     // Actualizar el total del producto
+  //     form.setFieldValue(['productos', index, 'total'], total);
+  //     
+  //     // Calcular el total general
+  //     const totalGeneral = productos.reduce((sum: number, prod: ProductRecord) => {
+  //       return sum + (Number(prod.total) || 0);
+  //     }, 0);
+  //     
+  //     console.log('🔍 Total general:', totalGeneral);
+  //     
+  //     // Actualizar el monto del proveedor
+  //     form.setFieldValue('montoProveedor', totalGeneral);
+  //   }
+  // };
 
   const handleProviderModalClose = () => setOpenProvider(false);
 
@@ -514,29 +527,8 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
             title="PRODUCTOS DE LA ORDEN"
             showTitle={true}
             readOnly={false}
-            showAddButton={true}
-            showDeleteButton={true}
-            showTotal={true}
-            showNote={true}
-            noteFieldName="productosNota"
-            noteLabel="Nota del Pedido"
-            showFields={{
-              codigo: true,
-              descripcion: true,
-              uMedida: true,
-              cantidad: true,
-              cAlmacen: true,
-              cTotal: true,
-              precioUnitario: true,
-              total: true
-            }}
-            required={false}
-            minProducts={1}
-            compact={false}
-            headerColor="#8377a8"
-            onProductChange={handleProductChange}
           />
-          
+
           <Form.Item noStyle shouldUpdate>
             {({ getFieldValue }) => {
               const productos = getFieldValue('productos') || [];
