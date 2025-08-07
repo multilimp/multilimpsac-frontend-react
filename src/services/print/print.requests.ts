@@ -57,7 +57,7 @@ export const generateInvoicePDF = async (ordenCompraId: number, invoiceData: any
 
 export const printOrdenProveedor = async (ordenProveedorId: number): Promise<any> => {
   try {
-    const response = await apiClient.post(`/print/orden-proveedor/${ordenProveedorId}`, {}, {
+    const response = await apiClient.get(`/print/orden-proveedor/${ordenProveedorId}`, {
       responseType: 'blob'
     });
     

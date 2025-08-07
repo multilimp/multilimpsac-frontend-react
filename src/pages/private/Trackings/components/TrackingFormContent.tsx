@@ -42,11 +42,13 @@ import { formatCurrency, formattedDate } from '@/utils/functions';
 import { StepItemContent } from '../../Sales/SalesPageForm/smallcomponents';
 import DatePickerAntd from '@/components/DatePickerAnt';
 import { getOrderProvider, patchOrderProvider } from '@/services/providerOrders/providerOrders.requests';
-import { patchSale } from '@/services/sales/sales.request';
+import { updateSale } from '@/services/sales/sales.request';
+import { printOrdenProveedor } from '@/services/print/print.requests';
 import SimpleFileUpload from '@/components/SimpleFileUpload';
 import EstadoSelectAndSubmit from '@/components/EstadoSelectAndSubmit';
 import SelectGeneric from '@/components/selects/SelectGeneric';
 import InputAntd from '@/components/InputAntd';
+import ProviderOrderFormSkeleton from '@/components/ProviderOrderFormSkeleton';
 
 interface TrackingFormContentProps {
   sale: SaleProps;
@@ -78,6 +80,9 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
       fechaPeruCompras: sale.fechaPeruCompras ? dayjs(sale.fechaPeruCompras) : null,
     };
     setOriginalOCValues(ocValues);
+    
+    // Establecer valores iniciales en el formulario
+    form.setFieldsValue(ocValues);
   };
 
   const loadProviderOrders = async () => {
@@ -127,12 +132,28 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
     }));
   };
 
-  const handlePrintOP = (op: ProviderOrderProps) => {
-    console.log('Imprimiendo OP:', op.codigoOp);
-    notification.info({
-      message: 'Impresión',
-      description: `Preparando impresión de ${op.codigoOp}`
-    });
+  const handlePrintOP = async (op: ProviderOrderProps) => {
+    try {
+      console.log('Imprimiendo OP:', op.codigoOp, 'ID:', op.id);
+      
+      notification.info({
+        message: 'Generando PDF',
+        description: `Preparando impresión de ${op.codigoOp}...`
+      });
+
+      await printOrdenProveedor(op.id);
+      
+      notification.success({
+        message: 'PDF Generado',
+        description: `La orden de proveedor ${op.codigoOp} se ha descargado correctamente`
+      });
+    } catch (error) {
+      console.error('Error al imprimir OP:', error);
+      notification.error({
+        message: 'Error al generar PDF',
+        description: `No se pudo generar el PDF de ${op.codigoOp}`
+      });
+    }
   };
 
   const handleFieldChange = (opId: string, fieldName: string, value: unknown) => {
@@ -163,7 +184,24 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
 
   const handleOCFieldChange = (fieldName: string, value: unknown) => {
     const originalValue = originalOCValues[fieldName];
-    const isChanged = JSON.stringify(originalValue) !== JSON.stringify(value);
+    
+    // Comparar valores, teniendo en cuenta que dayjs objects requieren comparación especial
+    let isChanged = false;
+    if (fieldName === 'fechaEntregaOC' || fieldName === 'fechaPeruCompras') {
+      // Para campos de fecha, comparar como string ISO
+      const originalDateStr = originalValue && typeof originalValue === 'object' && 'toISOString' in originalValue 
+        ? (originalValue as dayjs.Dayjs).toISOString() 
+        : null;
+      const currentDateStr = value && typeof value === 'object' && 'toISOString' in value 
+        ? (value as dayjs.Dayjs).toISOString() 
+        : null;
+      isChanged = originalDateStr !== currentDateStr;
+    } else {
+      // Para otros campos, usar comparación JSON
+      isChanged = JSON.stringify(originalValue) !== JSON.stringify(value);
+    }
+    
+    console.log(`📝 Campo OC "${fieldName}" cambió:`, { original: originalValue, nuevo: value, isChanged });
     
     setChangedOCFields(prev => {
       const newChangedFields = new Set(prev);
@@ -175,6 +213,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
       return newChangedFields;
     });
   };
+
 
   const saveOPChanges = async (opId: string) => {
     try {
@@ -196,7 +235,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
         let value = currentValues[fieldName];
         
         if (fieldName === 'fechaEntrega' && value) {
-          value = value.format('YYYY-MM-DD');
+          value = value.toISOString();
         }
         
         dataToSend[fieldName] = value;
@@ -268,16 +307,24 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
         let value = currentValues[fieldName];
         
         if (fieldName === 'fechaEntregaOC' && value) {
-          value = value.format('YYYY-MM-DD');
+          value = value.toISOString();
         }
         if (fieldName === 'fechaPeruCompras' && value) {
-          value = value.format('YYYY-MM-DD');
+          value = value.toISOString();
         }
         
-        dataToSend[fieldName] = value;
+        // Mapear nombres de campos del frontend al backend
+        const fieldMapping: Record<string, string> = {
+          fechaEntregaOC: 'fechaEntregaOc',
+          cargoEntregaOCPeruCompras: 'documentoPeruCompras',
+          fechaPeruCompras: 'fechaPeruCompras'
+        };
+        
+        dataToSend[fieldMapping[fieldName] || fieldName] = value;
       });
 
-      await patchSale(sale.id, dataToSend);
+      console.log('📋 Guardando datos de OC Conforme:', dataToSend);
+      await updateSale(sale.id, dataToSend);
       
       notification.success({
         message: 'OC actualizada',
@@ -319,11 +366,11 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
         changedOCFields.forEach(fieldName => {
           let value = values[fieldName];
           
-          if (fieldName === 'fechaEntregaOC' && value && typeof value === 'object' && 'format' in value) {
-            value = (value as dayjs.Dayjs).format('YYYY-MM-DD');
+          if (fieldName === 'fechaEntregaOC' && value && typeof value === 'object' && 'toISOString' in value) {
+            value = (value as dayjs.Dayjs).toISOString();
           }
-          if (fieldName === 'fechaPeruCompras' && value && typeof value === 'object' && 'format' in value) {
-            value = (value as dayjs.Dayjs).format('YYYY-MM-DD');
+          if (fieldName === 'fechaPeruCompras' && value && typeof value === 'object' && 'toISOString' in value) {
+            value = (value as dayjs.Dayjs).toISOString();
           }
           
           // Mapear nombres de campos del frontend al backend
@@ -337,7 +384,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
         });
 
         console.log('📋 Datos de OC Conforme:', ocData);
-        await patchSale(sale.id, ocData);
+        await updateSale(sale.id, ocData);
       }
       
       // Guardar cambios de OPs si hay cambios
@@ -353,8 +400,8 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
           changedFieldsForOP.forEach(fieldName => {
             let value = opValues[fieldName];
             
-            if (fieldName === 'fechaEntrega' && value && typeof value === 'object' && 'format' in value) {
-              value = (value as dayjs.Dayjs).format('YYYY-MM-DD');
+            if (fieldName === 'fechaEntrega' && value && typeof value === 'object' && 'toISOString' in value) {
+              value = (value as dayjs.Dayjs).toISOString();
             }
             
             opData[fieldName] = value;
@@ -403,176 +450,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
 
   if (loading) {
     return (
-      <Box sx={{ maxWidth: '1400px', mx: 'auto', p: 2 }}>
-        <Stack spacing={3}>
-          {/* Header de la OC */}
-          <Box sx={{ bgcolor: 'white', borderRadius: 2, p: 3 }}>
-            <Skeleton.Input active size="large" style={{ height: 40, width: '60%', marginBottom: 8 }} />
-            <Skeleton.Input active size="large" style={{ height: 24, width: '40%' }} />
-          </Box>
-
-          {/* Información del cliente */}
-          <Box sx={{ bgcolor: 'white', borderRadius: 2, p: 3, border: '1px solid #e0e0e0' }}>
-            <Grid container spacing={3}>
-              <Grid size={{ xs: 12, md: 4 }}>
-                <Skeleton.Input active size="large" style={{ height: 20, width: '80%', marginBottom: 8 }} />
-                <Skeleton.Input active size="large" style={{ height: 32, width: '100%', marginBottom: 4 }} />
-                <Skeleton.Input active size="large" style={{ height: 16, width: '60%' }} />
-              </Grid>
-              <Grid size={{ xs: 12, md: 4 }}>
-                <Skeleton.Input active size="large" style={{ height: 20, width: '80%', marginBottom: 8 }} />
-                <Skeleton.Input active size="large" style={{ height: 32, width: '100%', marginBottom: 4 }} />
-                <Skeleton.Input active size="large" style={{ height: 16, width: '70%' }} />
-              </Grid>
-              <Grid size={{ xs: 12, md: 4 }}>
-                <Skeleton.Input active size="large" style={{ height: 20, width: '80%', marginBottom: 8 }} />
-                <Skeleton.Input active size="large" style={{ height: 32, width: '100%', marginBottom: 4 }} />
-                <Skeleton.Input active size="large" style={{ height: 16, width: '65%' }} />
-              </Grid>
-            </Grid>
-          </Box>
-
-          {/* Título de Órdenes de Proveedor */}
-          <Box sx={{ textAlign: 'center', borderBottom: '1px solid #e0e0e0', bgcolor: 'white', borderRadius: 2, py: 2 }}>
-            <Skeleton.Input active size="large" style={{ height: 32, width: '50%', margin: '0 auto' }} />
-          </Box>
-
-          {/* OP 1 */}
-          <Box sx={{ bgcolor: 'white', borderRadius: 2, p: 3 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Skeleton.Input active size="large" style={{ height: 32, width: '40%' }} />
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                <Skeleton.Input active size="large" style={{ height: 32, width: 32, borderRadius: 4 }} />
-                <Skeleton.Input active size="large" style={{ height: 32, width: 32, borderRadius: 4 }} />
-              </Box>
-            </Box>
-            <Skeleton.Input active size="large" style={{ height: 24, width: '60%' }} />
-          </Box>
-
-          {/* Contenido expandido de OP */}
-          <Box sx={{ bgcolor: 'white', borderRadius: 2, p: 3, border: '1px solid #e2e8f0' }}>
-            <Grid container spacing={3} sx={{ mb: 3 }}>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <Box sx={{ bgcolor: '#f8fafc', borderRadius: 2, p: 2.5, height: '100%' }}>
-                  <Skeleton.Input active size="large" style={{ height: 20, width: '70%', marginBottom: 12 }} />
-                  <Skeleton.Input active size="large" style={{ height: 24, width: '90%', marginBottom: 8 }} />
-                  <Skeleton.Input active size="large" style={{ height: 16, width: '50%', marginBottom: 4 }} />
-                  <Skeleton.Input active size="large" style={{ height: 16, width: '60%', marginBottom: 4 }} />
-                  <Skeleton.Input active size="large" style={{ height: 16, width: '55%' }} />
-                </Box>
-              </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <Box sx={{ bgcolor: '#f8fafc', borderRadius: 2, p: 2.5, height: '100%' }}>
-                  <Skeleton.Input active size="large" style={{ height: 20, width: '80%', marginBottom: 12, textAlign: 'center' }} />
-                  <Grid container spacing={2}>
-                    <Grid size={{ xs: 6, md: 6 }}>
-                      <Skeleton.Input active size="large" style={{ height: 16, width: '80%', marginBottom: 4 }} />
-                      <Skeleton.Input active size="large" style={{ height: 20, width: '90%' }} />
-                    </Grid>
-                    <Grid size={{ xs: 6, md: 6 }}>
-                      <Skeleton.Input active size="large" style={{ height: 16, width: '60%', marginBottom: 4 }} />
-                      <Skeleton.Input active size="large" style={{ height: 20, width: '85%' }} />
-                    </Grid>
-                    <Grid size={{ xs: 6, md: 6 }}>
-                      <Skeleton.Input active size="large" style={{ height: 16, width: '70%', marginBottom: 4 }} />
-                      <Skeleton.Input active size="large" style={{ height: 20, width: '80%' }} />
-                    </Grid>
-                    <Grid size={{ xs: 6, md: 6 }}>
-                      <Skeleton.Input active size="large" style={{ height: 16, width: '50%', marginBottom: 4 }} />
-                      <Skeleton.Input active size="large" style={{ height: 20, width: '75%' }} />
-                    </Grid>
-                  </Grid>
-                </Box>
-              </Grid>
-            </Grid>
-
-            {/* Productos */}
-            <Box sx={{ bgcolor: '#ffffff', borderRadius: 2, p: 3, mb: 3, border: '1px solid #e2e8f0' }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                <Skeleton.Input active size="large" style={{ height: 24, width: '30%' }} />
-                <Skeleton.Input active size="large" style={{ height: 24, width: '15%' }} />
-              </Box>
-              <Box sx={{ borderRadius: 2, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
-                <Box sx={{ bgcolor: '#f8fafc', p: 1.5 }}>
-                  <Grid container>
-                    <Grid size={{ xs: 2, md: 2 }}><Skeleton.Input active size="large" style={{ height: 16, width: '80%' }} /></Grid>
-                    <Grid size={{ xs: 4, md: 4 }}><Skeleton.Input active size="large" style={{ height: 16, width: '90%' }} /></Grid>
-                    <Grid size={{ xs: 2, md: 2 }}><Skeleton.Input active size="large" style={{ height: 16, width: '70%' }} /></Grid>
-                    <Grid size={{ xs: 2, md: 2 }}><Skeleton.Input active size="large" style={{ height: 16, width: '60%' }} /></Grid>
-                    <Grid size={{ xs: 2, md: 2 }}><Skeleton.Input active size="large" style={{ height: 16, width: '75%' }} /></Grid>
-                  </Grid>
-                </Box>
-                <Box sx={{ p: 1.5 }}>
-                  <Grid container>
-                    <Grid size={{ xs: 2, md: 2 }}><Skeleton.Input active size="large" style={{ height: 16, width: '60%' }} /></Grid>
-                    <Grid size={{ xs: 4, md: 4 }}><Skeleton.Input active size="large" style={{ height: 16, width: '85%' }} /></Grid>
-                    <Grid size={{ xs: 2, md: 2 }}><Skeleton.Input active size="large" style={{ height: 16, width: '50%' }} /></Grid>
-                    <Grid size={{ xs: 2, md: 2 }}><Skeleton.Input active size="large" style={{ height: 16, width: '40%' }} /></Grid>
-                    <Grid size={{ xs: 2, md: 2 }}><Skeleton.Input active size="large" style={{ height: 16, width: '65%' }} /></Grid>
-                  </Grid>
-                </Box>
-              </Box>
-            </Box>
-
-            {/* Formulario de seguimiento */}
-            <Box sx={{ bgcolor: '#ffffff', borderRadius: 3, p: 4, border: '1px solid #e2e8f0' }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, pb: 2, borderBottom: '2px solid #f1f5f9' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Skeleton.Input active size="large" style={{ height: 32, width: 32 }} />
-                  <Box>
-                    <Skeleton.Input active size="large" style={{ height: 24, width: '200px', marginBottom: 4 }} />
-                    <Skeleton.Input active size="large" style={{ height: 16, width: '150px' }} />
-                  </Box>
-                </Box>
-              </Box>
-              
-              <Grid container spacing={3}>
-                <Grid size={{ xs: 12, md: 4 }}>
-                  <Skeleton.Input active size="large" style={{ height: 16, width: '60%', marginBottom: 8 }} />
-                  <Skeleton.Input active size="large" style={{ height: 40, width: '100%' }} />
-                </Grid>
-                <Grid size={{ xs: 12, md: 4 }}>
-                  <Skeleton.Input active size="large" style={{ height: 16, width: '50%', marginBottom: 8 }} />
-                  <Skeleton.Input active size="large" style={{ height: 40, width: '100%' }} />
-                </Grid>
-                <Grid size={{ xs: 12, md: 4 }}>
-                  <Skeleton.Input active size="large" style={{ height: 16, width: '70%', marginBottom: 8 }} />
-                  <Skeleton.Input active size="large" style={{ height: 40, width: '100%' }} />
-                </Grid>
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <Skeleton.Input active size="large" style={{ height: 16, width: '40%', marginBottom: 8 }} />
-                  <Skeleton.Input active size="large" style={{ height: 40, width: '100%' }} />
-                </Grid>
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <Skeleton.Input active size="large" style={{ height: 16, width: '80%', marginBottom: 8 }} />
-                  <Skeleton.Input active size="large" style={{ height: 40, width: '100%' }} />
-                </Grid>
-              </Grid>
-            </Box>
-          </Box>
-
-          {/* OC Conforme */}
-          <Box sx={{ bgcolor: 'white', borderRadius: 3, p: 4 }}>
-            <Box sx={{ textAlign: 'center', mb: 4, borderBottom: '2px solid #e0e0e0', pb: 2 }}>
-              <Skeleton.Input active size="large" style={{ height: 40, width: '40%', margin: '0 auto', marginBottom: 8 }} />
-            </Box>
-            <Grid container spacing={3}>
-              <Grid size={{ xs: 12, md: 4 }}>
-                <Skeleton.Input active size="large" style={{ height: 16, width: '70%', marginBottom: 8 }} />
-                <Skeleton.Input active size="large" style={{ height: 40, width: '100%' }} />
-              </Grid>
-              <Grid size={{ xs: 12, md: 4 }}>
-                <Skeleton.Input active size="large" style={{ height: 16, width: '90%', marginBottom: 8 }} />
-                <Skeleton.Input active size="large" style={{ height: 40, width: '100%' }} />
-              </Grid>
-              <Grid size={{ xs: 12, md: 4 }}>
-                <Skeleton.Input active size="large" style={{ height: 16, width: '60%', marginBottom: 8 }} />
-                <Skeleton.Input active size="large" style={{ height: 40, width: '100%' }} />
-              </Grid>
-            </Grid>
-          </Box>
-        </Stack>
-      </Box>
+      <ProviderOrderFormSkeleton />
     );
   }
 
@@ -1344,7 +1222,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                   </Typography>
                 </Box>
 
-                {/* Los 3 campos en una sola fila */}
+                {/* Los 3 campos en una fila */}
                 <Grid container spacing={3}>
                   <Grid size={{ xs: 12, md: 4 }}>
                     <Typography sx={{ color: 'white', mb: 1, fontSize: '0.875rem', fontWeight: 500 }}>
@@ -1362,7 +1240,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                       />
                     </Form.Item>
                   </Grid>
-                  
+
                   <Grid size={{ xs: 12, md: 4 }}>
                     <Typography sx={{ color: 'white', mb: 1, fontSize: '0.875rem', fontWeight: 500 }}>
                       Cargo de Entrega OC PERU COMPRAS
@@ -1394,6 +1272,73 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                     </Form.Item>
                   </Grid>
                 </Grid>
+
+                {/* Botones de guardar OC Conforme */}
+                {changedOCFields.size > 0 && (
+                  <Box sx={{ 
+                    display: 'flex', 
+                    justifyContent: 'flex-end', 
+                    gap: 2, 
+                    mt: 3,
+                    pt: 2,
+                    borderTop: '1px solid rgba(255, 255, 255, 0.2)'
+                  }}>
+                    <Tooltip title="Cancelar cambios de OC Conforme">
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={cancelOCChanges}
+                        disabled={savingOC}
+                        sx={{
+                          borderColor: 'rgba(255, 255, 255, 0.3)',
+                          color: 'white',
+                          minWidth: 'auto',
+                          px: 2,
+                          py: 0.5,
+                          '&:hover': {
+                            borderColor: 'rgba(255, 255, 255, 0.5)',
+                            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                          },
+                          '&:disabled': {
+                            borderColor: 'rgba(255, 255, 255, 0.2)',
+                            color: 'rgba(255, 255, 255, 0.5)'
+                          }
+                        }}
+                      >
+                        <CancelIcon sx={{ fontSize: 16 }} />
+                      </Button>
+                    </Tooltip>
+                    
+                    <Tooltip title={`Guardar ${changedOCFields.size} cambios de OC Conforme`}>
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={saveOCChanges}
+                        disabled={savingOC}
+                        startIcon={<SaveIcon />}
+                        sx={{
+                          bgcolor: 'white',
+                          color: '#1e293b',
+                          '&:hover': {
+                            bgcolor: '#f1f5f9'
+                          },
+                          '&:disabled': {
+                            bgcolor: 'rgba(255, 255, 255, 0.3)',
+                            color: 'rgba(0, 0, 0, 0.4)'
+                          },
+                          fontSize: '0.75rem',
+                          px: 2,
+                          py: 0.5,
+                          minWidth: 'auto',
+                          fontWeight: 600
+                        }}
+                      >
+                        {savingOC ? 'Guardando...' : `Guardar OC (${changedOCFields.size})`}
+                      </Button>
+                    </Tooltip>
+                  </Box>
+                )}
+
               </CardContent>
             </Card>
 
