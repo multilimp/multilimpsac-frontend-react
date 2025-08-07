@@ -53,3 +53,8 @@ export const updateSale = async (saleId: number, sale: Record<string, any>): Pro
   const response = await apiClient.put(`/ventas/${saleId}`, sale);
   return response.data;
 };
+
+export const patchSale = async (saleId: number, data: Record<string, any>): Promise<SaleProps> => {
+  const response = await apiClient.patch(`/ventas/${saleId}`, data);
+  return response.data;
+};

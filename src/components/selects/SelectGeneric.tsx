@@ -3,12 +3,12 @@ import { Select, SelectProps } from 'antd';
 import { filterOptions } from '@/utils/functions';
 
 interface SelectGenericProps extends SelectProps {
-  label: string;
+  label?: string;
 }
 
 const SelectGeneric = ({ label, style, ...rest }: SelectGenericProps) => {
   return (
-    <SelectContainer label={label}>
+    <SelectContainer label={label || ''}>
       <Select 
         showSearch 
         filterOption={filterOptions} 

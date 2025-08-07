@@ -156,6 +156,7 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
         empresa: sale.empresa?.id,
         tipoPago: '',
         notaPago: '',
+        productosNota: '',
         pagosProveedor: [],
         productos: [getEmptyProductRecord()], // ✅ USAR función simplificada
       });
@@ -807,6 +808,30 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
                   </TableBody>
                 </Table>
               </TableContainer>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader
+              title={
+                <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Business color="primary" />
+                  Nota del Pedido
+                </Typography>
+              }
+              sx={{ pb: 1 }}
+            />
+            <CardContent>
+              <Form.Item name="productosNota">
+                <Input.TextArea
+                  placeholder="Ingrese notas adicionales sobre el pedido..."
+                  rows={3}
+                  style={{
+                    borderRadius: 4,
+                    border: '1px solid #d9d9d9',
+                  }}
+                />
+              </Form.Item>
             </CardContent>
           </Card>
 

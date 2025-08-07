@@ -14,7 +14,9 @@ interface StepItemContentProps {
   ResumeIcon?: OverridableComponent<SvgIconTypeMap<{}, 'svg'>>;
   ResumeSearchIcon?: OverridableComponent<SvgIconTypeMap<{}, 'svg'>>;
   resumeContent?: ReactNode;
+  resumeButtons?: ReactNode;
   onClickSearch?: VoidFunction;
+  showSearchButton?: boolean;
   bgcolor?: string;
 }
 
@@ -30,7 +32,9 @@ export const StepItemContent = ({
   color = '#04BA6B',
   bgcolor = 'white',
   resumeContent,
+  resumeButtons,
   onClickSearch,
+  showSearchButton = true,
 }: StepItemContentProps) => (
   <Box sx={{ backgroundColor: bgcolor, borderRadius: 2 }}>
     {showHeader ? (
@@ -58,18 +62,23 @@ export const StepItemContent = ({
             </Box>
             <Box>{resumeContent}</Box>
           </Stack>
-
-          <IconButton 
-            sx={{ 
-              border: '1px solid', 
-              borderRadius: 1, 
-              color,
-              zIndex: 900 
-            }} 
-            onClick={onClickSearch}
-          >
-            <ResumeSearchIcon />
-          </IconButton>
+          
+          <Stack direction="row" spacing={1} alignItems="center">
+            {showSearchButton && (
+              <IconButton 
+                sx={{ 
+                  border: '1px solid', 
+                  borderRadius: 1, 
+                  color,
+                  zIndex: 900 
+                }} 
+                onClick={onClickSearch}
+              >
+                <ResumeSearchIcon />
+              </IconButton>
+            )}
+            {resumeButtons}
+          </Stack>
         </Stack>
       </Fragment>
     ) : null}
