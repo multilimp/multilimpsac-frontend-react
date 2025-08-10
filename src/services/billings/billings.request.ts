@@ -1,6 +1,6 @@
 // src/services/billings/billings.requests.ts
 import apiClient from '../apiClient';
-import { BillingProps } from './billings.d';
+import { BillingData, BillingProps } from './billings.d';
 
 export const getBillings = async (): Promise<BillingProps[]> => {
   try {
@@ -16,7 +16,7 @@ export const getBillings = async (): Promise<BillingProps[]> => {
       clientRuc: oc.cliente?.ruc || '',
       companyRuc: oc.empresa?.ruc || '',
       companyBusinessName: oc.empresa?.razonSocial || '',
-      contact: oc.contactoCliente?.nombre || '',
+      contact: oc.contactoCliente?.telefono,
       registerDate: oc.fechaEmision || new Date().toISOString(),
       maxDeliveryDate: oc.fechaMaxForm || new Date().toISOString(),
       deliveryDateOC: oc.fechaEntrega || undefined,
@@ -29,7 +29,7 @@ export const getBillings = async (): Promise<BillingProps[]> => {
       invoiceDate: undefined, // Campo pendiente de implementar
       grr: undefined, // Campo pendiente de implementar
       isRefact: false, // Campo calculado o predeterminado
-      status: oc.estadoActivo ? 'pending' : 'processed',
+      status: oc.estadoActivo ? 'pending' : 'cancelled',
     }));
     
     return billings;
@@ -39,9 +39,9 @@ export const getBillings = async (): Promise<BillingProps[]> => {
   }
 };
 
-export const createBilling = async (billingData: Omit<BillingProps, 'id'>): Promise<BillingProps> => {
+export const createBilling = async (billingData: Omit<BillingData, 'id'>): Promise<BillingProps> => {
   try {
-    const response = await apiClient.post('/billings', billingData);
+    const response = await apiClient.post('/facturacion', billingData);
     return response.data;
   } catch (error) {
     console.error('Error creating billing:', error);
@@ -49,9 +49,19 @@ export const createBilling = async (billingData: Omit<BillingProps, 'id'>): Prom
   }
 };
 
+export const getBillingById = async (id: number): Promise<BillingProps | null> => {
+  try {
+    const response = await apiClient.get(`/facturacion/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error al obtener facturación por ID:', error);
+    return null;
+  }
+};
+
 export const updateBilling = async (id: number, billingData: Partial<BillingProps>): Promise<BillingProps> => {
   try {
-    const response = await apiClient.patch(`/billings/${id}`, billingData);
+    const response = await apiClient.put(`/facturacion/${id}`, billingData);
     return response.data;
   } catch (error) {
     console.error('Error updating billing:', error);
@@ -59,11 +69,91 @@ export const updateBilling = async (id: number, billingData: Partial<BillingProp
   }
 };
 
+export const patchBilling = async (id: number, billingData: Partial<BillingProps>): Promise<BillingProps> => {
+  try {
+    const response = await apiClient.patch(`/facturacion/${id}`, billingData);
+    return response.data;
+  } catch (error) {
+    console.error('Error patching billing:', error);
+    throw error;
+  }
+};
+
 export const deleteBilling = async (id: number): Promise<void> => {
   try {
-    await apiClient.delete(`/billings/${id}`);
+    await apiClient.delete(`/facturacion/${id}`);
   } catch (error) {
     console.error('Error deleting billing:', error);
+    throw error;
+  }
+};
+
+// Función para obtener facturación por orden de compra ID (relación 1:1)
+export const getBillingByOrdenCompraId = async (ordenCompraId: number): Promise<BillingProps | null> => {
+  try {
+    // Como ahora es 1:1, obtenemos directamente la orden de compra con su facturación
+    const response = await apiClient.get(`/ordenes-compra/${ordenCompraId}?include=facturacion`);
+    const ordenCompra = response.data;
+    
+    if (!ordenCompra.facturacion) {
+      return null;
+    }
+    
+    const facturacion = ordenCompra.facturacion;
+    
+    return {
+      id: facturacion.id,
+      saleId: ordenCompra.id,
+      clientBusinessName: ordenCompra.cliente?.razonSocial || '',
+      clientRuc: ordenCompra.cliente?.ruc || '',
+      companyRuc: ordenCompra.empresa?.ruc || '',
+      companyBusinessName: ordenCompra.empresa?.razonSocial || '',
+      contact: ordenCompra.contactoCliente?.telefono || '',
+      registerDate: ordenCompra.fechaEmision || new Date().toISOString(),
+      maxDeliveryDate: ordenCompra.fechaMaxForm || new Date().toISOString(),
+      deliveryDateOC: ordenCompra.fechaEntrega || undefined,
+      saleAmount: parseFloat(ordenCompra.montoVenta || '0'),
+      oce: ordenCompra.documentoOce || '',
+      ocf: ordenCompra.documentoOcf || '',
+      receptionDate: ordenCompra.fechaEntrega || new Date().toISOString(),
+      programmingDate: ordenCompra.fechaMaxForm || new Date().toISOString(),
+      invoiceNumber: facturacion.factura || undefined,
+      invoiceDate: facturacion.fechaFactura || undefined,
+      grr: facturacion.grr || undefined,
+      isRefact: false,
+      status: ordenCompra.estadoActivo ? 'pending' : 'cancelled',
+      // Campos específicos de facturación del backend
+      factura: facturacion.factura || undefined,
+      fechaFactura: facturacion.fechaFactura || undefined,
+      retencion: facturacion.retencion || undefined,
+      detraccion: facturacion.detraccion || undefined,
+      formaEnvioFactura: facturacion.formaEnvioFactura || undefined,
+      estadoFacturacion: facturacion.estado || undefined,
+      facturacionId: facturacion.id
+    };
+  } catch (error) {
+    console.error('Error al obtener facturación por orden de compra ID:', error);
+    return null;
+  }
+};
+
+// Función para crear o actualizar facturación (maneja la relación 1:1)
+export const createOrUpdateBilling = async (ordenCompraId: number, billingData: BillingData): Promise<BillingProps> => {
+  try {
+    // Primero verificamos si ya existe una facturación para esta orden de compra
+    const existingBilling = await getBillingByOrdenCompraId(ordenCompraId);
+    
+    if (existingBilling && existingBilling.facturacionId) {
+      // Si existe, actualizamos
+      const response = await apiClient.put(`/facturacion/${existingBilling.facturacionId}`, billingData);
+      return response.data;
+    } else {
+      // Si no existe, creamos una nueva
+      const response = await apiClient.post('/facturacion', billingData);
+      return response.data;
+    }
+  } catch (error) {
+    console.error('Error creating or updating billing:', error);
     throw error;
   }
 };

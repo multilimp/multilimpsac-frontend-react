@@ -31,44 +31,13 @@ export interface BillingProps {
   facturacionId?: number | null;
 }
 
-export interface CreateBillingData {
+export interface BillingData {
   ordenCompraId: number;
-  factura?: string;
-  fechaFactura?: string;
-  grr?: string;
-  retencion?: number;
-  detraccion?: number;
-  formaEnvioFactura?: string;
-  estado?: number;
-}
-
-export interface UpdateBillingData {
-  factura?: string;
-  fechaFactura?: string;
-  grr?: string;
-  retencion?: number;
-  detraccion?: number;
-  formaEnvioFactura?: string;
-  estado?: number;
-}
-
-export interface BillingFormData {
-  numeroFactura: string;
-  fechaFactura: any; // DatePicker devuelve Dayjs o Date
-  grr?: string;
-  porcentajeRetencion: number;
-  porcentajeDetraccion: number;
-  formaEnvioFactura?: string;
-  estado: string;
-}
-
-export interface ExistingBillingData {
-  id: number;
-  factura?: string;
-  fechaFactura?: string;
-  grr?: string;
-  retencion?: number;
-  detraccion?: number;
-  formaEnvioFactura?: string;
-  estado?: number;
+  factura: string;
+  fechaFactura: string;
+  grr: string;
+  retencion: number;
+  detraccion: number;
+  formaEnvioFactura: string;
+  estado: number;
 }
