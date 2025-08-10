@@ -25,13 +25,10 @@ export const filterOptions = (inputValue: string, option: any) => {
 
 export const parseJSON = (str?: null | string | any[] | object) => {
   try {
-    // Si ya es un array o objeto, retornarlo directamente
     if (Array.isArray(str) || (typeof str === 'object' && str !== null)) return str;
     
-    // Si es null, undefined o string vacío, retornar array vacío para productos
     if (!str || str === '') return [];
     
-    // Si es string, intentar parsearlo
     if (typeof str === 'string') {
       const parsed = JSON.parse(str);
       return parsed;

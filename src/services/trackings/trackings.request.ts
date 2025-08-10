@@ -98,6 +98,16 @@ export const getOrdenCompraByTrackingId = async (trackingId: number) => {
   }
 };
 
+export const updateOrdenCompra = async (ordenCompraId: number, data: Record<string, any>) => {
+  try {
+    const response = await apiClient.patch(`/ordenes-compra/${ordenCompraId}`, data);
+    return response.data;
+  } catch (error) {
+    console.error('Error al actualizar orden de compra:', error);
+    throw error;
+  }
+};
+
 export const getOpsByOrdenCompra = async (ordenCompraId: number) => {
   try {
     const response = await apiClient.get(`/ordenes-proveedores/${ordenCompraId}/op`);
