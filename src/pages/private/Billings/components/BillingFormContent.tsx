@@ -6,55 +6,49 @@ import {
   Typography,
   Card,
   CardContent,
-  Button
+  Button,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Table
 } from '@mui/material';
 import {
   Receipt as ReceiptIcon,
   ArrowBack,
-  Save as SaveIcon
+  Print
 } from '@mui/icons-material';
-import { notification, Spin, Form } from 'antd';
+import { notification, Form } from 'antd';
 import Grid from '@mui/material/Grid';
 import dayjs from 'dayjs';
 import { SaleProps } from '@/services/sales/sales';
-import { getBillingByOrdenCompraId } from '@/services/billings/billings.requests';
 import DatePickerAntd from '@/components/DatePickerAnt';
 import InputAntd from '@/components/InputAntd';
 import { alpha } from '@/styles/theme/heroui-colors';
 import { StepItemContent } from '../../Sales/SalesPageForm/smallcomponents';
 import SelectGeneric from '@/components/selects/SelectGeneric';
-import { patchBilling } from '@/services/billings/billings.request';
+import { getBillingByOrdenCompraId, patchBilling } from '@/services/billings/billings.request';
 import { formatCurrency, formattedDate } from '@/utils/functions';
+import { ProviderOrderProps } from '@/services/providerOrders/providerOrders';
+import { getOpsByOrdenCompra } from '@/services/trackings/trackings.request';
+import { Icon } from '@mui/material';
+import { printOrdenProveedor } from '@/services/print/print.requests';
+import ProviderOrdersTableSkeleton from './ProviderOrdersTableSkeleton';
+import ProviderOrderFormSkeleton from '@/components/ProviderOrderFormSkeleton';
 
 interface BillingFormContentProps {
   sale: SaleProps;
 }
 
-interface BillingFormData {
-  numeroFactura?: string;
-  fechaFactura?: dayjs.Dayjs;
-  grr?: string;
-  porcentajeRetencion?: number;
-  porcentajeDetraccion?: number;
-  formaEnvioFactura?: string;
-  estado?: string;
-}
-
-interface ProviderOrder {
-  id: number;
-  codigoOp?: string;
-  fechaRecepcion?: string;
-  fechaProgramada?: string;
-  fechaDespacho?: string;
-}
 
 const BillingFormContent = ({ sale }: BillingFormContentProps) => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [facturacionId, setFacturacionId] = useState<number | null>(null);
-  const [ordenesProveedor, setOrdenesProveedor] = useState<ProviderOrder[]>([]);
-  
+  const [ordenesProveedor, setOrdenesProveedor] = useState<ProviderOrderProps[]>([]);
+
   // Estados para el control de cambios
   const changedOCFields = new Set<string>(); // Simulado para compatibilidad
   const savingOC = false; // Simulado para compatibilidad
@@ -65,12 +59,31 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
     loadOrdenesProveedor();
   }, [sale.id]);
 
+  useEffect(() => {
+    console.log('Estado ordenesProveedor cambió:', ordenesProveedor);
+    console.log('Longitud:', ordenesProveedor.length);
+  }, [ordenesProveedor]);
+
   const loadOrdenesProveedor = async () => {
     try {
-      // Simular carga de órdenes de proveedor - puedes conectar con tu API real
-      setOrdenesProveedor([]);
+      setLoading(true);
+      const ops = await getOpsByOrdenCompra(sale.id);
+
+      
+      if (ops && Array.isArray(ops)) {
+        setOrdenesProveedor(ops);
+      } else {
+        setOrdenesProveedor([]);
+      }
     } catch (error) {
       console.error('Error loading provider orders:', error);
+      setOrdenesProveedor([]);
+      notification.error({
+        message: 'Error',
+        description: 'No se pudieron cargar las órdenes de proveedor'
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -159,14 +172,29 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
     navigate('/billing');
   };
 
-  const handlePrintOP = (op: ProviderOrder) => {
-    console.log('Printing OP:', op);
-    notification.info({
-      message: 'Funcionalidad de impresión',
-      description: 'Esta funcionalidad estará disponible próximamente'
-    });
-  };
+  const handlePrintOP = async (op: ProviderOrderProps) => {
+    try {
+      console.log('Imprimiendo OP:', op.codigoOp, 'ID:', op.id);
 
+      notification.info({
+        message: 'Generando PDF',
+        description: `Preparando impresión de ${op.codigoOp}...`
+      });
+
+      await printOrdenProveedor(op.id);
+
+      notification.success({
+        message: 'PDF Generado',
+        description: `La orden de proveedor ${op.codigoOp} se ha descargado correctamente`
+      });
+    } catch (error) {
+      console.error('Error al imprimir OP:', error);
+      notification.error({
+        message: 'Error al generar PDF',
+        description: `No se pudo generar el PDF de ${op.codigoOp}`
+      });
+    }
+  };
   const saveBilling = async () => {
     await handleSave();
   };
@@ -180,8 +208,11 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
   };
 
   return (
-    <Spin spinning={loading} size="large">
-      <Box sx={{ p: 3 }}>
+    <>
+      {loading ? (
+        <ProviderOrderFormSkeleton />
+      ) : (
+        <Box sx={{ p: 3 }}>
         <Form form={form} layout="vertical">
           <Stack spacing={3}>
 
@@ -191,6 +222,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
               color="#10b981"
               headerLeft={`Fecha creación: ${formattedDate(sale.createdAt)}`}
               headerRight={`Fecha actualización: ${formattedDate(sale.updatedAt)}`}
+              showSearchButton={false}
               resumeContent={
                 <Box>
                   <Typography variant="h5">
@@ -403,135 +435,105 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
 
             {/* Tabla de Órdenes de Proveedor - READONLY */}
             <StepItemContent>
-              <Typography
-                variant="h6"
-                sx={{
-                  fontWeight: 600,
-                  mb: 3,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1,
-                  color: '#1f2937',
-                  fontSize: '1.25rem'
-                }}
-              >
-                <AssignmentIcon sx={{ color: '#667eea', fontSize: 28 }} />
-                Órdenes de Proveedor ({ordenesProveedor.length})
-              </Typography>
-
-              {ordenesProveedor.length === 0 ? (
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 600,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                    color: '#1f2937',
+                    fontSize: '1.25rem'
+                  }}
+                >
+                  <Icon sx={{ color: '#667eea', fontSize: 28 }} />
+                  Órdenes de Proveedor ({ordenesProveedor.length})
+                </Typography>
+              </Box>
+              
+              {loading ? (
+                <ProviderOrdersTableSkeleton />
+              ) : ordenesProveedor.length === 0 ? (
                 <Box sx={{
                   textAlign: 'center',
-                  py: 6,
-                  bgcolor: 'rgba(249, 250, 251, 0.8)',
+                  py: 8,
+                  bgcolor: '#f8fafc',
                   borderRadius: 3,
-                  border: '2px dashed #d1d5db'
+                  border: '2px dashed #cbd5e1'
                 }}>
+                  <Box sx={{ mb: 2 }}>
+                    <Icon sx={{ fontSize: 48, color: '#94a3b8' }} />
+                  </Box>
                   <Typography
-                    variant="body1"
+                    variant="h6"
                     sx={{
-                      color: '#6b7280',
-                      fontWeight: 500,
-                      fontSize: '1.1rem'
+                      color: '#475569',
+                      fontWeight: 600,
+                      fontSize: '1.1rem',
+                      mb: 1
                     }}
                   >
-                    No hay órdenes de proveedor registradas para esta orden de compra
+                    No hay órdenes de proveedor
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: '#64748b',
+                      fontSize: '0.9rem'
+                    }}
+                  >
+                    No se encontraron órdenes de proveedor registradas para esta orden de compra
                   </Typography>
                 </Box>
               ) : (
-                <Box sx={{
-                  bgcolor: 'white',
-                  borderRadius: 3,
+                <Box sx={{ 
+                  bgcolor: '#ffffff', 
+                  borderRadius: 2, 
                   overflow: 'hidden',
-                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
-                  border: '1px solid rgba(229, 231, 235, 0.8)'
+                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
                 }}>
                   <TableContainer>
                     <Table>
                       <TableHead>
-                        <TableRow sx={{
-                          bgcolor: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                          '& th': {
-                            borderBottom: '2px solid rgba(255, 255, 255, 0.2)',
-                            py: 2.5,
-                            px: 3,
-                            fontWeight: 700,
-                            fontSize: '0.875rem',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.05em',
-                            color: 'white',
-                            textAlign: 'center',
-                            position: 'relative',
-                            '&:first-of-type': {
-                              borderTopLeftRadius: 12
-                            },
-                            '&:last-of-type': {
-                              borderTopRightRadius: 12
-                            }
-                          }
-                        }}>
-                          <TableCell sx={{
-                            color: 'white',
-                            fontWeight: 700,
-                            fontSize: '0.875rem',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.05em',
-                            textAlign: 'center',
-                            py: 2.5,
-                            px: 3,
-                            borderBottom: '2px solid rgba(255, 255, 255, 0.2)'
+                        <TableRow sx={{ bgcolor: '#f8fafc' }}>
+                          <TableCell sx={{ 
+                            borderBottom: '2px solid #e2e8f0', 
+                            fontWeight: 600, 
+                            color: '#475569',
+                            fontSize: '0.875rem'
                           }}>
-                            Código OP
+                            OP
                           </TableCell>
-                          <TableCell sx={{
-                            color: 'white',
-                            fontWeight: 700,
-                            fontSize: '0.875rem',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.05em',
-                            textAlign: 'center',
-                            py: 2.5,
-                            px: 3,
-                            borderBottom: '2px solid rgba(255, 255, 255, 0.2)'
+                          <TableCell sx={{ 
+                            borderBottom: '2px solid #e2e8f0', 
+                            fontWeight: 600, 
+                            color: '#475569',
+                            fontSize: '0.875rem'
                           }}>
                             Fecha Recepción
                           </TableCell>
-                          <TableCell sx={{
-                            color: 'white',
-                            fontWeight: 700,
-                            fontSize: '0.875rem',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.05em',
-                            textAlign: 'center',
-                            py: 2.5,
-                            px: 3,
-                            borderBottom: '2px solid rgba(255, 255, 255, 0.2)'
+                          <TableCell sx={{ 
+                            borderBottom: '2px solid #e2e8f0', 
+                            fontWeight: 600, 
+                            color: '#475569',
+                            fontSize: '0.875rem'
                           }}>
-                            Fecha Programación
+                            Fecha Programada
                           </TableCell>
-                          <TableCell sx={{
-                            color: 'white',
-                            fontWeight: 700,
-                            fontSize: '0.875rem',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.05em',
-                            textAlign: 'center',
-                            py: 2.5,
-                            px: 3,
-                            borderBottom: '2px solid rgba(255, 255, 255, 0.2)'
+                          <TableCell sx={{ 
+                            borderBottom: '2px solid #e2e8f0', 
+                            fontWeight: 600, 
+                            color: '#475569',
+                            fontSize: '0.875rem'
                           }}>
-                            Fecha Entrega OP
+                            Fecha Despacho
                           </TableCell>
-                          <TableCell sx={{
-                            color: 'white',
-                            fontWeight: 700,
-                            fontSize: '0.875rem',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.05em',
-                            textAlign: 'center',
-                            py: 2.5,
-                            px: 3,
-                            borderBottom: '2px solid rgba(255, 255, 255, 0.2)'
+                          <TableCell sx={{ 
+                            borderBottom: '2px solid #e2e8f0', 
+                            fontWeight: 600, 
+                            color: '#475569',
+                            fontSize: '0.875rem'
                           }}>
                             Acciones
                           </TableCell>
@@ -539,100 +541,52 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                       </TableHead>
                       <TableBody>
                         {ordenesProveedor.map((op, index) => (
-                          <TableRow
-                            key={op.id}
-                            sx={{
-                              bgcolor: index % 2 === 0 ? '#ffffff' : 'rgba(249, 250, 251, 0.6)',
-                              transition: 'all 0.2s ease-in-out',
-                              '&:hover': {
-                                bgcolor: 'rgba(102, 126, 234, 0.05)',
-                                transform: 'translateY(-1px)',
-                                boxShadow: '0 2px 8px rgba(102, 126, 234, 0.1)'
-                              },
-                              '& td': {
-                                py: 2.5,
-                                px: 3,
-                                borderBottom: '1px solid rgba(229, 231, 235, 0.5)',
-                                fontSize: '0.875rem',
-                                fontWeight: 500,
-                                color: '#374151'
-                              }
+                          <TableRow 
+                            key={op.id} 
+                            sx={{ 
+                              '&:hover': { bgcolor: '#f8fafc' },
+                              bgcolor: index % 2 === 0 ? '#ffffff' : '#fafafa'
                             }}
                           >
-                            <TableCell sx={{
-                              fontWeight: 600,
-                              color: '#1f2937',
-                              fontFamily: '"Roboto Mono", monospace',
-                              fontSize: '0.875rem',
-                              textAlign: 'center',
-                              py: 2.5,
-                              px: 3,
-                              borderBottom: '1px solid rgba(229, 231, 235, 0.5)'
-                            }}>
-                              {op.codigoOp || `OP-${op.id}`}
-                            </TableCell>
-                            <TableCell sx={{
-                              textAlign: 'center',
-                              py: 2.5,
-                              px: 3,
-                              borderBottom: '1px solid rgba(229, 231, 235, 0.5)',
-                              fontSize: '0.875rem',
+                            <TableCell sx={{ 
+                              borderBottom: '1px solid #f1f5f9',
                               fontWeight: 500,
-                              color: '#374151'
+                              color: '#1e293b'
                             }}>
-                              {formattedDate(op.fechaRecepcion) || 'N/A'}
+                              {op.codigoOp}
                             </TableCell>
-                            <TableCell sx={{
-                              textAlign: 'center',
-                              py: 2.5,
-                              px: 3,
-                              borderBottom: '1px solid rgba(229, 231, 235, 0.5)',
-                              fontSize: '0.875rem',
-                              fontWeight: 500,
-                              color: '#374151'
+                            <TableCell sx={{ 
+                              borderBottom: '1px solid #f1f5f9',
+                              color: '#475569'
                             }}>
-                              {formattedDate(op.fechaProgramada) || 'N/A'}
+                              {formattedDate(op.fechaRecepcion)}
                             </TableCell>
-                            <TableCell sx={{
-                              textAlign: 'center',
-                              py: 2.5,
-                              px: 3,
-                              borderBottom: '1px solid rgba(229, 231, 235, 0.5)',
-                              fontSize: '0.875rem',
-                              fontWeight: 500,
-                              color: '#374151'
+                            <TableCell sx={{ 
+                              borderBottom: '1px solid #f1f5f9',
+                              color: '#475569'
                             }}>
-                              {formattedDate(op.fechaDespacho) || 'N/A'}
+                              {formattedDate(op.fechaProgramada)}
                             </TableCell>
-                            <TableCell sx={{
-                              textAlign: 'center',
-                              py: 2.5,
-                              px: 3,
-                              borderBottom: '1px solid rgba(229, 231, 235, 0.5)'
+                            <TableCell sx={{ 
+                              borderBottom: '1px solid #f1f5f9',
+                              color: '#475569'
                             }}>
-                              <IconButton
-                                sx={{
-                                  bgcolor: 'rgba(102, 126, 234, 0.1)',
-                                  color: '#667eea',
-                                  border: '1px solid rgba(102, 126, 234, 0.2)',
-                                  transition: 'all 0.2s ease-in-out',
-                                  '&:hover': {
-                                    bgcolor: 'rgba(102, 126, 234, 0.2)',
-                                    transform: 'scale(1.05)',
-                                    boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)'
-                                  },
-                                  '&:disabled': {
-                                    bgcolor: 'rgba(156, 163, 175, 0.1)',
-                                    color: '#9ca3af',
-                                    border: '1px solid rgba(156, 163, 175, 0.2)'
-                                  }
-                                }}
+                              {formattedDate(op.fechaDespacho)}
+                            </TableCell>
+                            <TableCell sx={{ borderBottom: '1px solid #f1f5f9' }}>
+                              <Button 
+                                variant="contained" 
+                                color="primary" 
                                 onClick={() => handlePrintOP(op)}
-                                title="Generar e imprimir factura"
-                                disabled={loading}
+                                size="small"
+                                sx={{ 
+                                  minWidth: 'auto',
+                                  px: 1.5,
+                                  py: 0.5
+                                }}
                               >
-                                <PrintIcon sx={{ fontSize: 20 }} />
-                              </IconButton>
+                                <Print sx={{ fontSize: 18 }} />
+                              </Button>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -849,7 +803,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                     }
                   }}
                 >
-                  {loading ? 'Guardando...' : 'Guardar Seguimiento'}
+                  {loading ? 'Guardando...' : 'Guardar Facturación'}
                 </Button>
               </div>
 
@@ -858,7 +812,8 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
           </Stack>
         </Form>
       </Box>
-    </Spin>
+      )}
+    </>
   );
 };
 

@@ -5,7 +5,6 @@ import { Stack } from '@mui/material';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 import { BlackBarKeyEnum } from '@/types/global.enum';
 import BillingFormContent from './components/BillingFormContent';
-import BillingFormContentSimple from './components/BillingFormContentSimple';
 
 const BillingsForm = () => {
   const { selectedSale, setSelectedSale, setBlackBarKey } = useGlobalInformation();
@@ -49,7 +48,7 @@ const BillingsForm = () => {
   return (
     <Stack direction="column" spacing={2}>
       {selectedSale ? (
-        <BillingFormContentSimple sale={selectedSale} />
+        <BillingFormContent sale={selectedSale} />
       ) : (
         <Empty 
           description="No hay datos de facturación disponibles"

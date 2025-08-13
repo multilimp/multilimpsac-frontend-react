@@ -6,7 +6,6 @@ import {
   Typography,
   Card,
   CardContent,
-  CardHeader,
   Button,
   Chip,
   Divider,
@@ -57,7 +56,6 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [ordenesProveedor, setOrdenesProveedor] = useState<ProviderOrderProps[]>([]);
-  const [expandedProducts, setExpandedProducts] = useState<{ [key: string]: boolean }>({});
   const [expandedContent, setExpandedContent] = useState<{ [key: string]: boolean }>({});
   const [originalValues, setOriginalValues] = useState<{ [key: string]: Record<string, unknown> }>({});
   const [changedFields, setChangedFields] = useState<{ [key: string]: Set<string> }>({});
