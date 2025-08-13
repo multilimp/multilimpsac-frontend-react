@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Box, 
-  Stack, 
-  Typography, 
-  Card, 
+import {
+  Box,
+  Stack,
+  Typography,
+  Card,
   CardContent,
   Button,
   Table,
@@ -17,7 +17,7 @@ import {
   IconButton,
   Chip
 } from '@mui/material';
-import { 
+import {
   Save,
   Business,
   AttachMoney as MoneyIcon,
@@ -31,16 +31,18 @@ import { SaleProps } from '@/services/sales/sales';
 import { formatCurrency, formattedDate } from '@/utils/functions';
 import { StepItemContent } from '../../Sales/SalesPageForm/smallcomponents';
 import dayjs from 'dayjs';
-import { 
-  getGestionesCobranza, 
-  updateCobranza, 
-  createGestionCobranza, 
-  updateGestionCobranza, 
+import type { Dayjs } from 'dayjs';
+import {
+  getGestionesCobranza,
+  updateCobranza,
+  createGestionCobranza,
+  updateGestionCobranza,
   deleteGestionCobranza,
   getCobranzaByOrdenCompra,
   type GestionCobranza,
   type CobranzaData
 } from '@/services/cobranza/cobranza.service';
+import { heroUIColors } from '@/components/ui';
 
 interface CollectionFormContentProps {
   sale: SaleProps;
@@ -91,7 +93,7 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
     try {
       // Cargar datos de cobranza
       const cobranzaData = await getCobranzaByOrdenCompra(sale.id);
-      
+
       // Configurar el formulario con los datos
       form.setFieldsValue({
         etapaSiaf: cobranzaData.etapaSiaf || '',
@@ -106,7 +108,7 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
 
       // Cargar gestiones
       await loadGestiones();
-      
+
     } catch (error) {
       console.error('Error loading collection data:', error);
       notification.error({
@@ -139,10 +141,21 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
     navigate('/collections');
   };
 
-  const handleFinish = async (values: Record<string, any>) => {
+  interface CollectionFormValues {
+    etapaSiaf?: string;
+    fechaSiaf?: Dayjs | null;
+    retencion?: string;
+    detraccion?: string;
+    penalidad?: string;
+    netoCobrado?: string;
+    estadoCobranza?: string;
+    fechaEstadoCobranza?: Dayjs | null;
+  }
+
+  const handleFinish = async (values: CollectionFormValues) => {
     try {
       setLoading(true);
-      
+
       const formData: CobranzaData = {
         etapaSiaf: values.etapaSiaf,
         fechaSiaf: values.fechaSiaf ? values.fechaSiaf.format('YYYY-MM-DD') : undefined,
@@ -153,14 +166,14 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
         estadoCobranza: values.estadoCobranza,
         fechaEstadoCobranza: values.fechaEstadoCobranza ? values.fechaEstadoCobranza.format('YYYY-MM-DD') : undefined,
       };
-      
+
       await updateCobranza(sale.id, formData);
       notification.success({
         message: 'Cobranza actualizada',
         description: 'La información de cobranza se ha actualizado correctamente'
       });
       navigate('/collections');
-      
+
     } catch (error) {
       notification.error({
         message: 'Error al guardar',
@@ -187,7 +200,21 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
     setModalVisible(true);
   };
 
-  const handleSaveGestion = async (values: Record<string, any>) => {
+  interface GestionFormValues {
+    fechaGestion?: Dayjs | null;
+    notaGestion?: string;
+    estadoCobranza?: string;
+    tipoCobranza?: string;
+    voucherPagoUrl?: string;
+    pagoConformeTesoreria?: boolean;
+    cartaAmpliacionUrl?: string;
+    capturaEnvioDocumentoUrl?: string;
+    archivosAdjuntosNotasGestion?: string;
+    documentosRegistrados?: string;
+    notaEspecialEntrega?: string;
+  }
+
+  const handleSaveGestion = async (values: GestionFormValues) => {
     try {
       const gestionData: Partial<GestionCobranza> = {
         ordenCompraId: sale.id,
@@ -208,7 +235,7 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
       if (editingGestion) {
         // Editar gestión existente
         const updatedGestion = await updateGestionCobranza(editingGestion.id!, gestionData);
-        const updatedGestiones = gestiones.map(g => 
+        const updatedGestiones = gestiones.map(g =>
           g.id === editingGestion.id ? updatedGestion : g
         );
         setGestiones(updatedGestiones);
@@ -220,7 +247,7 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
 
       setModalVisible(false);
       gestionForm.resetFields();
-      
+
       notification.success({
         message: 'Gestión guardada',
         description: 'La gestión se ha guardado correctamente'
@@ -273,56 +300,80 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
     <Box sx={{ p: 3 }}>
       <Spin spinning={loading}>
         {/* Barra Negra de OP */}
-        <StepItemContent 
-          showHeader={true} 
-          headerLeft={`OP: ${sale.codigoVenta}`}
-          headerRight={`Cliente: ${sale.cliente?.razonSocial}`}
+        <StepItemContent
+          showHeader={true}
           color="#1071d1ff"
-          children={
-          <Box sx={{ mb: 3 }}>
+          ResumeIcon={Business}
+          headerLeft={
             <Stack direction="row" alignItems="center" spacing={2}>
-              <Box sx={{ flexGrow: 1 }}>
-                <Typography variant="h4" component="h1" sx={{ fontWeight: 600, color: '#1a1a1a' }}>
-                  Gestión de Cobranza
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {sale.codigoVenta} • {sale.cliente?.razonSocial}
-                </Typography>
-              </Box>
+              <Typography sx={{ fontWeight: 600, color: heroUIColors.primary }}>
+                {sale.empresa?.razonSocial}  -  RUC: {sale.empresa?.ruc}
+              </Typography>
             </Stack>
-          </Box>
+          }
+          headerRight={
+            <Stack direction="row" alignItems="center" spacing={2}>
+              <Typography sx={{ fontWeight: 600, color: heroUIColors.primary }}>
+                Fecha registro: {sale.createdAt ? formattedDate(sale.createdAt) : '-'}
+              </Typography>
+            </Stack>
+          }
+          resumeContent={
+            <Stack direction="column" alignItems="left">
+              <Typography variant="h6" sx={{ fontWeight: 600, color: 'gray' }}>
+                Gestión de Cobranza
+              </Typography>
+              <Typography variant="h4" sx={{ fontWeight: 600, color: 'white' }}>
+                {sale.codigoVenta}
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'white' }}>
+                {sale.cliente?.razonSocial} - RUC: {sale.cliente?.ruc}
+              </Typography>
+            </Stack>
+          }
+          showSearchButton={false}
+          children={
+            <Box sx={{ mb: 3 }}>
+              <Stack direction="row" spacing={2} sx={{ flexWrap: 'wrap' }}>
+                <Box sx={{ minWidth: 220, flex: 1 }}>
+                  <Typography variant="caption" color="text.secondary">SIAF</Typography>
+                  <Typography variant="body2">{sale.siaf || '-'}</Typography>
+                </Box>
+
+                <Box sx={{ minWidth: 220, flex: 1 }}>
+                  <Typography variant="caption" color="text.secondary">Fecha SIAF</Typography>
+                  <Typography variant="body2">{sale.fechaSiaf ? formattedDate(sale.fechaSiaf) : '-'}</Typography>
+                </Box>
+
+                <Box sx={{ minWidth: 220, flex: 1 }}>
+                  <Typography variant="caption" color="text.secondary">Unidad Ejecutora</Typography>
+                  <Typography variant="body2">{sale.cliente?.codigoUnidadEjecutora || '-'}</Typography>
+                </Box>
+
+                <Box sx={{ minWidth: 220, flex: 1 }}>
+                  <Typography variant="caption" color="text.secondary">Factura</Typography>
+                  <Typography variant="body2">{sale?.facturacion?.factura || '-'}</Typography>
+                </Box>
+
+                <Box sx={{ minWidth: 220, flex: 1 }}>
+                  <Typography variant="caption" color="text.secondary">Fecha Factura</Typography>
+                  <Typography variant="body2">{sale?.facturacion?.fechaFactura ? formattedDate(sale?.facturacion?.fechaFactura) : '-'}</Typography>
+                </Box>
+
+                <Box sx={{ minWidth: 220, flex: 1 }}>
+                  <Typography variant="caption" color="text.secondary">Perú Compras</Typography>
+                  <Typography variant="body2">{sale?.documentoPeruCompras || '-'}</Typography>
+                </Box>
+
+                <Box sx={{ minWidth: 220, flex: 1 }}>
+                  <Typography variant="caption" color="text.secondary">Fecha Entrega OC</Typography>
+                  <Typography variant="body2">{sale?.fechaEntregaOc ? formattedDate(sale?.fechaEntregaOc) : '-'}</Typography>
+                </Box>
+              </Stack>
+            </Box>
           }
         >
         </StepItemContent>
-
-        {/* Información General de la OC */}
-        <Card sx={{ mb: 3 }}>
-          <CardContent>
-            <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
-              <Business color="primary" />
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                Información de la Orden de Compra
-              </Typography>
-            </Stack>
-            
-            <Stack direction="row" spacing={4} sx={{ mb: 2 }}>
-              <Box>
-                <Typography variant="body2" color="text.secondary">Código OC:</Typography>
-                <Typography variant="body1" sx={{ fontWeight: 500 }}>{sale.codigoVenta}</Typography>
-              </Box>
-              <Box>
-                <Typography variant="body2" color="text.secondary">Importe Total:</Typography>
-                <Typography variant="body1" sx={{ fontWeight: 500, color: 'primary.main' }}>
-                  {formatCurrency(parseInt(sale.montoVenta, 10))}
-                </Typography>
-              </Box>
-              <Box>
-                <Typography variant="body2" color="text.secondary">Cliente:</Typography>
-                <Typography variant="body1" sx={{ fontWeight: 500 }}>{sale.cliente?.razonSocial}</Typography>
-              </Box>
-            </Stack>
-          </CardContent>
-        </Card>
 
         {/* Gestiones - Grid 3x3 */}
         <Card sx={{ mb: 3 }}>
@@ -338,8 +389,8 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
               <Row gutter={[24, 16]}>
                 {/* Fila 1 */}
                 <Col span={8}>
-                  <Form.Item 
-                    label="Importe Total OC" 
+                  <Form.Item
+                    label="Importe Total OC"
                     name="importeTotal"
                     initialValue={formatCurrency(parseInt(sale.montoVenta, 10))}
                   >
@@ -396,8 +447,8 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                 <Button variant="outlined" onClick={handleBack}>
                   Cancelar
                 </Button>
-                <Button 
-                  variant="contained" 
+                <Button
+                  variant="contained"
                   onClick={() => form.submit()}
                   startIcon={<Save />}
                   disabled={loading}
@@ -462,15 +513,15 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                           {gestion.fechaGestion ? formattedDate(gestion.fechaGestion) : '-'}
                         </TableCell>
                         <TableCell>
-                          <Chip 
-                            label={getTipoLabel(gestion.tipoCobranza)} 
-                            size="small" 
+                          <Chip
+                            label={getTipoLabel(gestion.tipoCobranza)}
+                            size="small"
                             variant="outlined"
                           />
                         </TableCell>
                         <TableCell>
-                          <Chip 
-                            label={getEstadoLabel(gestion.estadoCobranza)} 
+                          <Chip
+                            label={getEstadoLabel(gestion.estadoCobranza)}
                             size="small"
                             color={gestion.estadoCobranza === 'NORMAL' ? 'success' : 'warning'}
                           />
@@ -523,8 +574,8 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
         >
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item 
-                label="Fecha de Gestión" 
+              <Form.Item
+                label="Fecha de Gestión"
                 name="fechaGestion"
                 rules={[{ required: true, message: 'Seleccione una fecha' }]}
               >
@@ -532,8 +583,8 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item 
-                label="Tipo de Cobranza" 
+              <Form.Item
+                label="Tipo de Cobranza"
                 name="tipoCobranza"
                 rules={[{ required: true, message: 'Seleccione un tipo' }]}
               >
@@ -544,8 +595,8 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
 
           <Row gutter={16}>
             <Col span={24}>
-              <Form.Item 
-                label="Estado de Cobranza" 
+              <Form.Item
+                label="Estado de Cobranza"
                 name="estadoCobranza"
                 rules={[{ required: true, message: 'Seleccione un estado' }]}
               >
@@ -554,8 +605,8 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
             </Col>
           </Row>
 
-          <Form.Item 
-            label="Nota de Gestión" 
+          <Form.Item
+            label="Nota de Gestión"
             name="notaGestion"
             rules={[{ required: true, message: 'Ingrese una nota' }]}
           >

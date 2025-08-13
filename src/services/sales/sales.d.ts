@@ -2,6 +2,7 @@ import { CatalogProps } from '../catalogs/catalogs';
 import { ClientProps } from '../clients/clients';
 import { CompanyProps } from '../companies/company';
 import { ContactProps } from '../contacts/contacts';
+import { ProviderOrderProps } from '../providerOrders/providerOrders';
 
 export interface SaleProps {
   id: number;
@@ -52,7 +53,16 @@ export interface SaleProps {
   cliente: ClientProps;
   contactoCliente: ContactProps;
   catalogoEmpresa: CatalogProps;
-  ordenesProveedor: Array<any>;
+  ordenesProveedor: Array<ProviderOrderProps>;
+  facturacion?: {
+    factura: string;
+    fechaFactura: string;
+    grr: string;
+    retencion: string;
+    detraccion: string;
+    formaEnvioFactura: string;
+    estado: number;
+  };
   ordenCompraPrivada?: {
     id: number;
     ordenCompraId: number;
