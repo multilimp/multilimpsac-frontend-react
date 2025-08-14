@@ -237,199 +237,82 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                 </Box>
               }
             >
-              {/* Información Empresarial Mejorada */}
-              <Box sx={{
-                display: 'grid',
-                gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
-                gap: 3,
-                mt: 3,
-                p: 3,
-                bgcolor: 'rgba(16, 185, 129, 0.05)',
-                borderRadius: 3,
-                border: '1px solid rgba(16, 185, 129, 0.1)'
-              }}>
-
-                {/* Empresa */}
-                {sale?.empresa?.razonSocial && (
-                  <Box sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    p: 2,
-                    bgcolor: 'white',
-                    borderRadius: 2,
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                    border: '1px solid rgba(168, 85, 247, 0.2)',
-                    position: 'relative',
-                    '&::before': {
-                      content: '""',
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      height: '4px',
-                      background: 'linear-gradient(90deg, #a855f7 0%, #9333ea 100%)',
-                      borderRadius: '8px 8px 0 0'
-                    }
-                  }}>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: '#6b7280',
-                        fontWeight: 600,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em',
-                        mb: 1
-                      }}
-                    >
-                      Empresa
-                    </Typography>
-                    <Typography
-                      variant="body1"
-                      sx={{
-                        fontWeight: 600,
-                        color: '#1f2937',
-                        textAlign: 'center',
-                        lineHeight: 1.3,
-                        maxWidth: '100%',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical'
-                      }}
-                    >
-                      {sale.empresa.razonSocial}
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: '#9ca3af',
-                        mt: 0.5,
-                        textAlign: 'center'
-                      }}
-                    >
-                      Proveedor
-                    </Typography>
-                  </Box>
-                )}
-
-                {/* Fecha Emisión */}
-                {sale.fechaEmision && (
-                  <Box sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    p: 2,
-                    bgcolor: 'white',
-                    borderRadius: 2,
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                    border: '1px solid rgba(59, 130, 246, 0.2)',
-                    position: 'relative',
-                    '&::before': {
-                      content: '""',
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      height: '4px',
-                      background: 'linear-gradient(90deg, #3b82f6 0%, #2563eb 100%)',
-                      borderRadius: '8px 8px 0 0'
-                    }
-                  }}>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: '#6b7280',
-                        fontWeight: 600,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em',
-                        mb: 1
-                      }}
-                    >
-                      Fecha Emisión
-                    </Typography>
-                    <Typography
-                      variant="h6"
-                      sx={{
-                        fontWeight: 600,
-                        color: '#1f2937',
-                        textAlign: 'center',
-                        fontFamily: '"Roboto Mono", monospace'
-                      }}
-                    >
-                      {formattedDate(sale.fechaEmision)}
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: '#9ca3af',
-                        mt: 0.5,
-                        textAlign: 'center'
-                      }}
-                    >
-                      Orden de Compra
-                    </Typography>
-                  </Box>
-                )}
-
-                {/* Monto Total */}
-                <Box sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  p: 2,
-                  bgcolor: 'white',
-                  borderRadius: 2,
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                  border: '1px solid rgba(16, 185, 129, 0.2)',
-                  position: 'relative',
-                  '&::before': {
-                    content: '""',
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: '4px',
-                    background: 'linear-gradient(90deg, #10b981 0%, #059669 100%)',
-                    borderRadius: '8px 8px 0 0'
-                  }
+              {/* Información Empresarial Minimalista */}
+              <Box sx={{ mb: 3 }}>
+                {/* Grid minimalista - Exactamente 3 columnas */}
+                <Box sx={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: 'repeat(3, 1fr)', 
+                  gap: 1.5
                 }}>
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      color: '#6b7280',
-                      fontWeight: 600,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em',
-                      mb: 1
-                    }}
-                  >
-                    Monto Total
-                  </Typography>
-                  <Typography
-                    variant="h4"
-                    sx={{
-                      fontWeight: 700,
-                      color: '#10b981',
-                      textAlign: 'center',
-                      fontFamily: '"Roboto Mono", monospace'
-                    }}
-                  >
-                    {formatCurrency(parseFloat(sale.montoVenta || '0'))}
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      color: '#9ca3af',
-                      mt: 0.5,
-                      textAlign: 'center'
-                    }}
-                  >
-                    Soles (PEN)
-                  </Typography>
-                </Box>
+                  {/* Card 1: Empresa */}
+                  {sale?.empresa?.razonSocial && (
+                    <Card sx={{ 
+                      backgroundColor: 'rgba(255, 255, 255, 0.95)', 
+                      border: '1px solid #e0e0e0',
+                      minHeight: '70px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      boxShadow: 'none'
+                    }}>
+                      <CardContent sx={{ py: 1, px: 1.5, '&:last-child': { pb: 1 } }}>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.7rem' }}>
+                          Empresa
+                        </Typography>
+                        <Typography variant="body1" sx={{ 
+                          fontWeight: 500, 
+                          color: '#424242', 
+                          fontSize: '0.9rem',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap'
+                        }}>
+                          {sale.empresa.razonSocial} 
+                        </Typography>
+                      </CardContent>
+                    </Card>
+                  )}
 
+                  {/* Card 2: Fecha Emisión */}
+                  {sale.fechaEmision && (
+                    <Card sx={{ 
+                      backgroundColor: 'rgba(255, 255, 255, 0.95)', 
+                      border: '1px solid #e0e0e0',
+                      minHeight: '70px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      boxShadow: 'none'
+                    }}>
+                      <CardContent sx={{ py: 1, px: 1.5, '&:last-child': { pb: 1 } }}>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.7rem' }}>
+                          Fecha Emisión
+                        </Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 500, color: '#424242', fontSize: '0.9rem' }}>
+                          {formattedDate(sale.fechaEmision)}
+                        </Typography>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Card 3: Monto Total */}
+                  <Card sx={{ 
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)', 
+                    border: '1px solid #e0e0e0',
+                    minHeight: '70px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    boxShadow: 'none'
+                  }}>
+                    <CardContent sx={{ py: 1, px: 1.5, '&:last-child': { pb: 1 } }}>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.7rem' }}>
+                        Monto Total
+                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 500, color: '#424242', fontSize: '0.9rem' }}>
+                        {formatCurrency(parseFloat(sale.montoVenta || '0'))}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Box>
               </Box>
             </StepItemContent>
 
