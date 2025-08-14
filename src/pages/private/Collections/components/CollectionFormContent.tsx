@@ -855,6 +855,7 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                 <TableHead>
                   <TableRow sx={{ backgroundColor: '#f8f9fa' }}>
                     <TableCell sx={{ fontWeight: 600 }}>Fecha</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Usuario</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Tipo</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Estado</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Nota</TableCell>
@@ -864,13 +865,13 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                 <TableBody>
                   {gestionesLoading ? (
                     <TableRow>
-                      <TableCell colSpan={5} align="center">
+                      <TableCell colSpan={6} align="center">
                         <Spin />
                       </TableCell>
                     </TableRow>
                   ) : gestiones.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={5} align="center">
+                      <TableCell colSpan={6} align="center">
                         <Typography color="text.secondary">
                           No hay gestiones registradas
                         </Typography>
@@ -881,6 +882,11 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                       <TableRow key={gestion.id} hover>
                         <TableCell>
                           {gestion.fechaGestion ? formattedDate(gestion.fechaGestion) : '-'}
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                            {gestion.usuario?.nombre || 'Usuario no disponible'}
+                          </Typography>
                         </TableCell>
                         <TableCell>
                           <Chip
