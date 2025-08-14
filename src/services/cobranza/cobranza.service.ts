@@ -3,26 +3,47 @@ import apiClient from '../apiClient';
 
 export interface GestionCobranza {
   id?: number;
-  ordenCompraId: number;
+  ordenCompraId?: number;
+  ordenCompraPrivadaId?: number;
+  usuarioId: number;
   fechaGestion: string;
-  notaGestion: string;
-  estadoCobranza: string;
-  tipoCobranza: string;
+  notaGestion?: string;
+  estadoCobranza?: string;
+  
+  // Tipo de cobranza según requerimientos (ESPECIAL vs NORMAL)
+  tipoCobranza?: 'ESPECIAL' | 'NORMAL';
+  
+  // Campos para gestión de vouchers y pagos
   voucherPagoUrl?: string;
   pagoConformeTesoreria?: boolean;
+  
+  // Documentos de gestión
   cartaAmpliacionUrl?: string;
   capturaEnvioDocumentoUrl?: string;
-  archivosAdjuntosNotasGestion?: string;
-  documentosRegistrados?: string;
+  
+  // Archivos y documentos múltiples
+  archivosAdjuntosNotasGestion?: string[];
+  documentosRegistrados?: string[];
+  
+  // Notas especiales
   notaEspecialEntrega?: string;
-  usuarioId?: number;
+  
+  // Metadatos
   createdAt?: string;
   updatedAt?: string;
+  
   // Relaciones
   usuario?: {
     id: number;
     nombre: string;
-    email: string;
+    email?: string;
+  };
+  ordenCompra?: {
+    id: number;
+    codigoVenta: string;
+  };
+  ordenCompraPrivada?: {
+    id: number;
   };
 }
 

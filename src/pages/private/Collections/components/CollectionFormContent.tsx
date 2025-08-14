@@ -26,7 +26,7 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon
 } from '@mui/icons-material';
-import { notification, Spin, Form, Input, DatePicker, Select, Modal, Row, Col } from 'antd';
+import { notification, Spin, Form, Input, DatePicker, Select, Modal, Row, Col, Checkbox } from 'antd';
 import { SaleProps } from '@/services/sales/sales';
 import { formatCurrency, formattedDate } from '@/utils/functions';
 import { StepItemContent } from '../../Sales/SalesPageForm/smallcomponents';
@@ -46,6 +46,7 @@ import { heroUIColors } from '@/components/ui';
 import InputAntd from '@/components/InputAntd';
 import SelectGeneric from '@/components/selects/SelectGeneric';
 import DatePickerAntd from '@/components/DatePickerAnt';
+import SimpleFileUpload from '@/components/SimpleFileUpload';
 
 interface CollectionFormContentProps {
   sale: SaleProps;
@@ -76,6 +77,11 @@ const etapasSiafOptions = [
 ];
 
 const tipoCobranzaOptions = [
+  { label: 'Cobranza Especial', value: 'ESPECIAL' },
+  { label: 'Cobranza Normal', value: 'NORMAL' }
+];
+
+const tipoGestionOptions = [
   { label: 'Gestión telefónica', value: 'TELEFONICA' },
   { label: 'Visita presencial', value: 'PRESENCIAL' },
   { label: 'Correo electrónico', value: 'EMAIL' },
@@ -288,9 +294,21 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
 
   const handleEditGestion = (gestion: GestionCobranza) => {
     setEditingGestion(gestion);
+    
+    // Convertir arrays a strings para el formulario
+    const archivosAdjuntosStr = Array.isArray(gestion.archivosAdjuntosNotasGestion) 
+      ? gestion.archivosAdjuntosNotasGestion.join(', ')
+      : gestion.archivosAdjuntosNotasGestion || '';
+
+    const documentosRegStr = Array.isArray(gestion.documentosRegistrados)
+      ? gestion.documentosRegistrados.join(', ')
+      : gestion.documentosRegistrados || '';
+
     gestionForm.setFieldsValue({
       ...gestion,
-      fechaGestion: gestion.fechaGestion ? dayjs(gestion.fechaGestion) : undefined
+      fechaGestion: gestion.fechaGestion ? dayjs(gestion.fechaGestion) : undefined,
+      archivosAdjuntosNotasGestion: archivosAdjuntosStr,
+      documentosRegistrados: documentosRegStr
     });
     setModalVisible(true);
   };
@@ -299,30 +317,40 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
     fechaGestion?: Dayjs | null;
     notaGestion?: string;
     estadoCobranza?: string;
-    tipoCobranza?: string;
+    tipoCobranza?: 'ESPECIAL' | 'NORMAL';
+    tipoGestion?: string;
     voucherPagoUrl?: string;
     pagoConformeTesoreria?: boolean;
     cartaAmpliacionUrl?: string;
     capturaEnvioDocumentoUrl?: string;
-    archivosAdjuntosNotasGestion?: string;
-    documentosRegistrados?: string;
+    archivosAdjuntosNotasGestion?: string[] | string;
+    documentosRegistrados?: string[] | string;
     notaEspecialEntrega?: string;
   }
 
   const handleSaveGestion = async (values: GestionFormValues) => {
     try {
+      // Procesar arrays de strings separados por comas
+      const archivosAdjuntos = typeof values.archivosAdjuntosNotasGestion === 'string' 
+        ? values.archivosAdjuntosNotasGestion.split(',').map((s: string) => s.trim()).filter((s: string) => s.length > 0)
+        : values.archivosAdjuntosNotasGestion || [];
+
+      const documentosReg = typeof values.documentosRegistrados === 'string'
+        ? values.documentosRegistrados.split(',').map((s: string) => s.trim()).filter((s: string) => s.length > 0)
+        : values.documentosRegistrados || [];
+
       const gestionData: Partial<GestionCobranza> = {
         ordenCompraId: sale.id,
         fechaGestion: values.fechaGestion ? values.fechaGestion.format('YYYY-MM-DD') : '',
         notaGestion: values.notaGestion || '',
         estadoCobranza: values.estadoCobranza || '',
-        tipoCobranza: values.tipoCobranza || '',
+        tipoCobranza: values.tipoCobranza || 'NORMAL',
         voucherPagoUrl: values.voucherPagoUrl || '',
         pagoConformeTesoreria: values.pagoConformeTesoreria || false,
         cartaAmpliacionUrl: values.cartaAmpliacionUrl || '',
         capturaEnvioDocumentoUrl: values.capturaEnvioDocumentoUrl || '',
-        archivosAdjuntosNotasGestion: values.archivosAdjuntosNotasGestion || '',
-        documentosRegistrados: values.documentosRegistrados || '',
+        archivosAdjuntosNotasGestion: archivosAdjuntos,
+        documentosRegistrados: documentosReg,
         notaEspecialEntrega: values.notaEspecialEntrega || '',
         usuarioId: 1 // TODO: Obtener del contexto de usuario
       };
@@ -388,6 +416,11 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
 
   const getTipoLabel = (tipo: string) => {
     const option = tipoCobranzaOptions.find(opt => opt.value === tipo);
+    return option ? option.label : tipo;
+  };
+
+  const getTipoGestionLabel = (tipo: string) => {
+    const option = tipoGestionOptions.find(opt => opt.value === tipo);
     return option ? option.label : tipo;
   };
 
@@ -791,7 +824,7 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
 
                 {/* Fila 3 */}
                 <Col span={8}>
-                  <Form.Item label="Neto Cobrado">
+                  <Form.Item label="Neto a Cobrar">
                     <InputAntd 
                       disabled 
                       placeholder="0.00" 
@@ -856,8 +889,10 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                   <TableRow sx={{ backgroundColor: '#f8f9fa' }}>
                     <TableCell sx={{ fontWeight: 600 }}>Fecha</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Usuario</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Tipo</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Tipo Cobranza</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Estado</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Documentos</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Tesorería</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Nota</TableCell>
                     <TableCell sx={{ fontWeight: 600 }} align="center">Acciones</TableCell>
                   </TableRow>
@@ -865,13 +900,13 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                 <TableBody>
                   {gestionesLoading ? (
                     <TableRow>
-                      <TableCell colSpan={6} align="center">
+                      <TableCell colSpan={8} align="center">
                         <Spin />
                       </TableCell>
                     </TableRow>
                   ) : gestiones.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} align="center">
+                      <TableCell colSpan={8} align="center">
                         <Typography color="text.secondary">
                           No hay gestiones registradas
                         </Typography>
@@ -881,7 +916,9 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                     gestiones.map((gestion) => (
                       <TableRow key={gestion.id} hover>
                         <TableCell>
-                          {gestion.fechaGestion ? formattedDate(gestion.fechaGestion) : '-'}
+                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                            {gestion.fechaGestion ? formattedDate(gestion.fechaGestion) : '-'}
+                          </Typography>
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2" sx={{ fontWeight: 500 }}>
@@ -890,22 +927,75 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                         </TableCell>
                         <TableCell>
                           <Chip
-                            label={getTipoLabel(gestion.tipoCobranza)}
+                            label={getTipoLabel(gestion.tipoCobranza || 'NORMAL')}
                             size="small"
                             variant="outlined"
+                            color={gestion.tipoCobranza === 'ESPECIAL' ? 'warning' : 'success'}
                           />
                         </TableCell>
                         <TableCell>
                           <Chip
-                            label={getEstadoLabel(gestion.estadoCobranza)}
+                            label={getEstadoLabel(gestion.estadoCobranza || 'Pendiente')}
                             size="small"
                             color={gestion.estadoCobranza === 'NORMAL' ? 'success' : 'warning'}
                           />
                         </TableCell>
                         <TableCell>
-                          <Typography variant="body2" sx={{ maxWidth: 200 }}>
+                          <Stack direction="column" spacing={0.5}>
+                            {gestion.voucherPagoUrl && (
+                              <Chip 
+                                label="Voucher" 
+                                size="small" 
+                                variant="outlined"
+                                color="primary"
+                                onClick={() => window.open(gestion.voucherPagoUrl, '_blank')}
+                                style={{ cursor: 'pointer' }}
+                              />
+                            )}
+                            {gestion.cartaAmpliacionUrl && (
+                              <Chip 
+                                label="Carta Amp." 
+                                size="small" 
+                                variant="outlined"
+                                color="secondary"
+                                onClick={() => window.open(gestion.cartaAmpliacionUrl, '_blank')}
+                                style={{ cursor: 'pointer' }}
+                              />
+                            )}
+                            {gestion.capturaEnvioDocumentoUrl && (
+                              <Chip 
+                                label="Captura Envío" 
+                                size="small" 
+                                variant="outlined"
+                                color="info"
+                                onClick={() => window.open(gestion.capturaEnvioDocumentoUrl, '_blank')}
+                                style={{ cursor: 'pointer' }}
+                              />
+                            )}
+                            {(!gestion.voucherPagoUrl && !gestion.cartaAmpliacionUrl && !gestion.capturaEnvioDocumentoUrl) && (
+                              <Typography variant="caption" color="text.secondary">
+                                Sin documentos
+                              </Typography>
+                            )}
+                          </Stack>
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            label={gestion.pagoConformeTesoreria ? 'Conforme' : 'Pendiente'}
+                            size="small"
+                            color={gestion.pagoConformeTesoreria ? 'success' : 'default'}
+                            variant={gestion.pagoConformeTesoreria ? 'filled' : 'outlined'}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2" sx={{ maxWidth: 150 }}>
                             {gestion.notaGestion || '-'}
                           </Typography>
+                          {gestion.notaEspecialEntrega && (
+                            <Typography variant="caption" color="primary" sx={{ display: 'block', fontStyle: 'italic' }}>
+                              Especial: {gestion.notaEspecialEntrega.substring(0, 30)}...
+                            </Typography>
+                          )}
                         </TableCell>
                         <TableCell align="center">
                           <Stack direction="row" spacing={1} justifyContent="center">
@@ -913,6 +1003,7 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                               size="small"
                               color="primary"
                               onClick={() => handleEditGestion(gestion)}
+                              title="Editar gestión"
                             >
                               <EditIcon fontSize="small" />
                             </IconButton>
@@ -920,6 +1011,7 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                               size="small"
                               color="error"
                               onClick={() => handleDeleteGestion(gestion.id!)}
+                              title="Eliminar gestión"
                             >
                               <DeleteIcon fontSize="small" />
                             </IconButton>
@@ -941,15 +1033,16 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
         open={modalVisible}
         onCancel={() => setModalVisible(false)}
         footer={null}
-        width={600}
+        width={800}
       >
         <Form
           form={gestionForm}
           layout="vertical"
           onFinish={handleSaveGestion}
         >
+          {/* Información básica */}
           <Row gutter={16}>
-            <Col span={12}>
+            <Col span={8}>
               <Form.Item
                 label="Fecha de Gestión"
                 name="fechaGestion"
@@ -958,38 +1051,135 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                 <DatePicker style={{ width: '100%' }} />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col span={8}>
               <Form.Item
                 label="Tipo de Cobranza"
                 name="tipoCobranza"
                 rules={[{ required: true, message: 'Seleccione un tipo' }]}
               >
-                <Select options={tipoCobranzaOptions} />
+                <Select 
+                  options={tipoCobranzaOptions} 
+                  placeholder="Especial o Normal"
+                />
               </Form.Item>
             </Col>
-          </Row>
-
-          <Row gutter={16}>
-            <Col span={24}>
+            <Col span={8}>
               <Form.Item
                 label="Estado de Cobranza"
                 name="estadoCobranza"
                 rules={[{ required: true, message: 'Seleccione un estado' }]}
               >
-                <Select options={estadosCobranzaOptions} />
+                <Select 
+                  options={estadosCobranzaOptions}
+                  placeholder="Seleccionar estado"
+                />
               </Form.Item>
             </Col>
           </Row>
 
+          {/* Nota de gestión */}
           <Form.Item
             label="Nota de Gestión"
             name="notaGestion"
             rules={[{ required: true, message: 'Ingrese una nota' }]}
           >
-            <Input.TextArea rows={4} placeholder="Detalle de la gestión realizada..." />
+            <Input.TextArea 
+              rows={3} 
+              placeholder="Detalle de la gestión realizada..."
+              maxLength={500}
+              showCount
+            />
           </Form.Item>
 
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 2 }}>
+          {/* Documentos y vouchers */}
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label="URL Voucher de Pago"
+                name="voucherPagoUrl"
+                tooltip="Subir voucher de pago según requerimientos"
+              >
+                <SimpleFileUpload  />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="URL Carta de Ampliación"
+                name="cartaAmpliacionUrl"
+                tooltip="Mostrar carta de ampliación según requerimientos"
+              >
+                <SimpleFileUpload />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label="URL Captura Envío Documento"
+                name="capturaEnvioDocumentoUrl"
+                tooltip="Captura de envío de documento + PDF según requerimientos"
+              >
+                <SimpleFileUpload />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="Pago Conforme Tesorería"
+                name="pagoConformeTesoreria"
+                valuePropName="checked"
+                tooltip="Visualizar conformidad de pago (Tesorería)"
+              >
+                <Checkbox>
+                  Pago confirmado por tesorería
+                </Checkbox>
+              </Form.Item>
+            </Col>
+          </Row>
+
+          {/* Archivos múltiples */}
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label="Archivos Adjuntos (URLs separadas por comas)"
+                name="archivosAdjuntosNotasGestion"
+                tooltip="Subir múltiples archivos a notas de gestión"
+              >
+                <Input.TextArea 
+                  rows={2} 
+                  placeholder="URL1, URL2, URL3..."
+                />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="Documentos Registrados (separados por comas)"
+                name="documentosRegistrados"
+                tooltip="Registro de documentos según requerimientos"
+              >
+                <Input.TextArea 
+                  rows={2} 
+                  placeholder="Documento1, Documento2..."
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          {/* Nota especial */}
+          <Form.Item
+            label="Nota Especial de Entrega"
+            name="notaEspecialEntrega"
+            tooltip="Nota especial de entrega según requerimientos"
+          >
+            <Input.TextArea 
+              rows={2} 
+              placeholder="Instrucciones especiales para la entrega..."
+              maxLength={300}
+              showCount
+            />
+          </Form.Item>
+
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 3 }}>
             <Button onClick={() => setModalVisible(false)}>
               Cancelar
             </Button>
