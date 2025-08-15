@@ -178,7 +178,7 @@ const routes: Array<PropsRoutes> = [
       {
         path: 'users',
         element: Users, // Actualizado a PascalCase
-        roles: Object.values(RolesEnum),
+        roles: [RolesEnum.ADMIN],
       },
       // EXCEPT
       {

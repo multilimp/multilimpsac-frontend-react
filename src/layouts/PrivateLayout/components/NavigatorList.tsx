@@ -12,7 +12,7 @@ interface NavigatorListProps {
 const NavigatorList: React.FC<NavigatorListProps> = ({ expanded }) => {
   const { pathname } = useLocation();
   const { user } = useAppContext();
-  const sidebarList = useSidebarConfig(user.role);
+  const sidebarList = useSidebarConfig(user.role, user.permisos || []);
   return (
     <Box sx={{ width: '100%', px: 1, height: '100%', overflow: 'auto' }}>
       <Stack spacing={expanded ? 2 : 1}>

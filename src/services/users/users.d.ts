@@ -8,6 +8,9 @@ export interface UserProps {
   role: RolesEnum;
   foto?: string;
   estado: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  // Campos adicionales que pueden venir del frontend pero no están en BD
   telefono?: string;
   departamento?: string;
   fechaIngreso?: string;

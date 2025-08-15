@@ -125,7 +125,7 @@ const sidebarConfig: SidebarConfigProps[] = [
         name: 'Usuarios',
         path: '/users',
         icon: ManageAccountsIcon,
-        roles: rolesArr,
+        roles: [RolesEnum.ADMIN],
       },
       {
         name: 'Perfil',
