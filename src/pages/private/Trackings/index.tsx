@@ -8,7 +8,6 @@ const TrackingsPage = () => {
   return (
     <PageContent
       title="Seguimientos"
-      helper="SEGUIMIENTO"
     >
       <TrackingsTable 
         data={sales} 
