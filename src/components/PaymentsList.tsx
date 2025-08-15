@@ -91,11 +91,11 @@ onNotaPagoChange,
   const isReadonly = mode === 'readonly';
 
   // Permitir edición de notaPago y tipoPago siempre
-  const [localTipoPago, setLocalTipoPago] = useState<string>(tipoPago);
+  const [localTipoPago, setLocalTipoPago] = useState<string>(tipoPago || 'PENDIENTE');
   const [localNotaPago, setLocalNotaPago] = useState<string>(notaPago);
 
   useEffect(() => {
-    setLocalTipoPago(tipoPago);
+    setLocalTipoPago(tipoPago || 'PENDIENTE');
     setLocalNotaPago(notaPago);
   }, [tipoPago, notaPago]);
 
