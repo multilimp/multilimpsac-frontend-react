@@ -87,6 +87,7 @@ export interface ProviderOrderProps {
     direccion: string;
     notaTransporte: string;
     cotizacionTransporte: string;
+    notaPago: string;
     estadoPago: null;
     montoFlete: null;
     grt: null;

@@ -46,6 +46,35 @@ const getEmptyPaymentRecord = (): PaymentItem => ({
   status: true,
 });
 
+const getStatusColor = (tipoPago: string) => {
+  switch (tipoPago) {
+    case 'URGENTE':
+      return {
+        bgcolor: '#fee2e2',
+        color: '#dc2626',
+        dotColor: '#dc2626'
+      };
+    case 'PAGADO':
+      return {
+        bgcolor: '#dcfce7',
+        color: '#16a34a',
+        dotColor: '#16a34a'
+      };
+    case 'PENDIENTE':
+      return {
+        bgcolor: '#fef3c7',
+        color: '#d97706',
+        dotColor: '#d97706'
+      };
+    default:
+      return {
+        bgcolor: '#f3f6f9',
+        color: '#222',
+        dotColor: '#222'
+      };
+  }
+};
+
 const PaymentsList: React.FC<PaymentsListProps> = ({
 payments = [],
 tipoPago = '',
@@ -110,7 +139,12 @@ onNotaPagoChange,
 
   // Validaciones básicas
   const validatePayments = () => {
-    if (!localPayments.length) return false;
+    // Si no hay pagos pero hay cambios en tipoPago o notaPago, permitir guardar
+    if (!localPayments.length) {
+      return localTipoPago !== tipoPago || localNotaPago !== notaPago;
+    }
+    
+    // Si hay pagos, validar que estén completos
     return localPayments.every((p: PaymentItem) =>
       p.bank.trim() &&
       p.amount && !isNaN(Number(p.amount)) && Number(p.amount) > 0
@@ -204,8 +238,8 @@ onNotaPagoChange,
           {renderTipoPago()}
           <Box
             sx={{
-              bgcolor: '#f3f6f9',
-              color: '#222',
+              bgcolor: getStatusColor(localTipoPago).bgcolor,
+              color: getStatusColor(localTipoPago).color,
               fontWeight: 700,
               fontSize: 18,
               px: 3,
@@ -218,16 +252,7 @@ onNotaPagoChange,
               height: 48,
             }}
           >
-            {estadoPago}
-            <Box
-              sx={{
-                width: 16,
-                height: 16,
-                borderRadius: '50%',
-                bgcolor: '#222',
-                ml: 1.5,
-              }}
-            />
+            {localTipoPago || 'Sin estado'}
           </Box>
         </Stack>
       </Box>
@@ -343,41 +368,58 @@ onNotaPagoChange,
 
             {/* Archivo */}
             <Grid size={1.5}>
-              {isReadonly && payment.file ? (
-                <Box sx={{
-                  bgcolor: '#f3f6f9',
-                  borderRadius: 2,
-                  height: 48,
-                  display: 'flex',
-                  alignItems: 'center',
-                  px: 2,
-                }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', color: '#666' }}>
-                    <AttachFile sx={{ fontSize: 20, mr: 1, color: '#999' }} />
-                    <Typography fontSize={14} fontWeight={600}>
-                      Archivo
-                    </Typography>
+              {isReadonly ? (
+                payment.file ? (
+                  <Box sx={{
+                    bgcolor: '#f3f6f9',
+                    borderRadius: 2,
+                    height: 48,
+                    display: 'flex',
+                    alignItems: 'center',
+                    px: 2,
+                    cursor: 'pointer',
+                    '&:hover': {
+                      bgcolor: '#e5e7eb'
+                    }
+                  }}
+                  onClick={() => {
+                    if (typeof payment.file === 'string') {
+                      window.open(payment.file, '_blank');
+                    }
+                  }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', color: '#666' }}>
+                      <AttachFile sx={{ fontSize: 20, mr: 1, color: '#1890ff' }} />
+                      <Typography fontSize={12} fontWeight={600} sx={{ 
+                        overflow: 'hidden', 
+                        textOverflow: 'ellipsis', 
+                        whiteSpace: 'nowrap',
+                        color: '#1890ff'
+                      }}>
+                       Ver Archivo
+                      </Typography>
+                    </Box>
                   </Box>
-                </Box>
-              ) : !isReadonly ? (
+                ) : (
+                  <Box sx={{
+                    bgcolor: '#f3f6f9',
+                    borderRadius: 2,
+                    height: 48,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#999'
+                  }}>
+                    <Typography fontSize={12}>Sin archivo</Typography>
+                  </Box>
+                )
+              ) : (
                 <SimpleFileUpload
                   label=""
                   accept="application/pdf"
                   value={payment.file}
                   onChange={(file) => handleUpdatePayment(index, 'file', file)}
                 />
-              ) : (
-                <Box sx={{
-                  bgcolor: '#f3f6f9',
-                  borderRadius: 2,
-                  height: 48,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#999'
-                }}>
-                  <Typography fontSize={12}>Sin archivo</Typography>
-                </Box>
               )}
             </Grid>
 
@@ -511,13 +553,13 @@ onNotaPagoChange,
               minWidth: 0,
             }}
           >
-            <Typography fontWeight={700} fontSize={16}>Saldo Pendiente</Typography>
+            <Typography fontWeight={700} fontSize={16}>Total Pagado</Typography>
             <Typography 
               fontWeight={700} 
               fontSize={18}
-              color={saldoPendiente > 0 ? '#DC2626' : '#059669'}
+              color="#059669"
             >
-              S/ {saldoPendiente.toFixed(2)}
+              S/ {totalPayments.toFixed(2)}
             </Typography>
           </Box>
         </Stack>

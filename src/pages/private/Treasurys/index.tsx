@@ -15,7 +15,7 @@ const Treasury = () => {
     <PageContent>
       <TreasurysTable loading={loadingSales} data={sales} onRowClick={(sale) => setModal({ mode: ModalStateEnum.BOX, data: sale })} />
 
-      {modal?.mode === ModalStateEnum.BOX && <ProviderOrdersListDrawer handleClose={() => setModal(null)} data={modal.data!} />}
+      {modal?.mode === ModalStateEnum.BOX && <ProviderOrdersListDrawer isTreasury={true} handleClose={() => setModal(null)} data={modal.data!} />}
     </PageContent>
   );
 };

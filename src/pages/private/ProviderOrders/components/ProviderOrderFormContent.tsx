@@ -35,11 +35,13 @@ import { ProviderProps } from '@/services/providers/providers';
 import ProviderSelectorModal from '../../Providers/components/ProviderSelectorModal';
 import { ProviderOrderProps } from '@/services/providerOrders/providerOrders';
 import TransportsSection, { getEmptyTransformRecord } from './TransportsSection';
+import { usePayments } from '@/hooks/usePayments';
 
 interface ProviderOrderFormContentProps {
   sale: SaleProps;
   orderData?: ProviderOrderProps;
   isEditing?: boolean;
+  fromTreasury?: boolean;
 }
 
 type ProductRecord = {
@@ -73,16 +75,27 @@ const getEmptyProductRecord = (): ProductRecord => ({
 
 const requiredField = { required: true, message: 'Requerido' };
 
-const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: ProviderOrderFormContentProps) => {
+const ProviderOrderFormContent = ({ sale, orderData, isEditing = false, fromTreasury = false }: ProviderOrderFormContentProps) => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [openProvider, setOpenProvider] = useState(false);
   const { companies } = useGlobalInformation();
-  
+
   const [selectedCompany, setSelectedCompany] = useState<{ id: number; razonSocial: string; ruc: string } | null>(null);
 
   const empresaValue = Form.useWatch('empresa', form);
+
+  const { handlePaymentsUpdate } = usePayments({
+    entityType: 'ordenProveedor',
+    entityId: orderData?.id || 0,
+    onSuccess: () => {
+      notification.success({
+        message: 'Pagos actualizados',
+        description: 'Los pagos se han actualizado correctamente'
+      });
+    }
+  });
 
   useEffect(() => {
     if (empresaValue && companies.length > 0) {
@@ -149,6 +162,18 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
           nota: transporte.notaTransporte || '',
           flete: transporte.montoFlete || '',
           cotizacion: transporte.cotizacionTransporte || null,
+          estadoPago: transporte.estadoPago || '',
+          notaPago: transporte.notaPago || '',
+          pagosTransporte: Array.isArray(transporte.pagos) && transporte.pagos.length > 0
+            ? (transporte.pagos as any[]).map((pago: any): PagoRecord => ({
+              date: pago.fechaPago ? dayjs(pago.fechaPago) : null,
+              bank: pago.bancoPago || '',
+              description: pago.descripcionPago || '',
+              file: pago.archivoPago || null,
+              amount: pago.montoPago || '',
+              status: pago.estadoPago ? true : false,
+            }))
+            : [],
         })) || [getEmptyTransformRecord()],
       });
     } else {
@@ -190,7 +215,7 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
       const transportesArr = await Promise.all(
         (values.transportes as Record<string, unknown>[]).map(async (item: Record<string, unknown>) => {
           let cotizacionUrl = null;
-          
+
           if (item.cotizacion && item.cotizacion instanceof File) {
             cotizacionUrl = await uploadFile(item.cotizacion);
           } else if (typeof item.cotizacion === 'string') {
@@ -236,7 +261,7 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
                 // NO incluir codigoTransporte - se mantiene el existente
               }
             });
-          } else {  
+          } else {
             // Transporte nuevo - CREATE (se generará código automáticamente)
             newTransportes.push({
               transporteId: typeof transporte.transporte === 'object' ? transporte.transporte?.id : transporte.transporte,
@@ -263,7 +288,7 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
       const totalProductos = productosArr.reduce((sum: number, producto: { total: number }) => sum + Number(producto.total), 0);
 
       // ✅ APLICAR LA LÓGICA CORRECTA PARA TRANSPORTES
-      const transportesData = isEditing 
+      const transportesData = isEditing
         ? processTransportesForUpdate(values.transportes as any[])
         : { create: transportesArr };
 
@@ -294,7 +319,7 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
       }
 
       navigate('/provider-orders');
-    } catch (error) {
+    } catch {
       notification.error({ message: 'No se logró guardar la información' });
     } finally {
       setLoading(false);
@@ -309,56 +334,39 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
     });
   };
 
-  // Callback para manejar cambios de productos desde EditableProductsTable
-  // const handleProductsChange = (productos: any[]) => {
-  //   // Recalcular el total general
-  //   const totalGeneral = productos.reduce((sum: number, producto: any) => {
-  //     return sum + (Number(producto.total) || 0);
-  //   }, 0);
-  //   
-  //   console.log('🔍 Productos actualizados:', productos);
-  //   console.log('🔍 Total general:', totalGeneral);
-  //   
-  //   // Actualizar el monto del proveedor
-  //   form.setFieldValue('montoProveedor', totalGeneral);
-  // };
-  //   // Calcular automáticamente el total del producto
-  //   const productos = form.getFieldValue('productos') || [];
-  //   const producto = productos[index];
-  //   
-  //   console.log('🔍 Calculando producto:', { index, producto, productos });
-  //   
-  //   if (producto) {
-  //     const cantidad = Number(producto.cantidad) || 0;
-  //     const precioUnitario = Number(producto.precioUnitario) || 0;
-  //     const total = cantidad * precioUnitario;
-  //     
-  //     console.log('🔍 Cálculo:', { cantidad, precioUnitario, total });
-  //     
-  //     // Actualizar el total del producto
-  //     form.setFieldValue(['productos', index, 'total'], total);
-  //     
-  //     // Calcular el total general
-  //     const totalGeneral = productos.reduce((sum: number, prod: ProductRecord) => {
-  //       return sum + (Number(prod.total) || 0);
-  //     }, 0);
-  //     
-  //     console.log('🔍 Total general:', totalGeneral);
-  //     
-  //     // Actualizar el monto del proveedor
-  //     form.setFieldValue('montoProveedor', totalGeneral);
-  //   }
-  // };
-
   const handleProviderModalClose = () => setOpenProvider(false);
 
   const handleProviderSelect = (data: ProviderProps) => form.setFieldValue('proveedor', data);
 
-  const handlePaymentsChange = (pagos: PagoRecord[]) => form.setFieldValue('pagosProveedor', pagos);
-
   const handleTipoPagoChange = (tipo: string) => form.setFieldValue('tipoPago', tipo);
 
   const handleNotaPagoChange = (nota: string) => form.setFieldValue('notaPago', nota);
+
+  const handlePaymentsChange = async (payments: PagoRecord[]) => {
+    if (!orderData?.id) {
+      notification.error({
+        message: 'Error',
+        description: 'No se puede actualizar pagos sin ID de orden'
+      });
+      return;
+    }
+
+    const formattedPayments = payments.map(payment => ({
+      fechaPago: payment.date ? payment.date.toDate() : null,
+      bancoPago: payment.bank,
+      descripcionPago: payment.description,
+      archivoPago: typeof payment.file === 'string' ? payment.file : null,
+      montoPago: payment.amount ? Number(payment.amount) : 0,
+      estadoPago: payment.status
+    }));
+
+    const tipoPago = form.getFieldValue('tipoPago');
+    const notaPago = form.getFieldValue('notaPago');
+
+    await handlePaymentsUpdate(formattedPayments, tipoPago, notaPago);
+    
+    form.setFieldValue('pagosProveedor', payments);
+  };
 
   return (
     <Spin spinning={loading}>
@@ -410,7 +418,7 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
             showHeader
             showFooter
             ResumeIcon={Business}
-            onClickSearch={() => setOpenProvider(true)}
+            onClickSearch={fromTreasury ? undefined : () => setOpenProvider(true)}
             headerLeft={
               <Form.Item noStyle shouldUpdate>
                 {({ getFieldValue }) => {
@@ -427,19 +435,21 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
               </Form.Item>
             }
             headerRight={
-              <Form.Item noStyle shouldUpdate>
-                {({ getFieldValue }) => {
-                  const createdDate = getFieldValue('proveedor')?.updatedAt;
-                  return (
-                    <Fragment>
-                      {'Actualizado: '}
-                      <Typography component="span" color="inherit" variant="inherit" fontWeight={600}>
-                        {createdDate ? dayjs(createdDate).format('DD / MM / YYYY') : '---'}
-                      </Typography>
-                    </Fragment>
-                  );
-                }}
-              </Form.Item>
+              <Stack direction="row" alignItems="center" spacing={2}>
+                <Form.Item noStyle shouldUpdate>
+                  {({ getFieldValue }) => {
+                    const createdDate = getFieldValue('proveedor')?.updatedAt;
+                    return (
+                      <Fragment>
+                        {'Actualizado: '}
+                        <Typography component="span" color="inherit" variant="inherit" fontWeight={600}>
+                          {createdDate ? dayjs(createdDate).format('DD / MM / YYYY') : '---'}
+                        </Typography>
+                      </Fragment>
+                    );
+                  }}
+                </Form.Item>
+              </Stack>
             }
             resumeContent={
               <Form.Item noStyle shouldUpdate>
@@ -465,17 +475,17 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
             <Grid container columnSpacing={2}>
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                 <Form.Item name="fechaRecepcion" rules={[requiredField]}>
-                  <DatePickerAntd label="Fecha de recepción" />
+                  <DatePickerAntd label="Fecha de recepción" disabled={fromTreasury} />
                 </Form.Item>
               </Grid>
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                 <Form.Item name="fechaProgramada" rules={[requiredField]}>
-                  <DatePickerAntd label="Fecha programada" />
+                  <DatePickerAntd label="Fecha programada" disabled={fromTreasury} />
                 </Form.Item>
               </Grid>
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                 <Form.Item name="fechaDespacho" rules={[requiredField]}>
-                  <DatePickerAntd label="Fecha de despacho" />
+                  <DatePickerAntd label="Fecha de despacho" disabled={fromTreasury} />
                 </Form.Item>
               </Grid>
             </Grid>
@@ -498,10 +508,11 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
                     {({ getFieldValue }) => {
                       const provider: ProviderProps | null = getFieldValue('proveedor');
                       return (
-                        <Form.Item name="contactoProveedor" rules={[requiredField]}>
+                        <Form.Item name="contactoProveedor" rules={fromTreasury ? [] : [requiredField]}>
                           <SelectContactsByProvider
                             providerId={provider?.id}
                             onChange={handleContactoChange}
+                            disabled={fromTreasury}
                           />
                         </Form.Item>
                       );
@@ -578,7 +589,7 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
               </Box>
             </Stack>
           </Grid>
-          
+
           {/* Tabla de productos simplificada */}
           <Card>
             <CardHeader
@@ -624,14 +635,15 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
                           {fields.map((field) => (
                             <TableRow key={field.name} sx={{ '&:hover': { bgcolor: 'rgba(25, 118, 210, 0.04)' } }}>
                               <TableCell sx={{ p: 1 }}>
-                                <Form.Item 
-                                  name={[field.name, 'codigo']} 
-                                  rules={[{ required: true, message: 'Requerido' }]}
+                                <Form.Item
+                                  name={[field.name, 'codigo']}
+                                  rules={fromTreasury ? [] : [{ required: true, message: 'Requerido' }]}
                                   style={{ margin: 0 }}
                                 >
                                   <Input
                                     placeholder="Código"
                                     size="small"
+                                    disabled={fromTreasury}
                                     style={{
                                       borderRadius: 4,
                                       border: '1px solid #d9d9d9',
@@ -640,14 +652,15 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
                                 </Form.Item>
                               </TableCell>
                               <TableCell sx={{ p: 1 }}>
-                                <Form.Item 
-                                  name={[field.name, 'descripcion']} 
-                                  rules={[{ required: true, message: 'Requerido' }]}
+                                <Form.Item
+                                  name={[field.name, 'descripcion']}
+                                  rules={fromTreasury ? [] : [{ required: true, message: 'Requerido' }]}
                                   style={{ margin: 0 }}
                                 >
                                   <Input
                                     placeholder="Descripción"
                                     size="small"
+                                    disabled={fromTreasury}
                                     style={{
                                       borderRadius: 4,
                                       border: '1px solid #d9d9d9',
@@ -656,14 +669,15 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
                                 </Form.Item>
                               </TableCell>
                               <TableCell sx={{ p: 1 }}>
-                                <Form.Item 
-                                  name={[field.name, 'uMedida']} 
-                                  rules={[{ required: true, message: 'Requerido' }]}
+                                <Form.Item
+                                  name={[field.name, 'uMedida']}
+                                  rules={fromTreasury ? [] : [{ required: true, message: 'Requerido' }]}
                                   style={{ margin: 0 }}
                                 >
                                   <Input
                                     placeholder="UND"
                                     size="small"
+                                    disabled={fromTreasury}
                                     style={{
                                       borderRadius: 4,
                                       border: '1px solid #d9d9d9',
@@ -672,15 +686,16 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
                                 </Form.Item>
                               </TableCell>
                               <TableCell sx={{ p: 1 }}>
-                                <Form.Item 
-                                  name={[field.name, 'cantidad']} 
-                                  rules={[{ required: true, message: 'Requerido' }]}
+                                <Form.Item
+                                  name={[field.name, 'cantidad']}
+                                  rules={fromTreasury ? [] : [{ required: true, message: 'Requerido' }]}
                                   style={{ margin: 0 }}
                                 >
                                   <InputNumber
                                     placeholder="0"
                                     size="small"
                                     min={0}
+                                    disabled={fromTreasury}
                                     style={{
                                       width: '100%',
                                       borderRadius: 4,
@@ -702,9 +717,9 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
                                 </Form.Item>
                               </TableCell>
                               <TableCell sx={{ p: 1 }}>
-                                <Form.Item 
-                                  name={[field.name, 'precioUnitario']} 
-                                  rules={[{ required: true, message: 'Requerido' }]}
+                                <Form.Item
+                                  name={[field.name, 'precioUnitario']}
+                                  rules={fromTreasury ? [] : [{ required: true, message: 'Requerido' }]}
                                   style={{ margin: 0 }}
                                 >
                                   <InputNumber
@@ -712,6 +727,7 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
                                     size="small"
                                     min={0}
                                     step={0.01}
+                                    disabled={fromTreasury}
                                     style={{
                                       width: '100%',
                                       borderRadius: 4,
@@ -733,8 +749,8 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
                                 </Form.Item>
                               </TableCell>
                               <TableCell sx={{ p: 1 }}>
-                                <Form.Item 
-                                  name={[field.name, 'total']} 
+                                <Form.Item
+                                  name={[field.name, 'total']}
                                   style={{ margin: 0 }}
                                 >
                                   <InputNumber
@@ -750,10 +766,11 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
                                 </Form.Item>
                               </TableCell>
                               <TableCell sx={{ p: 1 }}>
-                                <IconButton 
-                                  size="small" 
-                                  color="error" 
+                                <IconButton
+                                  size="small"
+                                  color="error"
                                   onClick={() => remove(field.name)}
+                                  disabled={fromTreasury}
                                   sx={{ fontSize: 14 }}
                                 >
                                   <Delete fontSize="small" />
@@ -768,12 +785,13 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
                                 startIcon={<Add />}
                                 variant="outlined"
                                 size="small"
+                                disabled={fromTreasury}
                                 sx={{
                                   width: 'auto',
                                   py: 1,
-                                  bgcolor: '#189dff',
-                                  color: 'white',
-                                  borderColor: '#1890ff'
+                                  bgcolor: fromTreasury ? '#ccc' : '#189dff',
+                                  color: fromTreasury ? '#666' : 'white',
+                                  borderColor: fromTreasury ? '#ccc' : '#1890ff'
                                 }}
                               >
                                 Agregar Producto
@@ -784,14 +802,14 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
                               <Form.Item noStyle shouldUpdate>
                                 {() => {
                                   const productos = form.getFieldValue('productos') || [];
-                                  const total = productos.reduce((sum: number, prod: ProductRecord) => 
+                                  const total = productos.reduce((sum: number, prod: ProductRecord) =>
                                     sum + (Number(prod?.total) || 0), 0
                                   );
                                   return (
-                                    
-                                    <Typography 
-                                      variant="body2" 
-                                      fontWeight={700} 
+
+                                    <Typography
+                                      variant="body2"
+                                      fontWeight={700}
                                       color="primary"
                                       sx={{ textAlign: 'center' }}
                                     >
@@ -826,6 +844,7 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
                 <Input.TextArea
                   placeholder="Ingrese notas adicionales sobre el pedido..."
                   rows={3}
+                  disabled={fromTreasury}
                   style={{
                     borderRadius: 4,
                     border: '1px solid #d9d9d9',
@@ -849,41 +868,47 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false }: Provid
                   tipoPago={getFieldValue('tipoPago') || ''}
                   notaPago={getFieldValue('notaPago') || ''}
                   montoTotal={totalProductos}
-                  mode="readonly"
+                  mode={fromTreasury ? "edit" : "readonly"}
                   onPaymentsChange={handlePaymentsChange}
                   onTipoPagoChange={handleTipoPagoChange}
                   onNotaPagoChange={handleNotaPagoChange}
                 />
               );
             }}
-          </Form.Item>        
-          
-          <TransportsSection form={form} />
+          </Form.Item>
 
-          <Stack alignItems="center" my={2}>
-            <Button 
-              disabled={loading} 
-              type="submit"
-              variant="contained"
-              size="large"
-              sx={{ 
-                minWidth: 200,
-                height: 48,
-                fontWeight: 600,
-                textTransform: 'uppercase',
-                letterSpacing: 0.5
-              }}
-            >
-              {loading ? 'Guardando...' : 'Guardar Cambios'}
-            </Button>
-          </Stack>
+          <TransportsSection isTreasury={fromTreasury} form={form} />
+
+          {fromTreasury !== true && (
+            <>
+              <br />
+              <Stack alignItems="center" my={2}>
+                <Button
+                  disabled={loading}
+                  type="submit"
+                  variant="contained"
+                  size="large"
+                  sx={{
+                    minWidth: 200,
+                    height: 48,
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: 0.5
+                  }}
+                >
+                  {loading ? 'Guardando...' : 'Guardar Cambios'}
+                </Button>
+              </Stack>
+            </>
+
+          )}
         </Stack>
       </Form>
 
       {openProvider && (
-        <ProviderSelectorModal 
-          onClose={handleProviderModalClose} 
-          onSelected={handleProviderSelect} 
+        <ProviderSelectorModal
+          onClose={handleProviderModalClose}
+          onSelected={handleProviderSelect}
         />
       )}
     </Spin>

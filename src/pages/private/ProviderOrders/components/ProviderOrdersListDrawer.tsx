@@ -12,9 +12,10 @@ import dayjs from 'dayjs';
 interface ProviderOrdersListDrawerProps {
   handleClose: VoidFunction;
   data: SaleProps;
+  isTreasury?: boolean;
 }
 
-const ProviderOrdersListDrawer = ({ handleClose, data }: ProviderOrdersListDrawerProps) => {
+const ProviderOrdersListDrawer = ({ handleClose, data, isTreasury = false }: ProviderOrdersListDrawerProps) => {
   const { setSelectedSale } = useGlobalInformation();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -35,10 +36,16 @@ const ProviderOrdersListDrawer = ({ handleClose, data }: ProviderOrdersListDrawe
     if (!id) {
       // Crear nueva OP
       setSelectedSale(data);
-      navigate('/provider-orders/create');
+      const queryParams = isTreasury ? '?from=treasury' : '';
+      navigate(`/provider-orders/create${queryParams}`, {
+        state: { fromTreasury: isTreasury, saleData: data }
+      });
     } else {
       // Ver detalle de OP existente - navegar a la nueva ruta
-      navigate(`/provider-orders/${id}`);
+      const queryParams = isTreasury ? '?from=treasury' : '';
+      navigate(`/provider-orders/${id}${queryParams}`, {
+        state: { fromTreasury: isTreasury, saleData: data }
+      });
     }
   };
 
@@ -47,7 +54,7 @@ const ProviderOrdersListDrawer = ({ handleClose, data }: ProviderOrdersListDrawe
       setLoading(true);
       const res = await getOrderProvidersByOC(data.id);
       setOrderProvidersCodes([...res]);
-    } catch (error) {
+    } catch {
       notification.error({ message: 'No se logró obtener la información' });
     } finally {
       setLoading(false);
@@ -368,8 +375,8 @@ const ProviderOrdersListDrawer = ({ handleClose, data }: ProviderOrdersListDrawe
                     >
                       Ver Detalle
                     </Button>
-
-                    <Button
+                    {isTreasury!==true && (
+                      <Button
                       variant="outlined"
                       color="error"
                       startIcon={<Delete />}
@@ -379,6 +386,7 @@ const ProviderOrdersListDrawer = ({ handleClose, data }: ProviderOrdersListDrawe
                     >
                       Eliminar
                     </Button>
+                    )}
                   </CardActions>
                 </Card>
               ))}
@@ -482,31 +490,34 @@ const ProviderOrdersListDrawer = ({ handleClose, data }: ProviderOrdersListDrawe
           }}
         >
           <Stack spacing={2}>
+            {isTreasury!==true && (
             <Button
-              fullWidth
-              variant="contained"
-              size="large"
-              startIcon={<Add />}
-              onClick={() => handleSelected()}
-              sx={{
-                background: '#05a867',
-                fontWeight: 600,
-                borderRadius: heroUIColors.radius.md,
-                textTransform: 'none',
-                py: 1.5,
-                fontSize: '0.95rem',
-                boxShadow: heroUIColors.shadows.md,
-                border: `1px solid ${alpha('#ffffff', 0.2)}`,
+            fullWidth
+            variant="contained"
+            size="large"
+            startIcon={<Add />}
+            onClick={() => handleSelected()}
+            sx={{
+              background: '#05a867',
+              fontWeight: 600,
+              borderRadius: heroUIColors.radius.md,
+              textTransform: 'none',
+              py: 1.5,
+              fontSize: '0.95rem',
+              boxShadow: heroUIColors.shadows.md,
+              border: `1px solid ${alpha('#ffffff', 0.2)}`,
 
-                '&:hover': {
-                  background: '#047856',
-                  transform: 'translateY(-2px)',
-                  boxShadow: heroUIColors.shadows.lg,
-                }
-              }}
-            >
-              Agregar Nueva OP
-            </Button>
+              '&:hover': {
+                background: '#047856',
+                transform: 'translateY(-2px)',
+                boxShadow: heroUIColors.shadows.lg,
+              }
+            }}
+          >
+            Agregar Nueva OP
+          </Button>
+            )}
+
 
             <Button
               fullWidth

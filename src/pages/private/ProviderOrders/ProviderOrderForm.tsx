@@ -1,6 +1,6 @@
 import { message } from 'antd';
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Stack } from '@mui/material';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 import ProviderOrderFormContent from './components/ProviderOrderFormContent';
@@ -12,21 +12,23 @@ import ProviderOrderFormSkeleton from '@/components/ProviderOrderFormSkeleton';
 const ProviderOrderForm = () => {
   const { selectedSale, setSelectedSale, setBlackBarKey } = useGlobalInformation();
   const { providerOrderId } = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [orderData, setOrderData] = useState<ProviderOrderProps | null>(null);
   const [, setLoading] = useState(false);
   
   const isEditing = Boolean(providerOrderId);
+  const fromTreasury = searchParams.get('from') === 'treasury';
 
   useEffect(() => {
     // 🔧 SOLO establecer BlackBarKey una vez al montar
     setBlackBarKey(BlackBarKeyEnum.OP);
-    
+        
     // 🔧 Limpiar BlackBarKey solo al desmontar
     return () => {
       setBlackBarKey(null);
     };
-  }, []); // ← Sin dependencias para evitar re-ejecuciones
+  }, [fromTreasury]); // ← Incluir fromTreasury para mostrar mensaje solo cuando cambie
 
   useEffect(() => {
     if (isEditing) {
@@ -81,6 +83,7 @@ const ProviderOrderForm = () => {
           sale={saleToUse} 
           orderData={orderData || undefined} 
           isEditing={isEditing}
+          fromTreasury={fromTreasury}
         />
       ) : (
         <ProviderOrderFormSkeleton />
