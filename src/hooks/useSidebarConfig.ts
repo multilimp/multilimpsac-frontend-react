@@ -1,4 +1,4 @@
-import { SidebarConfigProps } from '@/types/global';
+import { SidebarConfigProps, SidebarItemProps } from '@/types/global';
 import sidebarConfig from '@/layouts/PrivateLayout/sidebarConfig';
 import { RolesEnum } from '@/services/users/user.enum';
 import { PermissionsEnum } from '@/services/users/permissions.enum';
@@ -13,10 +13,10 @@ const useSidebarConfig = (rol: RolesEnum, userPermissions: string[] = []) => {
 
   // Para usuarios normales, filtrar por permisos individuales
   sidebarConfig.forEach((section) => {
-    const filteredSection = { ...section, routes: [] };
+    const filteredSection = { ...section, routes: [] as Array<SidebarItemProps> };
     let hasVisibleRoutes = false;
 
-    section.routes.forEach((route) => {
+    section.routes.forEach((route: SidebarItemProps) => {
       // Mapear rutas a permisos
       const routePermission = getRoutePermission(route.path);
       
