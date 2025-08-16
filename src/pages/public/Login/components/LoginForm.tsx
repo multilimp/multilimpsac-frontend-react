@@ -7,7 +7,7 @@ import { heroUIColors } from '@/styles/theme/heroui-colors';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { Box, IconButton, Stack, Typography, Button } from '@mui/material';
 import { Form } from 'antd';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 const LoginForm = () => {
@@ -17,13 +17,7 @@ const LoginForm = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
 
-  // TODO: Eliminar este useEffect
-  useEffect(() => {
-    form.setFieldsValue({
-      email: 'usuario@example.com',
-      password: 'passwordSeguro123',
-    });
-  }, []);
+
 
   const handleSubmit = async (values: Record<string, string>) => {
     try {
