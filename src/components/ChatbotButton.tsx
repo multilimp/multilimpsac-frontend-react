@@ -1,26 +1,31 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { 
-  Fab, 
-  Dialog, 
-  DialogTitle, 
-  DialogContent, 
-  DialogActions, 
-  TextField, 
+  FloatButton, 
+  Modal, 
+  Input, 
   Button, 
-  Box, 
   Typography, 
-  Paper, 
-  IconButton,
-  Chip,
-  CircularProgress
-} from '@mui/material';
+  Space, 
+  Card, 
+  Tag, 
+  Spin, 
+  message as antMessage,
+  Tooltip,
+  Row,
+  Col
+} from 'antd';
 import { 
-  Chat as ChatIcon, 
-  Send as SendIcon, 
-  Close as CloseIcon,
-  SmartToy as BotIcon,
-  Person as UserIcon
-} from '@mui/icons-material';
+  MessageOutlined, 
+  SendOutlined, 
+  CloseOutlined,
+  RobotOutlined,
+  UserOutlined,
+  QuestionCircleOutlined
+} from '@ant-design/icons';
+import chatbotService, { ChatbotResponse, QuickAction } from '../services/chatbot/chatbot.service';
+import ChatbotDataVisualization from './ChatbotDataVisualization';
+
+const { Text, Title } = Typography;
 
 interface ChatMessage {
   id: string;
@@ -28,7 +33,9 @@ interface ChatMessage {
   isUser: boolean;
   timestamp: Date;
   type?: 'text' | 'data' | 'suggestion';
-  data?: Record<string, unknown>;
+  data?: any[];
+  visualization?: 'table' | 'chart' | 'list' | 'card';
+  suggestions?: string[];
 }
 
 interface ChatbotButtonProps {
@@ -41,7 +48,7 @@ const ChatbotButton: React.FC<ChatbotButtonProps> = ({ onOpen, onClose }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: '1',
-      text: '¡Hola! Soy tu asistente virtual. Puedo ayudarte con información sobre clientes, productos, ventas, inventario y más. ¿En qué puedo ayudarte?',
+      text: '¡Hola! Soy tu asistente virtual de Multilimp. Puedo ayudarte con consultas sobre clientes, usuarios, órdenes de compra, proveedores, ventas y más. ¿En qué puedo ayudarte?',
       isUser: false,
       timestamp: new Date(),
       type: 'text'
@@ -49,47 +56,22 @@ const ChatbotButton: React.FC<ChatbotButtonProps> = ({ onOpen, onClose }) => {
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [quickActions, setQuickActions] = useState<QuickAction[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
 
-  const quickSuggestions = [
-    '¿Cuántos clientes tenemos?',
-    '¿Cuál es el producto más vendido?',
-    '¿Cuántas ventas tenemos este mes?',
-    '¿Hay productos con stock bajo?',
-    '¿Cuál es el estado de las órdenes?'
-  ];
+  // Cargar acciones rápidas al abrir el modal
+  useEffect(() => {
+    if (open) {
+      loadQuickActions();
+    }
+  }, [open]);
 
-  const mockDataResponses = {
-    'clientes': {
-      total: 156,
-      nuevos: 12,
-      activos: 134,
-      inactivos: 10
-    },
-    'productos': {
-      total: 89,
-      enStock: 67,
-      bajoStock: 15,
-      agotados: 7
-    },
-    'ventas': {
-      mesActual: 45000,
-      mesAnterior: 38000,
-      crecimiento: '+18.4%',
-      promedio: 1500
-    },
-    'inventario': {
-      valorTotal: 125000,
-      productosBajoStock: 15,
-      productosAgotados: 7,
-      rotacion: '2.3 meses'
-    },
-    'ordenes': {
-      pendientes: 23,
-      enProceso: 45,
-      completadas: 156,
-      canceladas: 8
+  const loadQuickActions = async () => {
+    try {
+      const actions = await chatbotService.getQuickActions();
+      setQuickActions(actions);
+    } catch (error) {
+      console.error('Error cargando acciones rápidas:', error);
     }
   };
 
@@ -104,9 +86,6 @@ const ChatbotButton: React.FC<ChatbotButtonProps> = ({ onOpen, onClose }) => {
   const handleOpen = () => {
     setOpen(true);
     onOpen?.();
-    setTimeout(() => {
-      inputRef.current?.focus();
-    }, 100);
   };
 
   const handleClose = () => {
@@ -114,14 +93,23 @@ const ChatbotButton: React.FC<ChatbotButtonProps> = ({ onOpen, onClose }) => {
     onClose?.();
   };
 
-  const addMessage = (text: string, isUser: boolean = true, type: 'text' | 'data' | 'suggestion' = 'text', data?: Record<string, unknown>) => {
+  const addMessage = (
+    text: string, 
+    isUser: boolean = true, 
+    type: 'text' | 'data' | 'suggestion' = 'text', 
+    data?: any[], 
+    visualization?: 'table' | 'chart' | 'list' | 'card',
+    suggestions?: string[]
+  ) => {
     const newMessage: ChatMessage = {
       id: Date.now().toString(),
       text,
       isUser,
       timestamp: new Date(),
       type,
-      data
+      data,
+      visualization,
+      suggestions
     };
     setMessages(prev => [...prev, newMessage]);
   };
@@ -130,42 +118,32 @@ const ChatbotButton: React.FC<ChatbotButtonProps> = ({ onOpen, onClose }) => {
     setIsLoading(true);
     addMessage(message, true);
 
-    // Simular procesamiento
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    const lowerMessage = message.toLowerCase();
-    let response = '';
-
-    if (lowerMessage.includes('cliente') || lowerMessage.includes('clientes')) {
-      const data = mockDataResponses.clientes;
-      response = `📊 **Información de Clientes:**\n\n• Total de clientes: ${data.total}\n• Clientes nuevos este mes: ${data.nuevos}\n• Clientes activos: ${data.activos}\n• Clientes inactivos: ${data.inactivos}`;
-      addMessage(response, false, 'data', data);
-    } else if (lowerMessage.includes('producto') || lowerMessage.includes('productos')) {
-      const data = mockDataResponses.productos;
-      response = `📦 **Información de Productos:**\n\n• Total de productos: ${data.total}\n• En stock: ${data.enStock}\n• Bajo stock: ${data.bajoStock}\n• Agotados: ${data.agotados}`;
-      addMessage(response, false, 'data', data);
-    } else if (lowerMessage.includes('venta') || lowerMessage.includes('ventas')) {
-      const data = mockDataResponses.ventas;
-      response = `💰 **Información de Ventas:**\n\n• Ventas del mes actual: S/. ${data.mesActual.toLocaleString()}\n• Ventas del mes anterior: S/. ${data.mesAnterior.toLocaleString()}\n• Crecimiento: ${data.crecimiento}\n• Promedio diario: S/. ${data.promedio.toLocaleString()}`;
-      addMessage(response, false, 'data', data);
-    } else if (lowerMessage.includes('inventario') || lowerMessage.includes('stock')) {
-      const data = mockDataResponses.inventario;
-      response = `📋 **Información de Inventario:**\n\n• Valor total del inventario: S/. ${data.valorTotal.toLocaleString()}\n• Productos con bajo stock: ${data.productosBajoStock}\n• Productos agotados: ${data.productosAgotados}\n• Rotación promedio: ${data.rotacion}`;
-      addMessage(response, false, 'data', data);
-    } else if (lowerMessage.includes('orden') || lowerMessage.includes('órdenes')) {
-      const data = mockDataResponses.ordenes;
-      response = `📋 **Estado de Órdenes:**\n\n• Pendientes: ${data.pendientes}\n• En proceso: ${data.enProceso}\n• Completadas: ${data.completadas}\n• Canceladas: ${data.canceladas}`;
-      addMessage(response, false, 'data', data);
-    } else {
-      response = 'No tengo información específica sobre eso. ¿Podrías ser más específico? Puedo ayudarte con información sobre clientes, productos, ventas, inventario y órdenes.';
-      addMessage(response, false);
+    try {
+      const response: ChatbotResponse = await chatbotService.sendMessage(message);
+      
+      addMessage(
+        response.message, 
+        false, 
+        response.data ? 'data' : 'text',
+        response.data,
+        response.visualization,
+        response.suggestions
+      );
+    } catch (error: any) {
+      console.error('Error procesando mensaje:', error);
+      antMessage.error('Error comunicándose con el asistente virtual');
+      
+      addMessage(
+        'Lo siento, ocurrió un error al procesar tu consulta. Por favor, inténtalo de nuevo.',
+        false
+      );
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   };
 
   const handleSendMessage = () => {
-    if (inputValue.trim()) {
+    if (inputValue.trim() && !isLoading) {
       processUserMessage(inputValue.trim());
       setInputValue('');
     }
@@ -178,268 +156,243 @@ const ChatbotButton: React.FC<ChatbotButtonProps> = ({ onOpen, onClose }) => {
     }
   };
 
+  const handleQuickActionClick = (action: QuickAction) => {
+    processUserMessage(action.query);
+  };
+
   const handleSuggestionClick = (suggestion: string) => {
     processUserMessage(suggestion);
   };
 
   const renderMessage = (message: ChatMessage) => {
-    if (message.type === 'data') {
-      return (
-        <Paper
-          elevation={2}
-          sx={{
-            p: 2,
-            bgcolor: 'primary.50',
-            border: '1px solid',
-            borderColor: 'primary.200',
-            borderRadius: 2
-          }}
-        >
-          <Typography
-            variant="body2"
-            component="div"
-            sx={{
-              whiteSpace: 'pre-line',
-              fontWeight: 500,
-              '& strong': {
-                color: 'primary.main'
-              }
-            }}
-            dangerouslySetInnerHTML={{ __html: message.text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }}
-          />
-        </Paper>
-      );
-    }
-
     return (
-      <Typography
-        variant="body2"
-        sx={{
-          whiteSpace: 'pre-line',
-          fontWeight: message.isUser ? 500 : 400
-        }}
-      >
-        {message.text}
-      </Typography>
+      <div>
+        <Text style={{ whiteSpace: 'pre-line' }}>
+          {message.text}
+        </Text>
+        
+        {message.type === 'data' && message.data && message.visualization && (
+          <ChatbotDataVisualization
+            data={message.data}
+            visualization={message.visualization}
+            message={message.text}
+          />
+        )}
+        
+        {message.suggestions && message.suggestions.length > 0 && (
+          <div style={{ marginTop: 8 }}>
+            <Text type="secondary" style={{ fontSize: '0.85rem', marginBottom: 4, display: 'block' }}>
+              Consultas relacionadas:
+            </Text>
+            <Space wrap>
+              {message.suggestions.map((suggestion, index) => (
+                <Tag
+                  key={index}
+                  color="blue"
+                  style={{ cursor: 'pointer', margin: '2px 0' }}
+                  onClick={() => handleSuggestionClick(suggestion)}
+                >
+                  {suggestion}
+                </Tag>
+              ))}
+            </Space>
+          </div>
+        )}
+      </div>
     );
   };
 
   return (
     <>
-      <Fab
-        color="primary"
-        aria-label="chatbot"
+      <FloatButton
+        icon={<MessageOutlined />}
+        type="primary"
         onClick={handleOpen}
-        sx={{
-          position: 'fixed',
-          bottom: 24,
+        style={{
           right: 24,
-          zIndex: 1000,
-          boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15)',
-          '&:hover': {
-            transform: 'scale(1.1)',
-            boxShadow: '0 12px 35px rgba(0, 0, 0, 0.2)',
-          },
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          bottom: 24,
         }}
-      >
-        <ChatIcon />
-      </Fab>
+        tooltip="Asistente Virtual"
+      />
 
-      <Dialog
+      <Modal
+        title={
+          <Space>
+            <RobotOutlined style={{ color: '#1890ff' }} />
+            <span>Asistente Virtual Multilimp</span>
+            <Tag color="green">Conectado</Tag>
+          </Space>
+        }
         open={open}
-        onClose={handleClose}
-        maxWidth="sm"
-        fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: 3,
-            height: '70vh',
-            maxHeight: '600px'
-          }
+        onCancel={handleClose}
+        footer={null}
+        width={700}
+        style={{ top: 20 }}
+        bodyStyle={{ 
+          height: '70vh', 
+          maxHeight: '600px',
+          padding: 0,
+          display: 'flex',
+          flexDirection: 'column'
         }}
       >
-        <DialogTitle sx={{ pb: 1 }}>
-          <Box display="flex" alignItems="center" justifyContent="space-between">
-                        <Box display="flex" alignItems="center" gap={1}>
-              <BotIcon color="primary" />
-              <Typography variant="h6" fontWeight={600}>
-                Asistente Virtual
-              </Typography>
-              <Chip
-                label="Próximamente"
-                size="small"
-                color="warning"
-                variant="filled"
-                sx={{
-                  fontSize: '0.7rem',
-                  height: '20px',
-                  fontWeight: 600,
-                  '& .MuiChip-label': {
-                    px: 1,
-                  },
-                }}
-              />
-            </Box>
-            <IconButton onClick={handleClose} size="small">
-              <CloseIcon />
-            </IconButton>
-          </Box>
-        </DialogTitle>
 
-        <DialogContent sx={{ p: 0, display: 'flex', flexDirection: 'column' }}>
-          <Box
-            sx={{
-              flex: 1,
-              overflow: 'auto',
-              p: 2,
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 2
-            }}
-          >
-            {messages.map((message) => (
-              <Box
-                key={message.id}
-                sx={{
-                  display: 'flex',
-                  justifyContent: message.isUser ? 'flex-end' : 'flex-start',
-                  mb: 1
-                }}
-              >
-                <Box
-                  sx={{
-                    maxWidth: '80%',
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: 1
-                  }}
-                >
-                  {!message.isUser && (
-                    <Box
-                      sx={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: '50%',
-                        bgcolor: 'primary.main',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0
-                      }}
-                    >
-                      <BotIcon sx={{ color: 'white', fontSize: 18 }} />
-                    </Box>
-                  )}
-                  <Paper
-                    elevation={1}
-                    sx={{
-                      p: 2,
-                      bgcolor: message.isUser ? 'primary.main' : 'grey.50',
-                      color: message.isUser ? 'white' : 'text.primary',
-                      borderRadius: 2,
-                      maxWidth: '100%'
-                    }}
-                  >
-                    {renderMessage(message)}
-                  </Paper>
-                  {message.isUser && (
-                    <Box
-                      sx={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: '50%',
-                        bgcolor: 'grey.300',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0
-                      }}
-                    >
-                      <UserIcon sx={{ color: 'grey.600', fontSize: 18 }} />
-                    </Box>
-                  )}
-                </Box>
-              </Box>
-            ))}
-
-            {isLoading && (
-              <Box display="flex" alignItems="center" gap={1}>
-                <Box
-                  sx={{
+        <div style={{ 
+          flex: 1, 
+          overflow: 'auto', 
+          padding: '16px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '12px'
+        }}>
+          {messages.map((message) => (
+            <div
+              key={message.id}
+              style={{
+                display: 'flex',
+                justifyContent: message.isUser ? 'flex-end' : 'flex-start',
+                marginBottom: 8
+              }}
+            >
+              <div style={{
+                maxWidth: '85%',
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 8
+              }}>
+                {!message.isUser && (
+                  <div style={{
                     width: 32,
                     height: 32,
                     borderRadius: '50%',
-                    bgcolor: 'primary.main',
+                    backgroundColor: '#1890ff',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     flexShrink: 0
+                  }}>
+                    <RobotOutlined style={{ color: 'white', fontSize: 16 }} />
+                  </div>
+                )}
+                
+                <Card 
+                  size="small"
+                  style={{
+                    backgroundColor: message.isUser ? '#1890ff' : '#f6f6f6',
+                    border: 'none',
+                    borderRadius: 12,
+                    maxWidth: '100%'
+                  }}
+                  bodyStyle={{
+                    padding: '12px 16px',
+                    color: message.isUser ? 'white' : '#000'
                   }}
                 >
-                  <BotIcon sx={{ color: 'white', fontSize: 18 }} />
-                </Box>
-                <Paper
-                  elevation={1}
-                  sx={{
-                    p: 2,
-                    bgcolor: 'grey.50',
-                    borderRadius: 2
-                  }}
-                >
-                  <CircularProgress size={20} />
-                </Paper>
-              </Box>
-            )}
+                  {renderMessage(message)}
+                </Card>
+                
+                {message.isUser && (
+                  <div style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: '50%',
+                    backgroundColor: '#d9d9d9',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0
+                  }}>
+                    <UserOutlined style={{ color: '#8c8c8c', fontSize: 16 }} />
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
 
-            <div ref={messagesEndRef} />
-          </Box>
-
-          {messages.length === 1 && (
-            <Box sx={{ p: 2, pt: 0 }}>
-              <Typography variant="body2" color="text.secondary" mb={2}>
-                Consultas rápidas:
-              </Typography>
-              <Box display="flex" flexWrap="wrap" gap={1}>
-                {quickSuggestions.map((suggestion, index) => (
-                  <Chip
-                    key={index}
-                    label={suggestion}
-                    size="small"
-                    variant="outlined"
-                    onClick={() => handleSuggestionClick(suggestion)}
-                    sx={{ cursor: 'pointer' }}
-                  />
-                ))}
-              </Box>
-            </Box>
+          {isLoading && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{
+                width: 32,
+                height: 32,
+                borderRadius: '50%',
+                backgroundColor: '#1890ff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0
+              }}>
+                <RobotOutlined style={{ color: 'white', fontSize: 16 }} />
+              </div>
+              <Card 
+                size="small"
+                style={{
+                  backgroundColor: '#f6f6f6',
+                  border: 'none',
+                  borderRadius: 12
+                }}
+                bodyStyle={{ padding: '12px 16px' }}
+              >
+                <Space>
+                  <Spin size="small" />
+                  <Text type="secondary">Procesando...</Text>
+                </Space>
+              </Card>
+            </div>
           )}
-        </DialogContent>
 
-        <DialogActions sx={{ p: 2, pt: 0 }}>
-          <Box sx={{ display: 'flex', gap: 1, width: '100%' }}>
-            <TextField
-              ref={inputRef}
-              fullWidth
-              placeholder="Escribe tu consulta..."
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyPress={handleKeyPress}
-              variant="outlined"
-              size="small"
-              disabled={isLoading}
-            />
-            <Button
-              variant="contained"
-              onClick={handleSendMessage}
-              disabled={!inputValue.trim() || isLoading}
-              sx={{ minWidth: 'auto', px: 2 }}
-            >
-              <SendIcon />
-            </Button>
-          </Box>
-        </DialogActions>
-      </Dialog>
+          <div ref={messagesEndRef} />
+        </div>
+
+        {messages.length === 1 && quickActions.length > 0 && (
+          <div style={{ padding: '0 16px 16px' }}>
+            <Text type="secondary" style={{ marginBottom: 8, display: 'block' }}>
+              Consultas rápidas:
+            </Text>
+            <Row gutter={[8, 8]}>
+              {quickActions.map((action) => (
+                <Col key={action.id}>
+                  <Tooltip title={action.description}>
+                    <Tag
+                      color="blue"
+                      style={{ cursor: 'pointer', padding: '4px 8px' }}
+                      onClick={() => handleQuickActionClick(action)}
+                    >
+                      <QuestionCircleOutlined style={{ marginRight: 4 }} />
+                      {action.title}
+                    </Tag>
+                  </Tooltip>
+                </Col>
+              ))}
+            </Row>
+          </div>
+        )}
+
+        <div style={{ 
+          padding: '16px', 
+          borderTop: '1px solid #f0f0f0',
+          display: 'flex',
+          gap: 8
+        }}>
+          <Input
+            placeholder="Escribe tu consulta sobre clientes, órdenes, usuarios..."
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onPressEnter={handleKeyPress}
+            disabled={isLoading}
+            style={{ flex: 1 }}
+            suffix={
+              <Button
+                type="primary"
+                icon={<SendOutlined />}
+                onClick={handleSendMessage}
+                disabled={!inputValue.trim() || isLoading}
+                size="small"
+                style={{ border: 'none', boxShadow: 'none' }}
+              />
+            }
+          />
+        </div>
+      </Modal>
     </>
   );
 };
