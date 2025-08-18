@@ -375,17 +375,17 @@ const ProviderOrdersListDrawer = ({ handleClose, data, isTreasury = false }: Pro
                     >
                       Ver Detalle
                     </Button>
-                    {isTreasury!==true && (
+                    {isTreasury !== true && (
                       <Button
-                      variant="outlined"
-                      color="error"
-                      startIcon={<Delete />}
-                      sx={{
-                        py: 1.5,
-                      }}
-                    >
-                      Eliminar
-                    </Button>
+                        variant="outlined"
+                        color="error"
+                        startIcon={<Delete />}
+                        sx={{
+                          py: 1.5,
+                        }}
+                      >
+                        Eliminar
+                      </Button>
                     )}
                   </CardActions>
                 </Card>
@@ -454,28 +454,30 @@ const ProviderOrdersListDrawer = ({ handleClose, data, isTreasury = false }: Pro
                 No hay órdenes de proveedor asociadas a esta orden de compra. Agrega una nueva OP para comenzar el proceso.
               </Typography>
 
-              <Button
-                variant="outlined"
-                startIcon={<Add />}
-                onClick={() => handleSelected()}
-                sx={{
-                  borderColor: alpha('#ffffff', 0.3),
-                  color: '#ffffff',
-                  borderRadius: heroUIColors.radius.lg,
-                  textTransform: 'none',
-                  fontWeight: 600,
-                  px: 3,
-                  py: 1.5,
-
-                  '&:hover': {
-                    borderColor: '#ffffff',
-                    background: alpha('#ffffff', 0.1),
+              {isTreasury !== true && (
+                <Button
+                  variant="outlined"
+                  startIcon={<Add />}
+                  onClick={() => handleSelected()}
+                  sx={{
+                    borderColor: alpha('#ffffff', 0.3),
                     color: '#ffffff',
-                  }
-                }}
-              >
-                Crear Primera OP
-              </Button>
+                    borderRadius: heroUIColors.radius.lg,
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    px: 3,
+                    py: 1.5,
+
+                    '&:hover': {
+                      borderColor: '#ffffff',
+                      background: alpha('#ffffff', 0.1),
+                      color: '#ffffff',
+                    }
+                  }}
+                >
+                  Crear Primera OP
+                </Button>
+              )}
             </Box>
           )}
         </CardContent>
@@ -490,32 +492,32 @@ const ProviderOrdersListDrawer = ({ handleClose, data, isTreasury = false }: Pro
           }}
         >
           <Stack spacing={2}>
-            {isTreasury!==true && (
-            <Button
-            fullWidth
-            variant="contained"
-            size="large"
-            startIcon={<Add />}
-            onClick={() => handleSelected()}
-            sx={{
-              background: '#05a867',
-              fontWeight: 600,
-              borderRadius: heroUIColors.radius.md,
-              textTransform: 'none',
-              py: 1.5,
-              fontSize: '0.95rem',
-              boxShadow: heroUIColors.shadows.md,
-              border: `1px solid ${alpha('#ffffff', 0.2)}`,
+            {isTreasury !== true && (
+              <Button
+                fullWidth
+                variant="contained"
+                size="large"
+                startIcon={<Add />}
+                onClick={() => handleSelected()}
+                sx={{
+                  background: '#05a867',
+                  fontWeight: 600,
+                  borderRadius: heroUIColors.radius.md,
+                  textTransform: 'none',
+                  py: 1.5,
+                  fontSize: '0.95rem',
+                  boxShadow: heroUIColors.shadows.md,
+                  border: `1px solid ${alpha('#ffffff', 0.2)}`,
 
-              '&:hover': {
-                background: '#047856',
-                transform: 'translateY(-2px)',
-                boxShadow: heroUIColors.shadows.lg,
-              }
-            }}
-          >
-            Agregar Nueva OP
-          </Button>
+                  '&:hover': {
+                    background: '#047856',
+                    transform: 'translateY(-2px)',
+                    boxShadow: heroUIColors.shadows.lg,
+                  }
+                }}
+              >
+                Agregar Nueva OP
+              </Button>
             )}
 
 

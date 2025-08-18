@@ -172,6 +172,8 @@ const TransportsSection = ({ form, isTreasury }: TransportsSectionProps) => {
               </Stack>
             </Stack>
 
+          {isTreasury !== true && (
+            
             <IconButton
               sx={{
                 border: 'none',
@@ -185,6 +187,7 @@ const TransportsSection = ({ form, isTreasury }: TransportsSectionProps) => {
               <Add sx={{ fontWeight: 700 }} />
               <Typography variant="body2" sx={{ ml: 1, fontWeight: 700 }}>AGREGAR</Typography>
             </IconButton>
+          )}
           </Stack>
 
           {/* Contenido principal */}
@@ -491,6 +494,7 @@ const TransportsSection = ({ form, isTreasury }: TransportsSectionProps) => {
                           />
                         </Form.Item>
                       </Grid>
+                      <Divider sx={{ my: 2, borderColor: '#007bff' }} />
                       {isTreasury && (
                         <Grid size={12}>
                           <Form.Item noStyle shouldUpdate>

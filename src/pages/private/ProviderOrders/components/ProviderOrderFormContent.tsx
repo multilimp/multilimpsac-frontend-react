@@ -126,7 +126,7 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false, fromTrea
       });
 
       form.setFieldsValue({
-        empresa: (orderData.empresa as any)?.id || 1,
+        empresa: (orderData.empresa as any)?.id,
         proveedor: orderData.proveedor,
         contactoProveedor: orderData.contactoProveedor?.id || orderData.contactoProveedor,
         nombreContactoProveedor: orderData.contactoProveedor?.nombre || '',
