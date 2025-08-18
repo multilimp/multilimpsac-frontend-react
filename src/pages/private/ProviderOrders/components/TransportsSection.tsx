@@ -75,9 +75,9 @@ const TransportPayments = ({ transporteId, montoFlete, form, fieldName }: Transp
 
     const tipoPago = form.getFieldValue(['transportes', fieldName, 'estadoPago']);
     const notaPago = form.getFieldValue(['transportes', fieldName, 'notaPago']);
-    
+
     await handlePaymentsUpdate(formattedPayments, tipoPago, notaPago);
-    
+
     // Actualizar el formulario local
     form.setFieldValue(['transportes', fieldName, 'pagosTransporte'], payments);
   };
@@ -97,7 +97,7 @@ const TransportPayments = ({ transporteId, montoFlete, form, fieldName }: Transp
           const pagosTransporte = getFieldValue(['transportes', fieldName, 'pagosTransporte']) || [];
           const estadoPago = getFieldValue(['transportes', fieldName, 'estadoPago']) || '';
           const notaPago = getFieldValue(['transportes', fieldName, 'notaPago']) || '';
-          
+
           return (
             <PaymentsList
               title="Pagos Transporte"
@@ -172,22 +172,22 @@ const TransportsSection = ({ form, isTreasury }: TransportsSectionProps) => {
               </Stack>
             </Stack>
 
-          {isTreasury !== true && (
-            
-            <IconButton
-              sx={{
-                border: 'none',
-                bgcolor: '#887bad',
-                borderRadius: 1,
-                color: 'white',
-                zIndex: 900
-              }}
-              onClick={() => add(getEmptyTransformRecord())}
-            >
-              <Add sx={{ fontWeight: 700 }} />
-              <Typography variant="body2" sx={{ ml: 1, fontWeight: 700 }}>AGREGAR</Typography>
-            </IconButton>
-          )}
+            {isTreasury !== true && (
+
+              <IconButton
+                sx={{
+                  border: 'none',
+                  bgcolor: '#887bad',
+                  borderRadius: 1,
+                  color: 'white',
+                  zIndex: 900
+                }}
+                onClick={() => add(getEmptyTransformRecord())}
+              >
+                <Add sx={{ fontWeight: 700 }} />
+                <Typography variant="body2" sx={{ ml: 1, fontWeight: 700 }}>AGREGAR</Typography>
+              </IconButton>
+            )}
           </Stack>
 
           {/* Contenido principal */}
@@ -374,67 +374,72 @@ const TransportsSection = ({ form, isTreasury }: TransportsSectionProps) => {
 
                     {/* Sección de formulario - campos editables */}
                     <Grid container spacing={2}>
-                      {/* Primera fila: Empresa de Transporte y Dirección */}
-                      <Grid size={{ xs: 12, sm: 6 }}>
-                        <Form.Item name={[field.name, 'transporte']} rules={[requiredField]}>
-                          <SelectTransports label="Empresa de Transporte" />
-                        </Form.Item>
-                      </Grid>
-                      <Grid size={{ xs: 12, sm: 6 }}>
-                        <Form.Item name={[field.name, 'direccion']} rules={[requiredField]}>
-                          <InputAntd label="Dirección" size="large" />
-                        </Form.Item>
-                      </Grid>
 
-                      {/* Segunda fila: Solo Contacto (destino ya está en el header) */}
-                      <Grid size={{ xs: 12, sm: 12 }}>
-                        <Form.Item noStyle shouldUpdate>
-                          {({ getFieldValue }) => {
-                            const transporteId = getFieldValue(['transportes', field.name, 'transporte']);
-                            const transporteData = typeof transporteId === 'object' ? transporteId?.id : transporteId;
+                      {isTreasury !== true && (
+                        <>
+                          {/* Primera fila: Empresa de Transporte y Dirección */}
+                          <Grid size={{ xs: 12, sm: 6 }}>
+                            <Form.Item name={[field.name, 'transporte']} rules={[requiredField]}>
+                              <SelectTransports label="Empresa de Transporte" />
+                            </Form.Item>
+                          </Grid>
+                          <Grid size={{ xs: 12, sm: 6 }}>
+                            <Form.Item name={[field.name, 'direccion']} rules={[requiredField]}>
+                              <InputAntd label="Dirección" size="large" />
+                            </Form.Item>
+                          </Grid>
 
-                            return (
-                              <Form.Item
-                                name={[field.name, 'contacto']}
-                                rules={[]}
-                              >
-                                <SelectContactsByTransport
-                                  label="Contacto de Transporte"
-                                  transportId={transporteData}
-                                  placeholder="Seleccionar contacto"
-                                  onChange={(value, record: any) => {
-                                    form.setFieldsValue({
-                                      [`transportes[${field.name}].contacto`]: value,
-                                      [`transportes[${field.name}].nombreContactoTransporte`]: record?.optiondata?.nombre,
-                                      [`transportes[${field.name}].telefonoContactoTransporte`]: record?.optiondata?.telefono,
-                                    });
-                                  }}
-                                  onContactCreated={() => {
-                                    // Recargar contactos si es necesario
-                                  }}
-                                />
-                              </Form.Item>
-                            );
-                          }}
-                        </Form.Item>
-                      </Grid>
+                          {/* Segunda fila: Solo Contacto (destino ya está en el header) */}
+                          <Grid size={{ xs: 12, sm: 12 }}>
+                            <Form.Item noStyle shouldUpdate>
+                              {({ getFieldValue }) => {
+                                const transporteId = getFieldValue(['transportes', field.name, 'transporte']);
+                                const transporteData = typeof transporteId === 'object' ? transporteId?.id : transporteId;
 
-                      {/* Tercera fila: Ubicación */}
-                      <Grid size={{ xs: 12, sm: 4 }}>
-                        <Form.Item name={[field.name, 'region']}>
-                          <InputAntd label="Departamento" size="large" />
-                        </Form.Item>
-                      </Grid>
-                      <Grid size={{ xs: 12, sm: 4 }}>
-                        <Form.Item name={[field.name, 'provincia']}>
-                          <InputAntd label="Provincia" size="large" />
-                        </Form.Item>
-                      </Grid>
-                      <Grid size={{ xs: 12, sm: 4 }}>
-                        <Form.Item name={[field.name, 'distrito']}>
-                          <InputAntd label="Distrito" size="large" />
-                        </Form.Item>
-                      </Grid>
+                                return (
+                                  <Form.Item
+                                    name={[field.name, 'contacto']}
+                                    rules={[]}
+                                  >
+                                    <SelectContactsByTransport
+                                      label="Contacto de Transporte"
+                                      transportId={transporteData}
+                                      placeholder="Seleccionar contacto"
+                                      onChange={(value, record: any) => {
+                                        form.setFieldsValue({
+                                          [`transportes[${field.name}].contacto`]: value,
+                                          [`transportes[${field.name}].nombreContactoTransporte`]: record?.optiondata?.nombre,
+                                          [`transportes[${field.name}].telefonoContactoTransporte`]: record?.optiondata?.telefono,
+                                        });
+                                      }}
+                                      onContactCreated={() => {
+                                        // Recargar contactos si es necesario
+                                      }}
+                                    />
+                                  </Form.Item>
+                                );
+                              }}
+                            </Form.Item>
+                          </Grid>
+
+                          {/* Tercera fila: Ubicación */}
+                          <Grid size={{ xs: 12, sm: 4 }}>
+                            <Form.Item name={[field.name, 'region']}>
+                              <InputAntd label="Departamento" size="large" />
+                            </Form.Item>
+                          </Grid>
+                          <Grid size={{ xs: 12, sm: 4 }}>
+                            <Form.Item name={[field.name, 'provincia']}>
+                              <InputAntd label="Provincia" size="large" />
+                            </Form.Item>
+                          </Grid>
+                          <Grid size={{ xs: 12, sm: 4 }}>
+                            <Form.Item name={[field.name, 'distrito']}>
+                              <InputAntd label="Distrito" size="large" />
+                            </Form.Item>
+                          </Grid>
+                        </>
+                      )}
 
                       {/* Quinta fila: Nota de transporte */}
                       <Grid size={12}>
@@ -494,15 +499,15 @@ const TransportsSection = ({ form, isTreasury }: TransportsSectionProps) => {
                           />
                         </Form.Item>
                       </Grid>
-                      <Divider sx={{ my: 2, borderColor: '#007bff' }} />
                       {isTreasury && (
                         <Grid size={12}>
+                          <Divider sx={{ mx: 2 }} />
                           <Form.Item noStyle shouldUpdate>
                             {({ getFieldValue }) => {
                               const transporteData = getFieldValue(['transportes', field.name]);
                               const transporteId = transporteData?.id;
                               const montoFlete = Number(transporteData?.flete || 0);
-                              
+
                               if (!transporteId) {
                                 return (
                                   <Box sx={{ mt: 2, p: 3, bgcolor: '#f8f9fa', borderRadius: 1, textAlign: 'center' }}>
