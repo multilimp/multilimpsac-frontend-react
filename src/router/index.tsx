@@ -49,6 +49,7 @@ const ConfigRoutes = () => {
       'sales/create': PermissionsEnum.SALES,
       'provider-orders': PermissionsEnum.PROVIDER_ORDERS,
       'provider-orders/create': PermissionsEnum.PROVIDER_ORDERS,
+      'op-tables': PermissionsEnum.OP_TABLES,
       'tracking': PermissionsEnum.TRACKING,
       'treasury': PermissionsEnum.TREASURY,
       'billing': PermissionsEnum.BILLING,

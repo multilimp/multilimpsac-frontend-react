@@ -31,6 +31,7 @@ const Billings = Loadable(lazy(() => import('@/pages/private/Billings')));
 const Trackings = Loadable(lazy(() => import('@/pages/private/Trackings')));
 const ProviderOrders = Loadable(lazy(() => import('@/pages/private/ProviderOrders')));
 const ProviderOrderForm = Loadable(lazy(() => import('@/pages/private/ProviderOrders/ProviderOrderForm')));
+const OpTables = Loadable(lazy(() => import('@/pages/private/OpTables')));
 const TrackingForm = Loadable(lazy(() => import('@/pages/private/Trackings/TrackingForm')));
 
 const rolesArr = Object.values(RolesEnum);
@@ -118,6 +119,11 @@ const routes: Array<PropsRoutes> = [
       {
         path: 'provider-orders/:providerOrderId',
         element: ProviderOrderForm,
+        roles: rolesArr,
+      },
+      {
+        path: 'op-tables',
+        element: OpTables,
         roles: rolesArr,
       },
       {

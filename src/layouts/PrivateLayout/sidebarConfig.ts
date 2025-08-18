@@ -86,6 +86,12 @@ const sidebarConfig: SidebarConfigProps[] = [
         roles: rolesArr,
       },
       {
+        name: 'Tablas OP',
+        path: '/op-tables',
+        icon: InventoryIcon,
+        roles: rolesArr,
+      },
+      {
         name: 'Seguimiento',
         path: '/tracking',
         icon: TimelineIcon,

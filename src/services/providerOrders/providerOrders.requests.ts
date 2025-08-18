@@ -11,6 +11,11 @@ export const createOrderProvider = async (saleId: number, data: Record<string, a
   return response.data;
 };
 
+export const getAllOrderProviders = async (): Promise<Array<ProviderOrderProps>> => {
+  const response = await apiClient.get('/ordenes-proveedores');
+  return response.data;
+};
+
 export const getOrderProvidersByOC = async (saleId: number) => {
   const response = await apiClient.get(`/ordenes-proveedores/${saleId}/codigos`);
   return response.data;

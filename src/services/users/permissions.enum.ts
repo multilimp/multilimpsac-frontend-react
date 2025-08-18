@@ -12,6 +12,7 @@ export enum PermissionsEnum {
   QUOTES = 'quotes',
   SALES = 'sales',
   PROVIDER_ORDERS = 'provider_orders',
+  OP_TABLES = 'op_tables',
   TRACKING = 'tracking',
   
   // Gestión Financiera
@@ -33,6 +34,7 @@ export const PERMISSION_LABELS: Record<PermissionsEnum, string> = {
   [PermissionsEnum.QUOTES]: 'Cotizaciones',
   [PermissionsEnum.SALES]: 'Ventas',
   [PermissionsEnum.PROVIDER_ORDERS]: 'Órdenes Proveedores',
+  [PermissionsEnum.OP_TABLES]: 'Tablas OP',
   [PermissionsEnum.TRACKING]: 'Seguimiento',
   [PermissionsEnum.TREASURY]: 'Tesorería',
   [PermissionsEnum.BILLING]: 'Facturación',

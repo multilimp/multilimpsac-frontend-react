@@ -52,6 +52,7 @@ const getRoutePermission = (path: string): string | null => {
     '/quotes': PermissionsEnum.QUOTES,
     '/sales': PermissionsEnum.SALES,
     '/provider-orders': PermissionsEnum.PROVIDER_ORDERS,
+    '/op-tables': PermissionsEnum.OP_TABLES,
     '/tracking': PermissionsEnum.TRACKING,
     '/treasury': PermissionsEnum.TREASURY,
     '/billing': PermissionsEnum.BILLING,
