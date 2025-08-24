@@ -17,9 +17,12 @@ import { SaleProps } from '@/services/sales/sales';
 import { getSales } from '@/services/sales/sales.request';
 import { getTrackings } from '@/services/trackings/trackings.request';
 import { TrackingProps } from '@/services/trackings/trackings.d';
+import { CotizacionProps } from '@/types/cotizacion.types';
+import { getCotizaciones } from '@/services/quotes/quotes.request';
 import { BlackBarKeyEnum } from '@/types/global.enum';
 
 export type SaleInputsType = { enterprise: null | CompanyProps; tipoVenta: 'directa' | 'privada'; file: null | File };
+export type QuoteInputsType = { enterprise: null | CompanyProps };
 
 interface ContextProps {
   loadingRegions: boolean;
@@ -36,10 +39,15 @@ interface ContextProps {
   sales: Array<SaleProps>;
   loadingTrackings: boolean;
   trackings: Array<TrackingProps>;
+  loadingQuotes: boolean;
+  quotes: Array<CotizacionProps>;
   selectedSale: null | SaleProps;
+  selectedQuote: null | CotizacionProps;
   saleInputValues: SaleInputsType;
+  quoteInputValues: QuoteInputsType;
   blackBarKey: BlackBarKeyEnum | null;
   setSelectedSale: Dispatch<SetStateAction<null | SaleProps>>;
+  setSelectedQuote: Dispatch<SetStateAction<null | CotizacionProps>>;
   obtainClients: VoidFunction;
   obtainCompanies: VoidFunction;
   obtainRegions: VoidFunction;
@@ -47,7 +55,9 @@ interface ContextProps {
   obtainTransports: VoidFunction;
   obtainSales: VoidFunction;
   obtainTrackings: VoidFunction;
+  obtainQuotes: VoidFunction;
   setSaleInputValues: Dispatch<SetStateAction<SaleInputsType>>;
+  setQuoteInputValues: Dispatch<SetStateAction<QuoteInputsType>>;
   setBlackBarKey: Dispatch<SetStateAction<BlackBarKeyEnum | null>>;
 }
 
@@ -80,7 +90,12 @@ const GlobalInformationProvider = ({ children }: { children: ReactNode }) => {
   const [loadingTrackings, setLoadingTrackings] = useState(false);
   const [trackings, setTrackings] = useState<Array<TrackingProps>>([]);
 
+  const [loadingQuotes, setLoadingQuotes] = useState(false);
+  const [quotes, setQuotes] = useState<Array<CotizacionProps>>([]);
+  const [selectedQuote, setSelectedQuote] = useState<null | CotizacionProps>(null);
+
   const [saleInputValues, setSaleInputValues] = useState<SaleInputsType>({ enterprise: null, file: null, tipoVenta: 'directa' });
+  const [quoteInputValues, setQuoteInputValues] = useState<QuoteInputsType>({ enterprise: null });
   const [blackBarKey, setBlackBarKey] = useState<null | BlackBarKeyEnum>(null);
 
   useEffect(() => {
@@ -198,6 +213,21 @@ const GlobalInformationProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const obtainQuotes = async () => {
+    try {
+      setLoadingQuotes(true);
+      const data = await getCotizaciones();
+      setQuotes(data);
+    } catch (error) {
+      notification.error({
+        message: 'Error al obtener cotizaciones',
+        description: error instanceof Error ? error.message : String(error),
+      });
+    } finally {
+      setLoadingQuotes(false);
+    }
+  };
+
   const values = useMemo(
     () => ({
       loadingRegions,
@@ -214,10 +244,15 @@ const GlobalInformationProvider = ({ children }: { children: ReactNode }) => {
       loadingSales,
       trackings,
       loadingTrackings,
+      quotes,
+      loadingQuotes,
       selectedSale,
+      selectedQuote,
       saleInputValues,
+      quoteInputValues,
       blackBarKey,
       setSelectedSale,
+      setSelectedQuote,
       obtainClients,
       obtainCompanies,
       obtainRegions,
@@ -225,7 +260,9 @@ const GlobalInformationProvider = ({ children }: { children: ReactNode }) => {
       obtainTransports,
       obtainSales,
       obtainTrackings,
+      obtainQuotes,
       setSaleInputValues,
+      setQuoteInputValues,
       setBlackBarKey,
     }),
     [
@@ -243,8 +280,12 @@ const GlobalInformationProvider = ({ children }: { children: ReactNode }) => {
       loadingSales,
       trackings,
       loadingTrackings,
+      quotes,
+      loadingQuotes,
       selectedSale,
+      selectedQuote,
       saleInputValues,
+      quoteInputValues,
       blackBarKey,
     ]
   );

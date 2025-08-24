@@ -30,12 +30,22 @@ export const parseJSON = (str?: null | string | any[] | object) => {
     if (!str || str === '') return [];
     
     if (typeof str === 'string') {
+      // Si no parece ser JSON (no empieza con [ o {), devolver como string simple
+      const trimmed = str.trim();
+      if (!trimmed.startsWith('[') && !trimmed.startsWith('{')) {
+        return str;
+      }
+      
       const parsed = JSON.parse(str);
       return parsed;
     }
     
     return [];
   } catch (error) {
+    // Si no se puede parsear, devolver el valor original si es string
+    if (typeof str === 'string') {
+      return str;
+    }
     console.warn('Error parsing JSON:', error, 'Original value:', str);
     return [];
   }

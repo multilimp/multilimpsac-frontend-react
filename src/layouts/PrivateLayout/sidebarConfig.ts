@@ -15,6 +15,7 @@ import TimelineIcon from '@mui/icons-material/Timeline';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import PaymentsIcon from '@mui/icons-material/Payments';
+import BarChartIcon from '@mui/icons-material/BarChart';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import PersonIcon from '@mui/icons-material/Person';
 
@@ -119,6 +120,18 @@ const sidebarConfig: SidebarConfigProps[] = [
         name: 'Cobranzas',
         path: '/collections',
         icon: PaymentsIcon,
+        roles: rolesArr,
+      },
+    ],
+  },
+  {
+    title: 'Reportes',
+    roles: rolesArr,
+    routes: [
+      {
+        name: 'Reportes',
+        path: '/reports',
+        icon: BarChartIcon,
         roles: rolesArr,
       },
     ],

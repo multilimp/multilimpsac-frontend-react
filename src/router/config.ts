@@ -23,6 +23,7 @@ const Users = Loadable(lazy(() => import('@/pages/private/Users')));
 const Quotes = Loadable(lazy(() => import('@/pages/private/Quotes')));
 const Sales = Loadable(lazy(() => import('@/pages/private/Sales')));
 const SalesPageForm = Loadable(lazy(() => import('@/pages/private/Sales/SalesPageForm')));
+const QuotesPageForm = Loadable(lazy(() => import('@/pages/private/Quotes/QuotesPageForm')));
 const Clients = Loadable(lazy(() => import('@/pages/private/Clients')));
 const Providers = Loadable(lazy(() => import('@/pages/private/Providers')));
 const Transports = Loadable(lazy(() => import('@/pages/private/Transports')));
@@ -32,6 +33,7 @@ const Trackings = Loadable(lazy(() => import('@/pages/private/Trackings')));
 const ProviderOrders = Loadable(lazy(() => import('@/pages/private/ProviderOrders')));
 const ProviderOrderForm = Loadable(lazy(() => import('@/pages/private/ProviderOrders/ProviderOrderForm')));
 const OpTables = Loadable(lazy(() => import('@/pages/private/OpTables')));
+const Reports = Loadable(lazy(() => import('@/pages/private/Reports')));
 const TrackingForm = Loadable(lazy(() => import('@/pages/private/Trackings/TrackingForm')));
 
 const rolesArr = Object.values(RolesEnum);
@@ -87,8 +89,18 @@ const routes: Array<PropsRoutes> = [
         roles: rolesArr,
       },
       {
-        path: 'quotes', // Corregido typo (de 'quates' a 'quotes')
-        element: Quotes, // Actualizado a PascalCase
+        path: 'quotes', 
+        element: Quotes, 
+        roles: rolesArr,
+      },
+      {
+        path: 'quotes/create',
+        element: QuotesPageForm,
+        roles: rolesArr,
+      },
+      {
+        path: 'quotes/:id/edit',
+        element: QuotesPageForm,
         roles: rolesArr,
       },
       {
@@ -169,6 +181,11 @@ const routes: Array<PropsRoutes> = [
       {
         path: 'collections/:saleId',
         element: CollectionForm,
+        roles: rolesArr,
+      },
+      {
+        path: 'reports',
+        element: Reports,
         roles: rolesArr,
       },
       {

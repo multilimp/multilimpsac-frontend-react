@@ -44,7 +44,7 @@ const SelectContactsByClient = ({
             showSearch
             filterOption={filterOptions}
             size={size}
-            style={{ flex: 1 }}
+            style={{ flex: 1, minWidth: '350px' }}
             loading={loadingContacts}
             disabled={isDisabled}
             placeholder={
@@ -63,6 +63,7 @@ const SelectContactsByClient = ({
             dropdownStyle={{
               borderRadius: 12,
               border: '1px solid #e5e5e5',
+              width: 'auto'
             }}
             {...props}
           >
@@ -72,6 +73,9 @@ const SelectContactsByClient = ({
                 value={item.id}
                 optiondata={item}
                 title={`${item.nombre} - ${item.cargo}`}
+                style={{
+                  backgroundColor: 'inherit',
+                }}
               >
                 {item.cargo} - {item.nombre}
               </Select.Option>

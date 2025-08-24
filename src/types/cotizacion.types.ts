@@ -55,12 +55,13 @@ export enum CotizacionEstado {
 export enum TipoPago {
   CONTADO = 'CONTADO',
   CREDITO = 'CREDITO',
-  CONSIGNACION = 'CONSIGNACION'
+  ANTICIPADO = 'ANTICIPADO',
+  OTROS = 'OTROS'
 }
 
 // Tipos para formularios
 export interface CreateCotizacionData {
-  codigoCotizacion: string;
+  codigoCotizacion?: string; // Opcional porque se autogenera en el backend
   empresaId: number;
   clienteId: number;
   contactoClienteId?: number;
@@ -89,4 +90,6 @@ export interface CreateCotizacionProductoData {
   total: string;
 }
 
-export interface UpdateCotizacionData extends Partial<CreateCotizacionData> {}
+export interface UpdateCotizacionData extends Partial<CreateCotizacionData> {
+  estado?: CotizacionEstado;
+}

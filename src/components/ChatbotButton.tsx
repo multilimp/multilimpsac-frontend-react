@@ -228,12 +228,14 @@ const ChatbotButton: React.FC<ChatbotButtonProps> = ({ onOpen, onClose }) => {
         footer={null}
         width={700}
         style={{ top: 20 }}
-        bodyStyle={{ 
-          height: '70vh', 
-          maxHeight: '600px',
-          padding: 0,
-          display: 'flex',
-          flexDirection: 'column'
+        styles={{ 
+          body: {
+            height: '70vh', 
+            maxHeight: '600px',
+            padding: 0,
+            display: 'flex',
+            flexDirection: 'column'
+          }
         }}
       >
 
@@ -283,9 +285,11 @@ const ChatbotButton: React.FC<ChatbotButtonProps> = ({ onOpen, onClose }) => {
                     borderRadius: 12,
                     maxWidth: '100%'
                   }}
-                  bodyStyle={{
-                    padding: '12px 16px',
-                    color: message.isUser ? 'white' : '#000'
+                  styles={{
+                    body: {
+                      padding: '12px 16px',
+                      color: message.isUser ? 'white' : '#000'
+                    }
                   }}
                 >
                   {renderMessage(message)}
@@ -330,7 +334,7 @@ const ChatbotButton: React.FC<ChatbotButtonProps> = ({ onOpen, onClose }) => {
                   border: 'none',
                   borderRadius: 12
                 }}
-                bodyStyle={{ padding: '12px 16px' }}
+                styles={{ body: { padding: '12px 16px' } }}
               >
                 <Space>
                   <Spin size="small" />
