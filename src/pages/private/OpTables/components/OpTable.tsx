@@ -8,6 +8,7 @@ interface OpTableProps {
   data: Array<ProviderOrderProps>;
   loading: boolean;
   onRowClick: (op: ProviderOrderProps) => void;
+  onReload?: () => void | Promise<void>;
 }
 
 interface OpDataTable {
@@ -30,7 +31,7 @@ interface OpDataTable {
 
 const defaultText = 'N/A';
 
-const OpTable = ({ data, loading, onRowClick }: OpTableProps) => {
+const OpTable = ({ data, loading, onRowClick, onReload }: OpTableProps) => {
   const formattedData: Array<OpDataTable> = data.map((item) => ({
     id: item.id,
     rawdata: item,
@@ -87,6 +88,7 @@ const OpTable = ({ data, loading, onRowClick }: OpTableProps) => {
       columns={columns}
       data={formattedData}
       loading={loading}
+      onReload={onReload}
     />
   );
 };

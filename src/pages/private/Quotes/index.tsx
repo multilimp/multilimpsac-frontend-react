@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 import QuotesTable from './components/QuotesTable';
 
 const QuotesPage = () => {
-  const { quotes, loadingQuotes } = useGlobalInformation();
+  const { quotes, loadingQuotes, obtainQuotes } = useGlobalInformation();
 
   return (
     <PageContent
@@ -16,7 +16,7 @@ const QuotesPage = () => {
         </Button>
       }
     >
-      <QuotesTable data={quotes || []} loading={loadingQuotes} />
+      <QuotesTable data={quotes || []} loading={loadingQuotes} onReload={obtainQuotes} />
     </PageContent>
   );
 };

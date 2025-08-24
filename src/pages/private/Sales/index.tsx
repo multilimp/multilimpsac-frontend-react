@@ -7,7 +7,7 @@ import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 import { Link } from 'react-router-dom';
 
 const SalesPage = () => {
-  const { sales, loadingSales } = useGlobalInformation();
+  const { sales, loadingSales, obtainSales } = useGlobalInformation();
 
   return (
     <PageContent
@@ -17,7 +17,7 @@ const SalesPage = () => {
         </Button>
       }
     >
-      <SalesTable data={sales} loading={loadingSales} />
+      <SalesTable data={sales} loading={loadingSales} onReload={obtainSales} />
     </PageContent>
   );
 };

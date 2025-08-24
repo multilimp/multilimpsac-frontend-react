@@ -10,6 +10,7 @@ interface TreasurysTableProps {
   data: SaleProps[];
   loading: boolean;
   onRowClick: (sale: SaleProps) => void;
+  onReload?: () => void | Promise<void>;
 }
 
 const defaultText = 'N/A';
@@ -18,6 +19,7 @@ export default function TreasurysTable({
   data,
   loading,
   onRowClick,
+  onReload,
 }: TreasurysTableProps) {
   // const navigate = useNavigate();
   // const { setSelectedSale } = useGlobalInformation();
@@ -27,7 +29,7 @@ export default function TreasurysTable({
     if (!Array.isArray(data) || data.length === 0) {
       return [];
     }
-    
+
     return data.map((item) => ({
       id: item.id,
       codigo_venta: item.codigoVenta || defaultText,
@@ -72,12 +74,13 @@ export default function TreasurysTable({
   ];
 
   return (
-    <AntTable 
-      data={formattedData} 
-      columns={columns} 
+    <AntTable
+      data={formattedData}
+      columns={columns}
       loading={loading}
       scroll={{ x: 1600 }}
       size="small"
+      onReload={onReload}
     />
   );
 }

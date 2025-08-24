@@ -109,6 +109,7 @@ const GlobalInformationProvider = ({ children }: { children: ReactNode }) => {
     obtainTransports();
     obtainSales();
     obtainTrackings();
+    obtainQuotes();
   }, [user]);
 
   const obtainRegions = async () => {

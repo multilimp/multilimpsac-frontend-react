@@ -21,10 +21,7 @@ const QuotesFormFirstStep = ({ form, isEditing }: { form: FormInstance; isEditin
   useEffect(() => {
     if (!isEditing) {
       form.setFieldsValue({
-        estado: 'COTIZADO',
-        empresa: 1,
-        fechaCreacion: new Date(),
-        fechaActualizacion: new Date()
+        estado: 'COTIZADO'
       });
     }
   }, [isEditing, form]);
@@ -104,7 +101,7 @@ const QuotesFormFirstStep = ({ form, isEditing }: { form: FormInstance; isEditin
               <Fragment>
                 <Typography variant="h6" sx={{ fontWeight: 600, color: '#ffffff' }}>
                   {`${getFieldValue('idCotizacion') ?? 'ID Cotización'}`}
-                </Typography> 
+                </Typography>
                 <Typography sx={{ fontWeight: 300, color: '#ffffff', opacity: 0.8, fontSize: '0.875rem' }}>
                   {cliente
                     ? `${cliente.razonSocial ?? 'Cliente seleccionado'}`
@@ -121,30 +118,6 @@ const QuotesFormFirstStep = ({ form, isEditing }: { form: FormInstance; isEditin
         </Form.Item>
       }
       footerContent={renderFooterContent()}
-      headerLeft={
-        <Form.Item noStyle shouldUpdate>
-          {() => {
-            const fechaCreacion = form.getFieldValue('fechaCreacion') || new Date();
-            return (
-              <Typography sx={{ color: '#ffffff' }}>
-                Fecha de creación: {dayjs(fechaCreacion).format('DD/MM/YYYY HH:mm')}
-              </Typography>
-            );
-          }}
-        </Form.Item>
-      }
-      headerRight={
-        <Form.Item noStyle shouldUpdate>
-          {() => {
-            const fechaActualizacion = form.getFieldValue('fechaActualizacion') || new Date();
-            return (
-              <Typography sx={{ color: '#ffffff' }}>
-                Fecha de actualización: {dayjs(fechaActualizacion).format('DD/MM/YYYY HH:mm')}
-              </Typography>
-            );
-          }}
-        </Form.Item>
-      }
     >
       <Form.Item name="cliente" noStyle />
       <Typography variant="h6" sx={{ margin: 1, mb: 2 }}>
@@ -153,24 +126,24 @@ const QuotesFormFirstStep = ({ form, isEditing }: { form: FormInstance; isEditin
       <Grid container columnSpacing={2} rowSpacing={2}>
         <Grid size={{ xs: 12, md: 4 }}>
           <Form.Item name="empresa" rules={[requiredField]}>
-            <SelectCompanies 
-              label="Empresa" 
+            <SelectCompanies
+              label="Empresa"
               onChange={updateFechaActualizacion}
             />
           </Form.Item>
         </Grid>
         <Grid size={{ xs: 12, md: 4 }}>
           <Form.Item name="fechaCotizacion" rules={[requiredField]} initialValue={dayjs()}>
-            <DatePickerAntd 
-              label="Fecha de Cotización" 
+            <DatePickerAntd
+              label="Fecha de Cotización"
               onChange={updateFechaActualizacion}
             />
           </Form.Item>
         </Grid>
         <Grid size={{ xs: 12, md: 4 }}>
           <Form.Item name="fechaEntrega">
-            <DatePickerAntd 
-              label="Fecha de Entrega" 
+            <DatePickerAntd
+              label="Fecha de Entrega"
               onChange={updateFechaActualizacion}
             />
           </Form.Item>

@@ -12,15 +12,16 @@ interface SalesTableProps {
   data: SaleProps[];
   loading: boolean;
   onRecordAction?: (action: ModalStateEnum, data: SaleProps) => void;
+  onReload?: () => void | Promise<void>;
 }
 
-const SalesTable: React.FC<SalesTableProps> = ({ data, loading }) => {
+const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onReload }) => {
   const navigate = useNavigate();
-  
+
   // ✅ Función para normalizar estados desde el backend
   const normalizeStatus = (status: string | null | undefined): string => {
     if (!status) return 'incompleto';
-    
+
     const statusMap: Record<string, string> = {
       'completo': 'completo',           // ✅ Backend devuelve "completo"
       'completado': 'completo',         // ✅ Normalizar variantes
@@ -32,15 +33,15 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading }) => {
       'cancelled': 'anulado',
       'canceled': 'anulado',
     };
-    
+
     const normalizedStatus = status.toLowerCase().trim();
     return statusMap[normalizedStatus] || 'incompleto';
   };
-  
+
   const formattedData = useMemo(() => {
     return data.map((item) => {
       const normalizedStatus = normalizeStatus(item.estadoVenta);
-      
+
       return {
         id: item.id,
         codigo_venta: item.codigoVenta,
@@ -77,7 +78,7 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading }) => {
       completo: heroUIColors.success[500],      // ✅ Verde - "completo" no "completado"
       anulado: heroUIColors.error[500],         // Rojo
     };
-    
+
     return statusColors[status] || heroUIColors.neutral[400]; // Gris por defecto
   };
 
@@ -89,7 +90,7 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading }) => {
       completo: 'Completo',      // ✅ Label correcto
       anulado: 'Anulado',
     };
-    
+
     return statusLabels[status] || 'Desconocido';
   };
 
@@ -101,13 +102,13 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading }) => {
       render: (value: string) => (
         <Box
           sx={{
-            width: '100%', 
-            height: '100%', 
+            width: '100%',
+            height: '100%',
             minHeight: '60px', // ✅ Altura mínima garantizada
             backgroundColor: `${getStatusBackgroundColor(value)} !important`,
             margin: '-16px !important', // ✅ Compensa el padding de la celda
             padding: '6px !important',
-            
+
             // ✅ Forzar que sobrescriba estilos de tabla
             '&:hover': {
               backgroundColor: `${getStatusBackgroundColor(value)} !important`,
@@ -177,7 +178,7 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading }) => {
       filter: true,
       render: (value: string) => {
         const bgColor = getStatusBackgroundColor(value);
-        
+
         return (
           <Box
             sx={{
@@ -193,7 +194,7 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading }) => {
               boxShadow: `0 2px 8px ${bgColor}40`,
               cursor: 'default',
               transition: 'all 0.2s ease',
-              
+
               '&:hover': {
                 opacity: 0.9,
                 transform: 'translateY(-1px)',
@@ -208,7 +209,7 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading }) => {
     },
   ];
 
-  return <AntTable data={formattedData} columns={columns} loading={loading} />;
+  return <AntTable data={formattedData} columns={columns} loading={loading} onReload={onReload} />;
 };
 
 export default SalesTable;

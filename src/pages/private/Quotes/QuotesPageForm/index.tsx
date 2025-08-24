@@ -3,8 +3,9 @@ import { Box, Button, Stack } from '@mui/material';
 import { Form, message, notification, Spin, Input, Select } from 'antd';
 import { useParams, useNavigate } from 'react-router-dom';
 
-import { CotizacionProps, CotizacionEstado, TipoPago, CreateCotizacionProductoData } from '@/types/cotizacion.types';
+import { CotizacionProps, CotizacionEstado, TipoPago } from '@/types/cotizacion.types';
 import { getCotizacionById, createCotizacion, updateCotizacion } from '@/services/quotes/quotes.request';
+import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 import QuotesFormFirstStep from './QuotesFormFirstStep';
 import QuotesFormSecondStep from './QuotesFormSecondStep';
 import QuotesFormThirdStep from './QuotesFormThirdStep';
@@ -25,6 +26,7 @@ const QuotesPageForm = () => {
   const [loading, setLoading] = useState(false);
   const { id } = useParams();
   const navigate = useNavigate();
+  const { obtainQuotes } = useGlobalInformation();
   const isEditing = Boolean(id);
   const [_currentQuote, setCurrentQuote] = useState<CotizacionProps | null>(null);
 
@@ -35,7 +37,7 @@ const QuotesPageForm = () => {
           setLoading(true);
           const quoteData = await getCotizacionById(Number(id));
           setCurrentQuote(quoteData);
-          
+
           const formValues: Record<string, unknown> = {
             empresa: (quoteData.empresa as { id: number })?.id || quoteData.empresaId,
             cliente: quoteData.cliente,
@@ -146,20 +148,24 @@ const QuotesPageForm = () => {
           estado: String(values.estado) as CotizacionEstado,
         });
         notification.success({ message: 'La cotización fue actualizada correctamente' });
+        // Recargar las cotizaciones en el contexto global
+        await obtainQuotes();
       } else {
         await createCotizacion(baseQuoteData);
         notification.success({ message: 'La cotización fue creada correctamente' });
         form.resetFields();
+        // Recargar las cotizaciones en el contexto global
+        await obtainQuotes();
       }
 
       navigate('/quotes');
     } catch (error: unknown) {
       console.error('Error al guardar cotización:', error);
-      const errorMessage = (error as { response?: { data?: { message?: string } }; message?: string })?.response?.data?.message || 
-                        (error as { message?: string })?.message || 
-                        'Error desconocido';
-      notification.error({ 
-        message: 'Error al guardar la cotización', 
+      const errorMessage = (error as { response?: { data?: { message?: string } }; message?: string })?.response?.data?.message ||
+        (error as { message?: string })?.message ||
+        'Error desconocido';
+      notification.error({
+        message: 'Error al guardar la cotización',
         description: errorMessage,
         duration: 5
       });
@@ -190,7 +196,7 @@ const QuotesPageForm = () => {
             <QuotesFormFirstStep form={form} isEditing={isEditing} />
             <QuotesFormSecondStep form={form} />
             <QuotesFormThirdStep form={form} />
-            
+
             {/* Campos adicionales y botón de submit */}
             <Stack direction="column" spacing={2} sx={{ p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
               <Stack direction="row" spacing={2} sx={{ flexWrap: 'wrap' }}>
@@ -199,7 +205,6 @@ const QuotesPageForm = () => {
                   label="Estado"
                   rules={[{ required: isEditing, message: 'Seleccione el estado' }]}
                   style={{ minWidth: 200 }}
-                  extra={!isEditing ? "Estado por defecto: Cotizado" : undefined}
                 >
                   <Select placeholder="Seleccione estado">
                     {estadoOptions.map(option => (
@@ -209,30 +214,8 @@ const QuotesPageForm = () => {
                     ))}
                   </Select>
                 </Form.Item>
-                
-                <Form.Item
-                  name="montoTotal"
-                  label="Monto Total"
-                  style={{ minWidth: 200 }}
-                >
-                  <Form.Item noStyle shouldUpdate>
-                    {() => {
-                      const productos = form.getFieldValue('productos') || [];
-                      const total = productos.reduce((sum: number, prod: ProductoRecord) =>
-                        sum + (Number(prod?.total) || 0), 0
-                      );
-                      return (
-                        <Input 
-                          value={`S/ ${total.toFixed(2)}`}
-                          disabled
-                          style={{ backgroundColor: '#f5f5f5' }}
-                        />
-                      );
-                    }}
-                  </Form.Item>
-                </Form.Item>
               </Stack>
-              
+
               <Stack direction="row" spacing={2} justifyContent="flex-end">
                 <Button
                   variant="outlined"

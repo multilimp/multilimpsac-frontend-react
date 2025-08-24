@@ -11,6 +11,7 @@ import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 interface BillingsTableProps {
   data: SaleProps[];
   loading: boolean;
+  onReload?: () => void;
 }
 
 const statusMap = {
@@ -22,7 +23,7 @@ const statusMap = {
 
 const defaultText = 'N/A';
 
-const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading }) => {
+const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }) => {
   const navigate = useNavigate();
   const { setSelectedSale } = useGlobalInformation();
 
@@ -31,7 +32,7 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading }) => {
     if (!Array.isArray(data) || data.length === 0) {
       return [];
     }
-    
+
     return data.map((item) => ({
       id: item.id,
       codigo_venta: item.codigoVenta || defaultText,
@@ -88,11 +89,11 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading }) => {
     { title: 'Fecha Factura', dataIndex: 'fecha_factura', width: 150, sort: true, filter: true },
     { title: 'GRR', dataIndex: 'grr', width: 100, sort: true, filter: true },
     { title: 'Refact', dataIndex: 'refact', width: 80, sort: true, filter: true },
-    { 
-      title: 'Estado Facturación', 
-      dataIndex: 'estado_facturacion', 
-      width: 150, 
-      sort: true, 
+    {
+      title: 'Estado Facturación',
+      dataIndex: 'estado_facturacion',
+      width: 150,
+      sort: true,
       filter: true,
       render: (value) => {
         const colorMap: Record<string, string> = {
@@ -102,8 +103,8 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading }) => {
           'canceled': '#f31260', // rojo
         };
         return (
-          <span style={{ 
-            color: colorMap[value] || '#000', 
+          <span style={{
+            color: colorMap[value] || '#000',
             fontWeight: 600,
             padding: '4px 8px',
             backgroundColor: `${colorMap[value] || '#000'}20`,
@@ -140,12 +141,13 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading }) => {
   ];
 
   return (
-    <AntTable 
-      data={formattedData} 
-      columns={columns} 
+    <AntTable
+      data={formattedData}
+      columns={columns}
       loading={loading}
       scroll={{ x: 2200 }}
       size="small"
+      onReload={onReload}
     />
   );
 };

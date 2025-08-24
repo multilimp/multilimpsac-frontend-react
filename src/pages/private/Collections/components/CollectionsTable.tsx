@@ -11,18 +11,19 @@ interface CollectionsTableProps {
   data: SaleProps[];
   loading: boolean;
   onRecordAction?: (action: ModalStateEnum, data: SaleProps) => void;
+  onReload?: () => void;
 }
 
 const defaultText = 'N/A';
 
-const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRecordAction }) => {
+const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRecordAction, onReload }) => {
 
   const formattedData = useMemo(() => {
     // ✅ VALIDAR que data sea un array y no esté vacío
     if (!Array.isArray(data) || data.length === 0) {
       return [];
     }
-    
+
     return data.map((item) => ({
       id: item.id,
       codigo_venta: item.codigoVenta || defaultText,
@@ -37,14 +38,14 @@ const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRe
       monto_venta: formatCurrency(item.montoVenta ? parseInt(item.montoVenta, 10) : 0),
       cue: item?.cliente?.codigoUnidadEjecutora ?? defaultText,
       direccion_entrega: `${item.direccionEntrega ?? ''} - ${item.departamentoEntrega ?? ''} ${item.provinciaEntrega ?? ''} ${item.distritoEntrega ?? ''} - ${item.referenciaEntrega ?? ''}`,
-      
+
       // Campos específicos de cobranza
       estado_cobranza: item.estadoCobranza || 'pendiente',
       fecha_estado_cobranza: formattedDate(item.fechaEstadoCobranza, undefined, defaultText),
       neto_cobrado: formatCurrency(item.netoCobrado ? parseInt(item.netoCobrado, 10) : 0),
       penalidad: formatCurrency(item.penalidad ? parseInt(item.penalidad, 10) : 0),
       fecha_proxima_gestion: formattedDate(item.fechaProximaGestion, undefined, defaultText),
-      
+
       oce: item.documentoOce || null,
       ocf: item.documentoOcf || null,
 
@@ -108,11 +109,11 @@ const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRe
           </IconButton>
         ),
     },
-        { 
-      title: 'Estado Cobranza', 
-      dataIndex: 'estado_cobranza', 
-      width: 150, 
-      sort: true, 
+    {
+      title: 'Estado Cobranza',
+      dataIndex: 'estado_cobranza',
+      width: 150,
+      sort: true,
       filter: true,
       render: (value) => {
         const colorMap: Record<string, string> = {
@@ -122,8 +123,8 @@ const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRe
           'vencido': '#f31260', // rojo
         };
         return (
-          <span style={{ 
-            color: colorMap[value] || '#000', 
+          <span style={{
+            color: colorMap[value] || '#000',
             fontWeight: 600,
             padding: '4px 8px',
             backgroundColor: `${colorMap[value] || '#000'}20`,
@@ -138,12 +139,13 @@ const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRe
   ];
 
   return (
-    <AntTable 
-      data={formattedData} 
-      columns={columns} 
+    <AntTable
+      data={formattedData}
+      columns={columns}
       loading={loading}
       scroll={{ x: 2200 }}
       size="small"
+      onReload={onReload}
     />
   );
 };

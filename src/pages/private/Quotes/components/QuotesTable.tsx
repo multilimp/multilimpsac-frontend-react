@@ -1,7 +1,6 @@
 import AntTable, { AntColumnType } from '@/components/AntTable';
 import { CotizacionProps, CotizacionEstado } from '@/types/cotizacion.types';
-import { Button, Space, Tag, Tooltip } from 'antd';
-import { Edit, Visibility, Delete, ContentCopy } from '@mui/icons-material';
+import { Tag, Button } from 'antd';
 import { Box } from '@mui/material';
 import { formatCurrency, formattedDate } from '@/utils/functions';
 import { Link } from 'react-router-dom';
@@ -9,17 +8,18 @@ import { Link } from 'react-router-dom';
 interface QuotesTableProps {
   data: CotizacionProps[];
   loading: boolean;
+  onReload?: () => void | Promise<void>;
 }
 
-const QuotesTable = ({ data, loading }: QuotesTableProps) => {
+const QuotesTable = ({ data, loading, onReload }: QuotesTableProps) => {
   const getEstadoColor = (estado: CotizacionEstado) => {
     switch (estado) {
       case CotizacionEstado.PENDIENTE:
         return 'orange';
-      case CotizacionEstado.ACEPTADA:
+      case CotizacionEstado.APROBADO:
         return 'green';
-      case CotizacionEstado.RECHAZADA:
-        return 'red';
+      case CotizacionEstado.COTIZADO:
+        return 'blue';
       default:
         return 'default';
     }
@@ -29,34 +29,47 @@ const QuotesTable = ({ data, loading }: QuotesTableProps) => {
     switch (estado) {
       case CotizacionEstado.PENDIENTE:
         return 'Pendiente';
-      case CotizacionEstado.ACEPTADA:
-        return 'Aceptada';
-      case CotizacionEstado.RECHAZADA:
-        return 'Rechazada';
+      case CotizacionEstado.APROBADO:
+        return 'Aprobado';
+      case CotizacionEstado.COTIZADO:
+        return 'Cotizado';
       default:
         return estado;
     }
   };
 
   const columns: AntColumnType<CotizacionProps>[] = [
-    { 
-      title: 'Código', 
-      dataIndex: 'codigoCotizacion', 
-      width: 150,
+    {
+      title: 'Cotización',
+      dataIndex: 'codigoCotizacion',
+      width: 100,
       filter: true,
       sort: true,
-      render: (value) => (
-        <Box fontWeight="bold" color="primary.main">
-          {value}
-        </Box>
+      render: (value, record) => (
+        <Link to={`/quotes/${record.id}/edit`}>
+          <Button
+            type="link"
+            style={{
+              padding: 2,
+              backgroundColor: '#1976d2',
+              width: '100%',
+              fontWeight: 'bold',
+              color: 'white',
+              textAlign: 'center'
+            }}
+          >
+            {value}
+          </Button>
+        </Link>
       )
     },
-    { 
-      title: 'Cliente', 
+    {
+      title: 'Cliente',
+      dataIndex: ['cliente', 'razonSocial'],
       width: 200,
       filter: true,
       sort: true,
-      render: (record) => (
+      render: (_, record) => (
         <div>
           <div><strong>{record.cliente?.razonSocial || 'N/A'}</strong></div>
           <div style={{ fontSize: '12px', color: '#666' }}>
@@ -65,99 +78,71 @@ const QuotesTable = ({ data, loading }: QuotesTableProps) => {
         </div>
       )
     },
-    { 
-      title: 'Empresa', 
+    {
+      title: 'Empresa',
+      dataIndex: ['empresa', 'razonSocial'],
       width: 150,
       filter: true,
       sort: true,
-      render: (record) => record.empresa?.razonSocial || 'N/A'
+      render: (_, record) => record.empresa?.razonSocial || 'N/A'
     },
-    { 
-      title: 'Monto Total', 
+    {
+      title: 'Departamento',
+      dataIndex: 'departamento',
+      width: 120,
+      filter: true,
+      sort: true,
+      render: (_, record) => (
+        <span>
+          {record.departamentoEntrega || 'N/A'}
+        </span>
+      )
+    },
+    {
+      title: 'Monto Total',
       dataIndex: 'montoTotal',
       width: 120,
       sort: true,
+      filter: true,
       render: (value) => (
         <strong style={{ color: '#1976d2' }}>
           {formatCurrency(parseFloat(value || '0'))}
         </strong>
       )
     },
-    { 
-      title: 'Tipo Pago', 
-      dataIndex: 'tipoPago',
-      width: 100,
+    {
+      title: 'Fecha Cotización',
+      dataIndex: 'fechaCotizacion',
+      width: 120,
+      sort: true,
       filter: true,
-      render: (value) => (
-        <Tag color={value === 'CONTADO' ? 'green' : value === 'CREDITO' ? 'blue' : 'purple'}>
-          {value}
-        </Tag>
-      )
+      render: (value) => formattedDate(value)
     },
-    { 
-      title: 'Estado', 
+    {
+      title: 'Fecha Entrega',
+      dataIndex: 'fechaEntrega',
+      width: 120,
+      sort: true,
+      filter: true,
+      render: (value) => value ? formattedDate(value) : '-'
+    },
+    {
+      title: 'Estado',
       dataIndex: 'estado',
       width: 100,
       filter: true,
+      sort: true,
+      filters: [
+        { text: 'Pendiente', value: CotizacionEstado.PENDIENTE },
+        { text: 'Aprobado', value: CotizacionEstado.APROBADO },
+        { text: 'Cotizado', value: CotizacionEstado.COTIZADO },
+      ],
+      onFilter: (value, record) => record.estado === value,
       render: (estado: CotizacionEstado) => (
         <Tag color={getEstadoColor(estado)}>
           {getEstadoLabel(estado)}
         </Tag>
       )
-    },
-    { 
-      title: 'Fecha Cotización', 
-      dataIndex: 'fechaCotizacion',
-      width: 120,
-      sort: true,
-      render: (value) => formattedDate(value)
-    },
-    { 
-      title: 'Fecha Entrega', 
-      dataIndex: 'fechaEntrega',
-      width: 120,
-      sort: true,
-      render: (value) => value ? formattedDate(value) : '-'
-    },
-    {
-      title: 'Acciones',
-      key: 'actions',
-      width: 160,
-      render: (_, record) => (
-        <Space size="small">
-          <Tooltip title="Ver detalles">
-            <Button 
-              size="small" 
-              icon={<Visibility />} 
-              onClick={() => console.log('Ver', record)}
-            />
-          </Tooltip>
-          <Tooltip title="Editar">
-            <Button 
-              size="small" 
-              type="primary" 
-              icon={<Edit />} 
-              component={Link}
-              to={`/quotes/${record.id}/edit`}
-            />
-          </Tooltip>
-          <Tooltip title="Duplicar">
-            <Button 
-              size="small" 
-              icon={<ContentCopy />} 
-              onClick={() => console.log('Duplicar', record)}
-            />
-          </Tooltip>
-          <Tooltip title="Eliminar">
-            <Button 
-              size="small" 
-              danger 
-              icon={<Delete />} 
-              onClick={() => console.log('Eliminar', record)}
-            />
-          </Tooltip>
-        </Space>
-      ),
     },
   ];
 
@@ -168,6 +153,7 @@ const QuotesTable = ({ data, loading }: QuotesTableProps) => {
         data={data}
         loading={loading}
         rowKey="id"
+        onReload={onReload}
       />
     </Box>
   );

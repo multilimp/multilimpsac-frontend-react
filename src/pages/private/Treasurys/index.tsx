@@ -8,12 +8,17 @@ import TreasurysTable from './components/TreasurysTable';
 import ProviderOrdersListDrawer from '../ProviderOrders/components/ProviderOrdersListDrawer';
 
 const Treasury = () => {
-  const { sales, loadingSales } = useGlobalInformation();
+  const { sales, loadingSales, obtainSales } = useGlobalInformation();
   const [modal, setModal] = useState<ModalStateProps<SaleProps>>(null);
 
   return (
     <PageContent>
-      <TreasurysTable loading={loadingSales} data={sales} onRowClick={(sale) => setModal({ mode: ModalStateEnum.BOX, data: sale })} />
+      <TreasurysTable
+        loading={loadingSales}
+        data={sales}
+        onRowClick={(sale) => setModal({ mode: ModalStateEnum.BOX, data: sale })}
+        onReload={obtainSales}
+      />
 
       {modal?.mode === ModalStateEnum.BOX && <ProviderOrdersListDrawer isTreasury={true} handleClose={() => setModal(null)} data={modal.data!} />}
     </PageContent>

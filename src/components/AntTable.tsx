@@ -20,7 +20,7 @@ import {
   Typography,
   useTheme,
 } from '@mui/material';
-import { Bolt, Clear, Close, North, Reorder, Replay, SaveAlt, Search, South, Storage, SwapVert } from '@mui/icons-material';
+import { Bolt, Clear, Close, North, Reorder, Replay, SaveAlt, Search, South, Star, Storage, SwapVert } from '@mui/icons-material';
 import { removeAccents } from '@/utils/functions';
 
 export interface AntColumnType<T> extends ColumnType<T> {
@@ -32,12 +32,13 @@ export interface AntColumnType<T> extends ColumnType<T> {
 interface AntTablePropsProps<T> extends Omit<TableProps<T>, 'columns'> {
   data: T[];
   columns: AntColumnType<T>[];
+  onReload?: () => void | Promise<void>;
 }
 
 const valTypes = (value: any) => ['number', 'string'].includes(typeof value);
 
 const AntTable = <T extends Record<string, any>>(props: AntTablePropsProps<T>) => {
-  const { columns, data, ...rest } = props;
+  const { columns, data, onReload, ...rest } = props;
   const theme = useTheme();
   const [filters, setFilters] = useState<{ [key: string]: string }>({});
   const [showInputs, setShowInputs] = useState(false);
@@ -157,6 +158,20 @@ const AntTable = <T extends Record<string, any>>(props: AntTablePropsProps<T>) =
   const handleClear = () => {
     setFilters({});
     setSearch('');
+    if (wait) {
+      clearTimeout(wait);
+      setWait(undefined);
+    }
+  };
+
+  const handleReload = async () => {
+    if (onReload) {
+      try {
+        await onReload();
+      } catch (error) {
+        console.error('Error al recargar datos:', error);
+      }
+    }
   };
 
   const handleChange = (str: string) => {
@@ -182,7 +197,8 @@ const AntTable = <T extends Record<string, any>>(props: AntTablePropsProps<T>) =
             <Stack direction="column" spacing={2}>
               {columnsCloned
                 .filter((item) => item.title !== 'Acciones')
-                .map((item, index) => {                  return (
+                .map((item, index) => {
+                  return (
                     <Card key={index + 1} sx={{ bgcolor: 'transparent', borderColor: '#4A5563' }} variant="outlined">
                       <CardActionArea
                         onClick={() => {
@@ -260,6 +276,11 @@ const AntTable = <T extends Record<string, any>>(props: AntTablePropsProps<T>) =
               <IconButton color="primary" size="small" onClick={handleDownloadCSV}>
                 <SaveAlt />
               </IconButton>
+              {onReload && (
+                <IconButton color="success" size="small" onClick={handleReload}>
+                  <Replay />
+                </IconButton>
+              )}
               <IconButton color="error" size="small" onClick={handleClear}>
                 <Clear />
               </IconButton>

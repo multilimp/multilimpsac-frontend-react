@@ -37,10 +37,11 @@ const OpTables = () => {
 
   return (
     <PageContent>
-      <OpTable 
-        loading={loading} 
-        data={ops} 
-        onRowClick={handleRowClick} 
+      <OpTable
+        loading={loading}
+        data={ops}
+        onRowClick={handleRowClick}
+        onReload={loadOps}
       />
     </PageContent>
   );

@@ -23,7 +23,7 @@ export interface CotizacionProps {
   fechaEntrega?: string; // ISO string
   createdAt: string;
   updatedAt: string;
-  
+
   // Relaciones - usando tipos existentes del proyecto
   cliente?: ClientProps;
   empresa?: CompanyProps;
@@ -48,8 +48,8 @@ export interface CotizacionProductoProps {
 
 export enum CotizacionEstado {
   PENDIENTE = 'PENDIENTE',
-  ACEPTADA = 'ACEPTADA',
-  RECHAZADA = 'RECHAZADA'
+  APROBADO = 'APROBADO',
+  COTIZADO = 'COTIZADO'
 }
 
 export enum TipoPago {

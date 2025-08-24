@@ -10,6 +10,7 @@ interface TrackingsTableProps {
   data: Array<SaleProps>;
   loading: boolean;
   onRowClick?: (sale: SaleProps) => void;
+  onReload?: () => void | Promise<void>;
 }
 
 interface TrackingsDataTable {
@@ -32,17 +33,17 @@ interface TrackingsDataTable {
 }
 
 const defaultText = 'N/A';
-const TrackingsTable = ({ data, loading, onRowClick }: TrackingsTableProps) => {
+const TrackingsTable = ({ data, loading, onRowClick, onReload }: TrackingsTableProps) => {
   const { setSelectedSale } = useGlobalInformation();
   const navigate = useNavigate();
 
   const handleRowClick = (sale: SaleProps) => {
     // Establecer la venta seleccionada en el contexto global
     setSelectedSale(sale);
-    
+
     // Navegar al formulario de seguimiento
     navigate(`/tracking/${sale.id}`);
-    
+
     // También llamar al callback original si existe
     if (onRowClick) {
       onRowClick(sale);
@@ -136,6 +137,7 @@ const TrackingsTable = ({ data, loading, onRowClick }: TrackingsTableProps) => {
       columns={columns}
       data={formattedData}
       loading={loading}
+      onReload={onReload}
     />
   );
 };
