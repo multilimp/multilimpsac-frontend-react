@@ -1,6 +1,7 @@
 import { Fragment } from 'react';
 import { Form, FormInstance } from 'antd';
 import { Box, Grid, Stack, Typography } from '@mui/material';
+import { Receipt } from '@mui/icons-material';
 import { StepItemContent } from './smallcomponents';
 import SelectGeneric from '@/components/selects/SelectGeneric';
 import DatePickerAntd from '@/components/DatePickerAnt';
@@ -40,7 +41,8 @@ const InputsFirstStep = ({
       {/* Datos de Factura - Sin wrapper azul */}
       <StepItemContent>
         <Box sx={{ backgroundColor: 'white', m: -2, p: 4, borderRadius: 1 }}>
-          <Typography variant="h6" fontWeight={600} mb={2} sx={{ color: '#1f2937' }}>
+          <Typography variant="h6" fontWeight={600} component={Stack} direction="row" alignItems="flex-end" spacing={1} mb={2} sx={{ color: '#1f2937' }}>
+            <Receipt />
             Datos de Factura
           </Typography>
 
@@ -54,6 +56,7 @@ const InputsFirstStep = ({
             <Grid size={{ xs: 12, md: 4 }}>
               <Form.Item name="documentoFactura" rules={[requiredField]}>
                 <SimpleFileUpload
+                  label="Documento de Factura"
                   onChange={(file) => form.setFieldValue('documentoFactura', file)}
                   accept="application/pdf"
                 />

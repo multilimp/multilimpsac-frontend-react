@@ -91,7 +91,7 @@ const InputsSecondStep = ({ form, isEditing = false, currentSale, isPrivateSale 
         }
       >
         <Box sx={{ backgroundColor: 'white', m: -2, p: 4, borderRadius: 1 }}>
-          <Typography variant="h5" fontWeight={700} component={Stack} direction="row" alignItems="flex-end" spacing={1} mb={2}>
+          <Typography variant="h6" fontWeight={600} component={Stack} direction="row" alignItems="flex-end" spacing={1} mb={2} sx={{ color: '#1f2937' }}>
             <LocationOn />
             Lugar de entrega
           </Typography>

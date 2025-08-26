@@ -205,7 +205,7 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
       {/* HEADER */}
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
         <Stack direction="row" alignItems="center" spacing={2}>
-          <Typography variant="h5" fontWeight={700} sx={{ color: '#1a1a1a', display: 'flex', alignItems: 'center' }}>
+          <Typography variant="h6" fontWeight={700} sx={{ color: '#1a1a1a', display: 'flex', alignItems: 'center' }}>
             <Payment sx={{ fontSize: 28, mr: 1 }} />
             {title}
           </Typography>
@@ -216,9 +216,6 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
           )}
         </Stack>
         <Stack direction="row" alignItems="center" spacing={2}>
-          {/* Tipo de Pago */}
-          {renderTipoPago()}
-
           {/* Documento de Cotización */}
           {onDocumentoCotizacionChange && (
             <SimpleFileUpload
@@ -229,6 +226,9 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
               editable={!isReadonly}
             />
           )}
+
+          {/* Tipo de Pago */}
+          {renderTipoPago()}
         </Stack>
       </Box>
 

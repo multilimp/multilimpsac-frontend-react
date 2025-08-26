@@ -12,6 +12,7 @@ interface SimpleFileUploadProps {
 }
 
 const SimpleFileUpload = ({
+  label,
   onChange,
   accept = 'application/pdf',
   value,
@@ -59,26 +60,52 @@ const SimpleFileUpload = ({
     <Box>
       <Box
         sx={{
-          bgcolor: '#f3f6f9',
-          borderRadius: 2,
-          minHeight: 48,
+          border: '1px dashed #d9d9d9',
+          borderRadius: 1,
+          minHeight: 50,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           cursor: editable ? 'pointer' : 'default',
-          transition: 'background 0.2s',
-          '&:hover': editable ? { bgcolor: '#e9eef5' } : undefined,
+          transition: 'all 0.2s',
+          bgcolor: '#fafafa',
+          '&:hover': editable ? {
+            borderColor: '#1890ff',
+            bgcolor: '#f0f8ff'
+          } : undefined,
         }}
         onClick={() => {
           if (editable && !fileUrl) inputRef.current?.click();
         }}
       >
         {!fileUrl ? (
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <Upload sx={{ color: '#3B6EF6', fontSize: 22 }} />
-            <Typography sx={{ color: '#3B6EF6', userSelect: 'none', fontSize: 14 }}>
-              {loading ? 'Subiendo...' : 'Subir'}
-            </Typography>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent={label ? "space-between" : "center"}
+            sx={{ width: '100%', px: 2 }}
+          >
+            {label && (
+              <Typography sx={{
+                color: 'black',
+                userSelect: 'none',
+                fontSize: 14,
+                fontWeight: 500
+              }}>
+                {label}
+              </Typography>
+            )}
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <Upload sx={{ color: '#1890ff', fontSize: 20 }} />
+              <Typography sx={{
+                color: '#1890ff',
+                userSelect: 'none',
+                fontSize: 14,
+                fontWeight: 400
+              }}>
+                {loading ? 'Subiendo...' : 'Subir'}
+              </Typography>
+            </Stack>
           </Stack>
         ) : (
           <Stack direction="row" alignItems="center" spacing={1} width="100%" justifyContent="center" sx={{ p: 1 }}>
@@ -87,12 +114,12 @@ const SimpleFileUpload = ({
               type='button'
               underline="none"
               sx={{
-                color: '#1976d2',
+                color: '#1890ff',
                 fontSize: 14,
-                fontWeight: 500,
+                fontWeight: 400,
                 px: 0.5,
                 cursor: 'pointer',
-                maxWidth: 80,
+                maxWidth: 120,
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
@@ -100,7 +127,7 @@ const SimpleFileUpload = ({
               onClick={handleDownload}
               title="Ver/Descargar archivo"
             >
-              Archivo
+              {label ? `${label} subido` : 'Archivo subido'}
             </Link>
             {editable && (
               <IconButton
@@ -109,11 +136,11 @@ const SimpleFileUpload = ({
                 title="Eliminar archivo"
                 sx={{
                   ml: 0.5,
-                  color: '#f31260',
+                  color: '#ff4d4f',
                   fontSize: 16,
                   p: 0.5,
                   borderRadius: 1,
-                  '&:hover': { bgcolor: '#fbe9e7' },
+                  '&:hover': { bgcolor: '#fff2f0' },
                 }}
               >
                 <Close fontSize="small" />
