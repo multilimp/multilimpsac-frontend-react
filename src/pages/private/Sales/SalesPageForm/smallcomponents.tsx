@@ -40,9 +40,9 @@ export const StepItemContent = ({
     {showHeader ? (
       <Fragment>
         <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{
-            borderTopLeftRadius: 8,
-            borderTopRightRadius: 8,
-          }} bgcolor={color} color="#ffffff" px={2} height={32}>
+          borderTopLeftRadius: 8,
+          borderTopRightRadius: 8,
+        }} bgcolor={color} color="#ffffff" px={2} height={32}>
           <Typography component="div" fontSize={12}>
             {headerLeft}
           </Typography>
@@ -62,19 +62,25 @@ export const StepItemContent = ({
             </Box>
             <Box>{resumeContent}</Box>
           </Stack>
-          
+
           <Stack direction="row" spacing={1} alignItems="center">
             {showSearchButton && (
-              <IconButton 
-                sx={{ 
-                  border: '1px solid', 
-                  borderRadius: 1, 
+              <IconButton
+                sx={{
+                  border: '1px solid',
+                  borderRadius: 1,
                   color,
-                  zIndex: 900 
-                }} 
+                  zIndex: 900,
+                  padding: 1.5,
+                  minWidth: 44,
+                  minHeight: 44,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
                 onClick={onClickSearch}
               >
-                <ResumeSearchIcon />
+                <ResumeSearchIcon sx={{ fontSize: 20 }} />
               </IconButton>
             )}
             {resumeButtons}

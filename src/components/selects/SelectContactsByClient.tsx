@@ -13,17 +13,17 @@ interface SelectContactsByClientProps extends SelectProps {
   onContactCreated?: () => void;
 }
 
-const SelectContactsByClient = ({ 
-  label, 
-  clientId, 
+const SelectContactsByClient = ({
+  label,
+  clientId,
   onContactCreated,
   size = 'large',
-  ...props 
+  ...props
 }: SelectContactsByClientProps) => {
   const [openContactsDrawer, setOpenContactsDrawer] = useState(false);
-  
+
   const { contacts, loadingContacts, obtainContacts } = useContactsByEntity(
-    'cliente', 
+    'cliente',
     clientId || 0
   );
 
@@ -48,14 +48,14 @@ const SelectContactsByClient = ({
             loading={loadingContacts}
             disabled={isDisabled}
             placeholder={
-              !clientId 
-                ? 'Primero seleccione un cliente' 
-                : !hasContacts 
+              !clientId
+                ? 'Primero seleccione un cliente'
+                : !hasContacts
                   ? 'No hay contactos disponibles'
                   : 'Seleccione un contacto'
             }
             notFoundContent={
-              !clientId 
+              !clientId
                 ? 'Primero seleccione un cliente'
                 : 'No hay contactos disponibles'
             }
@@ -68,8 +68,8 @@ const SelectContactsByClient = ({
             {...props}
           >
             {contacts.map((item) => (
-              <Select.Option 
-                key={item.id} 
+              <Select.Option
+                key={item.id}
                 value={item.id}
                 optiondata={item}
                 title={`${item.nombre} - ${item.cargo}`}
@@ -81,19 +81,27 @@ const SelectContactsByClient = ({
               </Select.Option>
             ))}
           </Select>
-          
+
           <Button
             icon={<SearchOutlined />}
             size={size}
             disabled={!clientId}
             onClick={() => setOpenContactsDrawer(true)}
             title={!clientId ? 'Primero seleccione un cliente' : 'Agregar contacto'}
+            style={{
+              minWidth: '50px',
+              minHeight: '50px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '8px 12px'
+            }}
           />
         </div>
       </SelectContainer>
 
       {openContactsDrawer && clientId && (
-        <ContactsDrawer 
+        <ContactsDrawer
           referenceId={clientId}
           handleClose={() => setOpenContactsDrawer(false)}
           tipo={ContactTypeEnum.CLIENTE}

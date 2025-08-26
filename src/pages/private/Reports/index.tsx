@@ -35,7 +35,7 @@ const Reports = () => {
       <Typography variant="h5" component="h2" sx={{ mb: 3, fontWeight: 'medium' }}>
         Análisis y Tendencias
       </Typography>
-      
+
       <Grid container spacing={3}>
         {/* Sales Chart */}
         <Grid size={{ xs: 12, lg: 8 }}>
@@ -73,19 +73,19 @@ const Reports = () => {
             <Grid container spacing={2}>
               <Grid size={{ xs: 12, md: 4 }}>
                 <Typography variant="body2" sx={{ mb: 1, opacity: 0.9 }}>
-                  📈 <strong>Crecimiento:</strong> Las ventas han aumentado un 12.5% este mes, 
+                  📈 <strong>Crecimiento:</strong> Las ventas han aumentado un 12.5% este mes,
                   superando las proyecciones iniciales.
                 </Typography>
               </Grid>
               <Grid size={{ xs: 12, md: 4 }}>
                 <Typography variant="body2" sx={{ mb: 1, opacity: 0.9 }}>
-                  🎯 <strong>Eficiencia:</strong> El 98.5% de las entregas se completaron a tiempo, 
+                  🎯 <strong>Eficiencia:</strong> El 98.5% de las entregas se completaron a tiempo,
                   manteniendo la excelencia operativa.
                 </Typography>
               </Grid>
               <Grid size={{ xs: 12, md: 4 }}>
                 <Typography variant="body2" sx={{ mb: 1, opacity: 0.9 }}>
-                  💼 <strong>Oportunidad:</strong> Los proveedores muestran un rendimiento 
+                  💼 <strong>Oportunidad:</strong> Los proveedores muestran un rendimiento
                   consistente con margen de mejora en tiempos de entrega.
                 </Typography>
               </Grid>

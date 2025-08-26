@@ -54,12 +54,14 @@ const InputAntd = (props: InputAntdProps) => {
     value = String(props.value);
   }
 
+  const isDisabled = 'disabled' in props && props.disabled;
+
   const isFloatingAux = focus || (value && value.length !== 0);
   let labelClass = isFloatingAux || isFloating ? 'label label-float' : 'label';
   labelClass += size ? ` ${size}` : ' middle';
   labelClass += focus ? ' focus' : '';
   labelClass += hasError || ('aria-invalid' in props && props['aria-invalid'] === 'true') ? ' error' : '';
-  labelClass += 'disabled' in props && props.disabled ? ' disabled' : '';
+  labelClass += isDisabled ? ' disabled' : '';
   labelClass += isAddonBefore ? ` label-addon-before${focus ? '-focus' : ''}` : '';
 
   // Combinar clases del contenedor principal
@@ -69,32 +71,49 @@ const InputAntd = (props: InputAntdProps) => {
     className // Agregar className personalizado
   ].filter(Boolean).join(' ');
 
+  // Estilos para estado disabled
+  const disabledStyles = isDisabled ? {
+    opacity: 0.6,
+    cursor: 'not-allowed',
+    backgroundColor: '#f5f5f5',
+    color: '#999999',
+    borderColor: '#d9d9d9'
+  } : {};
+
+  const containerStyle = isDisabled ? {
+    opacity: 0.7
+  } : {};
+
   return (
-    <div className={containerClasses}>
+    <div className={containerClasses} style={containerStyle}>
       <div className="float-label" onBlur={() => setFocus(false)} onFocus={() => setFocus(true)}>
         {props.type === 'textarea' ? (
           <Input.TextArea
             {...(props as TextAreaInputProps)}
             size={size}
             rows={3}
-            style={props.style} // <-- Añadir aquí
+            style={{ ...(props.style || {}), ...disabledStyles }}
           />
         ) : props.type === 'number' ? (
           <InputNumber
             {...(props as NumberInputProps)}
             size={size}
-            style={{ width: '100%', ...(props.style || {}) }} // <-- Añadir aquí y combinar con width
+            style={{ width: '100%', ...(props.style || {}), ...disabledStyles }}
           />
         ) : (
           <Input
             {...(props as TextInputProps)}
             size={size}
             type={props.type || 'text'}
-            style={props.style} // <-- Ya estaba aquí
+            style={{ ...(props.style || {}), ...disabledStyles }}
           />
         )}
         {label && (
-          <label htmlFor={label} className={labelClass}>
+          <label
+            htmlFor={label}
+            className={labelClass}
+            style={isDisabled ? { color: '#666666', opacity: 0.9, fontWeight: 500 } : {}}
+          >
             {label}
           </label>
         )}

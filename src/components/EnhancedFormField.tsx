@@ -84,12 +84,12 @@ const EnhancedFormField: React.FC<EnhancedFormFieldProps> = ({
     onChange: (e: any) => {
       const value = e?.target?.value ?? e;
       setHasBeenTouched(true);
-      
+
       if (realTimeValidation) {
         const validation = realTimeValidation(value);
         setValidationState(validation);
       }
-      
+
       (children.props as any).onChange?.(e);
       onValueChange?.(value, {});
     },
@@ -133,7 +133,7 @@ const EnhancedFormField: React.FC<EnhancedFormFieldProps> = ({
         {/* Campo con validación visual */}
         <Box position="relative">
           {enhancedChildren}
-          
+
           {/* Ícono de validación */}
           {showValidationIcon && hasBeenTouched && (
             <Box
@@ -154,8 +154,8 @@ const EnhancedFormField: React.FC<EnhancedFormFieldProps> = ({
               variant="caption"
               color={
                 validationState.status === 'error' ? 'error' :
-                validationState.status === 'warning' ? 'warning.main' :
-                validationState.status === 'success' ? 'success.main' : 'text.secondary'
+                  validationState.status === 'warning' ? 'warning.main' :
+                    validationState.status === 'success' ? 'success.main' : 'text.secondary'
               }
               sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
             >

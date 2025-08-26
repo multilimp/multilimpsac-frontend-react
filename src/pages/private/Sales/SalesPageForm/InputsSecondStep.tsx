@@ -36,13 +36,31 @@ const InputsSecondStep = ({ form, isEditing = false, currentSale, isPrivateSale 
         {({ getFieldValue }) => {
           const clienteEstado: ClientProps | null = getFieldValue('clienteEstado');
           return (
-            <Box>
-              <Typography component="span" fontSize={13} color="#ccc">
-                Código UE:
-              </Typography>
-              <Typography component="span" fontSize={13} color="#fff" sx={{ ml: 1, fontWeight: 500 }}>
-                {clienteEstado?.codigoUnidadEjecutora || 'N/A'}
-              </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, flexWrap: 'wrap' }}>
+              <Box>
+                <Typography component="span" fontSize={13} color="#ccc">
+                  Código UE:
+                </Typography>
+                <Typography component="span" fontSize={13} color="#fff" sx={{ ml: 1, fontWeight: 500 }}>
+                  {clienteEstado?.codigoUnidadEjecutora || 'N/A'}
+                </Typography>
+              </Box>
+
+              {clienteEstado && (clienteEstado.departamento || clienteEstado.provincia) && (
+                <Box>
+                  <Typography component="span" fontSize={13} color="#ccc">
+                    Ubicación:
+                  </Typography>
+                  <Typography component="span" fontSize={13} color="#fff" sx={{ ml: 1, fontWeight: 500 }}>
+                    {[
+                      clienteEstado.departamento,
+                      clienteEstado.provincia,
+                      clienteEstado.distrito,
+                      clienteEstado.direccion
+                    ].filter(Boolean).join(' - ') || 'N/A'}
+                  </Typography>
+                </Box>
+              )}
             </Box>
           );
         }}
