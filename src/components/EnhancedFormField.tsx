@@ -71,15 +71,15 @@ const EnhancedFormField: React.FC<EnhancedFormFieldProps> = ({
   };
 
   const enhancedChildren = React.cloneElement(children, {
-    ...children.props,
+    ...(children.props as any),
     onFocus: (e: any) => {
       setIsFocused(true);
-      children.props.onFocus?.(e);
+      (children.props as any).onFocus?.(e);
     },
     onBlur: (e: any) => {
       setIsFocused(false);
       setHasBeenTouched(true);
-      children.props.onBlur?.(e);
+      (children.props as any).onBlur?.(e);
     },
     onChange: (e: any) => {
       const value = e?.target?.value ?? e;
@@ -90,11 +90,11 @@ const EnhancedFormField: React.FC<EnhancedFormFieldProps> = ({
         setValidationState(validation);
       }
       
-      children.props.onChange?.(e);
+      (children.props as any).onChange?.(e);
       onValueChange?.(value, {});
     },
     style: {
-      ...children.props.style,
+      ...(children.props as any).style,
       borderColor: hasBeenTouched ? getValidationColor() : undefined,
       transition: 'border-color 0.3s ease'
     }

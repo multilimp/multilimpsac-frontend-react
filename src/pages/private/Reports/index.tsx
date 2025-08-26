@@ -38,27 +38,27 @@ const Reports = () => {
       
       <Grid container spacing={3}>
         {/* Sales Chart */}
-        <Grid item xs={12} lg={8}>
+        <Grid size={{ xs: 12, lg: 8 }}>
           <SalesChart />
         </Grid>
 
         {/* Client Distribution */}
-        <Grid item xs={12} lg={4}>
+        <Grid size={{ xs: 12, lg: 4 }}>
           <ClientDistributionChart />
         </Grid>
 
         {/* Trend Chart */}
-        <Grid item xs={12} lg={8}>
+        <Grid size={{ xs: 12, lg: 8 }}>
           <TrendChart />
         </Grid>
 
         {/* Provider Performance */}
-        <Grid item xs={12} lg={4}>
+        <Grid size={{ xs: 12, lg: 4 }}>
           <ProviderPerformanceChart />
         </Grid>
 
         {/* Additional Information */}
-        <Grid item xs={12}>
+        <Grid size={{ xs: 12 }}>
           <Paper
             sx={{
               p: 3,
@@ -71,19 +71,19 @@ const Reports = () => {
               🎯 Resumen Ejecutivo
             </Typography>
             <Grid container spacing={2}>
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Typography variant="body2" sx={{ mb: 1, opacity: 0.9 }}>
                   📈 <strong>Crecimiento:</strong> Las ventas han aumentado un 12.5% este mes, 
                   superando las proyecciones iniciales.
                 </Typography>
               </Grid>
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Typography variant="body2" sx={{ mb: 1, opacity: 0.9 }}>
                   🎯 <strong>Eficiencia:</strong> El 98.5% de las entregas se completaron a tiempo, 
                   manteniendo la excelencia operativa.
                 </Typography>
               </Grid>
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Typography variant="body2" sx={{ mb: 1, opacity: 0.9 }}>
                   💼 <strong>Oportunidad:</strong> Los proveedores muestran un rendimiento 
                   consistente con margen de mejora en tiempos de entrega.
