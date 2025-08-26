@@ -1,10 +1,13 @@
 import { useMemo, useState, useEffect } from 'react';
-import { Button, Checkbox, Input, Select } from 'antd';
-import { Grid, Stack, Typography, Box } from '@mui/material';
+import { Button, Checkbox, Input, Select, Card, Space, Typography as AntTypography, Row, Col, Divider } from 'antd';
+import { Box, Grid, Stack, Typography } from '@mui/material';
+import { DeleteOutlined, CreditCardOutlined, PaperClipOutlined, CalendarOutlined, BankOutlined, FileTextOutlined, DollarOutlined } from '@ant-design/icons';
 import { Delete, Payment, AttachFile, Event, AccountBalance, Description, MonetizationOn } from '@mui/icons-material';
 import DatePickerAntd from '@/components/DatePickerAnt';
 import SimpleFileUpload from '@/components/SimpleFileUpload';
 import InputFile from '@/components/InputFile';
+
+const { Title, Text } = AntTypography;
 
 type PaymentMode = 'readonly' | 'edit';
 
@@ -169,35 +172,32 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
 
   // Componente renderizado para notaPago
   const renderNotaPago = () => (
-    <Box sx={{ mt: 3 }}>
-      <Grid container columnSpacing={3} rowSpacing={2}>
+    <div style={{ marginTop: 24 }}>
+      <Row gutter={[24, 16]}>
         {/* Nota privada - ocupa todo el ancho ya que el documento se movió al header */}
-        <Grid size={12}>
-          <Typography fontWeight={700} color="#6c5ebf" mb={1} fontSize={16}>
+        <Col span={24}>
+          <Title level={5} style={{ fontWeight: 700, color: '#6c5ebf', marginBottom: 8, fontSize: 16 }}>
             Nota privada para Tesoreria
-          </Typography>
-          <Box
-            component="textarea"
+          </Title>
+          <Input.TextArea
             rows={4}
             value={localNotaPago}
-            onChange={(e: any) => handleNotaPagoChange(e.target.value)}
+            onChange={(e) => handleNotaPagoChange(e.target.value)}
             style={{
-              width: '100%',
               borderRadius: 8,
               border: '1.5px solid #6c5ebf',
-              padding: 16,
               fontSize: 14,
               color: '#222',
               background: isReadonly ? '#f5f5f5' : '#fff',
               resize: 'vertical',
-              fontFamily: 'inherit',
               opacity: isReadonly ? 0.7 : 1,
             }}
             placeholder="Escribe una nota privada para tesorería..."
+            disabled={isReadonly}
           />
-        </Grid>
-      </Grid>
-    </Box>
+        </Col>
+      </Row>
+    </div>
   );
 
   return (
@@ -206,7 +206,7 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
         <Stack direction="row" alignItems="center" spacing={2}>
           <Typography variant="h6" fontWeight={700} sx={{ color: '#1a1a1a', display: 'flex', alignItems: 'center' }}>
-            <Payment sx={{ fontSize: 28, mr: 1 }} />
+            <CreditCardOutlined style={{ fontSize: 28, marginRight: 8 }} />
             {title}
           </Typography>
           {saldoFavor > 0 && (
@@ -248,7 +248,7 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
               }}>
                 {isReadonly ? (
                   <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', color: '#666' }}>
-                    <Event sx={{ fontSize: 20, mr: 1, color: '#999' }} />
+                    <CalendarOutlined style={{ fontSize: 20, marginRight: 8, color: '#999' }} />
                     <Typography fontSize={14} fontWeight={600}>
                       {payment.date ? payment.date.format('DD/MM/YYYY') : '-- / -- / ----'}
                     </Typography>

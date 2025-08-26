@@ -5,11 +5,19 @@ import { Grid, Stack, Typography, Box } from '@mui/material';
 import { requiredField } from './InputsFirstStep';
 // Removed location select components - using text inputs with AI autocomplete instead
 import InputAntd from '@/components/InputAntd';
+import SelectGeneric from '@/components/selects/SelectGeneric';
 import { Business, LocationOn } from '@mui/icons-material';
 import ClientSelectorModal from '../../Clients/components/ClientSelectorModal';
 import { ClientProps } from '@/services/clients/clients';
 import { SaleProps } from '@/services/sales/sales';
 import dayjs from 'dayjs';
+
+// Opciones para el tipo de entrega en ventas privadas
+const tipoEntregaOptions = [
+  { label: 'Recojo en almacén', value: 'RECOJO_ALMACEN' },
+  { label: 'Entrega a domicilio', value: 'ENTREGA_DOMICILIO' },
+  { label: 'Entrega en agencia', value: 'ENTREGA_AGENCIA' }
+];
 
 interface InputsSecondStepProps {
   form: FormInstance;
@@ -97,6 +105,61 @@ const InputsSecondStep = ({ form, isEditing = false, currentSale, isPrivateSale 
           </Typography>
 
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+
+            {/* Campos específicos para ventas privadas */}
+            {isPrivateSale && (
+              <Grid container columnSpacing={2} rowSpacing={2} sx={{ mb: 2 }}>
+                {/* Tipo de entrega */}
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <Form.Item name="tipoEntrega" rules={[requiredField]}>
+                    <SelectGeneric
+                      label="Tipo de entrega"
+                      options={tipoEntregaOptions}
+                    />
+                  </Form.Item>
+                </Grid>
+
+                {/* Destino - visible solo para entrega a domicilio y entrega en agencia */}
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <Form.Item noStyle shouldUpdate>
+                    {({ getFieldValue }) => {
+                      const tipoEntrega = getFieldValue('tipoEntrega');
+                      if (tipoEntrega === 'ENTREGA_DOMICILIO') {
+                        return (
+                          <Form.Item name="destinoEntidad" rules={[requiredField]}>
+                            <InputAntd label="Nombre de la entidad" />
+                          </Form.Item>
+                        );
+                      } else if (tipoEntrega === 'ENTREGA_AGENCIA') {
+                        return (
+                          <Form.Item name="nombreAgencia" rules={[requiredField]}>
+                            <InputAntd label="Nombre de la agencia" />
+                          </Form.Item>
+                        );
+                      }
+                      return null;
+                    }}
+                  </Form.Item>
+                </Grid>
+
+                {/* Destino general - para entrega en agencia */}
+                <Form.Item noStyle shouldUpdate>
+                  {({ getFieldValue }) => {
+                    const tipoEntrega = getFieldValue('tipoEntrega');
+                    if (tipoEntrega === 'ENTREGA_AGENCIA') {
+                      return (
+                        <Grid size={12}>
+                          <Form.Item name="destinoFinal" rules={[requiredField]}>
+                            <InputAntd label="Destino final" />
+                          </Form.Item>
+                        </Grid>
+                      );
+                    }
+                    return null;
+                  }}
+                </Form.Item>
+              </Grid>
+            )}
 
             {/* Fila de ubicación geográfica */}
             <Grid container columnSpacing={2} rowSpacing={2}>
