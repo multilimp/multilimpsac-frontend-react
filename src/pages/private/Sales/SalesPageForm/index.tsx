@@ -397,6 +397,14 @@ const SalesPageForm = () => {
       <Spin spinning={loading} size="large" tip="..:: Espere mientras finaliza la operación ::..">
         <Form form={form} onFinish={handleFinish}>
           <Stack direction="column" spacing={2}>
+            <InputsSecondStep
+              form={form}
+              isEditing={isEditing}
+              currentSale={currentSale}
+              isPrivateSale={saleInputValues.tipoVenta === 'privada'}
+            />
+
+            {/* Campos de Venta Privada - Movidos después de lugar de entrega */}
             <Collapse in={saleInputValues.tipoVenta === 'privada'} unmountOnExit>
               <InputsFirstStep
                 form={form}
@@ -408,8 +416,6 @@ const SalesPageForm = () => {
                 onNotaPagoChange={setNotaPago}
               />
             </Collapse>
-
-            <InputsSecondStep form={form} isEditing={isEditing} currentSale={currentSale} />
 
             <InputsThirdStep
               form={form}

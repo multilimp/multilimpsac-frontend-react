@@ -32,34 +32,48 @@ const InputsThirdStep = ({ form, companyId, isPrivateSale = false }: InputsThird
           </Typography>
           {/* Primera fila: Datos principales */}
           <Grid container columnSpacing={2} rowSpacing={2}>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <Form.Item name="catalogoComplete" noStyle />
-              <Form.Item shouldUpdate noStyle>
-                {({ setFieldsValue }) => (
-                  <Form.Item name="catalogo" rules={[requiredField]}>
-                    <SelectCatalogs
-                      companyId={companyId}
-                      label="Catálogo"
-                      onChange={(value, record: any) => setFieldsValue({ catalogo: value, catalogoComplete: record?.optiondata })}
-                    />
+            {/* Solo mostrar catálogo y fecha formalización si NO es venta privada */}
+            {!isPrivateSale && (
+              <>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <Form.Item name="catalogoComplete" noStyle />
+                  <Form.Item shouldUpdate noStyle>
+                    {({ setFieldsValue }) => (
+                      <Form.Item name="catalogo" rules={[requiredField]}>
+                        <SelectCatalogs
+                          companyId={companyId}
+                          label="Catálogo"
+                          onChange={(value, record: any) => setFieldsValue({ catalogo: value, catalogoComplete: record?.optiondata })}
+                        />
+                      </Form.Item>
+                    )}
                   </Form.Item>
-                )}
-              </Form.Item>
-            </Grid>
+                </Grid>
 
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <Form.Item name="fechaFormalizacion" rules={[requiredField]}>
-                <DatePickerAntd label="Fecha formalización" />
-              </Form.Item>
-            </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <Form.Item name="fechaFormalizacion" rules={[requiredField]}>
+                    <DatePickerAntd label="Fecha formalización" />
+                  </Form.Item>
+                </Grid>
+              </>
+            )}
 
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            {/* Campos para venta privada - fecha máxima, monto y código OCF */}
+            {isPrivateSale && (
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                <Form.Item name="codigoOcf">
+                  <InputAntd label="Código OCF" />
+                </Form.Item>
+              </Grid>
+            )}
+
+            <Grid size={{ xs: 12, sm: 6, md: isPrivateSale ? 4 : 3 }}>
               <Form.Item name="fechaMaxEntrega" rules={[requiredField]}>
                 <DatePickerAntd label="Fecha máxima de entrega" />
               </Form.Item>
             </Grid>
 
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Grid size={{ xs: 12, sm: 6, md: isPrivateSale ? 4 : 3 }}>
               <Form.Item name="montoVenta" rules={[requiredField]}>
                 <InputAntd label="Monto de venta" type="number" />
               </Form.Item>
@@ -86,6 +100,8 @@ const InputsThirdStep = ({ form, companyId, isPrivateSale = false }: InputsThird
                   <DatePickerAntd label="Fecha de SIAF" />
                 </Form.Item>
               </Grid>
+
+              {/* Código OCF solo para ventas al estado */}
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <Form.Item name="codigoOcf" rules={siafRules}>
                   <InputAntd label="OCF" />

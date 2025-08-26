@@ -4,6 +4,7 @@ import { Grid, Stack, Typography, Box } from '@mui/material';
 import { Delete, Payment, AttachFile, Event, AccountBalance, Description, MonetizationOn } from '@mui/icons-material';
 import DatePickerAntd from '@/components/DatePickerAnt';
 import SimpleFileUpload from '@/components/SimpleFileUpload';
+import InputFile from '@/components/InputFile';
 
 type PaymentMode = 'readonly' | 'edit';
 
@@ -28,6 +29,9 @@ interface PaymentsListProps {
   onPaymentsChange?: (payments: PaymentItem[]) => void;
   onTipoPagoChange?: (tipoPago: string) => void;
   onNotaPagoChange?: (notaPago: string) => void;
+  // Nuevas props para el documento de cotización
+  documentoCotizacion?: any;
+  onDocumentoCotizacionChange?: (file: any) => void;
 }
 
 // Opciones del enum TipoPago del backend
@@ -46,47 +50,20 @@ const getEmptyPaymentRecord = (): PaymentItem => ({
   status: true,
 });
 
-const getStatusColor = (tipoPago: string) => {
-  switch (tipoPago) {
-    case 'URGENTE':
-      return {
-        bgcolor: '#fee2e2',
-        color: '#dc2626',
-        dotColor: '#dc2626'
-      };
-    case 'PAGADO':
-      return {
-        bgcolor: '#dcfce7',
-        color: '#16a34a',
-        dotColor: '#16a34a'
-      };
-    case 'PENDIENTE':
-      return {
-        bgcolor: '#fef3c7',
-        color: '#d97706',
-        dotColor: '#d97706'
-      };
-    default:
-      return {
-        bgcolor: '#f3f6f9',
-        color: '#222',
-        dotColor: '#222'
-      };
-  }
-};
-
 const PaymentsList: React.FC<PaymentsListProps> = ({
-payments = [],
-tipoPago = '',
-notaPago = '',
-title = 'Pagos',
-mode = 'edit',
-saldoFavor = 0,
-montoTotal = 0,
-estadoPago = 'Completo',
-onPaymentsChange,
-onTipoPagoChange,
-onNotaPagoChange,
+  payments = [],
+  tipoPago = '',
+  notaPago = '',
+  title = 'Pagos',
+  mode = 'edit',
+  saldoFavor = 0,
+  montoTotal = 0,
+  estadoPago = 'Completo',
+  onPaymentsChange,
+  onTipoPagoChange,
+  onNotaPagoChange,
+  documentoCotizacion,
+  onDocumentoCotizacionChange,
 }) => {
   const isReadonly = mode === 'readonly';
 
@@ -143,7 +120,7 @@ onNotaPagoChange,
     if (!localPayments.length) {
       return localTipoPago !== tipoPago || localNotaPago !== notaPago;
     }
-    
+
     // Si hay pagos, validar que estén completos
     return localPayments.every((p: PaymentItem) =>
       p.bank.trim() &&
@@ -179,7 +156,7 @@ onNotaPagoChange,
 
   // Componente renderizado para tipoPago
   const renderTipoPago = () => (
-    <Select 
+    <Select
       placeholder="Seleccionar tipo"
       size="middle"
       options={TIPO_PAGO_OPTIONS}
@@ -193,28 +170,33 @@ onNotaPagoChange,
   // Componente renderizado para notaPago
   const renderNotaPago = () => (
     <Box sx={{ mt: 3 }}>
-      <Typography fontWeight={700} color="#6c5ebf" mb={1} fontSize={16}>
-        Nota privada para Tesoreria
-      </Typography>
-      <Box
-        component="textarea"
-        rows={4}
-        value={localNotaPago}
-        onChange={(e: any) => handleNotaPagoChange(e.target.value)}
-        style={{
-          width: '100%',
-          borderRadius: 8,
-          border: '1.5px solid #6c5ebf',
-          padding: 16,
-          fontSize: 14,
-          color: '#222',
-          background: isReadonly ? '#f5f5f5' : '#fff',
-          resize: 'vertical',
-          fontFamily: 'inherit',
-          opacity: isReadonly ? 0.7 : 1,
-        }}
-        placeholder="Escribe una nota privada para tesorería..."
-      />
+      <Grid container columnSpacing={3} rowSpacing={2}>
+        {/* Nota privada - ocupa todo el ancho ya que el documento se movió al header */}
+        <Grid size={12}>
+          <Typography fontWeight={700} color="#6c5ebf" mb={1} fontSize={16}>
+            Nota privada para Tesoreria
+          </Typography>
+          <Box
+            component="textarea"
+            rows={4}
+            value={localNotaPago}
+            onChange={(e: any) => handleNotaPagoChange(e.target.value)}
+            style={{
+              width: '100%',
+              borderRadius: 8,
+              border: '1.5px solid #6c5ebf',
+              padding: 16,
+              fontSize: 14,
+              color: '#222',
+              background: isReadonly ? '#f5f5f5' : '#fff',
+              resize: 'vertical',
+              fontFamily: 'inherit',
+              opacity: isReadonly ? 0.7 : 1,
+            }}
+            placeholder="Escribe una nota privada para tesorería..."
+          />
+        </Grid>
+      </Grid>
     </Box>
   );
 
@@ -234,26 +216,19 @@ onNotaPagoChange,
           )}
         </Stack>
         <Stack direction="row" alignItems="center" spacing={2}>
-          {/* Estado de Pago al costado del chip */}
+          {/* Tipo de Pago */}
           {renderTipoPago()}
-          <Box
-            sx={{
-              bgcolor: getStatusColor(localTipoPago).bgcolor,
-              color: getStatusColor(localTipoPago).color,
-              fontWeight: 700,
-              fontSize: 18,
-              px: 3,
-              py: 1,
-              borderRadius: 5,
-              display: 'flex',
-              alignItems: 'center',
-              minWidth: 120,
-              justifyContent: 'center',
-              height: 48,
-            }}
-          >
-            {localTipoPago || 'Sin estado'}
-          </Box>
+
+          {/* Documento de Cotización */}
+          {onDocumentoCotizacionChange && (
+            <SimpleFileUpload
+              label="Documento de Cotización"
+              value={documentoCotizacion}
+              onChange={onDocumentoCotizacionChange}
+              accept="application/pdf"
+              editable={!isReadonly}
+            />
+          )}
         </Stack>
       </Box>
 
@@ -382,21 +357,21 @@ onNotaPagoChange,
                       bgcolor: '#e5e7eb'
                     }
                   }}
-                  onClick={() => {
-                    if (typeof payment.file === 'string') {
-                      window.open(payment.file, '_blank');
-                    }
-                  }}
+                    onClick={() => {
+                      if (typeof payment.file === 'string') {
+                        window.open(payment.file, '_blank');
+                      }
+                    }}
                   >
                     <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', color: '#666' }}>
                       <AttachFile sx={{ fontSize: 20, mr: 1, color: '#1890ff' }} />
-                      <Typography fontSize={12} fontWeight={600} sx={{ 
-                        overflow: 'hidden', 
-                        textOverflow: 'ellipsis', 
+                      <Typography fontSize={12} fontWeight={600} sx={{
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
                         color: '#1890ff'
                       }}>
-                       Ver Archivo
+                        Ver Archivo
                       </Typography>
                     </Box>
                   </Box>
@@ -458,7 +433,7 @@ onNotaPagoChange,
                 )}
               </Box>
             </Grid>
-            
+
             {/* Status - Checkbox */}
             <Grid size={0.5}>
               <Box sx={{
@@ -470,18 +445,18 @@ onNotaPagoChange,
                 justifyContent: 'center',
                 px: 2,
               }}>
-                <Checkbox 
+                <Checkbox
                   checked={payment.status}
                   disabled={isReadonly}
                   onChange={(e) => handleUpdatePayment(index, 'status', e.target.checked)}
-                  style={{ 
+                  style={{
                     transform: 'scale(1.2)',
                     color: '#1890ff',
                   }}
                 />
               </Box>
             </Grid>
-            
+
             {/* Eliminar pago */}
             {!isReadonly && (
               <Grid size={1}>
@@ -498,7 +473,7 @@ onNotaPagoChange,
                     danger
                     icon={<Delete />}
                     onClick={() => handleRemovePayment(index)}
-                    style={{ 
+                    style={{
                       width: '100%',
                       height: '100%',
                       border: 'none',
@@ -554,8 +529,8 @@ onNotaPagoChange,
             }}
           >
             <Typography fontWeight={700} fontSize={16}>Total Pagado</Typography>
-            <Typography 
-              fontWeight={700} 
+            <Typography
+              fontWeight={700}
               fontSize={18}
               color="#059669"
             >
@@ -580,8 +555,8 @@ onNotaPagoChange,
           }}
         >
           <Typography fontWeight={700} fontSize={16}>Total Pagado</Typography>
-          <Typography 
-            fontWeight={700} 
+          <Typography
+            fontWeight={700}
             fontSize={18}
             color="#059669"
           >

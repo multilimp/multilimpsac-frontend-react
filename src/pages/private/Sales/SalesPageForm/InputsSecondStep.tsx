@@ -15,9 +15,10 @@ interface InputsSecondStepProps {
   form: FormInstance;
   isEditing?: boolean;
   currentSale?: SaleProps | null;
+  isPrivateSale?: boolean;
 }
 
-const InputsSecondStep = ({ form, isEditing = false, currentSale }: InputsSecondStepProps) => {
+const InputsSecondStep = ({ form, isEditing = false, currentSale, isPrivateSale = false }: InputsSecondStepProps) => {
   const [openClients, setOpenClients] = useState(false);
 
   // Footer con CUE - siempre visible para ventas directas y privadas
@@ -50,6 +51,7 @@ const InputsSecondStep = ({ form, isEditing = false, currentSale }: InputsSecond
         showFooter
         footerContent={renderFooterContent()}
         ResumeIcon={Business}
+        color={isPrivateSale ? '#006DFA' : '#04BA6B'}
         onClickSearch={() => setOpenClients(true)}
         headerLeft={
           <Fragment>
