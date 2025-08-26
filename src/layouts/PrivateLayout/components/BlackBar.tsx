@@ -1,4 +1,4 @@
-import { Fragment, ReactNode, useState, useMemo, memo } from 'react';
+import { Fragment, ReactNode, useState, useMemo, memo, useEffect } from 'react';
 import { Dropdown } from 'antd';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Divider, List, ListItem, ListItemText, Stack, Typography, Checkbox, Skeleton, IconButton } from '@mui/material';
 import SelectCompanies from '@/components/selects/SelectCompanies';
@@ -11,6 +11,7 @@ import Scrollbar from '@/components/Scrollbar';
 import ClipboardJS from 'clipboard';
 import { notification } from 'antd';
 import { validateOcamPdf } from '@/utils/pdfValidation';
+import { patchSale } from '@/services/sales/sales.request';
 
 interface Producto {
   codigo: string;
@@ -20,6 +21,7 @@ interface Producto {
   precioUnitario?: number;
   total?: number;
   unidadMedida?: string;
+  isCompleted?: boolean; // Agregamos el campo isCompleted
 }
 
 const saleTypeOptions = [
@@ -28,10 +30,36 @@ const saleTypeOptions = [
 ];
 
 const BlackBar = memo(() => {
-  const { saleInputValues, setSaleInputValues, blackBarKey, selectedSale } = useGlobalInformation();
+  const { saleInputValues, setSaleInputValues, blackBarKey, selectedSale, setSelectedSale } = useGlobalInformation();
   const [openDD, setOpenDD] = useState(false);
   const [tempFile, setTempFile] = useState<File>();
   const [completedProducts, setCompletedProducts] = useState<string[]>([]);
+  const [isUpdatingProduct, setIsUpdatingProduct] = useState(false);
+
+  // Inicializar completedProducts basado en los datos del backend
+  useEffect(() => {
+    if (selectedSale?.productos && Array.isArray(selectedSale.productos)) {
+      const completed = selectedSale.productos
+        .filter((producto: Producto) => producto.isCompleted === true)
+        .map((producto: Producto) => producto.codigo);
+      setCompletedProducts(completed);
+    } else if (selectedSale?.productos && typeof selectedSale.productos === 'string') {
+      try {
+        const parsedProducts = JSON.parse(selectedSale.productos);
+        if (Array.isArray(parsedProducts)) {
+          const completed = parsedProducts
+            .filter((producto: Producto) => producto.isCompleted === true)
+            .map((producto: Producto) => producto.codigo);
+          setCompletedProducts(completed);
+        }
+      } catch (error) {
+        console.error('Error parsing productos:', error);
+        setCompletedProducts([]);
+      }
+    } else {
+      setCompletedProducts([]);
+    }
+  }, [selectedSale?.id, selectedSale?.productos]);
 
   const documentosConfig = [
     {
@@ -60,12 +88,68 @@ const BlackBar = memo(() => {
     setTempFile(undefined);
   };
 
-  const handleToggleProduct = (codigo: string) => {
-    setCompletedProducts((prev) =>
-      prev.includes(codigo)
-        ? prev.filter((c) => c !== codigo)
-        : [...prev, codigo]
-    );
+  const handleToggleProduct = async (codigo: string) => {
+    if (!selectedSale?.id || isUpdatingProduct) return;
+
+    try {
+      setIsUpdatingProduct(true);
+
+      // Actualizar estado local inmediatamente para UI responsiva
+      const isCurrentlyCompleted = completedProducts.includes(codigo);
+      const newCompletedProducts = isCurrentlyCompleted
+        ? completedProducts.filter((c) => c !== codigo)
+        : [...completedProducts, codigo];
+
+      setCompletedProducts(newCompletedProducts);
+
+      // Obtener los productos actuales
+      let currentProducts = selectedSale.productos;
+      if (typeof currentProducts === 'string') {
+        currentProducts = JSON.parse(currentProducts);
+      }
+
+      // Actualizar el producto específico
+      const updatedProducts = currentProducts.map((producto: Producto) =>
+        producto.codigo === codigo
+          ? { ...producto, isCompleted: !isCurrentlyCompleted }
+          : producto
+      );
+
+      // Persistir en backend
+      const updatedSale = await patchSale(selectedSale.id, {
+        productos: updatedProducts
+      });
+
+      // Actualizar el selectedSale con los datos del backend
+      setSelectedSale(updatedSale);
+
+      // Mostrar notificación de éxito
+      notification.success({
+        message: 'Producto actualizado',
+        description: `Producto ${isCurrentlyCompleted ? 'marcado como pendiente' : 'completado'} exitosamente`,
+        placement: 'topRight',
+        duration: 2,
+      });
+
+    } catch (error) {
+      console.error('Error updating product:', error);
+
+      // Revertir el estado local en caso de error
+      setCompletedProducts((prev) =>
+        prev.includes(codigo)
+          ? prev.filter((c) => c !== codigo)
+          : [...prev, codigo]
+      );
+
+      notification.error({
+        message: 'Error al actualizar producto',
+        description: 'No se pudo actualizar el estado del producto. Inténtalo de nuevo.',
+        placement: 'topRight',
+        duration: 3,
+      });
+    } finally {
+      setIsUpdatingProduct(false);
+    }
   };
 
   const handleCopyDescription = (descripcion: string) => {
@@ -78,7 +162,7 @@ const BlackBar = memo(() => {
 
     // Inicializar clipboard.js en el elemento temporal
     const clipboard = new ClipboardJS(tempElement);
-    
+
     clipboard.on('success', () => {
       // Mostrar notificación de éxito usando antd notification
       import('antd').then(({ notification }) => {
@@ -89,7 +173,7 @@ const BlackBar = memo(() => {
           duration: 2,
         });
       });
-      
+
       // Limpiar
       clipboard.destroy();
       document.body.removeChild(tempElement);
@@ -97,7 +181,7 @@ const BlackBar = memo(() => {
 
     clipboard.on('error', (e) => {
       console.error('Error al copiar al portapapeles:', e);
-      
+
       // Fallback manual
       try {
         const textArea = document.createElement('textarea');
@@ -108,7 +192,7 @@ const BlackBar = memo(() => {
         textArea.select();
         document.execCommand('copy');
         document.body.removeChild(textArea);
-        
+
         import('antd').then(({ notification }) => {
           notification.success({
             message: 'Descripción copiada',
@@ -128,7 +212,7 @@ const BlackBar = memo(() => {
           });
         });
       }
-      
+
       // Limpiar
       clipboard.destroy();
       document.body.removeChild(tempElement);
@@ -280,7 +364,7 @@ const BlackBar = memo(() => {
                 const file = event.target.files?.[0];
                 if (file) {
                   const validation = validateOcamPdf(file);
-                  
+
                   if (validation.isValid) {
                     setTempFile(file);
                     setOpenDD(true);
@@ -408,7 +492,10 @@ const BlackBar = memo(() => {
                   </Box>
                 ) : (
                   parsedProductos.map((item: Producto, index: number) => {
-                    const isCompleted = completedProducts.includes(item.codigo);
+                    // Priorizar el campo isCompleted del backend sobre el estado local
+                    const isCompleted = item.isCompleted !== undefined
+                      ? item.isCompleted
+                      : completedProducts.includes(item.codigo);
                     return (
                       <Box
                         key={item.codigo || index}
@@ -434,9 +521,9 @@ const BlackBar = memo(() => {
                         <Checkbox
                           checked={isCompleted}
                           onChange={() => handleToggleProduct(item.codigo)}
-                          sx={{ 
-                            p: 0, 
-                            mr: 1, 
+                          sx={{
+                            p: 0,
+                            mr: 1,
                             mt: 0.5,
                             '&.Mui-checked': {
                               color: '#57c98d',
@@ -445,7 +532,7 @@ const BlackBar = memo(() => {
                           color="success"
                           onClick={e => e.stopPropagation()}
                         />
-                        
+
                         <Box sx={{ flex: 1, minWidth: 0 }}>
                           {/* Header con código y cantidad */}
                           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
@@ -637,7 +724,7 @@ const BlackBar = memo(() => {
             }}
           >
             <div className="hero-scrollbar" style={{ height: '100%', overflowY: 'auto' }}>
-              {components[blackBarKey]}
+              {blackBarKey && components[blackBarKey as keyof typeof components]}
             </div>
           </Scrollbar>
         </Box>
@@ -661,6 +748,6 @@ const AccordionStyled = ({ title, children }: { title: ReactNode; children: Reac
     }}
   >
     <AccordionSummary sx={{ px: 0, fontWeight: 600, fontSize: '15px' }} expandIcon={<ExpandMore fontSize="large" sx={{ color: '#1890ff' }} />}>{title}</AccordionSummary>
-    <AccordionDetails sx={{ pt: 0, px: 0   }}>{children}</AccordionDetails>
+    <AccordionDetails sx={{ pt: 0, px: 0 }}>{children}</AccordionDetails>
   </Accordion>
 );

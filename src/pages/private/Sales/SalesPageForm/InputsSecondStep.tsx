@@ -52,34 +52,20 @@ const InputsSecondStep = ({ form, isEditing = false, currentSale }: InputsSecond
         ResumeIcon={Business}
         onClickSearch={() => setOpenClients(true)}
         headerLeft={
-          <Form.Item noStyle shouldUpdate>
-            {({ getFieldValue }) => {
-              const createdDate = getFieldValue('clienteEstado')?.createdAt;
-              return (
-                <Fragment>
-                  {'Creado: '}
-                  <Typography component="span" color="inherit" variant="inherit" fontWeight={600}>
-                    {createdDate ? dayjs(createdDate).format('DD / MM / YYYY') : '---'}
-                  </Typography>
-                </Fragment>
-              );
-            }}
-          </Form.Item>
+          <Fragment>
+            {'Creado: '}
+            <Typography component="span" color="inherit" variant="inherit" fontWeight={600}>
+              {currentSale?.createdAt ? dayjs(currentSale.createdAt).format('DD / MM / YYYY') : '---'}
+            </Typography>
+          </Fragment>
         }
         headerRight={
-          <Form.Item noStyle shouldUpdate>
-            {({ getFieldValue }) => {
-              const createdDate = getFieldValue('clienteEstado')?.updatedAt;
-              return (
-                <Fragment>
-                  {'Actualizado: '}
-                  <Typography component="span" color="inherit" variant="inherit" fontWeight={600}>
-                    {createdDate ? dayjs(createdDate).format('DD / MM / YYYY') : '---'}
-                  </Typography>
-                </Fragment>
-              );
-            }}
-          </Form.Item>
+          <Fragment>
+            {'Actualizado: '}
+            <Typography component="span" color="inherit" variant="inherit" fontWeight={600}>
+              {currentSale?.updatedAt ? dayjs(currentSale.updatedAt).format('DD / MM / YYYY') : '---'}
+            </Typography>
+          </Fragment>
         }
         resumeContent={
           <Form.Item noStyle shouldUpdate>
@@ -117,7 +103,7 @@ const InputsSecondStep = ({ form, isEditing = false, currentSale }: InputsSecond
                 <Form.Item name="direccionEntrega" rules={[requiredField]}>
                   <InputAntd label="Dirección" />
                 </Form.Item>
-              </Grid>            {/* Segunda fila - Ubicación geográfica con texto libre para AI */}            
+              </Grid>            {/* Segunda fila - Ubicación geográfica con texto libre para AI */}
               <Grid size={{ xs: 12, sm: 4 }}>
                 <Form.Item name="regionEntrega" rules={[requiredField]}>
                   <InputAntd label="Región" />

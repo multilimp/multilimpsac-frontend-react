@@ -40,6 +40,7 @@ const InputFile = ({
   const validateChange = async (event: ChangeEvent<HTMLInputElement>) => {
     try {
       setLoading(true);
+      setErrorFile(''); // Limpiar errores previos inmediatamente
 
       const extractedFile = event.target?.files?.[0];
       if (!extractedFile) return handleError('Selecciona un archivo.');
@@ -51,13 +52,19 @@ const InputFile = ({
       const sizeMB = extractedFile.size / (1024 * 1024);
       if (sizeMB > maxSizeMB) return handleError(`El archivo supera el tamaño máximo de ${maxSizeMB} MB.`);
 
+      // Actualizar estado inmediatamente con el archivo local
+      setFile(extractedFile);
+
       const uploadedUrl = await uploadFile(extractedFile);
-      
+
+      // Actualizar con la URL del servidor
+      setFileUrl(uploadedUrl);
       onChange?.(uploadedUrl);
 
-      setErrorFile('');
-      setFile(extractedFile);
-      setFileUrl(uploadedUrl);
+      // Limpiar el input file para permitir resubir el mismo archivo
+      if (fileRef.current) {
+        fileRef.current.value = '';
+      }
     } catch (error) {
       handleError(`Ocurrió un error inesperado. ${error}`);
     } finally {
@@ -65,18 +72,39 @@ const InputFile = ({
     }
   };
 
-  const handleError = (msg: string) => {
-    setErrorFile(msg);
-    onChange?.(null);
+  const handleDelete = () => {
+    // Limpiar todos los estados relacionados con el archivo
     setFile(null);
     setFileUrl(null);
-    if (fileRef.current) fileRef.current.value = '';
+    setErrorFile('');
+    setLoading(false);
+
+    // Notificar al componente padre que el archivo fue eliminado
+    onChange?.(null);
+
+    // Limpiar el input file para permitir seleccionar el mismo archivo nuevamente
+    if (fileRef.current) {
+      fileRef.current.value = '';
+    }
+  };
+
+  const handleError = (msg: string) => {
+    setErrorFile(msg);
+    setLoading(false);
+
+    // Solo resetear si hay un error real, no para limpiar
+    if (msg) {
+      onChange?.(null);
+      setFile(null);
+      setFileUrl(null);
+      if (fileRef.current) fileRef.current.value = '';
+    }
   };
 
   const handleDownload = () => {
     const url = file ? URL.createObjectURL(file) : fileUrl;
     if (!url) return;
-  
+
     if (!file && fileUrl) {
       // Si es una URL (archivo subido), abrir en nueva pestaña
       window.open(fileUrl, '_blank');
@@ -122,6 +150,7 @@ const InputFile = ({
               height: 40,
               borderRadius: '50%',
               color: showFile ? '#79c944' : 'grey.600',
+              transition: 'color 0.3s ease-in-out', // Transición suave del color
             }}
           >
             {showFile ? <CheckCircle sx={{ fontSize: 36 }} /> : <Upload sx={{ fontSize: 24 }} />}
@@ -140,10 +169,10 @@ const InputFile = ({
                 mt: 0.5,
               }}
             >
-              {errorFile || 
-               file?.name || 
-               (fileUrl ? `Archivo: ${fileUrl.split('/').pop() || 'documento'}` : null) ||
-               `Max ${maxSizeMB}MB`}
+              {errorFile ||
+                file?.name ||
+                (fileUrl ? `Archivo: ${fileUrl.split('/').pop() || 'documento'}` : null) ||
+                `Max ${maxSizeMB}MB`}
             </Typography>
           </Box>
         </Box>
@@ -153,7 +182,14 @@ const InputFile = ({
             <Button
               variant="contained"
               onClick={handleDownload}
-              sx={{ padding: '4px 12px', background: '#151d29' }}
+              sx={{
+                padding: '4px 12px',
+                background: '#151d29',
+                transition: 'all 0.2s ease-in-out', // Transición suave
+                '&:hover': {
+                  background: '#2a3441',
+                }
+              }}
             >
               <Typography variant="caption" sx={{ fontSize: 12, fontWeight: 500 }}>
                 Descargar
@@ -173,6 +209,7 @@ const InputFile = ({
                 textTransform: 'none',
                 fontSize: 12,
                 fontWeight: 500,
+                transition: 'all 0.2s ease-in-out', // Transición suave
               }}
             >
               Subir archivo
@@ -198,12 +235,13 @@ const InputFile = ({
               size="small"
               color="error"
               startIcon={<Delete />}
-              onClick={() => handleError('')}
+              onClick={() => handleDelete()}
               sx={{
                 minWidth: 100,
                 textTransform: 'none',
                 fontSize: 12,
                 fontWeight: 500,
+                transition: 'all 0.2s ease-in-out', // Transición suave
               }}
             >
               Eliminar

@@ -23,7 +23,7 @@ const SalesPageForm = () => {
   const navigate = useNavigate();
   const isEditing = Boolean(id);
   const [currentSale, setCurrentSale] = useState<SaleProps | null>(null);
-  
+
   // Estados para PaymentsList
   const [payments, setPayments] = useState<any[]>([{
     date: null,
@@ -48,15 +48,15 @@ const SalesPageForm = () => {
           setLoading(true);
           const saleData = await getSaleById(Number(id));
           setCurrentSale(saleData);
-          
+
           // Determinar si es venta privada y configurar el tipo
           const isPrivateSale = saleData.ventaPrivada;
-          setSaleInputValues(prev => ({ 
-            ...prev, 
+          setSaleInputValues(prev => ({
+            ...prev,
             enterprise: saleData.empresa,
-            tipoVenta: isPrivateSale ? 'privada' : 'directa' 
+            tipoVenta: isPrivateSale ? 'privada' : 'directa'
           }));
-          
+
           // Prellenar el formulario con los datos de la venta
           const formValues: any = {
             // Información básica
@@ -71,16 +71,20 @@ const SalesPageForm = () => {
             fechaSIAF: dayjs(saleData.fechaSiaf),
             ordenCompraElectronica: saleData.documentoOce,
             ordenCompraFisica: saleData.documentoOcf,
-            
+            codigoOcf: saleData.codigoOcf,
+
             // Datos de contacto
             cargoContactoComplete: saleData.contactoCliente,
             cargoContacto: saleData.contactoCliente.id,
             nombreContacto: saleData.contactoCliente.nombre,
             celularContacto: saleData.contactoCliente.telefono,
-            
-            // Productos - asegurar que siempre sea un array usando parseJSON
-            productos: Array.isArray(saleData.productos) ? saleData.productos : parseJSON(saleData.productos) || [],
-            
+
+            // Productos - asegurar que siempre sea un array usando parseJSON y agregar isCompleted si no existe
+            productos: (Array.isArray(saleData.productos) ? saleData.productos : parseJSON(saleData.productos) || []).map((producto: any) => ({
+              ...producto,
+              isCompleted: producto.isCompleted ?? false, // Preservar si existe, o false por defecto
+            })),
+
             // Entrega - cargar directamente como strings
             direccionEntrega: saleData.direccionEntrega,
             referenciaEntrega: saleData.referenciaEntrega,
@@ -101,18 +105,20 @@ const SalesPageForm = () => {
             formValues.facturaStatus = saleData.ordenCompraPrivada.estadoPago || 'PENDIENTE';
             formValues.dateFactura = saleData.ordenCompraPrivada.fechaPago ? dayjs(saleData.ordenCompraPrivada.fechaPago) : null;
             formValues.documentoFactura = saleData.ordenCompraPrivada.documentoPago || null;
+            // TODO: Agregar documentoCotizacion al backend
+            // formValues.documentoCotizacion = saleData.ordenCompraPrivada.documentoCotizacion || null;
             formValues.notaPago = saleData.ordenCompraPrivada.notaPago || '';
 
             // Mapeo explícito de pagos desde backend a frontend
             const mappedPayments = Array.isArray(saleData.ordenCompraPrivada.pagos) && saleData.ordenCompraPrivada.pagos.length > 0
               ? saleData.ordenCompraPrivada.pagos.map((pago: any) => ({
-                  date: pago.fechaPago && pago.fechaPago !== '1970-01-01T00:00:00.000Z' ? dayjs(pago.fechaPago) : null,
-                  bank: pago.bancoPago || '',
-                  description: pago.descripcionPago || '',
-                  file: pago.archivoPago || null,
-                  amount: pago.montoPago ? String(pago.montoPago) : '',
-                  status: pago.estadoPago,
-                }))
+                date: pago.fechaPago && pago.fechaPago !== '1970-01-01T00:00:00.000Z' ? dayjs(pago.fechaPago) : null,
+                bank: pago.bancoPago || '',
+                description: pago.descripcionPago || '',
+                file: pago.archivoPago || null,
+                amount: pago.montoPago ? String(pago.montoPago) : '',
+                status: pago.estadoPago,
+              }))
               : []; // Array vacío si no hay pagos
 
             // Setear estados de pagos
@@ -126,7 +132,7 @@ const SalesPageForm = () => {
             }]);
             setTipoPago(saleData.ordenCompraPrivada.estadoPago || 'PENDIENTE');
             setNotaPago(saleData.ordenCompraPrivada.notaPago || '');
-            
+
             // Log para depuración
             console.log('Pagos mapeados para el estado:', mappedPayments);
             console.log('Datos originales de pagos del backend:', saleData.ordenCompraPrivada.pagos);
@@ -169,8 +175,8 @@ const SalesPageForm = () => {
       form.setFieldsValue({
         clienteEstado: findClient,
         regionEntrega: response.regionEntrega,
-        provinciaEntrega:  response.provinciaEntrega,
-        distritoEntrega:  response.distritoEntrega,
+        provinciaEntrega: response.provinciaEntrega,
+        distritoEntrega: response.distritoEntrega,
         direccionEntrega: response.direccionEntrega,
         referenciaEntrega: response.referenciaEntrega,
         fechaEntrega: dayjs(response.fechaEntrega).isValid() ? dayjs(response.fechaEntrega) : null,
@@ -198,16 +204,16 @@ const SalesPageForm = () => {
       if (isEditing && id) {
         // Modo edición
         const baseVentaData = {
-          empresa: { connect: { id: saleInputValues.enterprise?.id || currentSale?.empresa.id } },
-          cliente: { connect: { id: values.clienteEstado?.id } },
-          contactoCliente: { connect: { id: values.cargoContacto } },
-          catalogoEmpresa: { connect: { id: values.catalogo } },
-          ventaPrivada: saleInputValues.tipoVenta === 'privada',
-          departamentoEntrega: values.regionEntrega || null,
-          provinciaEntrega: values.provinciaEntrega || null,
-          distritoEntrega: values.distritoEntrega || null,
+          catalogoEmpresaId: values.catalogo?.id,
+          clienteId: values.clienteEstado?.id,
+          contactoClienteId: values.cargoContacto?.id,
+          empresaId: saleInputValues.enterprise?.id,
           direccionEntrega: values.direccionEntrega || null,
+          distritoEntrega: values.distritoEntrega || null,
+          provinciaEntrega: values.provinciaEntrega || null,
+          departamentoEntrega: values.regionEntrega || null,
           referenciaEntrega: values.referenciaEntrega || null,
+          fechaEntrega: values.fechaEntrega ? values.fechaEntrega.toISOString() : null,
           fechaForm: values.fechaFormalizacion ? values.fechaFormalizacion.toISOString() : null,
           fechaMaxForm: values.fechaMaxEntrega ? values.fechaMaxEntrega.toISOString() : null,
           montoVenta: values.montoVenta ? Number(values.montoVenta) : null,
@@ -217,7 +223,11 @@ const SalesPageForm = () => {
           estadoVenta: values.estadoVenta || 'incompleto',
           documentoOce: values.ordenCompraElectronica || null,
           documentoOcf: values.ordenCompraFisica || null,
-          productos: values.productos || [],
+          codigoOcf: values.codigoOcf || null,
+          productos: (values.productos || []).map((producto: any) => ({
+            ...producto,
+            isCompleted: false, // Campo interno por defecto
+          })),
         };
 
         // Si es venta privada, incluir datos específicos
@@ -237,11 +247,11 @@ const SalesPageForm = () => {
               estadoPago: tipoPago || 'PENDIENTE',
               fechaPago: values.dateFactura ? values.dateFactura.toISOString() : null,
               documentoPago: values.documentoFactura,
+              // TODO: Agregar documentoCotizacion al backend
+              // documentoCotizacion: values.documentoCotizacion,
               notaPago: notaPago || '',
-              pagos: payments.filter((p: any) => p.amount && parseFloat(p.amount) > 0).map((payment: any) => ({
-                fechaPago: payment.date && dayjs(payment.date).isValid() 
-                  ? payment.date.toISOString() 
-                  : null,
+              pagos: payments.map(payment => ({
+                fechaPago: payment.date ? payment.date.toISOString() : null,
                 bancoPago: payment.bank || '',
                 descripcionPago: payment.description || '',
                 archivoPago: payment.file || null,
@@ -282,8 +292,8 @@ const SalesPageForm = () => {
             if (payment.amount && parseFloat(payment.amount) > 0) {
               console.log('Processing payment:', payment); // Debug
               pagos.push({
-                fechaPago: payment.date && dayjs(payment.date).isValid() 
-                  ? payment.date.toISOString() 
+                fechaPago: payment.date && dayjs(payment.date).isValid()
+                  ? payment.date.toISOString()
                   : null,
                 bancoPago: payment.bank || '',
                 descripcionPago: payment.description || '',
@@ -301,6 +311,8 @@ const SalesPageForm = () => {
             estadoPago: tipoPago || 'PENDIENTE',
             fechaPago: values.dateFactura ? values.dateFactura.toISOString() : null,
             documentoPago: values.documentoFactura,
+            // TODO: Agregar documentoCotizacion al backend
+            // documentoCotizacion: values.documentoCotizacion,
             notaPago: notaPago || '',
             pagos,
           };
@@ -347,7 +359,11 @@ const SalesPageForm = () => {
           estadoVenta: values.estadoVenta || 'incompleto',
           documentoOce: values.ordenCompraElectronica || null,
           documentoOcf: values.ordenCompraFisica || null,
-          productos: values.productos || [],
+          codigoOcf: values.codigoOcf || null,
+          productos: (values.productos || []).map((producto: any) => ({
+            ...producto,
+            isCompleted: false, // Campo interno por defecto
+          })),
         };
 
         console.log('Datos a enviar:', bodyVentaDirecta);
@@ -360,8 +376,8 @@ const SalesPageForm = () => {
     } catch (error: any) {
       console.error('Error al guardar venta:', error);
       const errorMessage = error?.response?.data?.message || error?.message || 'Error desconocido';
-      notification.error({ 
-        message: 'Error al guardar la venta', 
+      notification.error({
+        message: 'Error al guardar la venta',
         description: errorMessage,
         duration: 5
       });
@@ -382,8 +398,8 @@ const SalesPageForm = () => {
         <Form form={form} onFinish={handleFinish}>
           <Stack direction="column" spacing={2}>
             <Collapse in={saleInputValues.tipoVenta === 'privada'} unmountOnExit>
-              <InputsFirstStep 
-                form={form} 
+              <InputsFirstStep
+                form={form}
                 payments={payments}
                 tipoPago={tipoPago}
                 notaPago={notaPago}
@@ -395,12 +411,16 @@ const SalesPageForm = () => {
 
             <InputsSecondStep form={form} isEditing={isEditing} currentSale={currentSale} />
 
-            <InputsThirdStep form={form} companyId={saleInputValues.enterprise?.id!} />
+            <InputsThirdStep
+              form={form}
+              companyId={saleInputValues.enterprise?.id!}
+              isPrivateSale={saleInputValues.tipoVenta === 'privada'}
+            />
 
             <InputsFourthStep form={form} />
 
             <InputsFifthStep />
-            
+
             {/* Estado de venta - usando el nuevo componente EstadoSelectAndSubmit */}
             <EstadoSelectAndSubmit
               form={form}

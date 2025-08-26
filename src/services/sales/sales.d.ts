@@ -31,6 +31,7 @@ export interface SaleProps {
   }>;
   documentoOce: string;
   documentoOcf: string;
+  codigoOcf?: string; // Código manual de orden de compra física
   siaf: string;
   etapaSiaf: string;
   fechaSiaf: string;

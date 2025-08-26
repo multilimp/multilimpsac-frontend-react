@@ -9,6 +9,7 @@ import ClientSelectorModal from '../../Clients/components/ClientSelectorModal';
 import SelectContactsByClient from '@/components/selects/SelectContactsByClient';
 import { ClientProps } from '@/services/clients/clients';
 import SimpleFileUpload from '@/components/SimpleFileUpload';
+import InputFile from '@/components/InputFile';
 import PersonOutline from '@mui/icons-material/PersonOutline';
 import Phone from '@mui/icons-material/Phone';
 import PaymentsList from '@/components/PaymentsList';
@@ -21,15 +22,15 @@ const facturaStatusOptions = [
   { label: 'Urgente', value: 'URGENTE' },
 ];
 
-const InputsFirstStep = ({ 
-  form, 
-  payments = [], 
-  tipoPago = '', 
-  notaPago = '', 
-  onPaymentsChange, 
-  onTipoPagoChange, 
-  onNotaPagoChange 
-}: { 
+const InputsFirstStep = ({
+  form,
+  payments = [],
+  tipoPago = '',
+  notaPago = '',
+  onPaymentsChange,
+  onTipoPagoChange,
+  onNotaPagoChange
+}: {
   form: FormInstance;
   payments?: any[];
   tipoPago?: string;
@@ -135,7 +136,7 @@ const InputsFirstStep = ({
       >
         <Form.Item name="clientePrivate" noStyle />
 
-        <Grid container columnSpacing={2}  rowSpacing={2}>
+        <Grid container columnSpacing={2} rowSpacing={2}>
           {/* Fila única: Estado de Factura, Fecha Factura y Documento PDF */}
           <Grid size={{ xs: 12, md: 4 }}>
             <Form.Item name="facturaStatus" rules={[requiredField]}>
@@ -178,6 +179,31 @@ const InputsFirstStep = ({
           );
         }}
       </Form.Item>
+
+      {/* Campo para subir cotización */}
+      <StepItemContent>
+        <Box sx={{ backgroundColor: 'white', m: -2, p: 4, borderRadius: 1 }}>
+          <Typography variant="h6" fontWeight={600} mb={2} sx={{ color: '#1f2937' }}>
+            Cotización
+          </Typography>
+          <Grid container columnSpacing={2} rowSpacing={2}>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Form.Item name="documentoCotizacion">
+                <Form.Item shouldUpdate noStyle>
+                  {({ getFieldValue }) => (
+                    <InputFile
+                      onChange={(file) => form.setFieldValue('documentoCotizacion', file)}
+                      value={getFieldValue('documentoCotizacion')}
+                      label="Documento de cotización"
+                      accept="pdf"
+                    />
+                  )}
+                </Form.Item>
+              </Form.Item>
+            </Grid>
+          </Grid>
+        </Box>
+      </StepItemContent>
 
       {openClients ? (
         <ClientSelectorModal

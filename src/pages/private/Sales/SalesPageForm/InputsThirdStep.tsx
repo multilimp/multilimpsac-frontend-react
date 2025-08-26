@@ -13,19 +13,23 @@ import { Info } from '@mui/icons-material';
 interface InputsThirdStepProps {
   form: FormInstance;
   companyId: number;
+  isPrivateSale?: boolean;
 }
 
 const etapaSIAFOptions = ['COM', 'DEV', 'PAG', 'SSIAF', 'RES', 'GIR', 'GIR-F', 'GIR-V', 'GIR-A', 'GIR-R'].map((value) => ({ label: value, value }));
 
-const InputsThirdStep = ({ form, companyId }: InputsThirdStepProps) => {
+const InputsThirdStep = ({ form, companyId, isPrivateSale = false }: InputsThirdStepProps) => {
+  // Las reglas de validación para campos SIAF dependen del tipo de venta
+  const siafRules = isPrivateSale ? [] : [requiredField];
+
   return (
     <Fragment>
       <StepItemContent>
         <Box sx={{ backgroundColor: 'white', m: -2, p: 4, borderRadius: 1 }}>
           <Typography variant="h5" fontWeight={700} component={Stack} direction="row" alignItems="flex-end" spacing={1} mb={2}>
-          <Info />
-          Datos generales
-        </Typography>
+            <Info />
+            Datos generales
+          </Typography>
           {/* Primera fila: Datos principales */}
           <Grid container columnSpacing={2} rowSpacing={2}>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
@@ -42,19 +46,19 @@ const InputsThirdStep = ({ form, companyId }: InputsThirdStepProps) => {
                 )}
               </Form.Item>
             </Grid>
-            
+
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <Form.Item name="fechaFormalizacion" rules={[requiredField]}>
                 <DatePickerAntd label="Fecha formalización" />
               </Form.Item>
             </Grid>
-            
+
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <Form.Item name="fechaMaxEntrega" rules={[requiredField]}>
                 <DatePickerAntd label="Fecha máxima de entrega" />
               </Form.Item>
             </Grid>
-            
+
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <Form.Item name="montoVenta" rules={[requiredField]}>
                 <InputAntd label="Monto de venta" type="number" />
@@ -62,26 +66,33 @@ const InputsThirdStep = ({ form, companyId }: InputsThirdStepProps) => {
             </Grid>
           </Grid>
 
-          {/* Segunda fila: Datos SIAF */}
-          <Grid container columnSpacing={2} rowSpacing={2} sx={{ mt: 1 }}>
-            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-              <Form.Item name="numeroSIAF" rules={[requiredField]}>
-                <InputAntd label="Número de SIAF" />
-              </Form.Item>
+          {/* Segunda fila: Datos SIAF - Solo mostrar si NO es venta privada */}
+          {!isPrivateSale && (
+            <Grid container columnSpacing={2} rowSpacing={2} sx={{ mt: 1 }}>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                <Form.Item name="numeroSIAF" rules={siafRules}>
+                  <InputAntd label="Número de SIAF" />
+                </Form.Item>
+              </Grid>
+
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                <Form.Item name="etapaSIAF" rules={siafRules}>
+                  <SelectGeneric label="Etapa SIAF" options={etapaSIAFOptions} />
+                </Form.Item>
+              </Grid>
+
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                <Form.Item name="fechaSIAF" rules={siafRules}>
+                  <DatePickerAntd label="Fecha de SIAF" />
+                </Form.Item>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                <Form.Item name="codigoOcf" rules={siafRules}>
+                  <InputAntd label="OCF" />
+                </Form.Item>
+              </Grid>
             </Grid>
-            
-            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-              <Form.Item name="etapaSIAF" rules={[requiredField]}>
-                <SelectGeneric label="Etapa SIAF" options={etapaSIAFOptions} />
-              </Form.Item>
-            </Grid>
-            
-            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-              <Form.Item name="fechaSIAF" rules={[requiredField]}>
-                <DatePickerAntd label="Fecha de SIAF" />
-              </Form.Item>
-            </Grid>
-          </Grid>
+          )}
 
           {/* Tercera fila: Documentos */}
           <Grid container columnSpacing={2} rowSpacing={2} sx={{ mt: 1 }}>
@@ -89,26 +100,26 @@ const InputsThirdStep = ({ form, companyId }: InputsThirdStepProps) => {
               <Form.Item name="ordenCompraElectronica">
                 <Form.Item shouldUpdate noStyle>
                   {({ getFieldValue }) => (
-                    <InputFile 
-                      onChange={(file) => form.setFieldValue('ordenCompraElectronica', file)} 
+                    <InputFile
+                      onChange={(file) => form.setFieldValue('ordenCompraElectronica', file)}
                       value={getFieldValue('ordenCompraElectronica')}
-                      label="Orden de compra electrónica" 
-                      accept="pdf" 
+                      label="Orden de compra electrónica"
+                      accept="pdf"
                     />
                   )}
                 </Form.Item>
               </Form.Item>
             </Grid>
-            
+
             <Grid size={{ xs: 12, md: 6 }}>
               <Form.Item name="ordenCompraFisica">
                 <Form.Item shouldUpdate noStyle>
                   {({ getFieldValue }) => (
-                    <InputFile 
-                      onChange={(file) => form.setFieldValue('ordenCompraFisica', file)} 
+                    <InputFile
+                      onChange={(file) => form.setFieldValue('ordenCompraFisica', file)}
                       value={getFieldValue('ordenCompraFisica')}
-                      label="Orden de compra física" 
-                      accept="pdf" 
+                      label="Orden de compra física"
+                      accept="pdf"
                     />
                   )}
                 </Form.Item>
