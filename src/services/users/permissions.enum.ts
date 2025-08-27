@@ -1,28 +1,28 @@
 export enum PermissionsEnum {
   // Panel Principal
   DASHBOARD = 'dashboard',
-  
+
   // Entidades
   COMPANIES = 'companies',
   CLIENTS = 'clients',
   PROVIDERS = 'providers',
   TRANSPORTS = 'transports',
-  
+
   // Procesos de Negocio
   QUOTES = 'quotes',
   SALES = 'sales',
   PROVIDER_ORDERS = 'provider_orders',
   OP_TABLES = 'op_tables',
   TRACKING = 'tracking',
-  
+
   // Gestión Financiera
   TREASURY = 'treasury',
   BILLING = 'billing',
   COLLECTIONS = 'collections',
-  
+
   // Reportes
   REPORTS = 'reports',
-  
+
   // Administración
   USERS = 'users', // Solo ADMIN
   PROFILE = 'profile', // Todos

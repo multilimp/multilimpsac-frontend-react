@@ -4,6 +4,7 @@ import SideNavbar from './components/SideNav';
 import MainNav from './components/MainNav';
 import BlackBar from './components/BlackBar';
 import ChatbotButton from '@/components/ChatbotButton';
+import NotificacionesPagosUrgentes from '@/components/NotificacionesPagosUrgentes';
 
 const PrivateLayout = () => {
   return (
@@ -48,6 +49,7 @@ const PrivateLayout = () => {
         </Box>
       </Box>
       <ChatbotButton />
+      <NotificacionesPagosUrgentes />
     </Box>
   );
 };

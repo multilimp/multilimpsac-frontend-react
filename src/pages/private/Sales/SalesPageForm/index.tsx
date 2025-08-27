@@ -356,7 +356,7 @@ const SalesPageForm = () => {
         };
 
         console.log('Datos a enviar:', bodyVentaDirecta);
-        await createDirectSale(bodyVentaDirecta);
+        const nuevaVenta = await createDirectSale(bodyVentaDirecta);
 
         notification.success({ message: `La venta fue registrada correctamente` });
         form.resetFields();

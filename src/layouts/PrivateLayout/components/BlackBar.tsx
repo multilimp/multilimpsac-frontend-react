@@ -1,17 +1,19 @@
 import { Fragment, ReactNode, useState, useMemo, memo, useEffect } from 'react';
-import { Dropdown } from 'antd';
-import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Divider, List, ListItem, ListItemText, Stack, Typography, Checkbox, Skeleton, IconButton, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { Dropdown, Form, Select, Input } from 'antd';
+import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Divider, List, ListItem, ListItemText, Stack, Typography, Checkbox, Skeleton, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Card, Alert } from '@mui/material';
 import SelectCompanies from '@/components/selects/SelectCompanies';
 import SelectGeneric from '@/components/selects/SelectGeneric';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 import { BlackBarKeyEnum } from '@/types/global.enum';
 import { formatCurrency, formattedDate } from '@/utils/functions';
-import { ExpandMore, Visibility, ContentCopy, Close, Upload, CheckCircle, PlayArrow } from '@mui/icons-material';
+import { ExpandMore, Visibility, ContentCopy, Close, Upload, CheckCircle, PlayArrow, GroupWork, Add } from '@mui/icons-material';
 import Scrollbar from '@/components/Scrollbar';
 import ClipboardJS from 'clipboard';
 import { notification } from 'antd';
 import { validateOcamPdf } from '@/utils/pdfValidation';
 import { patchSale } from '@/services/sales/sales.request';
+import { getAgrupaciones, createAgrupacion, addOrdenCompraToAgrupacion } from '@/services/agrupaciones/agrupaciones.request';
+import { AgrupacionOrdenCompraProps } from '@/services/agrupaciones/agrupaciones.d';
 
 interface Producto {
   codigo: string;
@@ -38,6 +40,12 @@ const BlackBar = memo(() => {
   const [openUploadModal, setOpenUploadModal] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
 
+  // Estados para agrupación
+  const [agrupaciones, setAgrupaciones] = useState<AgrupacionOrdenCompraProps[]>([]);
+  const [openAgrupacionModal, setOpenAgrupacionModal] = useState(false);
+  const [formAgrupacion] = Form.useForm();
+  const [tipoAgrupacion, setTipoAgrupacion] = useState<'nueva' | 'existente'>('nueva');
+
   // Inicializar completedProducts basado en los datos del backend
   useEffect(() => {
     if (selectedSale?.productos && Array.isArray(selectedSale.productos)) {
@@ -62,6 +70,13 @@ const BlackBar = memo(() => {
       setCompletedProducts([]);
     }
   }, [selectedSale?.id, selectedSale?.productos]);
+
+  // Cargar agrupaciones solo cuando se selecciona "existente"
+  useEffect(() => {
+    if (openAgrupacionModal && tipoAgrupacion === 'existente') {
+      loadAgrupaciones();
+    }
+  }, [openAgrupacionModal, tipoAgrupacion]);
 
   const documentosConfig = [
     {
@@ -267,6 +282,106 @@ const BlackBar = memo(() => {
     tempElement.click();
   };
 
+  // Funciones para agrupación
+  const loadAgrupaciones = async () => {
+    try {
+      const data = await getAgrupaciones();
+      setAgrupaciones(data || []); // Asegurar que siempre sea un array
+    } catch (error: any) {
+      console.error('Error al cargar agrupaciones:', error);
+
+      // Solo mostrar error si no es un 404 (sin agrupaciones) o un array vacío
+      const isNotFoundError = error?.response?.status === 404 || error?.status === 404;
+      const isEmptyResult = error?.response?.data?.length === 0;
+
+      if (!isNotFoundError && !isEmptyResult) {
+        notification.error({
+          message: 'Error',
+          description: 'No se pudieron cargar las agrupaciones',
+          placement: 'topRight',
+        });
+      }
+
+      // En caso de error, establecer array vacío
+      setAgrupaciones([]);
+    }
+  };
+
+  const handleOpenAgrupacionModal = () => {
+    setOpenAgrupacionModal(true);
+    formAgrupacion.resetFields();
+    // Solo cargar agrupaciones si se va a mostrar la opción de seleccionar existentes
+    // La carga se hará cuando el usuario cambie a "existente" en el modal
+  };
+
+  const handleCloseAgrupacionModal = () => {
+    setOpenAgrupacionModal(false);
+    formAgrupacion.resetFields();
+    // Resetear tipo a 'nueva' por defecto para la próxima vez
+    setTipoAgrupacion('nueva');
+    // Limpiar agrupaciones para evitar mostrar datos obsoletos
+    setAgrupaciones([]);
+  };
+
+  const handleAgrupacionSubmit = async () => {
+    if (!selectedSale?.id) {
+      notification.error({
+        message: 'Error',
+        description: 'No hay orden de compra seleccionada',
+        placement: 'topRight',
+      });
+      return;
+    }
+
+    try {
+      const values = await formAgrupacion.validateFields();
+
+      if (tipoAgrupacion === 'nueva') {
+        // Crear nueva agrupación
+        const nuevaAgrupacion = await createAgrupacion({
+          codigoGrupo: values.codigoGrupo,
+          descripcion: values.descripcion || null,
+          fecha: new Date().toISOString(),
+        });
+
+        // Agregar la OC a la nueva agrupación
+        await addOrdenCompraToAgrupacion({
+          agrupacionId: nuevaAgrupacion.id,
+          ordenCompraId: selectedSale.id,
+        });
+
+        notification.success({
+          message: 'Agrupación creada',
+          description: `OC ${selectedSale.codigoVenta} agregada a la nueva agrupación: ${values.codigoGrupo}`,
+          placement: 'topRight',
+        });
+
+      } else {
+        // Agregar a agrupación existente
+        await addOrdenCompraToAgrupacion({
+          agrupacionId: values.agrupacionExistente,
+          ordenCompraId: selectedSale.id,
+        });
+
+        const agrupacionSeleccionada = agrupaciones.find(a => a.id === values.agrupacionExistente);
+        notification.success({
+          message: 'OC agrupada',
+          description: `OC ${selectedSale.codigoVenta} agregada a ${agrupacionSeleccionada?.codigoGrupo}`,
+          placement: 'topRight',
+        });
+      }
+
+      handleCloseAgrupacionModal();
+    } catch (error) {
+      console.error('Error al procesar agrupación:', error);
+      notification.error({
+        message: 'Error en agrupación',
+        description: 'No se pudo procesar la agrupación',
+        placement: 'topRight',
+      });
+    }
+  };
+
   // ✅ OPTIMIZACIÓN: Memoizar el parseo de productos con validación robusta
   const parsedProductos = useMemo(() => {
     try {
@@ -369,6 +484,34 @@ const BlackBar = memo(() => {
           startIcon={<img src="/images/book_ai.png" alt="book ai icon" width={28} />}
         >
           {saleInputValues.file?.name ?? 'Cargar PDF'}
+        </Button>
+
+        <Divider />
+
+        {/* Botón de Agrupación de OC */}
+        <Button
+          variant="contained"
+          size="medium"
+          onClick={handleOpenAgrupacionModal}
+          disabled={!selectedSale?.id}
+          sx={{
+            bgcolor: '#1976d2',
+            color: '#fff',
+            borderRadius: 0.75,
+            py: 1.5,
+            fontSize: '14px',
+            fontWeight: 600,
+            '&:hover': {
+              bgcolor: '#1565c0',
+            },
+            '&:disabled': {
+              bgcolor: '#e0e0e0',
+              color: '#9e9e9e',
+            },
+          }}
+          startIcon={<span>🔗</span>}
+        >
+          {selectedSale?.id ? 'Agrupar OC' : 'Selecciona una OC para agrupar'}
         </Button>
       </Stack>
     ),
@@ -842,6 +985,97 @@ const BlackBar = memo(() => {
               </Button>
             )}
           </Stack>
+        </DialogActions>
+      </Dialog>
+
+      {/* Modal para Agrupación de Órdenes de Compra */}
+      <Dialog
+        open={openAgrupacionModal}
+        onClose={handleCloseAgrupacionModal}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          Agrupar Orden de Compra
+          {selectedSale && (
+            <Typography variant="body2" color="textSecondary">
+              OC: {selectedSale.codigoVenta}
+            </Typography>
+          )}
+        </DialogTitle>
+        <DialogContent>
+          <Form
+            form={formAgrupacion}
+            layout="vertical"
+            style={{ width: '100%' }}
+          >
+            <Form.Item label="Tipo de agrupación" style={{ marginBottom: 16 }}>
+              <Select
+                value={tipoAgrupacion}
+                onChange={setTipoAgrupacion}
+                placeholder="Selecciona el tipo de agrupación"
+              >
+                <Select.Option value="nueva">Crear nueva agrupación</Select.Option>
+                <Select.Option value="existente">Agregar a agrupación existente</Select.Option>
+              </Select>
+            </Form.Item>
+
+            {tipoAgrupacion === 'nueva' ? (
+              <>
+                <Form.Item
+                  label="Código del grupo"
+                  name="codigoGrupo"
+                  rules={[
+                    { required: true, message: 'Por favor ingresa el código del grupo' },
+                    { min: 3, message: 'El código debe tener al menos 3 caracteres' },
+                  ]}
+                  style={{ marginBottom: 16 }}
+                >
+                  <Input placeholder="Ej: GRUPO-001" />
+                </Form.Item>
+                <Form.Item
+                  label="Descripción (opcional)"
+                  name="descripcion"
+                  style={{ marginBottom: 16 }}
+                >
+                  <Input.TextArea rows={3} placeholder="Descripción de la agrupación..." />
+                </Form.Item>
+              </>
+            ) : (
+              <Form.Item
+                label="Seleccionar agrupación existente"
+                name="agrupacionExistente"
+                rules={[{ required: true, message: 'Por favor selecciona una agrupación' }]}
+                style={{ marginBottom: 16 }}
+              >
+                <Select
+                  placeholder="Selecciona una agrupación"
+                  loading={agrupaciones.length === 0}
+                  showSearch
+                  optionFilterProp="children"
+                >
+                  {agrupaciones.map((agrupacion) => (
+                    <Select.Option key={agrupacion.id} value={agrupacion.id}>
+                      {agrupacion.codigoGrupo}
+                      {agrupacion.descripcion && ` - ${agrupacion.descripcion}`}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            )}
+          </Form>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseAgrupacionModal}>
+            Cancelar
+          </Button>
+          <Button
+            onClick={handleAgrupacionSubmit}
+            variant="contained"
+            sx={{ bgcolor: '#1976d2' }}
+          >
+            {tipoAgrupacion === 'nueva' ? 'Crear y Agrupar' : 'Agrupar'}
+          </Button>
         </DialogActions>
       </Dialog>
     </Fragment>

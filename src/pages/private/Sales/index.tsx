@@ -1,4 +1,7 @@
 
+import React, { useState, useMemo, useCallback } from 'react';
+import { Tabs, Tab, Box } from '@mui/material';
+import { AccountBalance, Business } from '@mui/icons-material';
 import PageContent from '@/components/PageContent';
 import SalesTable from './components/SalesTable';
 import { Button } from '@mui/material';
@@ -8,6 +11,21 @@ import { Link } from 'react-router-dom';
 
 const SalesPage = () => {
   const { sales, loadingSales, obtainSales } = useGlobalInformation();
+  const [activeTab, setActiveTab] = useState<number>(0);
+
+  // Filtrar ventas por tipo con memoización
+  const ventasEstado = useMemo(() => {
+    return sales.filter(sale => !sale.ventaPrivada);
+  }, [sales]);
+
+  const ventasPrivadas = useMemo(() => {
+    return sales.filter(sale => sale.ventaPrivada);
+  }, [sales]);
+
+  // Handler memoizado para cambio de tab
+  const handleTabChange = useCallback((_: React.SyntheticEvent, newValue: number) => {
+    setActiveTab(newValue);
+  }, []);
 
   return (
     <PageContent
@@ -17,9 +35,64 @@ const SalesPage = () => {
         </Button>
       }
     >
-      <SalesTable data={sales} loading={loadingSales} onReload={obtainSales} />
+      <Box sx={{ width: '100%' }}>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          <Tabs
+            value={activeTab}
+            onChange={handleTabChange}
+            aria-label="tabs de ventas"
+          >
+            <Tab
+              label={`Ventas al Estado (${ventasEstado.length})`}
+              icon={<AccountBalance />}
+              iconPosition="start"
+            />
+            <Tab
+              label={`Ventas Privadas (${ventasPrivadas.length})`}
+              icon={<Business />}
+              iconPosition="start"
+            />
+          </Tabs>
+        </Box>
+
+        {/* Tab Panel: Ventas al Estado */}
+        <div
+          role="tabpanel"
+          hidden={activeTab !== 0}
+          id="tabpanel-estado"
+          aria-labelledby="tab-estado"
+        >
+          {activeTab === 0 && (
+            <Box sx={{ py: 3 }}>
+              <SalesTable
+                data={ventasEstado}
+                loading={loadingSales}
+                onReload={obtainSales}
+              />
+            </Box>
+          )}
+        </div>
+
+        {/* Tab Panel: Ventas Privadas */}
+        <div
+          role="tabpanel"
+          hidden={activeTab !== 1}
+          id="tabpanel-privadas"
+          aria-labelledby="tab-privadas"
+        >
+          {activeTab === 1 && (
+            <Box sx={{ py: 3 }}>
+              <SalesTable
+                data={ventasPrivadas}
+                loading={loadingSales}
+                onReload={obtainSales}
+              />
+            </Box>
+          )}
+        </div>
+      </Box>
     </PageContent>
   );
 };
 
-export default SalesPage;
+export default React.memo(SalesPage);
