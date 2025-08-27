@@ -20,6 +20,17 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  optimizeDeps: {
+    force: true, // Forzar re-optimización
+    exclude: [], // Dependencias a excluir de la optimización
+    include: [
+      "react",
+      "react-dom",
+      "react-router-dom",
+      "@mui/material",
+      "antd"
+    ]
+  },
   build: {
     outDir: "dist",
     sourcemap: mode === "development",
