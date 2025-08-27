@@ -274,7 +274,8 @@ const TransportsSection = ({ form, isTreasury }: TransportsSectionProps) => {
                             style={{ color: "black" }}
                             options={[
                               { value: 'CLIENTE', label: 'Cliente' },
-                              { value: 'ALMACEN', label: 'Almacén' }
+                              { value: 'ALMACEN', label: 'Almacén' },
+                              { value: 'AGENCIA', label: 'Agencia' }
                             ]}
                           />
                         </Form.Item>

@@ -1,6 +1,6 @@
 import { Fragment, useState, useEffect } from 'react';
 import { Form, notification, Spin, Input, InputNumber } from 'antd';
-import { Business, Delete, Add } from '@mui/icons-material';
+import { Business, Delete, Add, Inventory } from '@mui/icons-material';
 import {
   Box,
   Card,
@@ -136,6 +136,9 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false, fromTrea
         fechaRecepcion: orderData.fechaRecepcion ? dayjs(orderData.fechaRecepcion) : null,
         montoProveedor: orderData.totalProveedor,
         productosNota: orderData.notaPedido,
+        observaciones: orderData.observaciones || '',
+        etiquetado: orderData.etiquetado || '',
+        embalaje: orderData.embalaje || '',
         tipoPago: orderData.tipoPago || '',
         notaPago: orderData.notaPago || '',
         productos: productosFormatted,
@@ -182,6 +185,9 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false, fromTrea
         tipoPago: '',
         notaPago: '',
         productosNota: '',
+        observaciones: '',
+        etiquetado: '',
+        embalaje: '',
         pagosProveedor: [],
         productos: [getEmptyProductRecord()], // ✅ USAR función simplificada
       });
@@ -230,7 +236,7 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false, fromTrea
             distrito: item.distrito || null,
             direccion: item.direccion || null,
             notaTransporte: item.nota || null,
-            tipoDestino: item.destino === 'CLIENTE' ? 'CLIENTE' : 'ALMACEN',
+            tipoDestino: item.destino === 'CLIENTE' ? 'CLIENTE' : item.destino === 'AGENCIA' ? 'AGENCIA' : 'ALMACEN',
             montoFlete: Number(item.flete) || null,
             cotizacionTransporte: cotizacionUrl,
           };
@@ -257,7 +263,7 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false, fromTrea
                 direccion: transporte.direccion || null,
                 notaTransporte: transporte.nota || null,
                 montoFlete: transporte.flete ? parseFloat(transporte.flete) : 0,
-                tipoDestino: transporte.destino === 'CLIENTE' ? 'CLIENTE' : 'ALMACEN',
+                tipoDestino: transporte.destino === 'CLIENTE' ? 'CLIENTE' : transporte.destino === 'AGENCIA' ? 'AGENCIA' : 'ALMACEN',
                 // NO incluir codigoTransporte - se mantiene el existente
               }
             });
@@ -272,7 +278,7 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false, fromTrea
               direccion: transporte.direccion || null,
               notaTransporte: transporte.nota || null,
               montoFlete: transporte.flete ? parseFloat(transporte.flete) : 0,
-              tipoDestino: transporte.destino === 'CLIENTE' ? 'CLIENTE' : 'ALMACEN',
+              tipoDestino: transporte.destino === 'CLIENTE' ? 'CLIENTE' : transporte.destino === 'AGENCIA' ? 'AGENCIA' : 'ALMACEN',
               // codigoTransporte se generará automáticamente en el backend
             });
           }
@@ -303,6 +309,9 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false, fromTrea
         fechaEntrega: values.fechaEntrega as string || null,
         totalProveedor: totalProductos,
         notaPedido: values.productosNota as string || null,
+        observaciones: values.observaciones as string || null,
+        etiquetado: values.etiquetado as string || null,
+        embalaje: values.embalaje as string || null,
         tipoPago: values.tipoPago as string || null,
         notaPago: values.notaPago as string || null,
         productos: isEditing ? { deleteMany: {}, create: productosArr } : { create: productosArr },
@@ -364,7 +373,7 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false, fromTrea
     const notaPago = form.getFieldValue('notaPago');
 
     await handlePaymentsUpdate(formattedPayments, tipoPago, notaPago);
-    
+
     form.setFieldValue('pagosProveedor', payments);
   };
 
@@ -834,7 +843,7 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false, fromTrea
               title={
                 <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Business color="primary" />
-                  Nota del Pedido
+                  Nota al Proveedor
                 </Typography>
               }
               sx={{ pb: 1 }}
@@ -851,6 +860,79 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false, fromTrea
                   }}
                 />
               </Form.Item>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader
+              title={
+                <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Business color="primary" />
+                  Observaciones Internas
+                </Typography>
+              }
+              sx={{ pb: 1 }}
+            />
+            <CardContent>
+              <Form.Item name="observaciones">
+                <Input.TextArea
+                  placeholder="Ingrese observaciones internas (no visibles en el documento)..."
+                  rows={3}
+                  disabled={fromTreasury}
+                  style={{
+                    borderRadius: 4,
+                    border: '1px solid #d9d9d9',
+                  }}
+                />
+              </Form.Item>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader
+              title={
+                <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Inventory color="primary" />
+                  Etiquetado y Embalaje
+                </Typography>
+              }
+              sx={{ pb: 1 }}
+            />
+            <CardContent>
+              <Stack spacing={2}>
+                <Box>
+                  <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+                    Etiquetado
+                  </Typography>
+                  <Form.Item name="etiquetado">
+                    <Input.TextArea
+                      placeholder="Especificaciones de etiquetado..."
+                      rows={3}
+                      disabled={fromTreasury}
+                      style={{
+                        borderRadius: 4,
+                        border: '1px solid #d9d9d9',
+                      }}
+                    />
+                  </Form.Item>
+                </Box>
+                <Box>
+                  <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+                    Embalaje
+                  </Typography>
+                  <Form.Item name="embalaje">
+                    <Input.TextArea
+                      placeholder="Especificaciones de embalaje..."
+                      rows={3}
+                      disabled={fromTreasury}
+                      style={{
+                        borderRadius: 4,
+                        border: '1px solid #d9d9d9',
+                      }}
+                    />
+                  </Form.Item>
+                </Box>
+              </Stack>
             </CardContent>
           </Card>
 
