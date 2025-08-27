@@ -44,7 +44,7 @@ const SelectContactsByClient = ({
             showSearch
             filterOption={filterOptions}
             size={size}
-            style={{ flex: 1, minWidth: '350px' }}
+            style={{ flex: 1 }}
             loading={loadingContacts}
             disabled={isDisabled}
             placeholder={

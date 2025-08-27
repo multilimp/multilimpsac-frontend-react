@@ -117,6 +117,7 @@ export interface SaleProcessedProps {
     nombre: string;
     telefono: string;
   }>;
+  documentoOceUrl?: string; // Nueva propiedad para la URL del archivo OCAM subido
 }
 
 export interface SaleFiltersProps {

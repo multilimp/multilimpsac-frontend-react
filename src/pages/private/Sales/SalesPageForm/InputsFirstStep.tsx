@@ -9,7 +9,7 @@ import SimpleFileUpload from '@/components/SimpleFileUpload';
 import InputFile from '@/components/InputFile';
 import PaymentsList from '@/components/PaymentsList';
 
-export const requiredField = { required: true, message: 'Campo requerido' };
+export const requiredField = { required: false, message: 'Campo requerido' };
 
 const facturaStatusOptions = [
   { label: 'Pendiente', value: 'PENDIENTE' },

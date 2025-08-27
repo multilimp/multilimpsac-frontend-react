@@ -240,9 +240,9 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
             style={{
               borderRadius: 8,
               border: '1px solid #d9d9d9',
-              background: '#fafafa'
+              background: '#fafafa',
+              padding: '16px'
             }}
-            bodyStyle={{ padding: '16px' }}
           >
             <Row gutter={[16, 16]} align="middle">
               {/* Fecha */}

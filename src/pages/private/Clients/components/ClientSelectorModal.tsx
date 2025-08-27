@@ -1,4 +1,5 @@
-import { Dialog, DialogContent } from '@mui/material';
+import { Dialog, DialogContent, DialogTitle, IconButton } from '@mui/material';
+import { Close } from '@mui/icons-material';
 import ClientsTable from './ClientsTable';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 import { ClientProps } from '@/services/clients/clients';
@@ -12,8 +13,33 @@ const ClientSelectorModal = ({ onSelected, onClose }: ClientSelectorModalProps) 
   const { clients, loadingClients } = useGlobalInformation();
 
   return (
-    <Dialog open fullWidth maxWidth="md">
-      <DialogContent>
+    <Dialog
+      open
+      fullWidth
+      maxWidth="md"
+      onClose={onClose} // Permite cerrar haciendo clic fuera del modal
+    >
+      <DialogTitle
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          pb: 1
+        }}
+      >
+        Seleccionar Cliente
+        <IconButton
+          onClick={onClose}
+          size="small"
+          sx={{
+            color: 'grey.500',
+            '&:hover': { color: 'grey.700' }
+          }}
+        >
+          <Close />
+        </IconButton>
+      </DialogTitle>
+      <DialogContent sx={{ pt: '8px !important' }}>
         <ClientsTable
           data={clients}
           loading={loadingClients}
@@ -22,6 +48,7 @@ const ClientSelectorModal = ({ onSelected, onClose }: ClientSelectorModalProps) 
             onClose();
           }}
           hideActions
+          modalMode // Nueva prop para indicar que está en modo modal
         />
       </DialogContent>
     </Dialog>

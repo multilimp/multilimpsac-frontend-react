@@ -9,9 +9,10 @@ interface ClientsTableProps {
   loading: boolean;
   onRecordAction: (action: ModalStateEnum, data: ClientProps) => void;
   hideActions?: boolean;
+  modalMode?: boolean; // Nueva prop para indicar si está en modo modal
 }
 
-const ClientsTable = ({ data, loading, hideActions, onRecordAction }: ClientsTableProps) => {
+const ClientsTable = ({ data, loading, hideActions, onRecordAction, modalMode }: ClientsTableProps) => {
   const columns: Array<AntColumnType<ClientProps> | false> = [
     { title: 'RUC', dataIndex: 'ruc', width: 150, filter: true, sort: true },
     { title: 'Razón Social', dataIndex: 'razonSocial', width: 200, filter: true, sort: true },
@@ -56,6 +57,7 @@ const ClientsTable = ({ data, loading, hideActions, onRecordAction }: ClientsTab
       data={data}
       columns={filteredColumns}
       loading={loading}
+      hideToolbar={modalMode} // Ocultar toolbar cuando esté en modo modal
       onRow={(record) => {
         if (!hideActions) return {};
         return {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Box, Button, Collapse, Stack } from '@mui/material';
-import { Form, message, notification, Spin } from 'antd';
+import { Box, Button, Collapse, Stack, Typography } from '@mui/material';
+import { Form, message, notification, Spin, Select, Card } from 'antd';
 import InputsFirstStep from './InputsFirstStep';
 import InputsSecondStep from './InputsSecondStep';
 import InputsThirdStep from './InputsThirdStep';
@@ -13,7 +13,8 @@ import { BlackBarKeyEnum } from '@/types/global.enum';
 import { useParams, useNavigate } from 'react-router-dom';
 import { SaleProps } from '@/services/sales/sales';
 import { parseJSON } from '@/utils/functions';
-import EstadoSelectAndSubmit from '@/components/EstadoSelectAndSubmit';
+import { alpha } from '@mui/material/styles';
+import { Save } from '@mui/icons-material';
 
 const SalesPageForm = () => {
   const { companies, clients, saleInputValues, setSaleInputValues, setBlackBarKey, obtainSales } = useGlobalInformation();
@@ -96,17 +97,10 @@ const SalesPageForm = () => {
 
           // Si es venta privada, cargar datos específicos
           if (isPrivateSale && saleData.ordenCompraPrivada) {
-            formValues.clientePrivate = saleData.ordenCompraPrivada.cliente;
-            formValues.privateContact = saleData.ordenCompraPrivada.contactoCliente?.id;
-            formValues.privateContactName = saleData.ordenCompraPrivada.contactoCliente?.nombre ?? '';
-            formValues.privateContactCargo = saleData.ordenCompraPrivada.contactoCliente?.cargo ?? '';
-            formValues.privateContactPhone = saleData.ordenCompraPrivada.contactoCliente?.telefono ?? '';
-            formValues.privateContactComplete = saleData.ordenCompraPrivada.contactoCliente ?? null;
             formValues.facturaStatus = saleData.ordenCompraPrivada.estadoPago || 'PENDIENTE';
             formValues.dateFactura = saleData.ordenCompraPrivada.fechaPago ? dayjs(saleData.ordenCompraPrivada.fechaPago) : null;
             formValues.documentoFactura = saleData.ordenCompraPrivada.documentoPago || null;
-            // TODO: Agregar documentoCotizacion al backend
-            // formValues.documentoCotizacion = saleData.ordenCompraPrivada.documentoCotizacion || null;
+            formValues.documentoCotizacion = (saleData.ordenCompraPrivada as any).documentoCotizacion || null; // Campo agregado recientemente
             formValues.notaPago = saleData.ordenCompraPrivada.notaPago || '';
 
             // Mapeo explícito de pagos desde backend a frontend
@@ -188,6 +182,7 @@ const SalesPageForm = () => {
         productos: response.productos,
         numeroSIAF: response.siaf ? String(response.siaf) : null,
         fechaSIAF: dayjs(response.fechaSiaf).isValid() ? dayjs(response.fechaSiaf) : null,
+        ordenCompraElectronica: response.documentoOceUrl, // Asignar la URL del documento OCE
       });
     } catch (error) {
       message.error(`El archivo no pudo ser procesado. ${error}`);
@@ -204,9 +199,9 @@ const SalesPageForm = () => {
       if (isEditing && id) {
         // Modo edición
         const baseVentaData = {
-          catalogoEmpresaId: values.catalogo?.id,
-          clienteId: values.clienteEstado?.id,
-          contactoClienteId: values.cargoContacto?.id,
+          catalogoEmpresaId: values.catalogoComplete?.id || values.catalogo?.id || values.catalogo,
+          clienteId: values.clienteEstado?.id || values.clienteEstado,
+          contactoClienteId: values.cargoContactoComplete?.id || values.cargoContacto?.id || values.cargoContacto,
           empresaId: saleInputValues.enterprise?.id,
           direccionEntrega: values.direccionEntrega || null,
           distritoEntrega: values.distritoEntrega || null,
@@ -242,13 +237,10 @@ const SalesPageForm = () => {
           const bodyVentaPrivada = {
             ...baseVentaData,
             ventaPrivada: {
-              clienteId: values.clientePrivate?.id,
-              contactoClienteId: values.privateContact,
               estadoPago: tipoPago || 'PENDIENTE',
               fechaPago: values.dateFactura ? values.dateFactura.toISOString() : null,
               documentoPago: values.documentoFactura,
-              // TODO: Agregar documentoCotizacion al backend
-              // documentoCotizacion: values.documentoCotizacion,
+              documentoCotizacion: values.documentoCotizacion, // Agregado campo de cotización
               notaPago: notaPago || '',
               pagos: payments.map(payment => ({
                 fechaPago: payment.date ? payment.date.toISOString() : null,
@@ -306,13 +298,10 @@ const SalesPageForm = () => {
           console.log('Processed pagos for creation:', pagos); // Debug
 
           bodyVentaPrivada = {
-            clienteId: values.clientePrivate.id,
-            contactoClienteId: values.privateContact,
             estadoPago: tipoPago || 'PENDIENTE',
             fechaPago: values.dateFactura ? values.dateFactura.toISOString() : null,
             documentoPago: values.documentoFactura,
-            // TODO: Agregar documentoCotizacion al backend
-            // documentoCotizacion: values.documentoCotizacion,
+            documentoCotizacion: values.documentoCotizacion, // Agregado campo de cotización
             notaPago: notaPago || '',
             pagos,
           };
@@ -392,6 +381,15 @@ const SalesPageForm = () => {
     { value: 'cancelado', label: 'Cancelado' },
   ];
 
+  // Sistema de colores para estados
+  const estadoBgMap: Record<string, string> = {
+    completo: '#10B981',      // Verde éxito
+    procesando: '#F59E0B',    // Naranja proceso
+    cancelado: '#EF4444',     // Rojo error
+  };
+
+  const [currentEstadoValue, setCurrentEstadoValue] = useState<string>('procesando');
+
   return (
     <Box>
       <Spin spinning={loading} size="large" tip="..:: Espere mientras finaliza la operación ::..">
@@ -427,14 +425,107 @@ const SalesPageForm = () => {
 
             <InputsFifthStep />
 
-            {/* Estado de venta - usando el nuevo componente EstadoSelectAndSubmit */}
-            <EstadoSelectAndSubmit
-              form={form}
-              name="estadoVenta"
-              options={estadoVentaOptions}
-              loading={loading}
-              onSubmit={() => form.submit()}
-            />
+            {/* Estado de venta y botón de submit por separado */}
+            <Card
+              style={{
+                borderRadius: 12,
+                border: '1px solid #e5e7eb',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+              }}
+            >
+              <Stack direction="row" spacing={3} alignItems="center" justifyContent="space-between">
+                {/* Select de Estado */}
+                <Stack direction="column" spacing={1} sx={{ flex: 1 }}>
+                  <Typography
+                    variant="subtitle1"
+                    fontWeight={600}
+                    sx={{ color: '#374151', fontSize: '14px' }}
+                  >
+                    Estado de la Venta
+                  </Typography>
+                  <Form.Item
+                    name="estadoVenta"
+                    style={{ marginBottom: 0 }}
+                    initialValue="procesando"
+                  >
+                    <Select
+                      placeholder="Seleccione el estado"
+                      size="large"
+                      onChange={(value) => setCurrentEstadoValue(value)}
+                      style={{
+                        minWidth: 220,
+                        borderRadius: 12,
+                        fontWeight: 600,
+                        fontSize: 16,
+                      }}
+                      dropdownStyle={{
+                        borderRadius: 12,
+                        boxShadow: '0 10px 25px rgba(0,0,0,0.10)',
+                        fontSize: 16,
+                      }}
+                    >
+                      {estadoVentaOptions.map(option => (
+                        <Select.Option
+                          key={option.value}
+                          value={option.value}
+                          style={{
+                            color: estadoBgMap[option.value] || '#222',
+                            fontWeight: 600,
+                            padding: '8px 12px',
+                          }}
+                        >
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px'
+                          }}>
+                            <div
+                              style={{
+                                width: 8,
+                                height: 8,
+                                borderRadius: '50%',
+                                backgroundColor: estadoBgMap[option.value] || '#ccc'
+                              }}
+                            />
+                            {option.label}
+                          </div>
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </Stack>
+
+                {/* Botón de Submit */}
+                <Button
+                  variant="contained"
+                  color="primary"
+                  size="large"
+                  startIcon={<Save />}
+                  onClick={() => form.submit()}
+                  disabled={loading}
+                  sx={{
+                    minWidth: 180,
+                    height: 56,
+                    fontWeight: 600,
+                    fontSize: 16,
+                    textTransform: 'none',
+                    borderRadius: 3,
+                    backgroundColor: '#2563eb',
+                    boxShadow: '0 4px 15px 0 rgba(37, 99, 235, 0.25)',
+                    '&:hover': {
+                      backgroundColor: '#1d4ed8',
+                      boxShadow: '0 6px 20px 0 rgba(37, 99, 235, 0.35)',
+                    },
+                    '&:disabled': {
+                      backgroundColor: '#E0E0E0',
+                      color: '#9E9E9E',
+                    },
+                  }}
+                >
+                  {loading ? 'Guardando...' : 'Guardar Venta'}
+                </Button>
+              </Stack>
+            </Card>
           </Stack>
           <Button type="submit" className="d-none"></Button>
         </Form>

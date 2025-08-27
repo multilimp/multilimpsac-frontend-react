@@ -33,12 +33,13 @@ interface AntTablePropsProps<T> extends Omit<TableProps<T>, 'columns'> {
   data: T[];
   columns: AntColumnType<T>[];
   onReload?: () => void | Promise<void>;
+  hideToolbar?: boolean; // Nueva prop para ocultar elementos del toolbar
 }
 
 const valTypes = (value: any) => ['number', 'string'].includes(typeof value);
 
 const AntTable = <T extends Record<string, any>>(props: AntTablePropsProps<T>) => {
-  const { columns, data, onReload, ...rest } = props;
+  const { columns, data, onReload, hideToolbar, ...rest } = props;
   const theme = useTheme();
   const [filters, setFilters] = useState<{ [key: string]: string }>({});
   const [showInputs, setShowInputs] = useState(false);
@@ -250,9 +251,11 @@ const AntTable = <T extends Record<string, any>>(props: AntTablePropsProps<T>) =
           rowClassName={showInputs ? 'table-filter-row' : ''}
           title={() => (
             <Stack direction="row" spacing={2} alignItems="center">
-              <IconButton color="primary" size="small" onClick={() => setShowDrawer(true)}>
-                <Reorder />
-              </IconButton>
+              {!hideToolbar && (
+                <IconButton color="primary" size="small" onClick={() => setShowDrawer(true)}>
+                  <Reorder />
+                </IconButton>
+              )}
 
               <TextField
                 size="small"
@@ -270,20 +273,24 @@ const AntTable = <T extends Record<string, any>>(props: AntTablePropsProps<T>) =
                 }}
               />
 
-              <IconButton color="primary" size="small" onClick={() => setShowInputs(!showInputs)} sx={{ border: showInputs ? '1px solid' : '0' }}>
-                <Bolt />
-              </IconButton>
-              <IconButton color="primary" size="small" onClick={handleDownloadCSV}>
-                <SaveAlt />
-              </IconButton>
-              {onReload && (
-                <IconButton color="success" size="small" onClick={handleReload}>
-                  <Replay />
-                </IconButton>
+              {!hideToolbar && (
+                <>
+                  <IconButton color="primary" size="small" onClick={() => setShowInputs(!showInputs)} sx={{ border: showInputs ? '1px solid' : '0' }}>
+                    <Bolt />
+                  </IconButton>
+                  <IconButton color="primary" size="small" onClick={handleDownloadCSV}>
+                    <SaveAlt />
+                  </IconButton>
+                  {onReload && (
+                    <IconButton color="success" size="small" onClick={handleReload}>
+                      <Replay />
+                    </IconButton>
+                  )}
+                  <IconButton color="error" size="small" onClick={handleClear}>
+                    <Clear />
+                  </IconButton>
+                </>
               )}
-              <IconButton color="error" size="small" onClick={handleClear}>
-                <Clear />
-              </IconButton>
             </Stack>
           )}
           pagination={{

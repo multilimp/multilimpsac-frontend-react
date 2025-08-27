@@ -1,12 +1,12 @@
 import { Fragment, ReactNode, useState, useMemo, memo, useEffect } from 'react';
 import { Dropdown } from 'antd';
-import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Divider, List, ListItem, ListItemText, Stack, Typography, Checkbox, Skeleton, IconButton } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Divider, List, ListItem, ListItemText, Stack, Typography, Checkbox, Skeleton, IconButton, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import SelectCompanies from '@/components/selects/SelectCompanies';
 import SelectGeneric from '@/components/selects/SelectGeneric';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 import { BlackBarKeyEnum } from '@/types/global.enum';
 import { formatCurrency, formattedDate } from '@/utils/functions';
-import { ExpandMore, Visibility, ContentCopy } from '@mui/icons-material';
+import { ExpandMore, Visibility, ContentCopy, Close, Upload, CheckCircle, PlayArrow } from '@mui/icons-material';
 import Scrollbar from '@/components/Scrollbar';
 import ClipboardJS from 'clipboard';
 import { notification } from 'antd';
@@ -35,6 +35,8 @@ const BlackBar = memo(() => {
   const [tempFile, setTempFile] = useState<File>();
   const [completedProducts, setCompletedProducts] = useState<string[]>([]);
   const [isUpdatingProduct, setIsUpdatingProduct] = useState(false);
+  const [openUploadModal, setOpenUploadModal] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
 
   // Inicializar completedProducts basado en los datos del backend
   useEffect(() => {
@@ -86,6 +88,49 @@ const BlackBar = memo(() => {
   const handleClear = () => {
     setOpenDD(false);
     setTempFile(undefined);
+  };
+
+  const handleOpenModal = () => {
+    setOpenUploadModal(true);
+    setUploadedFile(null);
+  };
+
+  const handleCloseModal = () => {
+    setOpenUploadModal(false);
+    setUploadedFile(null);
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const validation = validateOcamPdf(file);
+
+      if (validation.isValid) {
+        setUploadedFile(file);
+      } else {
+        console.warn('⚠️ Archivo no válido:', validation.message);
+        notification.error({
+          message: 'Archivo no válido',
+          description: validation.message,
+          placement: 'topRight',
+          duration: 4,
+        });
+        // Limpiar el input
+        event.target.value = '';
+      }
+    }
+  };
+
+  const handleAnalyzeFile = () => {
+    if (uploadedFile) {
+      setSaleInputValues({ ...saleInputValues, file: uploadedFile });
+      handleCloseModal();
+      notification.info({
+        message: 'Analizando archivo',
+        description: 'El archivo será analizado por IA',
+        placement: 'topRight',
+      });
+    }
   };
 
   const handleToggleProduct = async (codigo: string) => {
@@ -316,76 +361,15 @@ const BlackBar = memo(() => {
 
         <Divider />
 
-        <Dropdown
-          placement="bottom"
-          trigger={['click']}
-          open={openDD}
-          dropdownRender={() => (
-            <Stack direction="column" spacing={2} bgcolor="#fff" p={2} borderRadius={2} boxShadow="0 5px 50px -5px rgba(0,0,0,0.75);" width={250}>
-              <Typography textAlign="center" color="textSecondary" fontWeight={600}>
-                ¿Desear cargar este archivo para ser analizado?
-              </Typography>
-              <Stack direction="row" spacing={1}>
-                <Button onClick={handleClear} color="error" variant="outlined" size="small" fullWidth>
-                  Cancelar
-                </Button>
-                <Button
-                  onClick={() => {
-                    setSaleInputValues({ ...saleInputValues, file: tempFile! });
-                    handleClear();
-                  }}
-                  size="small"
-                  fullWidth
-                  color="secondary"
-                >
-                  Confirmar
-                </Button>
-              </Stack>
-            </Stack>
-          )}
+        <Button
+          sx={{ border: '2px solid #9e31f4', color: '#9e31f4', borderRadius: 0.75 }}
+          color="secondary"
+          variant="outlined"
+          onClick={handleOpenModal}
+          startIcon={<img src="/images/book_ai.png" alt="book ai icon" width={28} />}
         >
-          <Button
-            sx={{ border: '2px solid #9e31f4', color: '#9e31f4', borderRadius: 0.75, position: 'relative' }}
-            color="secondary"
-            variant="outlined"
-          >
-            <img src="/images/book_ai.png" alt="book ai icon" width={28} />
-            <input
-              type="file"
-              key={`file-input-${saleInputValues.enterprise?.id || 'default'}`} // 🔧 Key único para reiniciar el input
-              style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0, cursor: 'pointer' }}
-              onChange={(event) => {
-                console.log('🔍 File input onChange triggered:', {
-                  file: event.target.files?.[0]?.name,
-                  blackBarKey,
-                  currentContext: 'PDF_UPLOAD'
-                });
-
-                const file = event.target.files?.[0];
-                if (file) {
-                  const validation = validateOcamPdf(file);
-
-                  if (validation.isValid) {
-                    setTempFile(file);
-                    setOpenDD(true);
-                  } else {
-                    console.warn('⚠️ Archivo no válido:', validation.message);
-                    notification.error({
-                      message: 'Archivo no válido',
-                      description: validation.message,
-                      placement: 'topRight',
-                      duration: 4,
-                    });
-                    // Limpiar el input
-                    event.target.value = '';
-                  }
-                }
-              }}
-              accept="application/pdf"
-            />
-            {saleInputValues.file?.name ?? 'Cargar PDF'}
-          </Button>
-        </Dropdown>
+          {saleInputValues.file?.name ?? 'Cargar PDF'}
+        </Button>
       </Stack>
     ),
     [BlackBarKeyEnum.OP]: (
@@ -729,6 +713,137 @@ const BlackBar = memo(() => {
           </Scrollbar>
         </Box>
       ) : null}
+
+      {/* Modal de carga de archivos */}
+      <Dialog
+        open={openUploadModal}
+        onClose={handleCloseModal}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 2,
+            boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
+          }
+        }}
+      >
+        <DialogTitle sx={{ pb: 1 }}>
+          <Stack direction="row" alignItems="center" justifyContent="space-between">
+            <Typography variant="h6" fontWeight={600}>
+              Cargar archivo PDF
+            </Typography>
+            <IconButton onClick={handleCloseModal} size="small">
+              <Close />
+            </IconButton>
+          </Stack>
+        </DialogTitle>
+
+        <DialogContent sx={{ pt: 2 }}>
+          <Stack spacing={3} alignItems="center">
+            {/* Área de carga de archivos */}
+            <Box
+              sx={{
+                border: '2px dashed #e0e0e0',
+                borderRadius: 2,
+                p: 4,
+                textAlign: 'center',
+                width: '100%',
+                bgcolor: uploadedFile ? '#f8f9fa' : 'transparent',
+                borderColor: uploadedFile ? '#28a745' : '#e0e0e0',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  borderColor: '#1890ff',
+                  bgcolor: '#f0f8ff',
+                }
+              }}
+              onClick={() => document.getElementById('file-upload-input')?.click()}
+            >
+              <input
+                id="file-upload-input"
+                type="file"
+                accept="application/pdf"
+                style={{ display: 'none' }}
+                onChange={handleFileUpload}
+              />
+
+              {uploadedFile ? (
+                <Stack spacing={2} alignItems="center">
+                  <CheckCircle sx={{ fontSize: 48, color: '#28a745' }} />
+                  <Typography variant="h6" fontWeight={600}>
+                    Archivo cargado correctamente
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    {uploadedFile.name}
+                  </Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    Tamaño: {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
+                  </Typography>
+                </Stack>
+              ) : (
+                <Stack spacing={2} alignItems="center">
+                  <Upload sx={{ fontSize: 48, color: '#9e31f4' }} />
+                  <Typography variant="h6" fontWeight={600}>
+                    Subir archivo PDF
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    Haz clic aquí o arrastra tu archivo PDF
+                  </Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    Solo archivos PDF que comiencen con "OCAM"
+                  </Typography>
+                </Stack>
+              )}
+            </Box>
+
+            {/* Información del archivo */}
+            {uploadedFile && (
+              <Box sx={{
+                bgcolor: '#e8f5e8',
+                p: 2,
+                borderRadius: 1,
+                width: '100%',
+                border: '1px solid #d4edda'
+              }}>
+                <Typography variant="body2" color="#155724">
+                  <strong>Archivo listo para procesar:</strong> El archivo ha sido validado y está listo para ser analizado por IA o confirmado para uso manual.
+                </Typography>
+              </Box>
+            )}
+          </Stack>
+        </DialogContent>
+
+        <DialogActions sx={{ p: 3, pt: 2 }}>
+          <Stack direction="row" spacing={2} width="100%">
+            <Button
+              onClick={handleCloseModal}
+              variant="outlined"
+              color="inherit"
+              fullWidth
+            >
+              Cancelar
+            </Button>
+
+            {uploadedFile && (
+              <Button
+                onClick={handleAnalyzeFile}
+                variant="contained"
+                color="secondary"
+                fullWidth
+                startIcon={<PlayArrow />}
+                sx={{
+                  bgcolor: '#9e31f4',
+                  '&:hover': {
+                    bgcolor: '#8028d4',
+                  }
+                }}
+              >
+                Analizar con IA
+              </Button>
+            )}
+          </Stack>
+        </DialogActions>
+      </Dialog>
     </Fragment>
   );
 });
