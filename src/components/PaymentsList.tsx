@@ -235,255 +235,159 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
       {/* INPUTS DE PAGOS */}
       <Stack spacing={2} sx={{ mb: 3 }}>
         {localPayments.map((payment: PaymentItem, index: number) => (
-          <Grid container spacing={2} key={index}>
-            {/* Fecha */}
-            <Grid size={2}>
-              <Box sx={{
-                bgcolor: '#f3f6f9',
-                borderRadius: 2,
-                height: 48,
-                display: 'flex',
-                alignItems: 'center',
-                px: 2,
-              }}>
+          <Card
+            key={index}
+            style={{
+              borderRadius: 8,
+              border: '1px solid #d9d9d9',
+              background: '#fafafa'
+            }}
+            bodyStyle={{ padding: '16px' }}
+          >
+            <Row gutter={[16, 16]} align="middle">
+              {/* Fecha */}
+              <Col span={4}>
+                <div style={{ marginBottom: 4 }}>
+                  <Text strong style={{ fontSize: 12, color: '#666' }}>
+                    <CalendarOutlined style={{ marginRight: 4 }} />
+                    Fecha
+                  </Text>
+                </div>
                 {isReadonly ? (
-                  <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', color: '#666' }}>
-                    <CalendarOutlined style={{ fontSize: 20, marginRight: 8, color: '#999' }} />
-                    <Typography fontSize={14} fontWeight={600}>
-                      {payment.date ? payment.date.format('DD/MM/YYYY') : '-- / -- / ----'}
-                    </Typography>
-                  </Box>
+                  <Input
+                    value={payment.date ? payment.date.format('DD/MM/YYYY') : '-- / -- / ----'}
+                    readOnly
+                    style={{ backgroundColor: '#f5f5f5' }}
+                  />
                 ) : (
                   <DatePickerAntd
-                    placeholder="-- / -- / ----"
-                    size="small"
+                    placeholder="Seleccionar fecha"
+                    size="middle"
                     value={payment.date}
                     onChange={(date) => handleUpdatePayment(index, 'date', date)}
-                    style={{
-                      width: '100%',
-                      border: 'none',
-                      background: 'transparent',
-                      color: 'black',
-                      fontWeight: 600,
-                    }}
+                    style={{ width: '100%' }}
                   />
                 )}
-              </Box>
-            </Grid>
+              </Col>
 
-            {/* Banco */}
-            <Grid size={2}>
-              <Box sx={{
-                bgcolor: '#f3f6f9',
-                borderRadius: 2,
-                height: 48,
-                display: 'flex',
-                alignItems: 'center',
-                px: 2,
-              }}>
-                {isReadonly ? (
-                  <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', color: '#666' }}>
-                    <AccountBalance sx={{ fontSize: 20, mr: 1, color: '#999' }} />
-                    <Typography fontSize={14} fontWeight={600}>
-                      {payment.bank || 'Sin especificar'}
-                    </Typography>
-                  </Box>
-                ) : (
-                  <Input
-                    placeholder="Banco"
-                    size="small"
-                    value={payment.bank}
-                    onChange={(e) => handleUpdatePayment(index, 'bank', e.target.value)}
-                    style={{
-                      width: '100%',
-                      border: 'none',
-                      background: 'transparent',
-                      color: 'black',
-                      fontWeight: 600,
-                    }}
-                  />
-                )}
-              </Box>
-            </Grid>
-
-            {/* Descripción */}
-            <Grid size={3}>
-              <Box sx={{
-                bgcolor: '#f3f6f9',
-                borderRadius: 2,
-                height: 48,
-                display: 'flex',
-                alignItems: 'center',
-                px: 2,
-              }}>
-                {isReadonly ? (
-                  <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', color: '#666' }}>
-                    <Description sx={{ fontSize: 20, mr: 1, color: '#999' }} />
-                    <Typography fontSize={14} fontWeight={600}>
-                      {payment.description || 'Sin descripción'}
-                    </Typography>
-                  </Box>
-                ) : (
-                  <Input
-                    placeholder="Descripción"
-                    size="small"
-                    value={payment.description}
-                    onChange={(e) => handleUpdatePayment(index, 'description', e.target.value)}
-                    style={{
-                      width: '100%',
-                      border: 'none',
-                      background: 'transparent',
-                      color: 'black',
-                      fontWeight: 600,
-                    }}
-                  />
-                )}
-              </Box>
-            </Grid>
-
-            {/* Archivo */}
-            <Grid size={1.5}>
-              {isReadonly ? (
-                payment.file ? (
-                  <Box sx={{
-                    bgcolor: '#f3f6f9',
-                    borderRadius: 2,
-                    height: 48,
-                    display: 'flex',
-                    alignItems: 'center',
-                    px: 2,
-                    cursor: 'pointer',
-                    '&:hover': {
-                      bgcolor: '#e5e7eb'
-                    }
-                  }}
-                    onClick={() => {
-                      if (typeof payment.file === 'string') {
-                        window.open(payment.file, '_blank');
-                      }
-                    }}
-                  >
-                    <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', color: '#666' }}>
-                      <AttachFile sx={{ fontSize: 20, mr: 1, color: '#1890ff' }} />
-                      <Typography fontSize={12} fontWeight={600} sx={{
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                        color: '#1890ff'
-                      }}>
-                        Ver Archivo
-                      </Typography>
-                    </Box>
-                  </Box>
-                ) : (
-                  <Box sx={{
-                    bgcolor: '#f3f6f9',
-                    borderRadius: 2,
-                    height: 48,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#999'
-                  }}>
-                    <Typography fontSize={12}>Sin archivo</Typography>
-                  </Box>
-                )
-              ) : (
-                <SimpleFileUpload
-                  label=""
-                  accept="application/pdf"
-                  value={payment.file}
-                  onChange={(file) => handleUpdatePayment(index, 'file', file)}
+              {/* Banco */}
+              <Col span={4}>
+                <div style={{ marginBottom: 4 }}>
+                  <Text strong style={{ fontSize: 12, color: '#666' }}>
+                    <BankOutlined style={{ marginRight: 4 }} />
+                    Banco
+                  </Text>
+                </div>
+                <Input
+                  placeholder="Nombre del banco"
+                  value={payment.bank}
+                  onChange={(e) => handleUpdatePayment(index, 'bank', e.target.value)}
+                  readOnly={isReadonly}
+                  style={{ backgroundColor: isReadonly ? '#f5f5f5' : '#fff' }}
                 />
-              )}
-            </Grid>
+              </Col>
 
-            {/* Monto */}
-            <Grid size={2}>
-              <Box sx={{
-                bgcolor: '#f3f6f9',
-                borderRadius: 2,
-                height: 48,
-                display: 'flex',
-                alignItems: 'center',
-                px: 2,
-              }}>
+              {/* Descripción */}
+              <Col span={6}>
+                <div style={{ marginBottom: 4 }}>
+                  <Text strong style={{ fontSize: 12, color: '#666' }}>
+                    <FileTextOutlined style={{ marginRight: 4 }} />
+                    Descripción
+                  </Text>
+                </div>
+                <Input
+                  placeholder="Descripción del pago"
+                  value={payment.description}
+                  onChange={(e) => handleUpdatePayment(index, 'description', e.target.value)}
+                  readOnly={isReadonly}
+                  style={{ backgroundColor: isReadonly ? '#f5f5f5' : '#fff' }}
+                />
+              </Col>
+
+              {/* Archivo */}
+              <Col span={3}>
+                <div style={{ marginBottom: 4 }}>
+                  <Text strong style={{ fontSize: 12, color: '#666' }}>
+                    <PaperClipOutlined style={{ marginRight: 4 }} />
+                    Archivo
+                  </Text>
+                </div>
                 {isReadonly ? (
-                  <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', color: '#666' }}>
-                    <MonetizationOn sx={{ fontSize: 20, mr: 1, color: '#999' }} />
-                    <Typography fontSize={14} fontWeight={600}>
-                      S/ {payment.amount || '0.00'}
-                    </Typography>
-                  </Box>
+                  payment.file ? (
+                    <Button
+                      type="link"
+                      size="small"
+                      onClick={() => {
+                        if (typeof payment.file === 'string') {
+                          window.open(payment.file, '_blank');
+                        }
+                      }}
+                      style={{ padding: 0, height: 'auto' }}
+                    >
+                      Ver archivo
+                    </Button>
+                  ) : (
+                    <Text type="secondary">Sin archivo</Text>
+                  )
                 ) : (
-                  <Input
-                    placeholder="s/"
-                    type="number"
-                    size="small"
-                    value={payment.amount}
-                    onChange={(e) => handleUpdatePayment(index, 'amount', e.target.value)}
-                    style={{
-                      width: '100%',
-                      border: 'none',
-                      background: 'transparent',
-                      color: '#000000ff',
-                      fontWeight: 600,
-                    }}
+                  <SimpleFileUpload
+                    label=""
+                    accept="application/pdf"
+                    value={payment.file}
+                    onChange={(file) => handleUpdatePayment(index, 'file', file)}
                   />
                 )}
-              </Box>
-            </Grid>
+              </Col>
 
-            {/* Status - Checkbox */}
-            <Grid size={0.5}>
-              <Box sx={{
-                bgcolor: '#f3f6f9',
-                borderRadius: 2,
-                height: 48,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                px: 2,
-              }}>
-                <Checkbox
-                  checked={payment.status}
-                  disabled={isReadonly}
-                  onChange={(e) => handleUpdatePayment(index, 'status', e.target.checked)}
-                  style={{
-                    transform: 'scale(1.2)',
-                    color: '#1890ff',
-                  }}
+              {/* Monto */}
+              <Col span={4}>
+                <div style={{ marginBottom: 4 }}>
+                  <Text strong style={{ fontSize: 12, color: '#666' }}>
+                    <DollarOutlined style={{ marginRight: 4 }} />
+                    Monto
+                  </Text>
+                </div>
+                <Input
+                  placeholder="0.00"
+                  type="number"
+                  prefix="S/"
+                  value={payment.amount}
+                  onChange={(e) => handleUpdatePayment(index, 'amount', e.target.value)}
+                  readOnly={isReadonly}
+                  style={{ backgroundColor: isReadonly ? '#f5f5f5' : '#fff' }}
                 />
-              </Box>
-            </Grid>
+              </Col>
 
-            {/* Eliminar pago */}
-            {!isReadonly && (
-              <Grid size={1}>
-                <Box sx={{
-                  bgcolor: '#f3f6f9',
-                  borderRadius: 2,
-                  height: 48,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
-                  <Button
-                    type="text"
-                    danger
-                    icon={<Delete />}
-                    onClick={() => handleRemovePayment(index)}
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      border: 'none',
-                      background: 'transparent',
-                    }}
-                  />
-                </Box>
-              </Grid>
-            )}
-          </Grid>
+              {/* Status y Eliminar */}
+              <Col span={3}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '100%' }}>
+                  <div>
+                    <div style={{ marginBottom: 4 }}>
+                      <Text strong style={{ fontSize: 12, color: '#666' }}>Estado</Text>
+                    </div>
+                    <Checkbox
+                      checked={payment.status}
+                      disabled={isReadonly}
+                      onChange={(e) => handleUpdatePayment(index, 'status', e.target.checked)}
+                    >
+                      Activo
+                    </Checkbox>
+                  </div>
+
+                  {!isReadonly && (
+                    <Button
+                      type="text"
+                      danger
+                      icon={<DeleteOutlined />}
+                      onClick={() => handleRemovePayment(index)}
+                      size="small"
+                      style={{ marginLeft: 8 }}
+                    />
+                  )}
+                </div>
+              </Col>
+            </Row>
+          </Card>
         ))}
       </Stack>
 
