@@ -1,42 +1,44 @@
 
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-// @ts-nocheck
 import { useState } from 'react';
-import { 
-  Box, 
-  Typography, 
-  Chip, 
-  Avatar, 
-  Container, 
-  Button, 
-  Card, 
-  CardContent, 
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Grid,
+import {
+  Card,
+  Avatar,
+  Typography,
+  Button,
+  Row,
+  Col,
+  Modal,
+  Form,
+  Input,
+  notification,
+  Upload,
+  message,
+  Tag,
+  Descriptions,
+  Space,
   Divider,
-  Paper
-} from '@mui/material';
-import { 
-  Email, 
-  Person, 
-  Edit, 
-  Lock, 
-  Phone, 
-  Work, 
-  LocationOn, 
-  PhotoCamera,
-  CalendarToday,
-  AccessTime,
-  Badge
-} from '@mui/icons-material';
-import { Form, notification, Input, Upload, message } from 'antd';
+  Grid
+} from 'antd';
+import {
+  EditOutlined,
+  LockOutlined,
+  MailOutlined,
+  PhoneOutlined,
+  EnvironmentOutlined,
+  TeamOutlined,
+  CameraOutlined,
+  CalendarOutlined,
+  ClockCircleOutlined,
+  SafetyCertificateOutlined,
+  UserOutlined
+} from '@ant-design/icons';
 import { useAppContext } from '@/context';
 import { RolesEnum } from '@/services/users/user.enum';
 import { PERMISSION_LABELS } from '@/services/users/permissions.enum';
 import { updateProfile, changePassword, uploadProfilePhoto } from '@/services/users/users.request';
+
+const { Title, Text } = Typography;
+const { useBreakpoint } = Grid;
 
 const Profile = () => {
   const { user, setUser } = useAppContext();
@@ -45,16 +47,15 @@ const Profile = () => {
   const [loading, setLoading] = useState(false);
   const [profileForm] = Form.useForm();
   const [passwordForm] = Form.useForm();
+  const screens = useBreakpoint();
 
   if (!user?.id) {
     return (
-      <Container maxWidth="sm" sx={{ py: 8 }}>
-        <Box sx={{ textAlign: 'center' }}>
-          <Typography variant="h5" color="text.secondary">
-            No se pudo cargar la información del perfil
-          </Typography>
-        </Box>
-      </Container>
+      <div style={{ padding: '64px 24px', textAlign: 'center' }}>
+        <Text type="secondary" style={{ fontSize: 18 }}>
+          No se pudo cargar la información del perfil
+        </Text>
+      </div>
     );
   }
 
@@ -72,7 +73,6 @@ const Profile = () => {
   const handleSaveProfile = async (values: Record<string, string>) => {
     try {
       setLoading(true);
-      // Ahora todos los campos se guardan en la base de datos
       const updatedUser = await updateProfile(user.id, {
         nombre: values.nombre,
         email: values.email,
@@ -80,10 +80,9 @@ const Profile = () => {
         departamento: values.departamento,
         ubicacion: values.ubicacion,
       });
-      
-      // Actualizar el contexto con todos los datos del servidor
+
       setUser({ ...user, ...updatedUser });
-      
+
       setEditModalOpen(false);
       notification.success({
         message: 'Perfil actualizado',
@@ -106,7 +105,7 @@ const Profile = () => {
         currentPassword: values.currentPassword,
         newPassword: values.newPassword,
       });
-      
+
       setPasswordModalOpen(false);
       passwordForm.resetFields();
       notification.success({
@@ -124,26 +123,21 @@ const Profile = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      {/* Encabezado del Perfil */}
-      <Paper elevation={3} sx={{ mb: 4, p: 4, borderRadius: 3 }}>
-        <Grid container spacing={4} alignItems="center">
-          {/* @ts-ignore */}
-          <Grid item xs={12} md={3} sx={{ textAlign: 'center' }}>
-            <Box sx={{ position: 'relative', display: 'inline-block' }}>
-            <Avatar
-              src={user.foto}
-              alt={user.nombre}
-              sx={{
-                width: 120,
-                height: 120,
-                mb: 2,
-                  border: '4px solid',
-                  borderColor: 'primary.light',
+    <div style={{ padding: '24px', maxWidth: 1200, margin: '0 auto' }}>
+      {/* Header Card - Información Principal */}
+      <Card style={{ marginBottom: 24 }}>
+        <Row gutter={[24, 24]} align="middle">
+          <Col xs={24} sm={8} md={6} style={{ textAlign: 'center' }}>
+            <div style={{ position: 'relative', display: 'inline-block' }}>
+              <Avatar
+                size={120}
+                src={user.foto}
+                icon={<UserOutlined />}
+                style={{
+                  border: '4px solid #1890ff',
+                  marginBottom: 16
                 }}
-              >
-                <Person sx={{ fontSize: 60 }} />
-              </Avatar>
+              />
               <Upload
                 accept="image/*"
                 showUploadList={false}
@@ -160,347 +154,374 @@ const Profile = () => {
                 }}
               >
                 <Button
+                  type="primary"
+                  shape="circle"
+                  icon={<CameraOutlined />}
                   size="small"
-                  sx={{
+                  style={{
                     position: 'absolute',
-                    bottom: 8,
+                    bottom: 16,
                     right: -8,
-                    minWidth: 'auto',
-                    borderRadius: '50%',
-                    p: 1,
                   }}
-                  variant="contained"
-                >
-                  <PhotoCamera sx={{ fontSize: 16 }} />
-                </Button>
+                />
               </Upload>
-            </Box>
-          </Grid>
-          
-          <Grid item xs={12} md={6}>
-            <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600 }}>
-              {user.nombre}
-            </Typography>
-            
-            <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
-            <Chip
-                icon={<Badge />}
-              label={user.role === RolesEnum.ADMIN ? 'Administrador' : 'Usuario'}
-                color={user.role === RolesEnum.ADMIN ? 'primary' : 'default'}
-                variant="outlined"
-            />
-            <Chip
-              label={user.estado ? 'Activo' : 'Inactivo'}
-              color={user.estado ? 'success' : 'error'}
-                variant="outlined"
-            />
-          </Box>
-          </Grid>
+            </div>
+          </Col>
 
-          <Grid item xs={12} md={3}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <Col xs={24} sm={16} md={12}>
+            <Title level={2} style={{ marginBottom: 8 }}>
+              {user.nombre}
+            </Title>
+
+            <Space wrap style={{ marginBottom: 16 }}>
+              <Tag
+                icon={<SafetyCertificateOutlined />}
+                color={user.role === RolesEnum.ADMIN ? 'blue' : 'default'}
+              >
+                {user.role === RolesEnum.ADMIN ? 'Administrador' : 'Usuario'}
+              </Tag>
+              <Tag color={user.estado ? 'success' : 'error'}>
+                {user.estado ? 'Activo' : 'Inactivo'}
+              </Tag>
+            </Space>
+
+            <Text type="secondary" style={{ fontSize: 16 }}>
+              {user.email}
+            </Text>
+          </Col>
+
+          <Col xs={24} sm={24} md={6}>
+            <Space direction="vertical" style={{ width: '100%' }}>
               <Button
-                variant="contained"
-                startIcon={<Edit />}
+                type="primary"
+                icon={<EditOutlined />}
                 onClick={handleEditProfile}
-                fullWidth
+                block={!screens.md}
               >
                 Editar Perfil
               </Button>
               <Button
-                variant="outlined"
-                startIcon={<Lock />}
+                icon={<LockOutlined />}
                 onClick={() => setPasswordModalOpen(true)}
-                fullWidth
+                block={!screens.md}
               >
                 Cambiar Contraseña
               </Button>
-      </Box>
-          </Grid>
-        </Grid>
-      </Paper>
+            </Space>
+          </Col>
+        </Row>
+      </Card>
 
-      <Grid container spacing={4}>
+      <Row gutter={[24, 24]}>
         {/* Información Personal */}
-        <Grid item xs={12} md={6}>
-          <Card sx={{ height: '100%' }}>
-          <CardContent>
-              <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
-                Información Personal
-            </Typography>
-            
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Email sx={{ color: 'primary.main' }} />
-                  <Box>
-                    <Typography variant="body2" color="text.secondary">
-                      Correo Electrónico
-                </Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                      {user.email}
-                </Typography>
-                  </Box>
-              </Box>
-              
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Phone sx={{ color: user.telefono ? 'primary.main' : 'text.disabled' }} />
-                  <Box>
-                    <Typography variant="body2" color="text.secondary">
-                      Teléfono
-                    </Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 500, color: user.telefono ? 'text.primary' : 'text.disabled' }}>
-                      {user.telefono || 'No especificado'}
-                </Typography>
-                  </Box>
-              </Box>
-              
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Work sx={{ color: user.departamento ? 'primary.main' : 'text.disabled' }} />
-                  <Box>
-                    <Typography variant="body2" color="text.secondary">
-                      Departamento
-                  </Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 500, color: user.departamento ? 'text.primary' : 'text.disabled' }}>
-                      {user.departamento || 'No especificado'}
-                  </Typography>
-                  </Box>
-                </Box>
+        <Col xs={24} md={12}>
+          <Card
+            title={
+              <Space>
+                <UserOutlined />
+                <span>Información Personal</span>
+              </Space>
+            }
+            style={{ height: '100%' }}
+          >
+            <Descriptions column={1} size="middle">
+              <Descriptions.Item
+                label={
+                  <Space>
+                    <MailOutlined />
+                    <span>Correo Electrónico</span>
+                  </Space>
+                }
+              >
+                <Text copyable>{user.email}</Text>
+              </Descriptions.Item>
 
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <LocationOn sx={{ color: user.ubicacion ? 'primary.main' : 'text.disabled' }} />
-                  <Box>
-                    <Typography variant="body2" color="text.secondary">
-                      Ubicación
-                  </Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 500, color: user.ubicacion ? 'text.primary' : 'text.disabled' }}>
-                      {user.ubicacion || 'No especificado'}
-                  </Typography>
-                  </Box>
-                </Box>
-            </Box>
-          </CardContent>
-        </Card>
-        </Grid>
+              <Descriptions.Item
+                label={
+                  <Space>
+                    <PhoneOutlined />
+                    <span>Teléfono</span>
+                  </Space>
+                }
+              >
+                <Text type={user.telefono ? undefined : 'secondary'}>
+                  {user.telefono || 'No especificado'}
+                </Text>
+              </Descriptions.Item>
+
+              <Descriptions.Item
+                label={
+                  <Space>
+                    <TeamOutlined />
+                    <span>Departamento</span>
+                  </Space>
+                }
+              >
+                <Text type={user.departamento ? undefined : 'secondary'}>
+                  {user.departamento || 'No especificado'}
+                </Text>
+              </Descriptions.Item>
+
+              <Descriptions.Item
+                label={
+                  <Space>
+                    <EnvironmentOutlined />
+                    <span>Ubicación</span>
+                  </Space>
+                }
+              >
+                <Text type={user.ubicacion ? undefined : 'secondary'}>
+                  {user.ubicacion || 'No especificado'}
+                </Text>
+              </Descriptions.Item>
+            </Descriptions>
+          </Card>
+        </Col>
 
         {/* Información del Sistema */}
-        <Grid item xs={12} md={6}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent>
-              <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
-                Información del Sistema
-              </Typography>
-              
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                {user.createdAt && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <CalendarToday sx={{ color: 'primary.main' }} />
-                    <Box>
-                      <Typography variant="body2" color="text.secondary">
-                        Fecha de Creación
-                      </Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                        {new Date(user.createdAt).toLocaleDateString('es-ES', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })}
-                      </Typography>
-                    </Box>
-                  </Box>
-                )}
+        <Col xs={24} md={12}>
+          <Card
+            title={
+              <Space>
+                <SafetyCertificateOutlined />
+                <span>Información del Sistema</span>
+              </Space>
+            }
+            style={{ height: '100%' }}
+          >
+            <Descriptions column={1} size="middle">
+              {user.createdAt && (
+                <Descriptions.Item
+                  label={
+                    <Space>
+                      <CalendarOutlined />
+                      <span>Fecha de Creación</span>
+                    </Space>
+                  }
+                >
+                  {new Date(user.createdAt).toLocaleDateString('es-ES', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </Descriptions.Item>
+              )}
 
-                {user.updatedAt && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <AccessTime sx={{ color: 'primary.main' }} />
-                    <Box>
-                      <Typography variant="body2" color="text.secondary">
-                        Última Actualización
-                      </Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                        {new Date(user.updatedAt).toLocaleDateString('es-ES', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })}
-                      </Typography>
-                    </Box>
-                  </Box>
-                )}
+              {user.updatedAt && (
+                <Descriptions.Item
+                  label={
+                    <Space>
+                      <ClockCircleOutlined />
+                      <span>Última Actualización</span>
+                    </Space>
+                  }
+                >
+                  {new Date(user.updatedAt).toLocaleDateString('es-ES', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </Descriptions.Item>
+              )}
 
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Badge sx={{ color: 'primary.main' }} />
-                  <Box>
-                    <Typography variant="body2" color="text.secondary">
-                      Tipo de Cuenta
-                    </Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                      {user.role === RolesEnum.ADMIN ? 'Administrador del Sistema' : 'Usuario'}
-                    </Typography>
-                  </Box>
-                </Box>
-              </Box>
-            </CardContent>
+              <Descriptions.Item
+                label={
+                  <Space>
+                    <SafetyCertificateOutlined />
+                    <span>Tipo de Cuenta</span>
+                  </Space>
+                }
+              >
+                <Tag color={user.role === RolesEnum.ADMIN ? 'blue' : 'default'}>
+                  {user.role === RolesEnum.ADMIN ? 'Administrador del Sistema' : 'Usuario'}
+                </Tag>
+              </Descriptions.Item>
+            </Descriptions>
           </Card>
-        </Grid>
+        </Col>
 
         {/* Permisos de Acceso */}
         {user.permisos && user.permisos.length > 0 && (
-          <Grid item xs={12}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
-                  Permisos de Acceso
-      </Typography>
-      
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
-                  {user.permisos.map((permiso) => (
-                    <Chip
-                      key={permiso}
-                      label={PERMISSION_LABELS[permiso as keyof typeof PERMISSION_LABELS] || permiso}
-                      variant="outlined"
-                      color="primary"
-                    />
-                  ))}
-        </Box>
-        
-                <Divider sx={{ my: 2 }} />
-                
-                <Typography variant="body2" color="text.secondary">
-                  <strong>Nota:</strong> Los permisos de acceso son asignados por el administrador del sistema. 
-                  Si necesitas acceso a módulos adicionales, contacta al administrador.
-            </Typography>
-              </CardContent>
-          </Card>
-          </Grid>
+          <Col xs={24}>
+            <Card
+              title={
+                <Space>
+                  <SafetyCertificateOutlined />
+                  <span>Permisos de Acceso</span>
+                </Space>
+              }
+            >
+              <Space wrap style={{ marginBottom: 16 }}>
+                {user.permisos.map((permiso) => (
+                  <Tag key={permiso} color="processing">
+                    {PERMISSION_LABELS[permiso as keyof typeof PERMISSION_LABELS] || permiso}
+                  </Tag>
+                ))}
+              </Space>
+
+              <Divider />
+
+              <Text type="secondary">
+                <strong>Nota:</strong> Los permisos de acceso son asignados por el administrador del sistema.
+                Si necesitas acceso a módulos adicionales, contacta al administrador.
+              </Text>
+            </Card>
+          </Col>
         )}
-      </Grid>
+      </Row>
 
       {/* Modal para editar perfil */}
-      <Dialog open={editModalOpen} onClose={() => setEditModalOpen(false)} maxWidth="md" fullWidth>
-        <DialogTitle>Editar Información Personal</DialogTitle>
-        <DialogContent>
-          <Form form={profileForm} onFinish={handleSaveProfile} layout="vertical" style={{ marginTop: 16 }}>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <Form.Item
-                  name="nombre"
-                  label="Nombre completo"
-                  rules={[{ required: true, message: 'El nombre es requerido' }]}
-                >
-                  <Input size="large" placeholder="Ingresa tu nombre completo" />
-                </Form.Item>
-              </Grid>
-              
-              <Grid item xs={12}>
-                <Form.Item
-                  name="email"
-                  label="Correo electrónico"
-                  rules={[
-                    { required: true, message: 'El email es requerido' },
-                    { type: 'email', message: 'Ingresa un email válido' }
-                  ]}
-                >
-                  <Input size="large" type="email" placeholder="tu@email.com" />
-                </Form.Item>
-              </Grid>
-              
-              <Grid item xs={12} sm={6}>
-                <Form.Item
-                  name="telefono"
-                  label="Teléfono"
-                >
-                  <Input size="large" placeholder="+51 999 123 456" />
-                </Form.Item>
-              </Grid>
+      <Modal
+        title="Editar Información Personal"
+        open={editModalOpen}
+        onCancel={() => setEditModalOpen(false)}
+        footer={null}
+        width={600}
+      >
+        <Form
+          form={profileForm}
+          onFinish={handleSaveProfile}
+          layout="vertical"
+          style={{ marginTop: 16 }}
+        >
+          <Row gutter={16}>
+            <Col span={24}>
+              <Form.Item
+                name="nombre"
+                label="Nombre completo"
+                rules={[{ required: true, message: 'El nombre es requerido' }]}
+              >
+                <Input size="large" placeholder="Ingresa tu nombre completo" />
+              </Form.Item>
+            </Col>
 
-              <Grid item xs={12} sm={6}>
-                <Form.Item
-                  name="departamento"
-                  label="Departamento"
-                >
-                  <Input size="large" placeholder="Área de trabajo" />
-                </Form.Item>
-              </Grid>
-              
-              <Grid item xs={12}>
-                <Form.Item
-                  name="ubicacion"
-                  label="Ubicación"
-                >
-                  <Input size="large" placeholder="Ciudad, País" />
-                </Form.Item>
-              </Grid>
-            </Grid>
-          </Form>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setEditModalOpen(false)}>Cancelar</Button>
-          <Button 
-            variant="contained" 
-            onClick={() => profileForm.submit()}
-            disabled={loading}
-          >
-            {loading ? 'Guardando...' : 'Guardar'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+            <Col span={24}>
+              <Form.Item
+                name="email"
+                label="Correo electrónico"
+                rules={[
+                  { required: true, message: 'El email es requerido' },
+                  { type: 'email', message: 'Ingresa un email válido' }
+                ]}
+              >
+                <Input size="large" type="email" placeholder="tu@email.com" />
+              </Form.Item>
+            </Col>
+
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="telefono"
+                label="Teléfono"
+              >
+                <Input size="large" placeholder="+51 999 123 456" />
+              </Form.Item>
+            </Col>
+
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="departamento"
+                label="Departamento"
+              >
+                <Input size="large" placeholder="Área de trabajo" />
+              </Form.Item>
+            </Col>
+
+            <Col span={24}>
+              <Form.Item
+                name="ubicacion"
+                label="Ubicación"
+              >
+                <Input size="large" placeholder="Ciudad, País" />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <div style={{ textAlign: 'right', marginTop: 24 }}>
+            <Space>
+              <Button onClick={() => setEditModalOpen(false)}>
+                Cancelar
+              </Button>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={loading}
+              >
+                Guardar
+              </Button>
+            </Space>
+          </div>
+        </Form>
+      </Modal>
 
       {/* Modal para cambiar contraseña */}
-      <Dialog open={passwordModalOpen} onClose={() => setPasswordModalOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Cambiar Contraseña</DialogTitle>
-        <DialogContent>
-          <Form form={passwordForm} onFinish={handleChangePassword} layout="vertical" style={{ marginTop: 16 }}>
-            <Form.Item
-              name="currentPassword"
-              label="Contraseña actual"
-              rules={[{ required: true, message: 'Ingresa tu contraseña actual' }]}
-            >
-              <Input.Password size="large" />
-            </Form.Item>
-            
-            <Form.Item
-              name="newPassword"
-              label="Nueva contraseña"
-              rules={[
-                { required: true, message: 'Ingresa una nueva contraseña' },
-                { min: 6, message: 'La contraseña debe tener al menos 6 caracteres' }
-              ]}
-            >
-              <Input.Password size="large" />
-            </Form.Item>
-            
-            <Form.Item
-              name="confirmPassword"
-              label="Confirmar nueva contraseña"
-              dependencies={['newPassword']}
-              rules={[
-                { required: true, message: 'Confirma tu nueva contraseña' },
-                ({ getFieldValue }) => ({
-                  validator(_, value) {
-                    if (!value || getFieldValue('newPassword') === value) {
-                      return Promise.resolve();
-                    }
-                    return Promise.reject(new Error('Las contraseñas no coinciden'));
-                  },
-                }),
-              ]}
-            >
-              <Input.Password size="large" />
-            </Form.Item>
-          </Form>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setPasswordModalOpen(false)}>Cancelar</Button>
-          <Button 
-            variant="contained" 
-            onClick={() => passwordForm.submit()}
-            disabled={loading}
+      <Modal
+        title="Cambiar Contraseña"
+        open={passwordModalOpen}
+        onCancel={() => setPasswordModalOpen(false)}
+        footer={null}
+        width={500}
+      >
+        <Form
+          form={passwordForm}
+          onFinish={handleChangePassword}
+          layout="vertical"
+          style={{ marginTop: 16 }}
+        >
+          <Form.Item
+            name="currentPassword"
+            label="Contraseña actual"
+            rules={[{ required: true, message: 'Ingresa tu contraseña actual' }]}
           >
-            {loading ? 'Cambiando...' : 'Cambiar Contraseña'}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Container>
+            <Input.Password size="large" />
+          </Form.Item>
+
+          <Form.Item
+            name="newPassword"
+            label="Nueva contraseña"
+            rules={[
+              { required: true, message: 'Ingresa una nueva contraseña' },
+              { min: 6, message: 'La contraseña debe tener al menos 6 caracteres' }
+            ]}
+          >
+            <Input.Password size="large" />
+          </Form.Item>
+
+          <Form.Item
+            name="confirmPassword"
+            label="Confirmar nueva contraseña"
+            dependencies={['newPassword']}
+            rules={[
+              { required: true, message: 'Confirma tu nueva contraseña' },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue('newPassword') === value) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(new Error('Las contraseñas no coinciden'));
+                },
+              }),
+            ]}
+          >
+            <Input.Password size="large" />
+          </Form.Item>
+
+          <div style={{ textAlign: 'right', marginTop: 24 }}>
+            <Space>
+              <Button onClick={() => setPasswordModalOpen(false)}>
+                Cancelar
+              </Button>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={loading}
+              >
+                Cambiar Contraseña
+              </Button>
+            </Space>
+          </div>
+        </Form>
+      </Modal>
+    </div>
   );
 };
 

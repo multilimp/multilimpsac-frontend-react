@@ -1,4 +1,5 @@
 import { Fragment, ReactNode, useState, useMemo, memo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Dropdown, Form, Select, Input, Button as AntButton } from 'antd';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Divider, List, ListItem, ListItemText, Stack, Typography, Checkbox, Skeleton, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Card, Alert } from '@mui/material';
 import SelectCompanies from '@/components/selects/SelectCompanies';
@@ -12,7 +13,7 @@ import ClipboardJS from 'clipboard';
 import { notification } from 'antd';
 import { validateOcamPdf } from '@/utils/pdfValidation';
 import { patchSale } from '@/services/sales/sales.request';
-import { getAgrupaciones, createAgrupacion, addOrdenCompraToAgrupacion } from '@/services/agrupaciones/agrupaciones.request';
+import { getAgrupaciones, createAgrupacion, addOrdenCompraToAgrupacion, getAgrupacionByOrdenCompra } from '@/services/agrupaciones/agrupaciones.request';
 import { AgrupacionOrdenCompraProps } from '@/services/agrupaciones/agrupaciones.d';
 import OCsRelacionadas from '@/components/OCsRelacionadas';
 
@@ -34,6 +35,7 @@ const saleTypeOptions = [
 
 const BlackBar = memo(() => {
   const { saleInputValues, setSaleInputValues, blackBarKey, selectedSale, setSelectedSale } = useGlobalInformation();
+  const navigate = useNavigate();
   const [openDD, setOpenDD] = useState(false);
   const [tempFile, setTempFile] = useState<File>();
   const [completedProducts, setCompletedProducts] = useState<string[]>([]);
@@ -46,6 +48,8 @@ const BlackBar = memo(() => {
   const [openAgrupacionModal, setOpenAgrupacionModal] = useState(false);
   const [formAgrupacion] = Form.useForm();
   const [tipoAgrupacion, setTipoAgrupacion] = useState<'nueva' | 'existente'>('nueva');
+  const [currentAgrupacion, setCurrentAgrupacion] = useState<AgrupacionOrdenCompraProps | null>(null);
+  const [loadingCurrentAgrupacion, setLoadingCurrentAgrupacion] = useState(false);
 
   // Inicializar completedProducts basado en los datos del backend
   useEffect(() => {
@@ -79,22 +83,52 @@ const BlackBar = memo(() => {
     }
   }, [openAgrupacionModal, tipoAgrupacion]);
 
+  // Cargar agrupación actual cuando cambie la OC seleccionada
+  useEffect(() => {
+    const fetchCurrentAgrupacion = async () => {
+      if (!selectedSale?.id || selectedSale?.ventaPrivada) {
+        setCurrentAgrupacion(null);
+        return;
+      }
+
+      try {
+        setLoadingCurrentAgrupacion(true);
+        const agrupacionData = await getAgrupacionByOrdenCompra(selectedSale.id);
+        setCurrentAgrupacion(agrupacionData);
+      } catch (error: any) {
+        if (error.response?.status === 404) {
+          setCurrentAgrupacion(null); // No está agrupada
+        } else {
+          console.error('Error fetching current agrupacion:', error);
+          setCurrentAgrupacion(null);
+        }
+      } finally {
+        setLoadingCurrentAgrupacion(false);
+      }
+    };
+
+    fetchCurrentAgrupacion();
+  }, [selectedSale?.id, selectedSale?.ventaPrivada]);
+
   const documentosConfig = [
-    {
-      label: 'OCE (Orden de Compra Electrónica)',
-      field: 'documentoOce',
-      value: selectedSale?.documentoOce,
-    },
-    {
-      label: 'OCF (Orden de Compra Física)',
-      field: 'documentoOcf',
-      value: selectedSale?.documentoOcf,
-    },
-    {
+    // OCE y OCF solo para ventas al estado existentes
+    ...(selectedSale?.id && !selectedSale?.ventaPrivada ? [
+      {
+        label: 'OCE (Orden de Compra Electrónica)',
+        field: 'documentoOce',
+        value: selectedSale?.documentoOce,
+      },
+      {
+        label: 'OCF (Orden de Compra Física)',
+        field: 'documentoOcf',
+        value: selectedSale?.documentoOcf,
+      },
+    ] : []),
+    ...(selectedSale?.id ? [{
       label: 'PeruCompras',
       field: 'documentoPeruCompras',
       value: selectedSale?.documentoPeruCompras,
-    },
+    }] : []),
     // Agrega aquí otros documentos si existen en tu modelo
   ];
 
@@ -422,21 +456,6 @@ const BlackBar = memo(() => {
   const components = useMemo(() => ({
     [BlackBarKeyEnum.OC]: (
       <Stack direction="column" spacing={3}>
-        {/* ✅ NUEVO: Mostrar OCs relacionadas si hay una OC seleccionada */}
-        {selectedSale && (
-          <>
-            <OCsRelacionadas
-              ordenCompraId={selectedSale.id}
-              codigoVentaActual={selectedSale.codigoVenta}
-              onNavigateToOC={(ordenCompraId) => {
-                console.log('Navegar a OC:', ordenCompraId);
-                // Ejemplo: navigate(`/sales/edit/${ordenCompraId}`);
-              }}
-            />
-            <Divider />
-          </>
-        )}
-
         <Box
           sx={{
             '& .ant-select-single .ant-select-selector': {
@@ -501,45 +520,80 @@ const BlackBar = memo(() => {
           />
         </Box>
 
-        <Divider />
+        {/* Botón Cargar PDF - Solo para nuevas ventas al estado */}
+        {!selectedSale?.id && saleInputValues.tipoVenta === 'directa' && (
+          <>
+            <Divider />
 
-        <Button
-          sx={{ border: '2px solid #9e31f4', color: '#9e31f4', borderRadius: 0.75 }}
-          color="secondary"
-          variant="outlined"
-          onClick={handleOpenModal}
-          startIcon={<img src="/images/book_ai.png" alt="book ai icon" width={28} />}
-        >
-          {saleInputValues.file?.name ?? 'Cargar PDF'}
-        </Button>
+            <Button
+              sx={{ border: '2px solid #9e31f4', color: '#9e31f4', borderRadius: 0.75 }}
+              color="secondary"
+              variant="outlined"
+              onClick={handleOpenModal}
+              startIcon={<img src="/images/book_ai.png" alt="book ai icon" width={28} />}
+            >
+              {saleInputValues.file?.name ?? 'Cargar PDF'}
+            </Button>
 
-        <Divider />
+            <Divider />
+          </>
+        )}
 
-        {/* Botón de Agrupación de OC */}
-        <Button
-          variant="contained"
-          size="medium"
-          onClick={handleOpenAgrupacionModal}
-          disabled={!selectedSale?.id}
-          sx={{
-            bgcolor: '#1976d2',
-            color: '#fff',
-            borderRadius: 0.75,
-            py: 1.5,
-            fontSize: '14px',
-            fontWeight: 600,
-            '&:hover': {
-              bgcolor: '#1565c0',
-            },
-            '&:disabled': {
-              bgcolor: '#e0e0e0',
-              color: '#9e9e9e',
-            },
-          }}
-          startIcon={<GroupWork />}
-        >
-          {selectedSale?.id ? `Agrupar OC ${selectedSale.codigoVenta}` : 'Selecciona una OC para agrupar'}
-        </Button>
+        {/* Divider adicional cuando no hay botón de PDF */}
+        {(selectedSale?.id || saleInputValues.tipoVenta === 'privada') && <Divider />}
+
+        {/* Botón de Agrupación de OC - Solo para ventas al estado existentes */}
+        {selectedSale?.id && !selectedSale?.ventaPrivada && (
+          <>
+            <Button
+              variant="contained"
+              size="medium"
+              onClick={handleOpenAgrupacionModal}
+              disabled={!selectedSale?.id}
+              sx={{
+                bgcolor: '#1976d2',
+                color: '#fff',
+                borderRadius: 0.75,
+                py: 1.5,
+                fontSize: '14px',
+                fontWeight: 600,
+                '&:hover': {
+                  bgcolor: '#1565c0',
+                },
+                '&:disabled': {
+                  bgcolor: '#e0e0e0',
+                  color: '#9e9e9e',
+                },
+              }}
+              startIcon={<GroupWork />}
+            >
+              {selectedSale?.id ? `Agrupar OC ${selectedSale.codigoVenta}` : 'Selecciona una OC para agrupar'}
+            </Button>
+
+            {/* Información de agrupación debajo del botón */}
+            {selectedSale?.id && (
+              <>
+                {loadingCurrentAgrupacion ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+                    <Typography variant="body2" sx={{ color: '#eaebee' }}>
+                      Cargando información de agrupación...
+                    </Typography>
+                  </Box>
+                ) : currentAgrupacion ? (
+                  <OCsRelacionadas
+                    ordenCompraId={selectedSale.id}
+                    codigoVentaActual={selectedSale.codigoVenta}
+                    onNavigateToOC={(ordenCompraId) => {
+                      navigate(`/sales/${ordenCompraId}/edit`);
+                    }}
+                  />
+                ) : (
+                  null
+                )}
+              </>
+            )}
+          </>
+        )}
       </Stack>
     ),
     [BlackBarKeyEnum.OP]: (
@@ -551,20 +605,6 @@ const BlackBar = memo(() => {
               <Typography sx={{ fontWeight: 700, fontSize: '30px' }}>{selectedSale.codigoVenta}</Typography>
               <Typography sx={{ fontWeight: 600, fontSize: '16px', color: '#eaebee' }}>Fecha {formattedDate(selectedSale.createdAt)}</Typography>
             </Stack>
-
-            {/* ✅ NUEVO: Componente de OCs relacionadas */}
-            <OCsRelacionadas
-              ordenCompraId={selectedSale.id}
-              codigoVentaActual={selectedSale.codigoVenta}
-              onNavigateToOC={(ordenCompraId) => {
-                // Aquí puedes implementar la navegación a otra OC
-                console.log('Navegar a OC:', ordenCompraId);
-                // Ejemplo: navigate(`/sales/edit/${ordenCompraId}`);
-              }}
-            />
-
-            <Divider sx={{ borderBottomColor: '#3c4351' }} />
-
             <List>
               <ListItem
                 divider
@@ -853,13 +893,14 @@ const BlackBar = memo(() => {
     selectedSale?.codigoVenta,
     selectedSale?.montoVenta,
     selectedSale?.productos,
+    selectedSale?.ventaPrivada,
     saleInputValues.enterprise?.id,
     saleInputValues.tipoVenta,
     saleInputValues.file?.name,
     completedProducts, // importante para re-render
-  ]);
-
-  return (
+    currentAgrupacion,
+    loadingCurrentAgrupacion,
+  ]); return (
     <Fragment>
       {blackBarKey ? (
         <Box

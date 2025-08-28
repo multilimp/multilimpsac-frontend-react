@@ -60,7 +60,7 @@ const ProviderOrders = () => {
         size="large"
         style={{ marginBottom: 16 }}
       >
-        <TabPane tab="Por OC" key="oc">
+        <TabPane tab="Tabla de Órdenes de Compra" key="oc">
           <ProviderOrdersTable
             loading={loadingSales}
             data={sales}
@@ -68,7 +68,7 @@ const ProviderOrders = () => {
           />
         </TabPane>
 
-        <TabPane tab="Por OP" key="op">
+        <TabPane tab="Tabla OP" key="op">
           <OpTable
             loading={loadingOps}
             data={ops}

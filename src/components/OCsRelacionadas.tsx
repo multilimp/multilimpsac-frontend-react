@@ -71,11 +71,7 @@ const OCsRelacionadas: React.FC<OCsRelacionadasProps> = ({
     }
 
     if (!agrupacion) {
-        return (
-            <Alert severity="info" sx={{ fontSize: '12px' }}>
-                Esta OC no pertenece a ninguna agrupación
-            </Alert>
-        );
+        return null; // No mostrar nada si no hay agrupación
     }
 
     // Filtrar la OC actual para no mostrarla en la lista
