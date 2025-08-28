@@ -32,7 +32,6 @@ const Billings = Loadable(lazy(() => import('@/pages/private/Billings')));
 const Trackings = Loadable(lazy(() => import('@/pages/private/Trackings')));
 const ProviderOrders = Loadable(lazy(() => import('@/pages/private/ProviderOrders')));
 const ProviderOrderForm = Loadable(lazy(() => import('@/pages/private/ProviderOrders/ProviderOrderForm')));
-const OpTables = Loadable(lazy(() => import('@/pages/private/OpTables')));
 const Reports = Loadable(lazy(() => import('@/pages/private/Reports')));
 const TrackingForm = Loadable(lazy(() => import('@/pages/private/Trackings/TrackingForm')));
 
@@ -89,8 +88,8 @@ const routes: Array<PropsRoutes> = [
         roles: rolesArr,
       },
       {
-        path: 'quotes', 
-        element: Quotes, 
+        path: 'quotes',
+        element: Quotes,
         roles: rolesArr,
       },
       {
@@ -134,11 +133,6 @@ const routes: Array<PropsRoutes> = [
         roles: rolesArr,
       },
       {
-        path: 'op-tables',
-        element: OpTables,
-        roles: rolesArr,
-      },
-      {
         path: 'clients',
         element: Clients, // Actualizado a PascalCase
         roles: rolesArr,
@@ -152,7 +146,7 @@ const routes: Array<PropsRoutes> = [
         path: 'transports',
         element: Transports, // Actualizado a PascalCase
         roles: rolesArr,
-      },      
+      },
       {
         path: 'treasury',
         element: Treasurys, // Actualizado a PascalCase

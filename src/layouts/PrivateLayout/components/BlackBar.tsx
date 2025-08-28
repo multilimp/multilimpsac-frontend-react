@@ -1,5 +1,5 @@
 import { Fragment, ReactNode, useState, useMemo, memo, useEffect } from 'react';
-import { Dropdown, Form, Select, Input } from 'antd';
+import { Dropdown, Form, Select, Input, Button as AntButton } from 'antd';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Divider, List, ListItem, ListItemText, Stack, Typography, Checkbox, Skeleton, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Card, Alert } from '@mui/material';
 import SelectCompanies from '@/components/selects/SelectCompanies';
 import SelectGeneric from '@/components/selects/SelectGeneric';
@@ -14,6 +14,7 @@ import { validateOcamPdf } from '@/utils/pdfValidation';
 import { patchSale } from '@/services/sales/sales.request';
 import { getAgrupaciones, createAgrupacion, addOrdenCompraToAgrupacion } from '@/services/agrupaciones/agrupaciones.request';
 import { AgrupacionOrdenCompraProps } from '@/services/agrupaciones/agrupaciones.d';
+import OCsRelacionadas from '@/components/OCsRelacionadas';
 
 interface Producto {
   codigo: string;
@@ -323,6 +324,17 @@ const BlackBar = memo(() => {
     setAgrupaciones([]);
   };
 
+  // Función para generar código único
+  const generateUniqueCode = () => {
+    const today = new Date();
+    const year = today.getFullYear().toString().slice(-2);
+    const month = (today.getMonth() + 1).toString().padStart(2, '0');
+    const day = today.getDate().toString().padStart(2, '0');
+    const time = today.getHours().toString().padStart(2, '0') + today.getMinutes().toString().padStart(2, '0');
+
+    return `GRUPO${year}${month}${day}${time}`;
+  };
+
   const handleAgrupacionSubmit = async () => {
     if (!selectedSale?.id) {
       notification.error({
@@ -410,6 +422,21 @@ const BlackBar = memo(() => {
   const components = useMemo(() => ({
     [BlackBarKeyEnum.OC]: (
       <Stack direction="column" spacing={3}>
+        {/* ✅ NUEVO: Mostrar OCs relacionadas si hay una OC seleccionada */}
+        {selectedSale && (
+          <>
+            <OCsRelacionadas
+              ordenCompraId={selectedSale.id}
+              codigoVentaActual={selectedSale.codigoVenta}
+              onNavigateToOC={(ordenCompraId) => {
+                console.log('Navegar a OC:', ordenCompraId);
+                // Ejemplo: navigate(`/sales/edit/${ordenCompraId}`);
+              }}
+            />
+            <Divider />
+          </>
+        )}
+
         <Box
           sx={{
             '& .ant-select-single .ant-select-selector': {
@@ -509,9 +536,9 @@ const BlackBar = memo(() => {
               color: '#9e9e9e',
             },
           }}
-          startIcon={<span>🔗</span>}
+          startIcon={<GroupWork />}
         >
-          {selectedSale?.id ? 'Agrupar OC' : 'Selecciona una OC para agrupar'}
+          {selectedSale?.id ? `Agrupar OC ${selectedSale.codigoVenta}` : 'Selecciona una OC para agrupar'}
         </Button>
       </Stack>
     ),
@@ -524,6 +551,17 @@ const BlackBar = memo(() => {
               <Typography sx={{ fontWeight: 700, fontSize: '30px' }}>{selectedSale.codigoVenta}</Typography>
               <Typography sx={{ fontWeight: 600, fontSize: '16px', color: '#eaebee' }}>Fecha {formattedDate(selectedSale.createdAt)}</Typography>
             </Stack>
+
+            {/* ✅ NUEVO: Componente de OCs relacionadas */}
+            <OCsRelacionadas
+              ordenCompraId={selectedSale.id}
+              codigoVentaActual={selectedSale.codigoVenta}
+              onNavigateToOC={(ordenCompraId) => {
+                // Aquí puedes implementar la navegación a otra OC
+                console.log('Navegar a OC:', ordenCompraId);
+                // Ejemplo: navigate(`/sales/edit/${ordenCompraId}`);
+              }}
+            />
 
             <Divider sx={{ borderBottomColor: '#3c4351' }} />
 
@@ -1031,7 +1069,22 @@ const BlackBar = memo(() => {
                   ]}
                   style={{ marginBottom: 16 }}
                 >
-                  <Input placeholder="Ej: GRUPO-001" />
+                  <Input
+                    placeholder="Ej: GRUPO-001"
+                    addonAfter={
+                      <AntButton
+                        size="small"
+                        type="link"
+                        onClick={() => {
+                          const codigo = generateUniqueCode();
+                          formAgrupacion.setFieldValue('codigoGrupo', codigo);
+                        }}
+                        style={{ padding: '0 8px', height: 'auto' }}
+                      >
+                        Generar
+                      </AntButton>
+                    }
+                  />
                 </Form.Item>
                 <Form.Item
                   label="Descripción (opcional)"

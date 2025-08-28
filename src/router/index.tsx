@@ -27,12 +27,12 @@ const ConfigRoutes = () => {
     // Para usuarios normales, verificar permisos individuales
     const routePermission = getRoutePermission(routePath);
     if (!routePermission) return true; // Si no hay permiso definido, permitir acceso
-    
+
     // Dashboard y Profile siempre están disponibles para usuarios autenticados
     if (routePermission === PermissionsEnum.DASHBOARD || routePermission === PermissionsEnum.PROFILE) {
       return true;
     }
-    
+
     return (user.permisos || []).includes(routePermission);
   };
 
@@ -49,7 +49,6 @@ const ConfigRoutes = () => {
       'sales/create': PermissionsEnum.SALES,
       'provider-orders': PermissionsEnum.PROVIDER_ORDERS,
       'provider-orders/create': PermissionsEnum.PROVIDER_ORDERS,
-      'op-tables': PermissionsEnum.OP_TABLES,
       'tracking': PermissionsEnum.TRACKING,
       'treasury': PermissionsEnum.TREASURY,
       'billing': PermissionsEnum.BILLING,

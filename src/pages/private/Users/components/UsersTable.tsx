@@ -1,4 +1,4 @@
-import { Delete, Edit } from '@mui/icons-material';
+import { Delete, Edit, Lock } from '@mui/icons-material';
 import { UserProps } from '@/services/users/users';
 import AntTable, { AntColumnType } from '@/components/AntTable';
 import { Avatar, Button, ButtonGroup } from '@mui/material';
@@ -8,9 +8,10 @@ interface UsersTableProps {
   data: UserProps[];
   loading: boolean;
   onRecordAction: (action: ModalStateEnum, data: UserProps) => void;
+  onChangePassword?: (user: UserProps) => void;
 }
 
-const UsersTable = ({ data, loading, onRecordAction }: UsersTableProps) => {
+const UsersTable = ({ data, loading, onRecordAction, onChangePassword }: UsersTableProps) => {
   const columns: AntColumnType<UserProps>[] = [
     {
       title: 'Foto',
@@ -31,12 +32,17 @@ const UsersTable = ({ data, loading, onRecordAction }: UsersTableProps) => {
       title: 'Acciones',
       dataIndex: 'id',
       fixed: 'right',
-      width: 150,
+      width: 200,
       render: (_, record) => (
         <ButtonGroup size="small">
           <Button color="info" onClick={() => onRecordAction(ModalStateEnum.BOX, record)}>
             <Edit />
           </Button>
+          {onChangePassword && (
+            <Button color="warning" onClick={() => onChangePassword(record)}>
+              <Lock />
+            </Button>
+          )}
           <Button color="error" onClick={() => onRecordAction(ModalStateEnum.DELETE, record)}>
             <Delete />
           </Button>

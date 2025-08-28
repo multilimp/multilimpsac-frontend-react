@@ -1,6 +1,7 @@
-import { Form, notification, Spin, Select, Checkbox } from 'antd';
+import { Form, notification, Spin, Checkbox, Select } from 'antd';
 import InputAntd from '@/components/InputAntd';
 import InputFile from '@/components/InputFile';
+import SelectGeneric from '@/components/selects/SelectGeneric';
 import SubmitButton from '@/components/SubmitButton';
 import { UserProps } from '@/services/users/users';
 import { postUser, putUser } from '@/services/users/users.request';
@@ -8,6 +9,7 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, Typogr
 import { useEffect, useState } from 'react';
 import { RolesEnum } from '@/services/users/user.enum';
 import { PermissionsEnum, PERMISSION_LABELS, DEFAULT_USER_PERMISSIONS } from '@/services/users/permissions.enum';
+import SimpleFileUpload from '@/components/SimpleFileUpload';
 
 interface UsersModalProps {
   data?: UserProps;
@@ -33,7 +35,10 @@ const UsersModal = ({ data, handleClose, handleReload }: UsersModalProps) => {
       nombre: data.nombre,
       email: data.email,
       role: data.role,
-      estado: data.estado,
+      telefono: data.telefono,
+      departamento: data.departamento,
+      ubicacion: data.ubicacion,
+      foto: data.foto,
       permisos: data.permisos || DEFAULT_USER_PERMISSIONS,
     });
     setSelectedRole(data.role);
@@ -47,14 +52,20 @@ const UsersModal = ({ data, handleClose, handleReload }: UsersModalProps) => {
         nombre: raw.nombre,
         email: raw.email,
         role: raw.role,
-        estado: raw.estado,
+        telefono: raw.telefono,
+        departamento: raw.departamento,
+        ubicacion: raw.ubicacion,
+        foto: raw.foto,
         permisos: raw.role === RolesEnum.ADMIN ? Object.values(PermissionsEnum) : raw.permisos,
       };
 
-      if (raw.password) body.password = raw.password;
-
-      if (data) await putUser(data.id, body);
-      else await postUser(body);
+      if (data) {
+        // Actualizar usuario existente - usar putUser normal ya que la foto viene como URL
+        await putUser(data.id, body);
+      } else {
+        // Crear nuevo usuario (usar la función existente sin imagen por ahora)
+        await postUser(body);
+      }
 
       handleReload();
       handleClose();
@@ -108,43 +119,51 @@ const UsersModal = ({ data, handleClose, handleReload }: UsersModalProps) => {
                 </Form.Item>
               </Grid>
 
-              {/* Contraseña */}
+              {/* Teléfono */}
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <Form.Item name="password" rules={!data ? [{ required: true, message: 'La contraseña es requerida' }] : []}>
-                  <InputAntd label="Contraseña" type="password" />
+                <Form.Item name="telefono">
+                  <InputAntd label="Teléfono" />
+                </Form.Item>
+              </Grid>
+
+              {/* Departamento */}
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                <Form.Item name="departamento">
+                  <InputAntd label="Departamento" />
+                </Form.Item>
+              </Grid>
+
+              {/* Ubicación */}
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                <Form.Item name="ubicacion">
+                  <InputAntd label="Ubicación" />
                 </Form.Item>
               </Grid>
 
               {/* Rol */}
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <Form.Item name="role" label="Rol" rules={[{ required: true, message: 'El rol es requerido' }]}>
-                  <Select 
+                <Form.Item name="role" rules={[{ required: true, message: 'El rol es requerido' }]}>
+                  <SelectGeneric
+                    label="Rol"
                     placeholder="Selecciona un rol"
-                    onChange={(value) => setSelectedRole(value)}
+                    onChange={(value: RolesEnum) => setSelectedRole(value)}
                   >
                     {Object.values(RolesEnum).map((r) => (
                       <Select.Option key={r} value={r}>
                         {r}
                       </Select.Option>
                     ))}
-                  </Select>
-                </Form.Item>
-              </Grid>
-
-              {/* Estado */}
-              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <Form.Item name="estado" label="Estado" rules={[{ required: true, message: 'El estado es requerido' }]}>
-                  <Select placeholder="Selecciona estado">
-                    <Select.Option value={true}>Activo</Select.Option>
-                    <Select.Option value={false}>Inactivo</Select.Option>
-                  </Select>
+                  </SelectGeneric>
                 </Form.Item>
               </Grid>
 
               {/* Foto de perfil */}
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                 <Form.Item name="foto">
-                  <InputFile label="Foto de perfil" onChange={(file) => form.setFieldValue('foto', file)} />
+                  <SimpleFileUpload
+                    label="Foto de perfil"
+                    accept="image/*"
+                  />
                 </Form.Item>
               </Grid>
 

@@ -13,11 +13,10 @@ import { BlackBarKeyEnum } from '@/types/global.enum';
 import { useParams, useNavigate } from 'react-router-dom';
 import { SaleProps } from '@/services/sales/sales';
 import { parseJSON } from '@/utils/functions';
-import { alpha } from '@mui/material/styles';
 import { Save } from '@mui/icons-material';
 
 const SalesPageForm = () => {
-  const { companies, clients, saleInputValues, setSaleInputValues, setBlackBarKey, obtainSales } = useGlobalInformation();
+  const { companies, clients, saleInputValues, setSaleInputValues, setBlackBarKey, obtainSales, setSelectedSale } = useGlobalInformation();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const { id } = useParams();
@@ -49,6 +48,9 @@ const SalesPageForm = () => {
           setLoading(true);
           const saleData = await getSaleById(Number(id));
           setCurrentSale(saleData);
+
+          // ✅ NUEVO: Pasar también al contexto global para BlackBar
+          setSelectedSale(saleData);
 
           // Determinar si es venta privada y configurar el tipo
           const isPrivateSale = saleData.ventaPrivada;
@@ -144,15 +146,17 @@ const SalesPageForm = () => {
     };
 
     loadSaleData();
-  }, [id, isEditing, form, navigate, setSaleInputValues]);
+  }, [id, isEditing, form, navigate, setSaleInputValues, setSelectedSale]);
 
   useEffect(() => {
     setBlackBarKey(BlackBarKeyEnum.OC);
     return () => {
       setSaleInputValues({ enterprise: null, tipoVenta: 'directa', file: null });
       setBlackBarKey(null);
+      // ✅ NUEVO: Limpiar selectedSale al salir
+      setSelectedSale(null);
     };
-  }, [setSaleInputValues, setBlackBarKey]);
+  }, [setSaleInputValues, setBlackBarKey, setSelectedSale]);
   const handleAnalizeFile = async () => {
     try {
       setLoading(true);

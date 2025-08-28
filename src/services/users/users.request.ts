@@ -16,6 +16,37 @@ export const putUser = async (userId: number, data: Record<string, any>): Promis
   return res.data;
 };
 
+export const putUserWithImage = async (
+  userId: number,
+  data: Record<string, any>,
+  imageFile?: File
+): Promise<UserProps> => {
+  const formData = new FormData();
+
+  // Agregar todos los campos de datos al FormData
+  Object.keys(data).forEach(key => {
+    if (data[key] !== undefined && data[key] !== null) {
+      if (key === 'permisos' && Array.isArray(data[key])) {
+        formData.append(key, JSON.stringify(data[key]));
+      } else {
+        formData.append(key, String(data[key]));
+      }
+    }
+  });
+
+  // Agregar imagen si existe
+  if (imageFile) {
+    formData.append('foto', imageFile);
+  }
+
+  const res = await apiClient.put(`/users/${userId}/with-image`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return res.data;
+};
+
 export const updateProfile = async (userId: number, profileData: Partial<UserProps>): Promise<UserProps> => {
   const res = await apiClient.put(`/users/${userId}/profile`, profileData);
   return res.data;
@@ -24,7 +55,7 @@ export const updateProfile = async (userId: number, profileData: Partial<UserPro
 export const uploadProfilePhoto = async (userId: number, photoFile: File): Promise<{ photoUrl: string; user: UserProps }> => {
   const formData = new FormData();
   formData.append('photo', photoFile);
-  
+
   const res = await apiClient.post(`/upload/profile/${userId}`, formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
@@ -35,5 +66,10 @@ export const uploadProfilePhoto = async (userId: number, photoFile: File): Promi
 
 export const changePassword = async (userId: number, passwordData: { currentPassword: string; newPassword: string }): Promise<boolean> => {
   const res = await apiClient.put(`/users/${userId}/password`, passwordData);
+  return res.data;
+};
+
+export const adminChangePassword = async (userId: number, newPassword: string): Promise<boolean> => {
+  const res = await apiClient.put(`/users/${userId}/admin-change-password`, { newPassword });
   return res.data;
 };

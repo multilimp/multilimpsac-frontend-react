@@ -19,14 +19,14 @@ const useSidebarConfig = (rol: RolesEnum, userPermissions: string[] = []) => {
     section.routes.forEach((route: SidebarItemProps) => {
       // Mapear rutas a permisos
       const routePermission = getRoutePermission(route.path);
-      
+
       // Dashboard y Profile siempre están disponibles para usuarios autenticados
       if (routePermission === PermissionsEnum.DASHBOARD || routePermission === PermissionsEnum.PROFILE) {
         filteredSection.routes.push(route);
         hasVisibleRoutes = true;
         return;
       }
-      
+
       if (routePermission && userPermissions.includes(routePermission)) {
         filteredSection.routes.push(route);
         hasVisibleRoutes = true;
@@ -52,7 +52,6 @@ const getRoutePermission = (path: string): string | null => {
     '/quotes': PermissionsEnum.QUOTES,
     '/sales': PermissionsEnum.SALES,
     '/provider-orders': PermissionsEnum.PROVIDER_ORDERS,
-    '/op-tables': PermissionsEnum.OP_TABLES,
     '/tracking': PermissionsEnum.TRACKING,
     '/treasury': PermissionsEnum.TREASURY,
     '/billing': PermissionsEnum.BILLING,
