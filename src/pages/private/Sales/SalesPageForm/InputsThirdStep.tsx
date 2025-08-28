@@ -65,20 +65,13 @@ const InputsThirdStep = ({ form, companyId, isPrivateSale = false }: InputsThird
               </Form.Item>
             </Grid>
 
-            <Grid size={{ xs: 12, sm: 6, md: isPrivateSale ? 4 : 3 }}>
+            <Grid size={{ xs: 12, sm: 6, md: isPrivateSale ? 6 : 3 }}>
               <Form.Item name="montoVenta" rules={[requiredField]}>
                 <InputAntd label="Monto de venta" type="number" />
               </Form.Item>
             </Grid>
 
-            {/* OCF solo para ventas privadas en la primera fila */}
-            {isPrivateSale && (
-              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <Form.Item name="codigoOcf">
-                  <InputAntd label="OCF" />
-                </Form.Item>
-              </Grid>
-            )}
+            {/* OCF oculto para ventas privadas */}
           </Grid>
 
           {/* Segunda fila: Datos SIAF - Solo mostrar si NO es venta privada */}
@@ -111,28 +104,30 @@ const InputsThirdStep = ({ form, companyId, isPrivateSale = false }: InputsThird
             </Grid>
           )}
 
-          {/* Tercera fila: Documentos */}
-          <Grid container columnSpacing={2} rowSpacing={2} sx={{ mt: 1 }}>
-            <Grid size={{ xs: 12, sm: 6, md: 6 }}>
-              <Form.Item name="ordenCompraElectronica">
-                <InputFile
-                  label="Orden de Compra Electrónica (OCE)"
-                  accept="pdf"
-                  maxSizeMB={10}
-                />
-              </Form.Item>
-            </Grid>
+          {/* Tercera fila: Documentos - Solo para ventas al estado */}
+          {!isPrivateSale && (
+            <Grid container columnSpacing={2} rowSpacing={2} sx={{ mt: 1 }}>
+              <Grid size={{ xs: 12, sm: 6, md: 6 }}>
+                <Form.Item name="ordenCompraElectronica">
+                  <InputFile
+                    label="Orden de Compra Electrónica (OCE)"
+                    accept="pdf"
+                    maxSizeMB={10}
+                  />
+                </Form.Item>
+              </Grid>
 
-            <Grid size={{ xs: 12, sm: 6, md: 6 }}>
-              <Form.Item name="ordenCompraFisica">
-                <InputFile
-                  label="Orden de Compra Física (OCF)"
-                  accept="pdf"
-                  maxSizeMB={10}
-                />
-              </Form.Item>
+              <Grid size={{ xs: 12, sm: 6, md: 6 }}>
+                <Form.Item name="ordenCompraFisica">
+                  <InputFile
+                    label="Orden de Compra Física (OCF)"
+                    accept="pdf"
+                    maxSizeMB={10}
+                  />
+                </Form.Item>
+              </Grid>
             </Grid>
-          </Grid>
+          )}
         </Box>
       </StepItemContent>
     </Fragment>
