@@ -6,7 +6,6 @@ import { StepItemContent } from './smallcomponents';
 import SelectGeneric from '@/components/selects/SelectGeneric';
 import DatePickerAntd from '@/components/DatePickerAnt';
 import SimpleFileUpload from '@/components/SimpleFileUpload';
-import InputFile from '@/components/InputFile';
 import PaymentsList from '@/components/PaymentsList';
 
 export const requiredField = { required: false, message: 'Campo requerido' };
@@ -24,7 +23,8 @@ const InputsFirstStep = ({
   notaPago = '',
   onPaymentsChange,
   onTipoPagoChange,
-  onNotaPagoChange
+  onNotaPagoChange,
+  isPrivateSale = false
 }: {
   form: FormInstance;
   payments?: any[];
@@ -33,7 +33,11 @@ const InputsFirstStep = ({
   onPaymentsChange?: (payments: any[]) => void;
   onTipoPagoChange?: (tipoPago: string) => void;
   onNotaPagoChange?: (notaPago: string) => void;
+  isPrivateSale?: boolean;
 }) => {
+  // Reglas condicionales: si es venta privada, ningún campo es obligatorio
+  const conditionalRules = isPrivateSale ? [] : [requiredField];
+
   return (
     <Stack direction="column" spacing={2}>
       <Form.Item name="clientePrivate" noStyle />
@@ -49,12 +53,12 @@ const InputsFirstStep = ({
           <Grid container columnSpacing={2} rowSpacing={2}>
             {/* Fila única: Estado de Factura, Fecha Factura y Documento PDF */}
             <Grid size={{ xs: 12, md: 4 }}>
-              <Form.Item name="facturaStatus" rules={[requiredField]}>
+              <Form.Item name="facturaStatus" rules={conditionalRules}>
                 <SelectGeneric label="Estado de Factura" options={facturaStatusOptions} />
               </Form.Item>
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
-              <Form.Item name="documentoFactura" rules={[requiredField]}>
+              <Form.Item name="documentoFactura" rules={conditionalRules}>
                 <SimpleFileUpload
                   label="Documento de Factura"
                   onChange={(file) => form.setFieldValue('documentoFactura', file)}
@@ -63,7 +67,7 @@ const InputsFirstStep = ({
               </Form.Item>
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
-              <Form.Item name="dateFactura" rules={[requiredField]}>
+              <Form.Item name="dateFactura" rules={conditionalRules}>
                 <DatePickerAntd label="Fecha factura" />
               </Form.Item>
             </Grid>
@@ -87,9 +91,6 @@ const InputsFirstStep = ({
               onPaymentsChange={onPaymentsChange}
               onTipoPagoChange={onTipoPagoChange}
               onNotaPagoChange={onNotaPagoChange}
-              // Aquí agregamos la prop para el documento de cotización
-              documentoCotizacion={getFieldValue('documentoCotizacion')}
-              onDocumentoCotizacionChange={(file) => form.setFieldValue('documentoCotizacion', file)}
             />
           );
         }}

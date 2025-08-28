@@ -29,6 +29,9 @@ interface InputsSecondStepProps {
 const InputsSecondStep = ({ form, isEditing = false, currentSale, isPrivateSale = false }: InputsSecondStepProps) => {
   const [openClients, setOpenClients] = useState(false);
 
+  // Reglas condicionales: si es venta privada, ningún campo es obligatorio
+  const conditionalRules = isPrivateSale ? [] : [requiredField];
+
   // Footer con CUE - siempre visible para ventas directas y privadas
   const renderFooterContent = () => {
     return (
@@ -128,10 +131,10 @@ const InputsSecondStep = ({ form, isEditing = false, currentSale, isPrivateSale 
 
             {/* Campos específicos para ventas privadas */}
             {isPrivateSale && (
-              <Grid container columnSpacing={2} rowSpacing={2} sx={{ mb: 2 }}>
+              <Grid container columnSpacing={2} rowSpacing={2}>
                 {/* Tipo de entrega */}
                 <Grid size={{ xs: 12, sm: 6 }}>
-                  <Form.Item name="tipoEntrega" rules={[requiredField]}>
+                  <Form.Item name="tipoEntrega" rules={conditionalRules}>
                     <SelectGeneric
                       label="Tipo de entrega"
                       options={tipoEntregaOptions}
@@ -146,13 +149,13 @@ const InputsSecondStep = ({ form, isEditing = false, currentSale, isPrivateSale 
                       const tipoEntrega = getFieldValue('tipoEntrega');
                       if (tipoEntrega === 'ENTREGA_DOMICILIO') {
                         return (
-                          <Form.Item name="destinoEntidad" rules={[requiredField]}>
+                          <Form.Item name="destinoEntidad" rules={conditionalRules}>
                             <InputAntd label="Nombre de la entidad" />
                           </Form.Item>
                         );
                       } else if (tipoEntrega === 'ENTREGA_AGENCIA') {
                         return (
-                          <Form.Item name="nombreAgencia" rules={[requiredField]}>
+                          <Form.Item name="nombreAgencia" rules={conditionalRules}>
                             <InputAntd label="Nombre de la agencia" />
                           </Form.Item>
                         );
@@ -169,7 +172,7 @@ const InputsSecondStep = ({ form, isEditing = false, currentSale, isPrivateSale 
                     if (tipoEntrega === 'ENTREGA_AGENCIA') {
                       return (
                         <Grid size={12}>
-                          <Form.Item name="destinoFinal" rules={[requiredField]}>
+                          <Form.Item name="destinoFinal" rules={conditionalRules}>
                             <InputAntd label="Destino final" />
                           </Form.Item>
                         </Grid>
@@ -185,29 +188,29 @@ const InputsSecondStep = ({ form, isEditing = false, currentSale, isPrivateSale 
             <Grid container columnSpacing={2} rowSpacing={2}>
               {/* Primera fila - Dirección completa */}
               <Grid size={12}>
-                <Form.Item name="direccionEntrega" rules={[requiredField]}>
+                <Form.Item name="direccionEntrega" rules={conditionalRules}>
                   <InputAntd label="Dirección" />
                 </Form.Item>
               </Grid>            {/* Segunda fila - Ubicación geográfica con texto libre para AI */}
               <Grid size={{ xs: 12, sm: 4 }}>
-                <Form.Item name="regionEntrega" rules={[requiredField]}>
+                <Form.Item name="regionEntrega" rules={conditionalRules}>
                   <InputAntd label="Región" />
                 </Form.Item>
               </Grid>
 
               <Grid size={{ xs: 12, sm: 4 }}>
-                <Form.Item name="provinciaEntrega" rules={[requiredField]}>
+                <Form.Item name="provinciaEntrega" rules={conditionalRules}>
                   <InputAntd label="Provincia" />
                 </Form.Item>
               </Grid>
 
               <Grid size={{ xs: 12, sm: 4 }}>
-                <Form.Item name="distritoEntrega" rules={[requiredField]}>
+                <Form.Item name="distritoEntrega" rules={conditionalRules}>
                   <InputAntd label="Distrito" />
                 </Form.Item>
               </Grid>{/* Tercera fila - Referencia */}
               <Grid size={12}>
-                <Form.Item name="referenciaEntrega" rules={[requiredField]}>
+                <Form.Item name="referenciaEntrega" rules={conditionalRules}>
                   <InputAntd label="Referencia" />
                 </Form.Item>
               </Grid>

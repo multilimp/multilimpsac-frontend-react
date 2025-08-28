@@ -8,9 +8,13 @@ import { Person } from '@mui/icons-material';
 
 interface InputsFourthStepProps {
   form: FormInstance;
+  isPrivateSale?: boolean;
 }
 
-const InputsFourthStep = ({ form }: InputsFourthStepProps) => {
+const InputsFourthStep = ({ form, isPrivateSale = false }: InputsFourthStepProps) => {
+  // Reglas condicionales: si es venta privada, ningún campo es obligatorio
+  const conditionalRules = isPrivateSale ? [] : [requiredField];
+
   return (
     <StepItemContent>
       <Box
@@ -29,7 +33,7 @@ const InputsFourthStep = ({ form }: InputsFourthStepProps) => {
         <Grid container spacing={3}>
           <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <Form.Item name="cargoContactoComplete" noStyle />
-            <Form.Item name="cargoContacto" rules={[requiredField]}>
+            <Form.Item name="cargoContacto" rules={conditionalRules}>
               <Form.Item noStyle shouldUpdate>
                 {({ getFieldValue }) => {
                   const clienteEstado = getFieldValue('clienteEstado');

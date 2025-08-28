@@ -16,7 +16,10 @@ const generateEmptyProductRecord = () => ({
   cantidad: '',
 });
 
-const InputsFifthStep = () => {
+const InputsFifthStep = ({ isPrivateSale = false }: { isPrivateSale?: boolean }) => {
+  // Reglas condicionales: si es venta privada, ningún campo es obligatorio
+  const conditionalRules = isPrivateSale ? [] : [requiredField];
+
   return (
     <StepItemContent>
       <Box
@@ -56,7 +59,7 @@ const InputsFifthStep = () => {
                       borderRadius: 8,
                       border: '1px solid #d9d9d9',
                       background: '#fafafa',
-                      padding: '16px',
+                      padding: '4px',
                     }}
                   >
                     <Row gutter={[16, 16]} align="middle">
@@ -68,10 +71,10 @@ const InputsFifthStep = () => {
                             Código
                           </Text>
                         </div>
-                        <Form.Item name={[field.name, 'codigo']} rules={[requiredField]} style={{ marginBottom: 0 }}>
+                        <Form.Item name={[field.name, 'codigo']} rules={conditionalRules} style={{ marginBottom: 0 }}>
                           <InputAntd
                             placeholder="Código del producto"
-                            size="middle"
+                            size="large"
                           />
                         </Form.Item>
                       </Col>
@@ -84,11 +87,11 @@ const InputsFifthStep = () => {
                             Descripción
                           </Text>
                         </div>
-                        <Form.Item name={[field.name, 'descripcion']} rules={[requiredField]} style={{ marginBottom: 0 }}>
+                        <Form.Item name={[field.name, 'descripcion']} rules={conditionalRules} style={{ marginBottom: 0 }}>
                           <InputAntd
                             placeholder="Descripción detallada del producto"
                             rows={2}
-                            size="middle"
+                            size="large"
                           />
                         </Form.Item>
                       </Col>
@@ -101,10 +104,10 @@ const InputsFifthStep = () => {
                             Marca
                           </Text>
                         </div>
-                        <Form.Item name={[field.name, 'marca']} rules={[requiredField]} style={{ marginBottom: 0 }}>
+                        <Form.Item name={[field.name, 'marca']} rules={conditionalRules} style={{ marginBottom: 0 }}>
                           <InputAntd
                             placeholder="Marca"
-                            size="middle"
+                            size="large"
                           />
                         </Form.Item>
                       </Col>
@@ -117,11 +120,11 @@ const InputsFifthStep = () => {
                             Cantidad
                           </Text>
                         </div>
-                        <Form.Item name={[field.name, 'cantidad']} rules={[requiredField]} style={{ marginBottom: 0 }}>
+                        <Form.Item name={[field.name, 'cantidad']} rules={conditionalRules} style={{ marginBottom: 0 }}>
                           <InputAntd
                             type="number"
                             placeholder="0"
-                            size="middle"
+                            size="large"
                           />
                         </Form.Item>
                       </Col>

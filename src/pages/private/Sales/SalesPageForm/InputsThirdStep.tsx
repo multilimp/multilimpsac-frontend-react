@@ -7,6 +7,7 @@ import { requiredField } from './InputsFirstStep';
 import DatePickerAntd from '@/components/DatePickerAnt';
 import InputAntd from '@/components/InputAntd';
 import InputFile from '@/components/InputFile';
+import SimpleFileUpload from '@/components/SimpleFileUpload';
 import SelectCatalogs from '@/components/selects/SelectCatalogs';
 import { Info } from '@mui/icons-material';
 
@@ -19,7 +20,8 @@ interface InputsThirdStepProps {
 const etapaSIAFOptions = ['COM', 'DEV', 'PAG', 'SSIAF', 'RES', 'GIR', 'GIR-F', 'GIR-V', 'GIR-A', 'GIR-R'].map((value) => ({ label: value, value }));
 
 const InputsThirdStep = ({ form, companyId, isPrivateSale = false }: InputsThirdStepProps) => {
-  // Las reglas de validación para campos SIAF dependen del tipo de venta
+  // Reglas condicionales: si es venta privada, ningún campo es obligatorio
+  const conditionalRules = isPrivateSale ? [] : [requiredField];
   const siafRules = isPrivateSale ? [] : [requiredField];
 
   return (
@@ -39,37 +41,56 @@ const InputsThirdStep = ({ form, companyId, isPrivateSale = false }: InputsThird
                   <Form.Item name="catalogoComplete" noStyle />
                   <Form.Item shouldUpdate noStyle>
                     {({ setFieldsValue }) => (
-                      <Form.Item name="catalogo" rules={[requiredField]}>
-                        <SelectCatalogs
-                          companyId={companyId}
-                          label="Catálogo"
-                          onChange={(value, record: any) => setFieldsValue({ catalogo: value, catalogoComplete: record?.optiondata })}
-                        />
+                      <Form.Item name="catalogo" rules={conditionalRules}>
+                        <SelectCatalogs companyId={companyId} label="Catálogo" />
                       </Form.Item>
                     )}
                   </Form.Item>
                 </Grid>
 
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                  <Form.Item name="fechaFormalizacion" rules={[requiredField]}>
+                  <Form.Item name="fechaFormalizacion" rules={conditionalRules}>
                     <DatePickerAntd label="Fecha formalización" />
                   </Form.Item>
                 </Grid>
               </>
             )}
 
-            {/* Campos principales - fecha máxima, monto y OCF alineados */}
-            <Grid size={{ xs: 12, sm: 6, md: isPrivateSale ? 4 : 3 }}>
-              <Form.Item name="fechaMaxEntrega" rules={[requiredField]}>
+            {/* Campos principales - fecha máxima, monto y campos de cotización */}
+            <Grid size={{ xs: 12, sm: 6, md: isPrivateSale ? 3 : 3 }}>
+              <Form.Item name="fechaMaxEntrega" rules={conditionalRules}>
                 <DatePickerAntd label="Fecha máxima de entrega" />
               </Form.Item>
             </Grid>
 
-            <Grid size={{ xs: 12, sm: 6, md: isPrivateSale ? 6 : 3 }}>
-              <Form.Item name="montoVenta" rules={[requiredField]}>
+            <Grid size={{ xs: 12, sm: 6, md: isPrivateSale ? 3 : 3 }}>
+              <Form.Item name="montoVenta" rules={conditionalRules}>
                 <InputAntd label="Monto de venta" type="number" />
               </Form.Item>
             </Grid>
+
+            {/* Campos de cotización en la misma fila - solo para ventas privadas */}
+            {isPrivateSale && (
+              <>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <Form.Item name="cotizacion">
+                    <InputAntd label="Cotización" />
+                  </Form.Item>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <Form.Item noStyle shouldUpdate>
+                    {({ getFieldValue, setFieldValue }) => (
+                      <SimpleFileUpload
+                        label="Doc. Cotización"
+                        accept="application/pdf"
+                        value={getFieldValue('documentoCotizacion')}
+                        onChange={(file) => setFieldValue('documentoCotizacion', file)}
+                      />
+                    )}
+                  </Form.Item>
+                </Grid>
+              </>
+            )}
 
             {/* OCF oculto para ventas privadas */}
           </Grid>

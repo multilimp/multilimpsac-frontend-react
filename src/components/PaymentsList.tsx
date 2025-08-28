@@ -32,9 +32,6 @@ interface PaymentsListProps {
   onPaymentsChange?: (payments: PaymentItem[]) => void;
   onTipoPagoChange?: (tipoPago: string) => void;
   onNotaPagoChange?: (notaPago: string) => void;
-  // Nuevas props para el documento de cotización
-  documentoCotizacion?: any;
-  onDocumentoCotizacionChange?: (file: any) => void;
 }
 
 // Opciones del enum TipoPago del backend
@@ -65,8 +62,6 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
   onPaymentsChange,
   onTipoPagoChange,
   onNotaPagoChange,
-  documentoCotizacion,
-  onDocumentoCotizacionChange,
 }) => {
   const isReadonly = mode === 'readonly';
 
@@ -216,17 +211,6 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
           )}
         </Stack>
         <Stack direction="row" alignItems="center" spacing={2}>
-          {/* Documento de Cotización */}
-          {onDocumentoCotizacionChange && (
-            <SimpleFileUpload
-              label="Documento de Cotización"
-              value={documentoCotizacion}
-              onChange={onDocumentoCotizacionChange}
-              accept="application/pdf"
-              editable={!isReadonly}
-            />
-          )}
-
           {/* Tipo de Pago */}
           {renderTipoPago()}
         </Stack>
@@ -240,8 +224,7 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
             style={{
               borderRadius: 8,
               border: '1px solid #d9d9d9',
-              background: '#fafafa',
-              padding: '16px'
+              background: '#fafafa'
             }}
           >
             <Row gutter={[16, 16]} align="middle">
@@ -262,7 +245,7 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
                 ) : (
                   <DatePickerAntd
                     placeholder="Seleccionar fecha"
-                    size="middle"
+                    size="small"
                     value={payment.date}
                     onChange={(date) => handleUpdatePayment(index, 'date', date)}
                     style={{ width: '100%' }}
@@ -281,6 +264,7 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
                 <Input
                   placeholder="Nombre del banco"
                   value={payment.bank}
+                  size='large'
                   onChange={(e) => handleUpdatePayment(index, 'bank', e.target.value)}
                   readOnly={isReadonly}
                   style={{ backgroundColor: isReadonly ? '#f5f5f5' : '#fff' }}
@@ -298,6 +282,7 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
                 <Input
                   placeholder="Descripción del pago"
                   value={payment.description}
+                  size='large'
                   onChange={(e) => handleUpdatePayment(index, 'description', e.target.value)}
                   readOnly={isReadonly}
                   style={{ backgroundColor: isReadonly ? '#f5f5f5' : '#fff' }}
@@ -351,6 +336,7 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
                   placeholder="0.00"
                   type="number"
                   prefix="S/"
+                  size='large'
                   value={payment.amount}
                   onChange={(e) => handleUpdatePayment(index, 'amount', e.target.value)}
                   readOnly={isReadonly}

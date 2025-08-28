@@ -416,6 +416,7 @@ const SalesPageForm = () => {
                 onPaymentsChange={setPayments}
                 onTipoPagoChange={setTipoPago}
                 onNotaPagoChange={setNotaPago}
+                isPrivateSale={saleInputValues.tipoVenta === 'privada'}
               />
             </Collapse>
 
@@ -425,9 +426,14 @@ const SalesPageForm = () => {
               isPrivateSale={saleInputValues.tipoVenta === 'privada'}
             />
 
-            <InputsFourthStep form={form} />
+            <InputsFourthStep
+              form={form}
+              isPrivateSale={saleInputValues.tipoVenta === 'privada'}
+            />
 
-            <InputsFifthStep />
+            <InputsFifthStep
+              isPrivateSale={saleInputValues.tipoVenta === 'privada'}
+            />
 
             {/* Estado de venta y botón de submit por separado */}
             <Card
