@@ -14,7 +14,7 @@ const PublicLayout = Loadable(lazy(() => import('@/layouts/PublicLayout')));
 // PUBLIC ROUTES ------------------------------------------------------------------------
 const Login = Loadable(lazy(() => import('@/pages/public/Login')));
 const Home = Loadable(lazy(() => import('@/pages/public/Home')));
-const RecoveryPassword = Loadable(lazy(() => import('@/pages/public/RecoveryPassword')));
+const SoporteAcceso = Loadable(lazy(() => import('@/pages/public/SoporteAcceso')));
 // PRIVATE ROUTES ----------------------------------------------------------------------
 const Dashboard = Loadable(lazy(() => import('@/pages/private/Dashboard')));
 const Profile = Loadable(lazy(() => import('@/pages/private/Profile')));
@@ -55,8 +55,8 @@ const routes: Array<PropsRoutes> = [
         element: Login,
       },
       {
-        path: 'recovery-password',
-        element: RecoveryPassword,
+        path: 'soporte-acceso',
+        element: SoporteAcceso,
         roles: [],
       },
       {

@@ -39,8 +39,8 @@ const LoginForm = () => {
   };
 
   return (
-    <Box 
-      sx={{ 
+    <Box
+      sx={{
         width: '100%',
         maxWidth: '380px',
         mx: 'auto',
@@ -50,9 +50,9 @@ const LoginForm = () => {
     >
       {/* Header ultra minimalista */}
       <Stack spacing={0.5} sx={{ textAlign: 'center', mb: 6 }}>
-        <Typography 
-          variant="h3" 
-          sx={{ 
+        <Typography
+          variant="h3"
+          sx={{
             fontWeight: 300,
             fontSize: '2rem',
             color: heroUIColors.neutral[800],
@@ -61,9 +61,9 @@ const LoginForm = () => {
         >
           Iniciar Sesión
         </Typography>
-        <Typography 
-          variant="body2" 
-          sx={{ 
+        <Typography
+          variant="body2"
+          sx={{
             color: heroUIColors.neutral[500],
             fontWeight: 400,
             fontSize: '0.875rem',
@@ -84,11 +84,11 @@ const LoginForm = () => {
               { pattern: EMAIL_PATTERN, message: 'Ingrese un email válido' },
             ]}
           >
-            <HeroInput 
+            <HeroInput
               variant="soft"
               heroSize="large"
               placeholder="tu.email@multilimp.com"
-              autoComplete="username" 
+              autoComplete="username"
               disabled={loading}
               style={{
                 fontSize: '15px',
@@ -102,8 +102,8 @@ const LoginForm = () => {
           </Form.Item>
 
           {/* Campo Contraseña - Sin label visible */}
-          <Form.Item 
-            name="password" 
+          <Form.Item
+            name="password"
             rules={[{ required: true, message: 'La contraseña es requerida' }]}
           >
             <HeroInput
@@ -113,9 +113,9 @@ const LoginForm = () => {
               autoComplete="current-password"
               type={show ? 'text' : 'password'}
               suffix={
-                <IconButton 
-                  size="small" 
-                  onClick={() => setShow(!show)} 
+                <IconButton
+                  size="small"
+                  onClick={() => setShow(!show)}
                   disabled={loading}
                   sx={{
                     color: heroUIColors.neutral[400],
@@ -158,18 +158,18 @@ const LoginForm = () => {
               border: 'none',
               boxShadow: 'none',
               transition: 'all 0.2s ease',
-              
+
               '&:hover': {
                 backgroundColor: heroUIColors.neutral[800],
                 boxShadow: 'none',
                 transform: 'none',
               },
-              
+
               '&:active': {
                 backgroundColor: heroUIColors.neutral[900],
                 transform: 'scale(0.98)',
               },
-              
+
               '&:disabled': {
                 backgroundColor: heroUIColors.neutral[300],
                 color: heroUIColors.neutral[500],
@@ -182,11 +182,11 @@ const LoginForm = () => {
         </Stack>
       </Form>
 
-      {/* Link de recuperación ultra sutil */}
+      {/* Información de contacto para soporte */}
       <Stack alignItems="center" sx={{ mt: 4 }}>
-        <Button 
-          component={Link} 
-          to="/recovery-password" 
+        <Button
+          component={Link}
+          to="/soporte-acceso"
           variant="text"
           size="small"
           sx={{
@@ -196,7 +196,7 @@ const LoginForm = () => {
             fontSize: '0.875rem',
             textDecoration: 'none',
             padding: '4px 8px',
-            
+
             '&:hover': {
               color: heroUIColors.neutral[700],
               backgroundColor: 'transparent',
@@ -204,7 +204,7 @@ const LoginForm = () => {
             }
           }}
         >
-          ¿Olvidaste tu contraseña?
+          ¿Problemas para acceder?
         </Button>
       </Stack>
     </Box>
