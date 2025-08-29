@@ -11,6 +11,7 @@ import ApartmentIcon from '@mui/icons-material/Apartment';
 import RequestQuoteIcon from '@mui/icons-material/RequestQuote';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import InventoryIcon from '@mui/icons-material/Inventory';
+import WarehouseIcon from '@mui/icons-material/Warehouse';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
@@ -62,6 +63,12 @@ const sidebarConfig: SidebarConfigProps[] = [
         icon: LocalShippingIcon,
         roles: rolesArr,
       },
+      {
+        name: 'Almacén',
+        path: '/warehouse',
+        icon: WarehouseIcon,
+        roles: rolesArr,
+      },
     ],
   },
   {
@@ -91,7 +98,7 @@ const sidebarConfig: SidebarConfigProps[] = [
         path: '/tracking',
         icon: TimelineIcon,
         roles: rolesArr,
-      },
+      }
     ],
   },
   {
