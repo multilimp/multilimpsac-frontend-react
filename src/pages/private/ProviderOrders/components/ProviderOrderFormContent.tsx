@@ -36,6 +36,7 @@ import ProviderSelectorModal from '../../Providers/components/ProviderSelectorMo
 import { ProviderOrderProps } from '@/services/providerOrders/providerOrders';
 import TransportsSection, { getEmptyTransformRecord } from './TransportsSection';
 import { usePayments } from '@/hooks/usePayments';
+import InputNumberAntd from '@/components/InputNumberAntd';
 
 interface ProviderOrderFormContentProps {
   sale: SaleProps;
@@ -48,8 +49,9 @@ type ProductRecord = {
   codigo: string;
   descripcion: string;
   uMedida: string;
-  cantidad: string;
-  // ✅ CAMPOS OCULTOS REMOVIDOS: cAlmacen y cTotal
+  cantidadAlmacen: string;
+  cantidadCliente: string;
+  cantidad: string; // Campo calculado: cantidadAlmacen + cantidadCliente
   precioUnitario: string;
   total: string;
 };
@@ -66,16 +68,34 @@ type PagoRecord = {
 const getEmptyProductRecord = (): ProductRecord => ({
   codigo: '',
   descripcion: '',
-  uMedida: '',
-  cantidad: '',
-  // ✅ CAMPOS OCULTOS REMOVIDOS
+  uMedida: 'UND',
+  cantidadAlmacen: '0',
+  cantidadCliente: '0',
+  cantidad: '0', // Será calculado automáticamente
   precioUnitario: '',
   total: '',
 });
 
 const requiredField = { required: true, message: 'Requerido' };
 
-const ProviderOrderFormContent = ({ sale, orderData, isEditing = false, fromTreasury = false }: ProviderOrderFormContentProps) => {
+// Función para calcular automáticamente cantidad total y total del producto
+const calculateProductTotals = (form: any, fieldName: number) => {
+  setTimeout(() => {
+    const productos = form.getFieldValue('productos') || [];
+    const producto = productos[fieldName];
+    if (producto) {
+      const cantidadAlmacen = Number(producto.cantidadAlmacen) || 0;
+      const cantidadCliente = Number(producto.cantidadCliente) || 0;
+      const cantidadTotal = cantidadAlmacen + cantidadCliente;
+      const precioUnitario = Number(producto.precioUnitario) || 0;
+      const total = Math.round((cantidadTotal * precioUnitario) * 100) / 100; // Redondear a 2 decimales
+
+      // Actualizar cantidad total y total del producto
+      form.setFieldValue(['productos', fieldName, 'cantidad'], cantidadTotal);
+      form.setFieldValue(['productos', fieldName, 'total'], total);
+    }
+  }, 100);
+}; const ProviderOrderFormContent = ({ sale, orderData, isEditing = false, fromTreasury = false }: ProviderOrderFormContentProps) => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -108,16 +128,23 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false, fromTrea
 
   useEffect(() => {
     if (isEditing && orderData) {
-      // Preparar los productos correctamente para el formulario (campos simplificados)
-      const productosFormatted = orderData.productos?.map(producto => ({
-        codigo: producto.codigo || '',
-        descripcion: producto.descripcion || '',
-        uMedida: producto.unidadMedida || '',
-        cantidad: String(producto.cantidad || 0),
-        // ✅ NO incluir cAlmacen y cTotal en el formulario (campos ocultos)
-        precioUnitario: String(producto.precioUnitario || 0),
-        total: String(producto.total || 0),
-      })) || [getEmptyProductRecord()];
+      // Preparar los productos correctamente para el formulario
+      const productosFormatted = orderData.productos?.map(producto => {
+        const cantidadAlmacen = producto.cantidadAlmacen || 0;
+        const cantidadCliente = (producto as any).cantidadCliente || 0;
+        const cantidadTotal = cantidadAlmacen + cantidadCliente;
+
+        return {
+          codigo: producto.codigo || '',
+          descripcion: producto.descripcion || '',
+          uMedida: producto.unidadMedida || '',
+          cantidadAlmacen: String(cantidadAlmacen),
+          cantidadCliente: String(cantidadCliente),
+          cantidad: String(cantidadTotal),
+          precioUnitario: String(producto.precioUnitario || 0),
+          total: String(producto.total || 0),
+        };
+      }) || [getEmptyProductRecord()];
 
       console.log('🔍 Cargando productos en edición:', {
         originalProductos: orderData.productos,
@@ -611,17 +638,20 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false, fromTrea
               sx={{ pb: 1 }}
             />
             <CardContent>
-              <TableContainer sx={{ maxHeight: 400 }}>
-                <Table stickyHeader >
+              <TableContainer
+              >
+                <Table stickyHeader size="medium" cellPadding={0}>
                   <TableHead>
                     <TableRow>
-                      <TableCell sx={{ fontWeight: 600, fontSize: 12 }}>Código</TableCell>
-                      <TableCell sx={{ fontWeight: 600, fontSize: 12 }}>Descripción</TableCell>
-                      <TableCell sx={{ fontWeight: 600, fontSize: 12 }}>U. Medida</TableCell>
-                      <TableCell sx={{ fontWeight: 600, fontSize: 12 }}>Cantidad</TableCell>
-                      <TableCell sx={{ fontWeight: 600, fontSize: 12 }}>Precio Unit.</TableCell>
-                      <TableCell sx={{ fontWeight: 600, fontSize: 12 }}>Total</TableCell>
-                      <TableCell sx={{ fontWeight: 600, fontSize: 12, width: 80 }}>Acciones</TableCell>
+                      <TableCell sx={{ fontWeight: 600, fontSize: 12, width: 120 }}>Código</TableCell>
+                      <TableCell sx={{ fontWeight: 600, fontSize: 12, width: 400 }}>Descripción</TableCell>
+                      <TableCell sx={{ fontWeight: 600, fontSize: 12, width: 80 }}>U. Medida</TableCell>
+                      <TableCell sx={{ fontWeight: 600, fontSize: 12, width: 100 }}>Cant. Almacén</TableCell>
+                      <TableCell sx={{ fontWeight: 600, fontSize: 12, width: 100 }}>Cant. Cliente</TableCell>
+                      <TableCell sx={{ fontWeight: 600, fontSize: 12, width: 100 }}>Cantidad</TableCell>
+                      <TableCell sx={{ fontWeight: 600, fontSize: 12, width: 150 }}>Precio Unit.</TableCell>
+                      <TableCell sx={{ fontWeight: 600, fontSize: 12, width: 150 }}>Total</TableCell>
+                      <TableCell sx={{ fontWeight: 600, fontSize: 12, width: 20 }}></TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -642,8 +672,8 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false, fromTrea
                       {(fields, { add, remove }) => (
                         <>
                           {fields.map((field) => (
-                            <TableRow key={field.name} sx={{ '&:hover': { bgcolor: 'rgba(25, 118, 210, 0.04)' } }}>
-                              <TableCell sx={{ p: 1 }}>
+                            <TableRow key={field.name}>
+                              <TableCell sx={{ p: 1, verticalAlign: 'middle' }}>
                                 <Form.Item
                                   name={[field.name, 'codigo']}
                                   rules={fromTreasury ? [] : [{ required: true, message: 'Requerido' }]}
@@ -651,130 +681,157 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false, fromTrea
                                 >
                                   <Input
                                     placeholder="Código"
-                                    size="small"
+                                    size='small'
                                     disabled={fromTreasury}
                                     style={{
                                       borderRadius: 4,
                                       border: '1px solid #d9d9d9',
+                                      height: '54px',
                                     }}
                                   />
                                 </Form.Item>
                               </TableCell>
-                              <TableCell sx={{ p: 1 }}>
+                              <TableCell sx={{ p: 1, verticalAlign: 'middle' }}>
                                 <Form.Item
                                   name={[field.name, 'descripcion']}
                                   rules={fromTreasury ? [] : [{ required: true, message: 'Requerido' }]}
                                   style={{ margin: 0 }}
                                 >
-                                  <Input
+                                  <Input.TextArea
                                     placeholder="Descripción"
-                                    size="small"
+                                    rows={2}
                                     disabled={fromTreasury}
                                     style={{
                                       borderRadius: 4,
                                       border: '1px solid #d9d9d9',
+                                      resize: 'none',
+                                      fontSize: '14px',
                                     }}
                                   />
                                 </Form.Item>
                               </TableCell>
-                              <TableCell sx={{ p: 1 }}>
+                              <TableCell sx={{ p: 1, verticalAlign: 'middle' }}>
                                 <Form.Item
                                   name={[field.name, 'uMedida']}
                                   rules={fromTreasury ? [] : [{ required: true, message: 'Requerido' }]}
                                   style={{ margin: 0 }}
+                                  initialValue="UND"
                                 >
-                                  <Input
+                                  <InputAntd
                                     placeholder="UND"
                                     size="small"
                                     disabled={fromTreasury}
                                     style={{
                                       borderRadius: 4,
                                       border: '1px solid #d9d9d9',
+                                      height: '54px',
                                     }}
                                   />
                                 </Form.Item>
                               </TableCell>
-                              <TableCell sx={{ p: 1 }}>
+                              <TableCell sx={{ p: 1, verticalAlign: 'middle' }}>
                                 <Form.Item
-                                  name={[field.name, 'cantidad']}
+                                  name={[field.name, 'cantidadAlmacen']}
                                   rules={fromTreasury ? [] : [{ required: true, message: 'Requerido' }]}
                                   style={{ margin: 0 }}
                                 >
-                                  <InputNumber
+                                  <InputNumberAntd
                                     placeholder="0"
-                                    size="small"
+                                    disabled={fromTreasury}
+                                    style={{
+                                      width: '100%',
+                                      borderRadius: 4,
+                                      textAlign: 'center',
+                                      textAlignLast: 'center',
+                                      height: '54px', // Altura fija para igualar al TextArea
+                                    }}
+                                    onChange={() => calculateProductTotals(form, field.name)}
+                                  />
+                                </Form.Item>
+                              </TableCell>
+                              <TableCell sx={{ p: 1, verticalAlign: 'middle' }}>
+                                <Form.Item
+                                  name={[field.name, 'cantidadCliente']}
+                                  rules={fromTreasury ? [] : [{ required: true, message: 'Requerido' }]}
+                                  style={{ margin: 0 }}
+                                >
+                                  <InputNumberAntd
+                                    placeholder="0"
+                                    size="large"
                                     min={0}
                                     disabled={fromTreasury}
                                     style={{
                                       width: '100%',
                                       borderRadius: 4,
+                                      textAlign: 'center',
+                                      textAlignLast: 'center',
+                                      height: '54px', // Altura fija para igualar al TextArea
                                     }}
-                                    onChange={() => {
-                                      // Calcular total automáticamente
-                                      setTimeout(() => {
-                                        const productos = form.getFieldValue('productos') || [];
-                                        const producto = productos[field.name];
-                                        if (producto) {
-                                          const cantidad = Number(producto.cantidad) || 0;
-                                          const precioUnitario = Number(producto.precioUnitario) || 0;
-                                          const total = cantidad * precioUnitario;
-                                          form.setFieldValue(['productos', field.name, 'total'], total);
-                                        }
-                                      }, 100);
+                                    onChange={() => calculateProductTotals(form, field.name)}
+                                  />
+                                </Form.Item>
+                              </TableCell>
+                              <TableCell sx={{ p: 1, verticalAlign: 'middle' }}>
+                                <Form.Item
+                                  name={[field.name, 'cantidad']}
+                                  style={{ margin: 0 }}
+                                >
+                                  <InputNumberAntd
+                                    placeholder="0"
+                                    size="large"
+                                    disabled
+                                    style={{
+                                      width: '100%',
+                                      borderRadius: 4,
+                                      textAlign: 'center',
+                                      textAlignLast: 'center',
+                                      backgroundColor: '#f5f5f5',
+                                      height: '54px', // Altura fija para igualar al TextArea
                                     }}
                                   />
                                 </Form.Item>
                               </TableCell>
-                              <TableCell sx={{ p: 1 }}>
+                              <TableCell sx={{ p: 1, verticalAlign: 'middle' }}>
                                 <Form.Item
                                   name={[field.name, 'precioUnitario']}
                                   rules={fromTreasury ? [] : [{ required: true, message: 'Requerido' }]}
                                   style={{ margin: 0 }}
                                 >
-                                  <InputNumber
-                                    placeholder="0.00"
-                                    size="small"
-                                    min={0}
-                                    step={0.01}
+                                  <InputNumberAntd
+                                    placeholder="0.0000"
+                                    isCurrency
                                     disabled={fromTreasury}
                                     style={{
                                       width: '100%',
                                       borderRadius: 4,
+                                      textAlign: 'center',
+                                      textAlignLast: 'center',
+                                      height: '54px', // Altura fija para igualar al TextArea
                                     }}
-                                    onChange={() => {
-                                      // Calcular total automáticamente
-                                      setTimeout(() => {
-                                        const productos = form.getFieldValue('productos') || [];
-                                        const producto = productos[field.name];
-                                        if (producto) {
-                                          const cantidad = Number(producto.cantidad) || 0;
-                                          const precioUnitario = Number(producto.precioUnitario) || 0;
-                                          const total = cantidad * precioUnitario;
-                                          form.setFieldValue(['productos', field.name, 'total'], total);
-                                        }
-                                      }, 100);
-                                    }}
+                                    onChange={() => calculateProductTotals(form, field.name)}
                                   />
                                 </Form.Item>
                               </TableCell>
-                              <TableCell sx={{ p: 1 }}>
+                              <TableCell sx={{ p: 1, verticalAlign: 'middle' }}>
                                 <Form.Item
                                   name={[field.name, 'total']}
                                   style={{ margin: 0 }}
                                 >
-                                  <InputNumber
+                                  <InputNumberAntd
                                     placeholder="0.00"
-                                    size="small"
-                                    readOnly
+                                    isCurrency
                                     style={{
                                       width: '100%',
                                       borderRadius: 4,
+                                      textAlign: 'center',
+                                      textAlignLast: 'center',
                                       backgroundColor: '#f5f5f5',
+                                      height: '54px', // Altura fija para igualar al TextArea
                                     }}
                                   />
                                 </Form.Item>
                               </TableCell>
-                              <TableCell sx={{ p: 1 }}>
+                              <TableCell sx={{ p: 1, verticalAlign: 'middle', textAlign: 'center' }}>
                                 <IconButton
                                   size="small"
                                   color="error"
@@ -788,7 +845,7 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false, fromTrea
                             </TableRow>
                           ))}
                           <TableRow>
-                            <TableCell colSpan={5} sx={{ textAlign: 'right' }}>
+                            <TableCell colSpan={7} sx={{ textAlign: 'right' }}>
                               <Button
                                 onClick={() => add(getEmptyProductRecord())}
                                 startIcon={<Add />}
@@ -899,40 +956,34 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false, fromTrea
               sx={{ pb: 1 }}
             />
             <CardContent>
-              <Stack spacing={2}>
-                <Box>
-                  <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-                    Etiquetado
-                  </Typography>
-                  <Form.Item name="etiquetado">
-                    <Input.TextArea
-                      placeholder="Especificaciones de etiquetado..."
-                      rows={3}
-                      disabled={fromTreasury}
-                      style={{
-                        borderRadius: 4,
-                        border: '1px solid #d9d9d9',
-                      }}
-                    />
-                  </Form.Item>
-                </Box>
-                <Box>
-                  <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-                    Embalaje
-                  </Typography>
-                  <Form.Item name="embalaje">
-                    <Input.TextArea
-                      placeholder="Especificaciones de embalaje..."
-                      rows={3}
-                      disabled={fromTreasury}
-                      style={{
-                        borderRadius: 4,
-                        border: '1px solid #d9d9d9',
-                      }}
-                    />
-                  </Form.Item>
-                </Box>
-              </Stack>
+              <Grid container spacing={3}>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <Box>
+                    <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+                      Etiquetado
+                    </Typography>
+                    <Form.Item name="etiquetado">
+                      <InputAntd
+                        placeholder="Especificaciones de etiquetado..."
+                        disabled={fromTreasury}
+                      />
+                    </Form.Item>
+                  </Box>
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <Box>
+                    <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+                      Embalaje
+                    </Typography>
+                    <Form.Item name="embalaje">
+                      <InputAntd
+                        placeholder="Especificaciones de embalaje..."
+                        disabled={fromTreasury}
+                      />
+                    </Form.Item>
+                  </Box>
+                </Grid>
+              </Grid>
             </CardContent>
           </Card>
 

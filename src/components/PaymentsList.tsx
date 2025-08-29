@@ -1,11 +1,9 @@
 import { useMemo, useState, useEffect } from 'react';
-import { Button, Checkbox, Input, Select, Card, Space, Typography as AntTypography, Row, Col, Divider } from 'antd';
-import { Box, Grid, Stack, Typography } from '@mui/material';
+import { Button, Checkbox, Input, Select, Card, Typography as AntTypography, Row, Col } from 'antd';
+import { Box, Stack, Typography } from '@mui/material';
 import { DeleteOutlined, CreditCardOutlined, PaperClipOutlined, CalendarOutlined, BankOutlined, FileTextOutlined, DollarOutlined } from '@ant-design/icons';
-import { Delete, Payment, AttachFile, Event, AccountBalance, Description, MonetizationOn } from '@mui/icons-material';
 import DatePickerAntd from '@/components/DatePickerAnt';
 import SimpleFileUpload from '@/components/SimpleFileUpload';
-import InputFile from '@/components/InputFile';
 
 const { Title, Text } = AntTypography;
 
@@ -183,12 +181,12 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
               border: '1.5px solid #6c5ebf',
               fontSize: 14,
               color: '#222',
-              background: isReadonly ? '#f5f5f5' : '#fff',
+              background: '#fff', // Siempre fondo blanco para edición
               resize: 'vertical',
-              opacity: isReadonly ? 0.7 : 1,
+              opacity: 1, // Siempre opacidad completa
             }}
             placeholder="Escribe una nota privada para tesorería..."
-            disabled={isReadonly}
+            disabled={false} // Siempre habilitado para edición
           />
         </Col>
       </Row>
@@ -218,9 +216,9 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
 
       {/* INPUTS DE PAGOS */}
       <Stack spacing={2} sx={{ mb: 3 }}>
-        {localPayments.map((payment: PaymentItem, index: number) => (
+        {localPayments.length === 0 && isReadonly ? (
+          // Mostrar fila vacía en modo readonly cuando no hay pagos
           <Card
-            key={index}
             style={{
               borderRadius: 8,
               border: '1px solid #d9d9d9',
@@ -236,21 +234,11 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
                     Fecha
                   </Text>
                 </div>
-                {isReadonly ? (
-                  <Input
-                    value={payment.date ? payment.date.format('DD/MM/YYYY') : '-- / -- / ----'}
-                    readOnly
-                    style={{ backgroundColor: '#f5f5f5' }}
-                  />
-                ) : (
-                  <DatePickerAntd
-                    placeholder="Seleccionar fecha"
-                    size="small"
-                    value={payment.date}
-                    onChange={(date) => handleUpdatePayment(index, 'date', date)}
-                    style={{ width: '100%' }}
-                  />
-                )}
+                <Input
+                  value="-- / -- / ----"
+                  readOnly
+                  style={{ backgroundColor: '#f5f5f5' }}
+                />
               </Col>
 
               {/* Banco */}
@@ -262,12 +250,9 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
                   </Text>
                 </div>
                 <Input
-                  placeholder="Nombre del banco"
-                  value={payment.bank}
-                  size='large'
-                  onChange={(e) => handleUpdatePayment(index, 'bank', e.target.value)}
-                  readOnly={isReadonly}
-                  style={{ backgroundColor: isReadonly ? '#f5f5f5' : '#fff' }}
+                  value="---"
+                  readOnly
+                  style={{ backgroundColor: '#f5f5f5' }}
                 />
               </Col>
 
@@ -280,48 +265,10 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
                   </Text>
                 </div>
                 <Input
-                  placeholder="Descripción del pago"
-                  value={payment.description}
-                  size='large'
-                  onChange={(e) => handleUpdatePayment(index, 'description', e.target.value)}
-                  readOnly={isReadonly}
-                  style={{ backgroundColor: isReadonly ? '#f5f5f5' : '#fff' }}
+                  value="---"
+                  readOnly
+                  style={{ backgroundColor: '#f5f5f5' }}
                 />
-              </Col>
-
-              {/* Archivo */}
-              <Col span={3}>
-                <div style={{ marginBottom: 4 }}>
-                  <Text strong style={{ fontSize: 12, color: '#666' }}>
-                    <PaperClipOutlined style={{ marginRight: 4 }} />
-                    Archivo
-                  </Text>
-                </div>
-                {isReadonly ? (
-                  payment.file ? (
-                    <Button
-                      type="link"
-                      size="small"
-                      onClick={() => {
-                        if (typeof payment.file === 'string') {
-                          window.open(payment.file, '_blank');
-                        }
-                      }}
-                      style={{ padding: 0, height: 'auto' }}
-                    >
-                      Ver archivo
-                    </Button>
-                  ) : (
-                    <Text type="secondary">Sin archivo</Text>
-                  )
-                ) : (
-                  <SimpleFileUpload
-                    label=""
-                    accept="application/pdf"
-                    value={payment.file}
-                    onChange={(file) => handleUpdatePayment(index, 'file', file)}
-                  />
-                )}
               </Col>
 
               {/* Monto */}
@@ -333,48 +280,198 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
                   </Text>
                 </div>
                 <Input
-                  placeholder="0.00"
-                  type="number"
-                  prefix="S/"
-                  size='large'
-                  value={payment.amount}
-                  onChange={(e) => handleUpdatePayment(index, 'amount', e.target.value)}
-                  readOnly={isReadonly}
-                  style={{ backgroundColor: isReadonly ? '#f5f5f5' : '#fff' }}
+                  value="S/ 0.00"
+                  readOnly
+                  style={{ backgroundColor: '#f5f5f5' }}
                 />
               </Col>
 
-              {/* Status y Eliminar */}
+              {/* Archivo */}
               <Col span={3}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '100%' }}>
-                  <div>
-                    <div style={{ marginBottom: 4 }}>
-                      <Text strong style={{ fontSize: 12, color: '#666' }}>Estado</Text>
-                    </div>
-                    <Checkbox
-                      checked={payment.status}
-                      disabled={isReadonly}
-                      onChange={(e) => handleUpdatePayment(index, 'status', e.target.checked)}
-                    >
-                      Activo
-                    </Checkbox>
-                  </div>
+                <div style={{ marginBottom: 4 }}>
+                  <Text strong style={{ fontSize: 12, color: '#666' }}>
+                    <PaperClipOutlined style={{ marginRight: 4 }} />
+                    Archivo
+                  </Text>
+                </div>
+                <Text style={{ color: '#999', fontSize: 12 }}>Sin archivo</Text>
+              </Col>
 
-                  {!isReadonly && (
-                    <Button
-                      type="text"
-                      danger
-                      icon={<DeleteOutlined />}
-                      onClick={() => handleRemovePayment(index)}
-                      size="small"
-                      style={{ marginLeft: 8 }}
-                    />
-                  )}
+              {/* Estado */}
+              <Col span={3}>
+                <div>
+                  <div style={{ marginBottom: 4 }}>
+                    <Text strong style={{ fontSize: 12, color: '#666' }}>Estado</Text>
+                  </div>
+                  <Checkbox
+                    checked={false}
+                    disabled={true}
+                  >
+                    Activo
+                  </Checkbox>
                 </div>
               </Col>
             </Row>
           </Card>
-        ))}
+        ) : (
+          localPayments.map((payment: PaymentItem, index: number) => (
+            <Card
+              key={index}
+              style={{
+                borderRadius: 8,
+                border: '1px solid #d9d9d9',
+                background: '#fafafa'
+              }}
+            >
+              <Row gutter={[16, 16]} align="middle">
+                {/* Fecha */}
+                <Col span={4}>
+                  <div style={{ marginBottom: 4 }}>
+                    <Text strong style={{ fontSize: 12, color: '#666' }}>
+                      <CalendarOutlined style={{ marginRight: 4 }} />
+                      Fecha
+                    </Text>
+                  </div>
+                  {isReadonly ? (
+                    <Input
+                      value={payment.date ? payment.date.format('DD/MM/YYYY') : '-- / -- / ----'}
+                      readOnly
+                      style={{ backgroundColor: '#f5f5f5' }}
+                    />
+                  ) : (
+                    <DatePickerAntd
+                      placeholder="Seleccionar fecha"
+                      size="small"
+                      value={payment.date}
+                      onChange={(date) => handleUpdatePayment(index, 'date', date)}
+                      style={{ width: '100%' }}
+                    />
+                  )}
+                </Col>
+
+                {/* Banco */}
+                <Col span={4}>
+                  <div style={{ marginBottom: 4 }}>
+                    <Text strong style={{ fontSize: 12, color: '#666' }}>
+                      <BankOutlined style={{ marginRight: 4 }} />
+                      Banco
+                    </Text>
+                  </div>
+                  <Input
+                    placeholder="Nombre del banco"
+                    value={payment.bank}
+                    size='large'
+                    onChange={(e) => handleUpdatePayment(index, 'bank', e.target.value)}
+                    readOnly={isReadonly}
+                    style={{ backgroundColor: isReadonly ? '#f5f5f5' : '#fff' }}
+                  />
+                </Col>
+
+                {/* Descripción */}
+                <Col span={6}>
+                  <div style={{ marginBottom: 4 }}>
+                    <Text strong style={{ fontSize: 12, color: '#666' }}>
+                      <FileTextOutlined style={{ marginRight: 4 }} />
+                      Descripción
+                    </Text>
+                  </div>
+                  <Input
+                    placeholder="Descripción del pago"
+                    value={payment.description}
+                    size='large'
+                    onChange={(e) => handleUpdatePayment(index, 'description', e.target.value)}
+                    readOnly={isReadonly}
+                    style={{ backgroundColor: isReadonly ? '#f5f5f5' : '#fff' }}
+                  />
+                </Col>
+
+                {/* Archivo */}
+                <Col span={3}>
+                  <div style={{ marginBottom: 4 }}>
+                    <Text strong style={{ fontSize: 12, color: '#666' }}>
+                      <PaperClipOutlined style={{ marginRight: 4 }} />
+                      Archivo
+                    </Text>
+                  </div>
+                  {isReadonly ? (
+                    payment.file ? (
+                      <Button
+                        type="link"
+                        size="small"
+                        onClick={() => {
+                          if (typeof payment.file === 'string') {
+                            window.open(payment.file, '_blank');
+                          }
+                        }}
+                        style={{ padding: 0, height: 'auto' }}
+                      >
+                        Ver archivo
+                      </Button>
+                    ) : (
+                      <Text type="secondary">Sin archivo</Text>
+                    )
+                  ) : (
+                    <SimpleFileUpload
+                      label=""
+                      accept="application/pdf"
+                      value={payment.file}
+                      onChange={(file) => handleUpdatePayment(index, 'file', file)}
+                    />
+                  )}
+                </Col>
+
+                {/* Monto */}
+                <Col span={4}>
+                  <div style={{ marginBottom: 4 }}>
+                    <Text strong style={{ fontSize: 12, color: '#666' }}>
+                      <DollarOutlined style={{ marginRight: 4 }} />
+                      Monto
+                    </Text>
+                  </div>
+                  <Input
+                    placeholder="0.00"
+                    type="number"
+                    prefix="S/"
+                    size='large'
+                    value={payment.amount}
+                    onChange={(e) => handleUpdatePayment(index, 'amount', e.target.value)}
+                    readOnly={isReadonly}
+                    style={{ backgroundColor: isReadonly ? '#f5f5f5' : '#fff' }}
+                  />
+                </Col>
+
+                {/* Status y Eliminar */}
+                <Col span={3}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '100%' }}>
+                    <div>
+                      <div style={{ marginBottom: 4 }}>
+                        <Text strong style={{ fontSize: 12, color: '#666' }}>Estado</Text>
+                      </div>
+                      <Checkbox
+                        checked={payment.status}
+                        disabled={isReadonly}
+                        onChange={(e) => handleUpdatePayment(index, 'status', e.target.checked)}
+                      >
+                        Activo
+                      </Checkbox>
+                    </div>
+
+                    {!isReadonly && (
+                      <Button
+                        type="text"
+                        danger
+                        icon={<DeleteOutlined />}
+                        onClick={() => handleRemovePayment(index)}
+                        size="small"
+                        style={{ marginLeft: 8 }}
+                      />
+                    )}
+                  </div>
+                </Col>
+              </Row>
+            </Card>
+          ))
+        )}
       </Stack>
 
       {/* ACCIONES Y SALDO PENDIENTE */}
