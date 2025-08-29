@@ -14,18 +14,18 @@ interface SelectContactsByTransportProps extends SelectProps {
   onChange?: (value: any, record?: any) => void;
 }
 
-const SelectContactsByTransport = ({ 
-  label, 
-  transportId, 
+const SelectContactsByTransport = ({
+  label,
+  transportId,
   onContactCreated,
   onChange,
-  size = 'large', 
-  ...props 
+  size = 'large',
+  ...props
 }: SelectContactsByTransportProps) => {
   const [openContactsDrawer, setOpenContactsDrawer] = useState(false);
-  
+
   const { contacts, loadingContacts, obtainContacts } = useContactsByEntity(
-    'transporte', 
+    'transporte',
     transportId || 0
   );
 
@@ -49,15 +49,8 @@ const SelectContactsByTransport = ({
             style={{ flex: 1 }}
             loading={loadingContacts}
             disabled={isDisabled}
-            placeholder={
-              !transportId 
-                ? 'Primero seleccione un transporte' 
-                : !hasContacts 
-                  ? 'No hay contactos disponibles'
-                  : 'Seleccione un contacto'
-            }
             notFoundContent={
-              !transportId 
+              !transportId
                 ? 'Primero seleccione un transporte'
                 : 'No hay contactos disponibles'
             }
@@ -65,9 +58,9 @@ const SelectContactsByTransport = ({
             {...props}
           >
             {contacts.map((item) => (
-              <Select.Option 
-                key={item.id} 
-                value={item.id} 
+              <Select.Option
+                key={item.id}
+                value={item.id}
                 label={`${item.cargo} - ${item.nombre}`}
                 title={`${item.nombre} - ${item.cargo}`}
               >
@@ -75,16 +68,16 @@ const SelectContactsByTransport = ({
               </Select.Option>
             ))}
           </Select>
-          
+
           <Button
             icon={<SearchOutlined />}
             size={size}
             disabled={!transportId}
             onClick={() => setOpenContactsDrawer(true)}
             title={!transportId ? 'Primero seleccione un transporte' : 'Agregar contacto'}
-            style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
+            style={{
+              display: 'flex',
+              alignItems: 'center',
               justifyContent: 'center',
               minWidth: '50px',
               minHeight: '50px'
@@ -94,7 +87,7 @@ const SelectContactsByTransport = ({
       </SelectContainer>
 
       {openContactsDrawer && transportId && (
-        <ContactsDrawer 
+        <ContactsDrawer
           referenceId={transportId}
           handleClose={() => setOpenContactsDrawer(false)}
           tipo={ContactTypeEnum.TRANSPORTE}

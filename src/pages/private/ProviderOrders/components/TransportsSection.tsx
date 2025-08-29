@@ -208,30 +208,10 @@ const TransportsSection = ({ form, isTreasury }: TransportsSectionProps) => {
                     sx={{
                       py: 2,
                       px: 3,
-                      bgcolor: '#887bad',
-                      borderRadius: '8px 8px 0 0',
+                      bgcolor: '#887bad'
                     }}
                     title={
                       <Stack direction="row" alignItems="center" spacing={2} sx={{ width: '100%' }}>
-                        {/* Botón al inicio */}
-                        <IconButton
-                          sx={{
-                            bgcolor: 'rgba(255,255,255,0.2)',
-                            border: '1px solid rgba(255,255,255,0.3)',
-                            borderRadius: 1,
-                            '&:hover': {
-                              bgcolor: 'rgba(255,255,255,0.3)'
-                            }
-                          }}
-                          onClick={() => {
-                            // Aquí puedes agregar la funcionalidad del botón
-                            console.log('Botón inicial clickeado para transporte:', field.name);
-                          }}
-                        >
-                          <Search sx={{ color: '#fff', fontSize: 20 }} />
-                        </IconButton>
-
-                        {/* Título del transporte - Mostrar código de transporte o nombre genérico */}
                         <Form.Item noStyle shouldUpdate>
                           {({ getFieldValue }) => {
                             // const transporteData = getFieldValue(['transportes', field.name, 'transporte']);
@@ -303,8 +283,52 @@ const TransportsSection = ({ form, isTreasury }: TransportsSectionProps) => {
                   />
 
                   <CardContent sx={{ p: 3, bgcolor: 'white' }}>
+                    {/* Sección de selects - Primera fila */}
+                    {isTreasury !== true && (
+                      <Grid container spacing={2}>
+                        {/* Empresa de Transporte */}
+                        <Grid size={{ xs: 12, sm: 6 }}>
+                          <Form.Item name={[field.name, 'transporte']} rules={[requiredField]}>
+                            <SelectTransports label="Empresa de Transporte" />
+                          </Form.Item>
+                        </Grid>
+
+                        {/* Contacto de Transporte */}
+                        <Grid size={{ xs: 12, sm: 6 }}>
+                          <Form.Item noStyle shouldUpdate>
+                            {({ getFieldValue }) => {
+                              const transporteId = getFieldValue(['transportes', field.name, 'transporte']);
+                              const transporteData = typeof transporteId === 'object' ? transporteId?.id : transporteId;
+
+                              return (
+                                <Form.Item
+                                  name={[field.name, 'contacto']}
+                                  rules={[]}
+                                >
+                                  <SelectContactsByTransport
+                                    label="Contacto de Transporte"
+                                    transportId={transporteData}
+                                    onChange={(value, record: any) => {
+                                      form.setFieldsValue({
+                                        [`transportes[${field.name}].contacto`]: value,
+                                        [`transportes[${field.name}].nombreContactoTransporte`]: record?.optiondata?.nombre,
+                                        [`transportes[${field.name}].telefonoContactoTransporte`]: record?.optiondata?.telefono,
+                                      });
+                                    }}
+                                    onContactCreated={() => {
+                                      // Recargar contactos si es necesario
+                                    }}
+                                  />
+                                </Form.Item>
+                              );
+                            }}
+                          </Form.Item>
+                        </Grid>
+                      </Grid>
+                    )}
+
                     {/* Sección de información principal - 3 columnas */}
-                    <Grid container spacing={3} sx={{ mb: 3 }}>
+                    <Grid container spacing={3} sx={{ mb: 3, mx: 1 }}>
                       <Grid size={4}>
                         <Form.Item noStyle shouldUpdate>
                           {({ getFieldValue }) => {
@@ -329,10 +353,7 @@ const TransportsSection = ({ form, isTreasury }: TransportsSectionProps) => {
                       <Grid size={4}>
                         <Form.Item noStyle shouldUpdate>
                           {({ getFieldValue }) => {
-                            const direccion = getFieldValue(['transportes', field.name, 'direccion']);
-                            const region = getFieldValue(['transportes', field.name, 'region']);
-                            const provincia = getFieldValue(['transportes', field.name, 'provincia']);
-                            const distrito = getFieldValue(['transportes', field.name, 'distrito']);
+                            const transporteData = getFieldValue(['transportes', field.name, 'transporte']);
 
                             return (
                               <Stack spacing={1}>
@@ -340,10 +361,10 @@ const TransportsSection = ({ form, isTreasury }: TransportsSectionProps) => {
                                   Dirección y Ubicación
                                 </Typography>
                                 <Typography variant="body1" fontWeight={500}>
-                                  {direccion || '---'}
+                                  {transporteData?.direccion || '---'}
                                 </Typography>
                                 <Typography variant="body2" color="text.secondary">
-                                  {[region, provincia, distrito].filter(Boolean).join(' / ') || 'Sin ubicación especificada'}
+                                  {[transporteData?.departamento?.name, transporteData?.provincia?.name, transporteData?.distrito?.name].filter(Boolean).join(' / ') || 'Sin ubicación especificada'}
                                 </Typography>
                               </Stack>
                             );
@@ -375,74 +396,7 @@ const TransportsSection = ({ form, isTreasury }: TransportsSectionProps) => {
 
                     {/* Sección de formulario - campos editables */}
                     <Grid container spacing={2}>
-
-                      {isTreasury !== true && (
-                        <>
-                          {/* Primera fila: Empresa de Transporte y Dirección */}
-                          <Grid size={{ xs: 12, sm: 6 }}>
-                            <Form.Item name={[field.name, 'transporte']} rules={[requiredField]}>
-                              <SelectTransports label="Empresa de Transporte" />
-                            </Form.Item>
-                          </Grid>
-                          <Grid size={{ xs: 12, sm: 6 }}>
-                            <Form.Item name={[field.name, 'direccion']} rules={[requiredField]}>
-                              <InputAntd label="Dirección" size="large" />
-                            </Form.Item>
-                          </Grid>
-
-                          {/* Segunda fila: Solo Contacto (destino ya está en el header) */}
-                          <Grid size={{ xs: 12, sm: 12 }}>
-                            <Form.Item noStyle shouldUpdate>
-                              {({ getFieldValue }) => {
-                                const transporteId = getFieldValue(['transportes', field.name, 'transporte']);
-                                const transporteData = typeof transporteId === 'object' ? transporteId?.id : transporteId;
-
-                                return (
-                                  <Form.Item
-                                    name={[field.name, 'contacto']}
-                                    rules={[]}
-                                  >
-                                    <SelectContactsByTransport
-                                      label="Contacto de Transporte"
-                                      transportId={transporteData}
-                                      placeholder="Seleccionar contacto"
-                                      onChange={(value, record: any) => {
-                                        form.setFieldsValue({
-                                          [`transportes[${field.name}].contacto`]: value,
-                                          [`transportes[${field.name}].nombreContactoTransporte`]: record?.optiondata?.nombre,
-                                          [`transportes[${field.name}].telefonoContactoTransporte`]: record?.optiondata?.telefono,
-                                        });
-                                      }}
-                                      onContactCreated={() => {
-                                        // Recargar contactos si es necesario
-                                      }}
-                                    />
-                                  </Form.Item>
-                                );
-                              }}
-                            </Form.Item>
-                          </Grid>
-
-                          {/* Tercera fila: Ubicación */}
-                          <Grid size={{ xs: 12, sm: 4 }}>
-                            <Form.Item name={[field.name, 'region']}>
-                              <InputAntd label="Departamento" size="large" />
-                            </Form.Item>
-                          </Grid>
-                          <Grid size={{ xs: 12, sm: 4 }}>
-                            <Form.Item name={[field.name, 'provincia']}>
-                              <InputAntd label="Provincia" size="large" />
-                            </Form.Item>
-                          </Grid>
-                          <Grid size={{ xs: 12, sm: 4 }}>
-                            <Form.Item name={[field.name, 'distrito']}>
-                              <InputAntd label="Distrito" size="large" />
-                            </Form.Item>
-                          </Grid>
-                        </>
-                      )}
-
-                      {/* Quinta fila: Nota de transporte */}
+                      {/* Nota de transporte */}
                       <Grid size={12}>
                         <Form.Item
                           name={[field.name, 'nota']}
