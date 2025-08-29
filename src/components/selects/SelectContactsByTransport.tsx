@@ -49,6 +49,13 @@ const SelectContactsByTransport = ({
             style={{ flex: 1 }}
             loading={loadingContacts}
             disabled={isDisabled}
+            placeholder={
+              !transportId
+                ? 'Primero seleccione un transporte'
+                : !hasContacts
+                  ? 'No hay contactos disponibles'
+                  : 'Seleccione un contacto'
+            }
             notFoundContent={
               !transportId
                 ? 'Primero seleccione un transporte'

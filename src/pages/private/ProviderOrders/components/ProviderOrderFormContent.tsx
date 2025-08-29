@@ -181,8 +181,10 @@ const calculateProductTotals = (form: any, fieldName: number) => {
           : [],
         transportes: orderData.transportesAsignados?.map(transporte => ({
           id: transporte.id, // ✅ AGREGADO: ID único para updates
-          transporte: transporte.transporte,
-          contacto: transporte.contactoTransporte,
+          transporte: transporte.transporte?.id || transporte.transporteId, // ✅ SINCRONIZACIÓN: Usar ID para select
+          transporteCompleto: transporte.transporte, // ✅ SINCRONIZACIÓN: Objeto completo para información
+          contacto: transporte.contactoTransporte?.id || transporte.contactoTransporteId, // ✅ SINCRONIZACIÓN: Usar ID para select
+          contactoCompleto: transporte.contactoTransporte, // ✅ SINCRONIZACIÓN: Objeto completo para información
           codigoTransporte: transporte.codigoTransporte, // ✅ AGREGADO: Mapear código de transporte
           region: transporte.region || '',
           provincia: transporte.provincia || '',

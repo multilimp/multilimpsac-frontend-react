@@ -20,6 +20,7 @@ import SimpleFileUpload from '@/components/SimpleFileUpload';
 import PaymentsList from '@/components/PaymentsList';
 import { usePayments } from '@/hooks/usePayments';
 import { notification } from 'antd';
+import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 
 
 interface TransportsSectionProps {
@@ -118,6 +119,7 @@ const TransportPayments = ({ transporteId, montoFlete, form, fieldName }: Transp
 };
 
 const TransportsSection = ({ form, isTreasury }: TransportsSectionProps) => {
+  const { transports } = useGlobalInformation();
   return (
     <Form.List
       name="transportes"
@@ -289,7 +291,22 @@ const TransportsSection = ({ form, isTreasury }: TransportsSectionProps) => {
                         {/* Empresa de Transporte */}
                         <Grid size={{ xs: 12, sm: 6 }}>
                           <Form.Item name={[field.name, 'transporte']} rules={[requiredField]}>
-                            <SelectTransports label="Empresa de Transporte" />
+                            <SelectTransports
+                              label="Empresa de Transporte"
+                              onChange={(value, record: any) => {
+                                // Guardar tanto el ID como el objeto completo para sincronización
+                                form.setFieldsValue({
+                                  [`transportes[${field.name}].transporte`]: value,
+                                  [`transportes[${field.name}].transporteCompleto`]: record?.optiondata,
+                                });
+
+                                // Limpiar el contacto cuando cambie el transporte
+                                form.setFieldsValue({
+                                  [`transportes[${field.name}].contacto`]: null,
+                                  [`transportes[${field.name}].contactoCompleto`]: null,
+                                });
+                              }}
+                            />
                           </Form.Item>
                         </Grid>
 
@@ -306,11 +323,12 @@ const TransportsSection = ({ form, isTreasury }: TransportsSectionProps) => {
                                   rules={[]}
                                 >
                                   <SelectContactsByTransport
-                                    label="Contacto de Transporte"
                                     transportId={transporteData}
                                     onChange={(value, record: any) => {
+                                      // Establecer tanto el ID como el objeto completo para sincronización
                                       form.setFieldsValue({
                                         [`transportes[${field.name}].contacto`]: value,
+                                        [`transportes[${field.name}].contactoCompleto`]: record?.optiondata,
                                         [`transportes[${field.name}].nombreContactoTransporte`]: record?.optiondata?.nombre,
                                         [`transportes[${field.name}].telefonoContactoTransporte`]: record?.optiondata?.telefono,
                                       });
@@ -332,7 +350,15 @@ const TransportsSection = ({ form, isTreasury }: TransportsSectionProps) => {
                       <Grid size={4}>
                         <Form.Item noStyle shouldUpdate>
                           {({ getFieldValue }) => {
-                            const transporteData = getFieldValue(['transportes', field.name, 'transporte']);
+                            const transporteId = getFieldValue(['transportes', field.name, 'transporte']);
+                            const transporteCompleto = getFieldValue(['transportes', field.name, 'transporteCompleto']);
+
+                            // Usar el objeto completo si está disponible, sino buscar en la lista global
+                            const transporteData = transporteCompleto ||
+                              (typeof transporteId === 'number'
+                                ? transports.find(t => t.id === transporteId)
+                                : (typeof transporteId === 'object' ? transporteId : null));
+
                             return (
                               <Stack spacing={1}>
                                 <Typography variant="subtitle2" fontWeight={600} color="text.secondary">
@@ -353,7 +379,14 @@ const TransportsSection = ({ form, isTreasury }: TransportsSectionProps) => {
                       <Grid size={4}>
                         <Form.Item noStyle shouldUpdate>
                           {({ getFieldValue }) => {
-                            const transporteData = getFieldValue(['transportes', field.name, 'transporte']);
+                            const transporteId = getFieldValue(['transportes', field.name, 'transporte']);
+                            const transporteCompleto = getFieldValue(['transportes', field.name, 'transporteCompleto']);
+
+                            // Usar el objeto completo si está disponible, sino buscar en la lista global
+                            const transporteData = transporteCompleto ||
+                              (typeof transporteId === 'number'
+                                ? transports.find(t => t.id === transporteId)
+                                : (typeof transporteId === 'object' ? transporteId : null));
 
                             return (
                               <Stack spacing={1}>
@@ -364,7 +397,7 @@ const TransportsSection = ({ form, isTreasury }: TransportsSectionProps) => {
                                   {transporteData?.direccion || '---'}
                                 </Typography>
                                 <Typography variant="body2" color="text.secondary">
-                                  {[transporteData?.departamento?.name, transporteData?.provincia?.name, transporteData?.distrito?.name].filter(Boolean).join(' / ') || 'Sin ubicación especificada'}
+                                  {[transporteData?.departamento, transporteData?.provincia, transporteData?.distrito].filter(Boolean).join(' / ') || 'Sin ubicación especificada'}
                                 </Typography>
                               </Stack>
                             );
@@ -375,7 +408,12 @@ const TransportsSection = ({ form, isTreasury }: TransportsSectionProps) => {
                       <Grid size={4}>
                         <Form.Item noStyle shouldUpdate>
                           {({ getFieldValue }) => {
-                            const contactoData = getFieldValue(['transportes', field.name, 'contacto']);
+                            const contactoId = getFieldValue(['transportes', field.name, 'contacto']);
+                            const contactoCompleto = getFieldValue(['transportes', field.name, 'contactoCompleto']);
+
+                            // Usar el objeto completo si está disponible, sino el objeto almacenado directamente
+                            const contactoData = contactoCompleto || (typeof contactoId === 'object' ? contactoId : null);
+
                             return (
                               <Stack spacing={1}>
                                 <Typography variant="subtitle2" fontWeight={600} color="text.secondary">
