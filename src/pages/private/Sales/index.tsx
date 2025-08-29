@@ -7,11 +7,12 @@ import SalesTable from './components/SalesTable';
 import { Button } from '@mui/material';
 import { Add } from '@mui/icons-material';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const SalesPage = () => {
-  const { sales, loadingSales, obtainSales } = useGlobalInformation();
+  const { sales, loadingSales, obtainSales, setSaleInputValues } = useGlobalInformation();
   const [activeTab, setActiveTab] = useState<number>(0);
+  const navigate = useNavigate();
 
   // Filtrar ventas por tipo con memoización
   const ventasEstado = useMemo(() => {
@@ -27,10 +28,28 @@ const SalesPage = () => {
     setActiveTab(newValue);
   }, []);
 
+  // Handler para inicializar valores al crear nueva venta
+  const handleAddSale = useCallback(() => {
+    // Inicializar valores por defecto para nueva venta
+    setSaleInputValues({
+      enterprise: null,
+      file: null,
+      tipoVenta: 'directa'
+    });
+
+    // Navegar a la página de creación
+    navigate('/sales/create');
+  }, [setSaleInputValues, navigate]);
+
   return (
     <PageContent
       component={
-        <Button variant="contained" color="primary" startIcon={<Add />} component={Link} to="/sales/create">
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<Add />}
+          onClick={handleAddSale}
+        >
           Agregar Venta
         </Button>
       }

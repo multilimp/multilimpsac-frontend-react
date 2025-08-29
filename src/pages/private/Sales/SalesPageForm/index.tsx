@@ -36,6 +36,17 @@ const SalesPageForm = () => {
   const [tipoPago, setTipoPago] = useState<string>('PENDIENTE');
   const [notaPago, setNotaPago] = useState<string>('');
 
+  // Inicializar valores por defecto si no están configurados
+  useEffect(() => {
+    if (!isEditing && (!saleInputValues.enterprise && !saleInputValues.tipoVenta)) {
+      setSaleInputValues({
+        enterprise: null,
+        file: null,
+        tipoVenta: 'directa'
+      });
+    }
+  }, [isEditing, saleInputValues, setSaleInputValues]);
+
   useEffect(() => {
     handleAnalizeFile();
   }, [saleInputValues]);
