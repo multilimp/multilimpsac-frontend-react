@@ -59,6 +59,11 @@ const UsersModal = ({ data, handleClose, handleReload }: UsersModalProps) => {
         permisos: raw.role === RolesEnum.ADMIN ? Object.values(PermissionsEnum) : raw.permisos,
       };
 
+      // Agregar contraseña solo para creación
+      if (!data) {
+        body.password = raw.password;
+      }
+
       if (data) {
         // Actualizar usuario existente - usar putUser normal ya que la foto viene como URL
         await putUser(data.id, body);
@@ -118,6 +123,21 @@ const UsersModal = ({ data, handleClose, handleReload }: UsersModalProps) => {
                   <InputAntd label="Correo electrónico" />
                 </Form.Item>
               </Grid>
+
+              {/* Contraseña - Solo para creación */}
+              {!data && (
+                <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Form.Item
+                    name="password"
+                    rules={[
+                      { required: true, message: 'La contraseña es requerida' },
+                      { min: 6, message: 'La contraseña debe tener al menos 6 caracteres' },
+                    ]}
+                  >
+                    <InputAntd label="Contraseña" type="password" />
+                  </Form.Item>
+                </Grid>
+              )}
 
               {/* Teléfono */}
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>

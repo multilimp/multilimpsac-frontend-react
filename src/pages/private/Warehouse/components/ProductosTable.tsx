@@ -155,7 +155,7 @@ const ProductosTable: React.FC<ProductosTableProps> = ({
         <>
             {/* Filtros */}
             <Paper elevation={1} sx={{ p: 3, mb: 2 }}>
-                <Typography variant="h6" gutterBottom>
+                <Typography variant="h6" sx={{ mb: 2 }}>
                     Filtros de Productos
                 </Typography>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
