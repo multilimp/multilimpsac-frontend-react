@@ -1,4 +1,4 @@
-import { Form, InputNumber, FormInstance } from 'antd';
+import { Form, InputNumber, FormInstance, Button, Space, Typography as AntTypography, Divider as AntDivider, Row, Col } from 'antd';
 import { Add, DeleteOutlineOutlined, LocalShipping, Search } from '@mui/icons-material';
 import {
   Card,
@@ -22,14 +22,28 @@ import { usePayments } from '@/hooks/usePayments';
 import { notification } from 'antd';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 
+// Opciones para el tipo de entrega (similar a ventas privadas)
+const tipoEntregaOptions = [
+  { label: 'Recojo en almacén', value: 'RECOJO_ALMACEN' },
+  { label: 'Entrega a domicilio', value: 'ENTREGA_DOMICILIO' },
+  { label: 'Entrega en agencia', value: 'ENTREGA_AGENCIA' }
+];
 
 interface TransportsSectionProps {
   form: FormInstance;
   isTreasury?: boolean;
+  isPrivateSale?: boolean; // Nueva prop para determinar si es venta privada
+  privateSaleData?: {
+    tipoEntrega?: string;
+    nombreAgencia?: string;
+    destinoFinal?: string;
+    nombreEntidad?: string;
+  };
 }
 
 const getEmptyTransformRecord = () => ({
   transporte: null,
+  contacto: null,
   codigoTransporte: null, // Campo para mostrar código generado por el backend
   destino: null,
   region: '',
@@ -118,8 +132,15 @@ const TransportPayments = ({ transporteId, montoFlete, form, fieldName }: Transp
   );
 };
 
-const TransportsSection = ({ form, isTreasury }: TransportsSectionProps) => {
+const TransportsSection = ({ form, isTreasury, isPrivateSale = false, privateSaleData }: TransportsSectionProps) => {
   const { transports } = useGlobalInformation();
+
+  // 🔍 DEBUG: Agregar console.log para diagnosticar
+  console.log('TransportsSection - Props recibidas:', {
+    isPrivateSale,
+    privateSaleData
+  });
+
   return (
     <Form.List
       name="transportes"
@@ -159,7 +180,7 @@ const TransportsSection = ({ form, isTreasury }: TransportsSectionProps) => {
             justifyContent="space-between"
             alignItems="center"
           >
-            <Stack direction="row" spacing={2}>
+            <Stack direction="row" spacing={2} sx={{ width: '100%' }}>
               <Stack alignItems="center" justifyContent="center">
                 <LocalShipping sx={{ fontSize: 56, color: '#887bad' }} />
               </Stack>
@@ -172,6 +193,86 @@ const TransportsSection = ({ form, isTreasury }: TransportsSectionProps) => {
                 <Typography variant="h5">TRANSPORTE</Typography>
                 {errors.length ? <FormHelperText error>{(errors as Array<string>).join(' - ')}</FormHelperText> : null}
               </Stack>
+
+              {/* ✅ CAMPOS DE VENTA PRIVADA AL COSTADO DEL TÍTULO */}
+              {isPrivateSale && (
+                <>
+                  <Box>
+                    <Divider orientation="vertical" sx={{ borderColor: '#887bad' }} />
+                  </Box>
+
+                  <Stack sx={{ justifyContent: 'center', minWidth: 400 }}>
+                    <Typography variant="h6" sx={{ mb: 1, color: 'white' }}>
+                      CONFIGURACIÓN DE ENTREGA
+                    </Typography>
+
+                    <Row gutter={[8, 8]}>
+                      <Col span={12}>
+                        <Form.Item
+                          label=""
+                          style={{ margin: 0 }}
+                        >
+                          <InputAntd
+                            value={privateSaleData?.tipoEntrega ?
+                              tipoEntregaOptions.find(opt => opt.value === privateSaleData.tipoEntrega)?.label ||
+                              (privateSaleData.tipoEntrega === 'RECOJO_ALMACEN' ? 'Recojo en almacén' :
+                                privateSaleData.tipoEntrega === 'ENTREGA_DOMICILIO' ? 'Entrega a domicilio' :
+                                  privateSaleData.tipoEntrega === 'ENTREGA_AGENCIA' ? 'Entrega en agencia' :
+                                    privateSaleData.tipoEntrega)
+                              : 'No especificado'}
+                            placeholder="Tipo de entrega"
+                            size="small"
+                            disabled
+                            style={{ backgroundColor: '#f5f5f5', color: '#666' }}
+                          />
+                        </Form.Item>
+                      </Col>
+
+                      <Col span={12}>
+                        <Form.Item
+                          style={{ margin: 0 }}
+                        >
+                          <InputAntd
+                            value={privateSaleData?.nombreAgencia || 'No especificado'}
+                            placeholder="Nombre agencia"
+                            size="small"
+                            disabled
+                            style={{ backgroundColor: '#f5f5f5', color: '#666' }}
+                          />
+                        </Form.Item>
+                      </Col>
+
+                      <Col span={12}>
+                        <Form.Item
+                          style={{ margin: 0 }}
+                        >
+                          <InputAntd
+                            value={privateSaleData?.destinoFinal || 'No especificado'}
+                            placeholder="Destino final"
+                            size="small"
+                            disabled
+                            style={{ backgroundColor: '#f5f5f5', color: '#666' }}
+                          />
+                        </Form.Item>
+                      </Col>
+
+                      <Col span={12}>
+                        <Form.Item
+                          style={{ margin: 0 }}
+                        >
+                          <InputAntd
+                            value={privateSaleData?.nombreEntidad || 'No especificado'}
+                            placeholder="Nombre entidad"
+                            size="small"
+                            disabled
+                            style={{ backgroundColor: '#f5f5f5', color: '#666' }}
+                          />
+                        </Form.Item>
+                      </Col>
+                    </Row>
+                  </Stack>
+                </>
+              )}
             </Stack>
 
             {isTreasury !== true && (
@@ -438,7 +539,6 @@ const TransportsSection = ({ form, isTreasury }: TransportsSectionProps) => {
                       <Grid size={12}>
                         <Form.Item
                           name={[field.name, 'nota']}
-                          // Hacer nota opcional
                           rules={[]}
                         >
                           <InputAntd

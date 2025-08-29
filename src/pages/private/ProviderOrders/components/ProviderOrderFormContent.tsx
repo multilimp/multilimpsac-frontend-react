@@ -95,7 +95,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
       form.setFieldValue(['productos', fieldName, 'total'], total);
     }
   }, 100);
-}; const ProviderOrderFormContent = ({ sale, orderData, isEditing = false, fromTreasury = false }: ProviderOrderFormContentProps) => {
+}; const ProviderOrderFormContent = ({ sale, orderData, isEditing, fromTreasury }: ProviderOrderFormContentProps) => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -1012,7 +1012,17 @@ const calculateProductTotals = (form: any, fieldName: number) => {
             }}
           </Form.Item>
 
-          <TransportsSection isTreasury={fromTreasury} form={form} />
+          <TransportsSection
+            isTreasury={fromTreasury}
+            form={form}
+            isPrivateSale={sale?.ventaPrivada || false}
+            privateSaleData={{
+              tipoEntrega: sale?.ordenCompraPrivada?.tipoDestino,
+              nombreAgencia: sale?.ordenCompraPrivada?.nombreAgencia,
+              destinoFinal: sale?.ordenCompraPrivada?.destinoFinal,
+              nombreEntidad: sale?.ordenCompraPrivada?.nombreEntidad,
+            }}
+          />
 
           {fromTreasury !== true && (
             <>
