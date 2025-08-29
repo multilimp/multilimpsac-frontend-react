@@ -73,6 +73,11 @@ export interface SaleProps {
     documentoCotizacion?: string; // Documento de cotización
     cotizacion?: string; // Campo de cotización
     notaPago?: string;
+    // Campos de tipo de entrega
+    tipoDestino?: string;
+    nombreAgencia?: string;
+    destinoFinal?: string;
+    nombreEntidad?: string;
     cliente?: ClientProps;
     contactoCliente?: ContactProps;
     pagos?: Array<{

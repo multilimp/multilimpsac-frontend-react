@@ -64,8 +64,11 @@ const SalesPageForm = () => {
           const formValues: any = {
             // Información básica
             clienteEstado: saleData.cliente,
-            catalogo: saleData.catalogoEmpresa.id,
-            catalogoComplete: saleData.catalogoEmpresa,
+            // Solo incluir catálogo si no es venta privada y existe
+            ...((!isPrivateSale && saleData.catalogoEmpresa) && {
+              catalogo: saleData.catalogoEmpresa.id,
+              catalogoComplete: saleData.catalogoEmpresa,
+            }),
             fechaFormalizacion: dayjs(saleData.fechaForm),
             fechaMaxEntrega: dayjs(saleData.fechaMaxForm),
             montoVenta: saleData.montoVenta,
@@ -76,11 +79,13 @@ const SalesPageForm = () => {
             ordenCompraFisica: saleData.documentoOcf,
             codigoOcf: saleData.codigoOcf,
 
-            // Datos de contacto
-            cargoContactoComplete: saleData.contactoCliente,
-            cargoContacto: saleData.contactoCliente.id,
-            nombreContacto: saleData.contactoCliente.nombre,
-            celularContacto: saleData.contactoCliente.telefono,
+            // Datos de contacto - proteger acceso con validación
+            ...(saleData.contactoCliente && {
+              cargoContactoComplete: saleData.contactoCliente,
+              cargoContacto: saleData.contactoCliente.id,
+              nombreContacto: saleData.contactoCliente.nombre,
+              celularContacto: saleData.contactoCliente.telefono,
+            }),
 
             // Productos - asegurar que siempre sea un array usando parseJSON y agregar isCompleted si no existe
             productos: (Array.isArray(saleData.productos) ? saleData.productos : parseJSON(saleData.productos) || []).map((producto: any) => ({
@@ -102,8 +107,15 @@ const SalesPageForm = () => {
             formValues.facturaStatus = saleData.ordenCompraPrivada.estadoPago || 'PENDIENTE';
             formValues.dateFactura = saleData.ordenCompraPrivada.fechaPago ? dayjs(saleData.ordenCompraPrivada.fechaPago) : null;
             formValues.documentoFactura = saleData.ordenCompraPrivada.documentoPago || null;
-            formValues.documentoCotizacion = (saleData.ordenCompraPrivada as any).documentoCotizacion || null; // Campo agregado recientemente
+            formValues.documentoCotizacion = (saleData.ordenCompraPrivada as any).documentoCotizacion || null;
+            formValues.cotizacion = (saleData.ordenCompraPrivada as any).cotizacion || null; // Campo cotización
             formValues.notaPago = saleData.ordenCompraPrivada.notaPago || '';
+
+            // Campos de tipo de entrega
+            formValues.tipoEntrega = (saleData.ordenCompraPrivada as any).tipoDestino || null;
+            formValues.nombreAgencia = (saleData.ordenCompraPrivada as any).nombreAgencia || null;
+            formValues.destinoFinal = (saleData.ordenCompraPrivada as any).destinoFinal || null;
+            formValues.destinoEntidad = (saleData.ordenCompraPrivada as any).nombreEntidad || null;
 
             // Mapeo explícito de pagos desde backend a frontend
             const mappedPayments = Array.isArray(saleData.ordenCompraPrivada.pagos) && saleData.ordenCompraPrivada.pagos.length > 0
@@ -203,7 +215,10 @@ const SalesPageForm = () => {
       if (isEditing && id) {
         // Modo edición
         const baseVentaData = {
-          catalogoEmpresaId: values.catalogoComplete?.id || values.catalogo?.id || values.catalogo,
+          // Solo incluir catálogo para ventas directas (no privadas)
+          ...(saleInputValues.tipoVenta !== 'privada' && {
+            catalogoEmpresaId: values.catalogoComplete?.id || values.catalogo?.id || values.catalogo
+          }),
           clienteId: values.clienteEstado?.id || values.clienteEstado,
           contactoClienteId: values.cargoContactoComplete?.id || values.cargoContacto?.id || values.cargoContacto,
           empresaId: saleInputValues.enterprise?.id,
@@ -238,14 +253,27 @@ const SalesPageForm = () => {
             allValues: values
           }); // Debug para edición
 
+          console.log('Datos de tipo de entrega en edición:', {
+            tipoEntrega: values.tipoEntrega,
+            nombreAgencia: values.nombreAgencia,
+            destinoFinal: values.destinoFinal,
+            destinoEntidad: values.destinoEntidad
+          }); // Debug tipo de entrega en edición
+
           const bodyVentaPrivada = {
             ...baseVentaData,
             ventaPrivada: {
               estadoPago: tipoPago || 'PENDIENTE',
               fechaPago: values.dateFactura ? values.dateFactura.toISOString() : null,
               documentoPago: values.documentoFactura,
-              documentoCotizacion: values.documentoCotizacion, // Agregado campo de cotización
+              documentoCotizacion: values.documentoCotizacion, // Campo de cotización
+              cotizacion: values.cotizacion || null, // Campo cotización
               notaPago: notaPago || '',
+              // Campos de tipo de entrega
+              tipoDestino: values.tipoEntrega || null,
+              nombreAgencia: values.nombreAgencia || null,
+              destinoFinal: values.destinoFinal || null,
+              nombreEntidad: values.destinoEntidad || null,
               pagos: payments.map(payment => ({
                 fechaPago: payment.date ? payment.date.toISOString() : null,
                 bancoPago: payment.bank || '',
@@ -300,13 +328,25 @@ const SalesPageForm = () => {
             }
           }
           console.log('Processed pagos for creation:', pagos); // Debug
+          console.log('Datos de tipo de entrega:', {
+            tipoEntrega: values.tipoEntrega,
+            nombreAgencia: values.nombreAgencia,
+            destinoFinal: values.destinoFinal,
+            destinoEntidad: values.destinoEntidad
+          }); // Debug tipo de entrega
 
           bodyVentaPrivada = {
             estadoPago: tipoPago || 'PENDIENTE',
             fechaPago: values.dateFactura ? values.dateFactura.toISOString() : null,
             documentoPago: values.documentoFactura,
-            documentoCotizacion: values.documentoCotizacion, // Agregado campo de cotización
+            documentoCotizacion: values.documentoCotizacion, // Campo de cotización
+            cotizacion: values.cotizacion || null, // Campo cotización
             notaPago: notaPago || '',
+            // Campos de tipo de entrega
+            tipoDestino: values.tipoEntrega || null,
+            nombreAgencia: values.nombreAgencia || null,
+            destinoFinal: values.destinoFinal || null,
+            nombreEntidad: values.destinoEntidad || null,
             pagos,
           };
         }
@@ -326,7 +366,8 @@ const SalesPageForm = () => {
           notification.error({ message: 'Error', description: 'Debe seleccionar un contacto' });
           return;
         }
-        if (!values.catalogo) {
+        // Solo validar catálogo para ventas directas (no privadas)
+        if (saleInputValues.tipoVenta !== 'privada' && !values.catalogo) {
           notification.error({ message: 'Error', description: 'Debe seleccionar un catálogo' });
           return;
         }
@@ -335,7 +376,10 @@ const SalesPageForm = () => {
           empresa: { connect: { id: saleInputValues.enterprise?.id } },
           cliente: { connect: { id: values.clienteEstado?.id } },
           contactoCliente: { connect: { id: values.cargoContacto } },
-          catalogoEmpresa: { connect: { id: values.catalogo } },
+          // Solo incluir catálogo para ventas directas (no privadas)
+          ...(saleInputValues.tipoVenta !== 'privada' && values.catalogo && {
+            catalogoEmpresa: { connect: { id: values.catalogo } }
+          }),
 
           ventaPrivada: bodyVentaPrivada,
           departamentoEntrega: values.regionEntrega || null,
@@ -417,6 +461,7 @@ const SalesPageForm = () => {
                 onTipoPagoChange={setTipoPago}
                 onNotaPagoChange={setNotaPago}
                 isPrivateSale={saleInputValues.tipoVenta === 'privada'}
+                isEditing={isEditing}
               />
             </Collapse>
 

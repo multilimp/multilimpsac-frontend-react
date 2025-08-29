@@ -24,7 +24,8 @@ const InputsFirstStep = ({
   onPaymentsChange,
   onTipoPagoChange,
   onNotaPagoChange,
-  isPrivateSale = false
+  isPrivateSale = false,
+  isEditing = false
 }: {
   form: FormInstance;
   payments?: any[];
@@ -34,6 +35,7 @@ const InputsFirstStep = ({
   onTipoPagoChange?: (tipoPago: string) => void;
   onNotaPagoChange?: (notaPago: string) => void;
   isPrivateSale?: boolean;
+  isEditing?: boolean;
 }) => {
   // Reglas condicionales: si es venta privada, ningún campo es obligatorio
   const conditionalRules = isPrivateSale ? [] : [requiredField];
@@ -76,25 +78,28 @@ const InputsFirstStep = ({
       </StepItemContent>
 
       {/* Pagos Recibidos - Componente Reutilizable */}
-      <Form.Item noStyle shouldUpdate={(prev, curr) => prev.montoVenta !== curr.montoVenta}>
-        {({ getFieldValue }) => {
-          const montoVenta = getFieldValue('montoVenta') || 0;
+      {/* Lista de Pagos - Solo visible en modo edición */}
+      {isEditing && (
+        <Form.Item shouldUpdate noStyle>
+          {({ getFieldValue }) => {
+            const montoVenta = getFieldValue('montoVenta') || 0;
 
-          return (
-            <PaymentsList
-              payments={payments}
-              tipoPago={tipoPago}
-              notaPago={notaPago}
-              title="Pagos Venta Privada"
-              mode="edit"
-              montoTotal={Number(montoVenta)}
-              onPaymentsChange={onPaymentsChange}
-              onTipoPagoChange={onTipoPagoChange}
-              onNotaPagoChange={onNotaPagoChange}
-            />
-          );
-        }}
-      </Form.Item>
+            return (
+              <PaymentsList
+                payments={payments}
+                tipoPago={tipoPago}
+                notaPago={notaPago}
+                title="Pagos Venta Privada"
+                mode="edit"
+                montoTotal={Number(montoVenta)}
+                onPaymentsChange={onPaymentsChange}
+                onTipoPagoChange={onTipoPagoChange}
+                onNotaPagoChange={onNotaPagoChange}
+              />
+            );
+          }}
+        </Form.Item>
+      )}
     </Stack>
   );
 };
