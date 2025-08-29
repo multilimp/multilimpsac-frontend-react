@@ -202,74 +202,88 @@ const TransportsSection = ({ form, isTreasury, isPrivateSale = false, privateSal
                   </Box>
 
                   <Stack sx={{ justifyContent: 'center', minWidth: 400 }}>
-                    <Typography variant="h6" sx={{ mb: 1, color: 'white' }}>
-                      CONFIGURACIÓN DE ENTREGA
-                    </Typography>
-
-                    <Row gutter={[8, 8]}>
-                      <Col span={12}>
-                        <Form.Item
-                          label=""
-                          style={{ margin: 0 }}
-                        >
-                          <InputAntd
-                            value={privateSaleData?.tipoEntrega ?
-                              tipoEntregaOptions.find(opt => opt.value === privateSaleData.tipoEntrega)?.label ||
+                    {/* Diseño lineal sin título - solo mostrar campos con valores */}
+                    <Stack spacing={1}>
+                      {/* Tipo de entrega - solo mostrar si tiene valor */}
+                      {privateSaleData?.tipoEntrega && (
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <Typography variant="body2" sx={{ fontWeight: 600, color: '#a8a4a4ff', minWidth: 80 }}>
+                            Tipo:
+                          </Typography>
+                          <Typography variant="body2" sx={{
+                            bgcolor: '#f5f5f5',
+                            px: 1.5,
+                            py: 0.5,
+                            borderRadius: 1,
+                            color: '#666',
+                            fontSize: '0.875rem'
+                          }}>
+                            {tipoEntregaOptions.find(opt => opt.value === privateSaleData.tipoEntrega)?.label ||
                               (privateSaleData.tipoEntrega === 'RECOJO_ALMACEN' ? 'Recojo en almacén' :
                                 privateSaleData.tipoEntrega === 'ENTREGA_DOMICILIO' ? 'Entrega a domicilio' :
                                   privateSaleData.tipoEntrega === 'ENTREGA_AGENCIA' ? 'Entrega en agencia' :
-                                    privateSaleData.tipoEntrega)
-                              : 'No especificado'}
-                            placeholder="Tipo de entrega"
-                            size="small"
-                            disabled
-                            style={{ backgroundColor: '#f5f5f5', color: '#666' }}
-                          />
-                        </Form.Item>
-                      </Col>
+                                    privateSaleData.tipoEntrega)}
+                          </Typography>
+                        </Stack>
+                      )}
 
-                      <Col span={12}>
-                        <Form.Item
-                          style={{ margin: 0 }}
-                        >
-                          <InputAntd
-                            value={privateSaleData?.nombreAgencia || 'No especificado'}
-                            placeholder="Nombre agencia"
-                            size="small"
-                            disabled
-                            style={{ backgroundColor: '#f5f5f5', color: '#666' }}
-                          />
-                        </Form.Item>
-                      </Col>
+                      {/* Agencia - solo mostrar si tiene valor */}
+                      {privateSaleData?.nombreAgencia && (
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <Typography variant="body2" sx={{ fontWeight: 600, color: '#666', minWidth: 80 }}>
+                            Agencia:
+                          </Typography>
+                          <Typography variant="body2" sx={{
+                            bgcolor: '#f5f5f5',
+                            px: 1.5,
+                            py: 0.5,
+                            borderRadius: 1,
+                            color: '#666',
+                            fontSize: '0.875rem'
+                          }}>
+                            {privateSaleData.nombreAgencia}
+                          </Typography>
+                        </Stack>
+                      )}
 
-                      <Col span={12}>
-                        <Form.Item
-                          style={{ margin: 0 }}
-                        >
-                          <InputAntd
-                            value={privateSaleData?.destinoFinal || 'No especificado'}
-                            placeholder="Destino final"
-                            size="small"
-                            disabled
-                            style={{ backgroundColor: '#f5f5f5', color: '#666' }}
-                          />
-                        </Form.Item>
-                      </Col>
+                      {/* Destino final - solo mostrar si tiene valor */}
+                      {privateSaleData?.destinoFinal && (
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <Typography variant="body2" sx={{ fontWeight: 600, color: '#666', minWidth: 80 }}>
+                            Destino:
+                          </Typography>
+                          <Typography variant="body2" sx={{
+                            bgcolor: '#f5f5f5',
+                            px: 1.5,
+                            py: 0.5,
+                            borderRadius: 1,
+                            color: '#666',
+                            fontSize: '0.875rem'
+                          }}>
+                            {privateSaleData.destinoFinal}
+                          </Typography>
+                        </Stack>
+                      )}
 
-                      <Col span={12}>
-                        <Form.Item
-                          style={{ margin: 0 }}
-                        >
-                          <InputAntd
-                            value={privateSaleData?.nombreEntidad || 'No especificado'}
-                            placeholder="Nombre entidad"
-                            size="small"
-                            disabled
-                            style={{ backgroundColor: '#f5f5f5', color: '#666' }}
-                          />
-                        </Form.Item>
-                      </Col>
-                    </Row>
+                      {/* Entidad - solo mostrar si tiene valor */}
+                      {privateSaleData?.nombreEntidad && (
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <Typography variant="body2" sx={{ fontWeight: 600, color: '#666', minWidth: 80 }}>
+                            Entidad:
+                          </Typography>
+                          <Typography variant="body2" sx={{
+                            bgcolor: '#f5f5f5',
+                            px: 1.5,
+                            py: 0.5,
+                            borderRadius: 1,
+                            color: '#666',
+                            fontSize: '0.875rem'
+                          }}>
+                            {privateSaleData.nombreEntidad}
+                          </Typography>
+                        </Stack>
+                      )}
+                    </Stack>
                   </Stack>
                 </>
               )}
