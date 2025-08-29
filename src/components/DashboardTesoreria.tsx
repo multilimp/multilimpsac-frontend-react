@@ -278,42 +278,6 @@ const DashboardTesoreria: React.FC = () => {
                     {loading ? 'Actualizando...' : 'Actualizar'}
                 </Button>
             </Box>
-
-            {/* Tarjetas de estadísticas */}
-            {hasData && (
-                <Box sx={{
-                    display: 'grid',
-                    gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr 1fr' },
-                    gap: 3,
-                    mb: 4
-                }}>
-                    <StatsCard
-                        title="Total de Pagos"
-                        value={totalPagos}
-                        icon={<TrendingUpIcon />}
-                        color="primary"
-                    />
-                    <StatsCard
-                        title="Monto Total"
-                        value={formatCurrency(montoTotal)}
-                        icon={<MoneyIcon />}
-                        color="primary"
-                    />
-                    <StatsCard
-                        title="Pagos Urgentes"
-                        value={estadisticas?.urgentes.total || 0}
-                        icon={<WarningIcon />}
-                        color="error"
-                    />
-                    <StatsCard
-                        title="Pagos Pendientes"
-                        value={estadisticas?.pendientes.total || 0}
-                        icon={<ClockIcon />}
-                        color="warning"
-                    />
-                </Box>
-            )}
-
             {/* Alert de error si hay datos previos */}
             {error && hasData && (
                 <Alert severity="warning" sx={{ mb: 2 }}>
