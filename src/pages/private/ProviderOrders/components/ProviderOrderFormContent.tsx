@@ -467,13 +467,13 @@ const ProviderOrderFormContent = ({ sale, orderData, isEditing = false, fromTrea
                   return (
                     <Fragment>
                       <Typography variant="h5">
-                        {isEditing && orderData?.codigoOp ? orderData.codigoOp : 'Nuevo OP'}
+                        {isEditing && orderData?.codigoOp ? orderData.codigoOp : 'OP'}
                       </Typography>
                       <Typography fontWeight={300} color={provider ? undefined : 'textSecondary'}>
                         {provider?.razonSocial ?? 'Seleccione un proveedor'}
                       </Typography>
                       <Typography fontWeight={300} color={provider ? undefined : 'textSecondary'}>
-                        {provider ? `RUC: ${provider.ruc}` : 'Seleccione un proveedor'}
+                        {provider ? `RUC: ${provider.ruc}` : ''}
                       </Typography>
                     </Fragment>
                   );
