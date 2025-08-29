@@ -37,6 +37,7 @@ import { ProviderOrderProps } from '@/services/providerOrders/providerOrders';
 import TransportsSection, { getEmptyTransformRecord } from './TransportsSection';
 import { usePayments } from '@/hooks/usePayments';
 import InputNumberAntd from '@/components/InputNumberAntd';
+import { getPrivateSaleData } from '@/services/sales/sales.request';
 
 interface ProviderOrderFormContentProps {
   sale: SaleProps;
@@ -102,6 +103,16 @@ const calculateProductTotals = (form: any, fieldName: number) => {
   const [openProvider, setOpenProvider] = useState(false);
   const { companies } = useGlobalInformation();
 
+  // Estado para datos de venta privada
+  const [privateSaleData, setPrivateSaleData] = useState<{
+    tipoEntrega?: string;
+    nombreAgencia?: string;
+    destinoFinal?: string;
+    nombreEntidad?: string;
+    estadoPago?: string;
+    notaPago?: string;
+  } | null>(null);
+
   const [selectedCompany, setSelectedCompany] = useState<{ id: number; razonSocial: string; ruc: string } | null>(null);
 
   const empresaValue = Form.useWatch('empresa', form);
@@ -126,7 +137,32 @@ const calculateProductTotals = (form: any, fieldName: number) => {
     }
   }, [empresaValue, companies]);
 
+  // Cargar datos de venta privada
   useEffect(() => {
+    const loadPrivateSaleData = async () => {
+      if (sale?.id && sale?.ventaPrivada) {
+        try {
+          console.log('Cargando datos de venta privada para sale ID:', sale.id);
+          console.log('Sale data completa:', sale);
+
+          const data = await getPrivateSaleData(sale.id);
+          console.log('Datos obtenidos del backend:', data);
+
+          setPrivateSaleData(data);
+
+          console.log('Datos de venta privada cargados exitosamente:', data);
+        } catch (error) {
+          console.error('Error cargando datos de venta privada:', error);
+          setPrivateSaleData(null);
+        }
+      } else {
+        console.log('No se cargan datos de venta privada - sale ID:', sale?.id, 'ventaPrivada:', sale?.ventaPrivada);
+        setPrivateSaleData(null);
+      }
+    };
+
+    loadPrivateSaleData();
+  }, [sale?.id, sale?.ventaPrivada]); useEffect(() => {
     if (isEditing && orderData) {
       // Preparar los productos correctamente para el formulario
       const productosFormatted = orderData.productos?.map(producto => {
@@ -1016,12 +1052,12 @@ const calculateProductTotals = (form: any, fieldName: number) => {
             isTreasury={fromTreasury}
             form={form}
             isPrivateSale={sale?.ventaPrivada || false}
-            privateSaleData={{
-              tipoEntrega: sale?.ordenCompraPrivada?.tipoDestino,
-              nombreAgencia: sale?.ordenCompraPrivada?.nombreAgencia,
-              destinoFinal: sale?.ordenCompraPrivada?.destinoFinal,
-              nombreEntidad: sale?.ordenCompraPrivada?.nombreEntidad,
-            }}
+            privateSaleData={privateSaleData ? {
+              tipoEntrega: privateSaleData.tipoEntrega,
+              nombreAgencia: privateSaleData.nombreAgencia,
+              destinoFinal: privateSaleData.destinoFinal,
+              nombreEntidad: privateSaleData.nombreEntidad,
+            } : undefined}
           />
 
           {fromTreasury !== true && (

@@ -21,7 +21,7 @@ export const getSales = async (params?: SaleFiltersProps): Promise<SaleProps[]> 
 export const getSaleById = async (id: number): Promise<SaleProps> => {
   const response = await apiClient.get(`/ventas/${id}`);
   const item = response.data;
-  
+
   return {
     ...item,
     departamentoEntrega: item.departamentoEntrega || null,
@@ -29,6 +29,35 @@ export const getSaleById = async (id: number): Promise<SaleProps> => {
     distritoEntrega: item.distritoEntrega || null,
     productos: Array.isArray(item.productos) ? item.productos : parseJSON(item.productos) || [],
   };
+};
+
+export const getPrivateSaleData = async (saleId: number): Promise<{
+  tipoEntrega?: string;
+  nombreAgencia?: string;
+  destinoFinal?: string;
+  nombreEntidad?: string;
+  estadoPago?: string;
+  notaPago?: string;
+} | null> => {
+  try {
+    const sale = await getSaleById(saleId);
+
+    if (!sale.ventaPrivada || !sale.ordenCompraPrivada) {
+      return null;
+    }
+
+    return {
+      tipoEntrega: sale.ordenCompraPrivada.tipoDestino || undefined,
+      nombreAgencia: sale.ordenCompraPrivada.nombreAgencia || undefined,
+      destinoFinal: sale.ordenCompraPrivada.destinoFinal || undefined,
+      nombreEntidad: sale.ordenCompraPrivada.nombreEntidad || undefined,
+      estadoPago: sale.ordenCompraPrivada.estadoPago || undefined,
+      notaPago: sale.ordenCompraPrivada.notaPago || undefined,
+    };
+  } catch (error) {
+    console.error('Error obteniendo datos de venta privada:', error);
+    return null;
+  }
 };
 
 export const createDirectSale = async (sale: Record<string, any>): Promise<SaleProps> => {
