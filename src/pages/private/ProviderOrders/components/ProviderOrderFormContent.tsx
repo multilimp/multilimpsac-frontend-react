@@ -270,8 +270,9 @@ const calculateProductTotals = (form: any, fieldName: number) => {
         descripcion: item.descripcion || '',
         unidadMedida: item.uMedida || '',
         cantidad: Number(item.cantidad) || 0,
-        cantidadAlmacen: 0, // ✅ VALOR POR DEFECTO para campo oculto
-        cantidadTotal: Number(item.cantidad) || 0, // ✅ USAR cantidad como cantidadTotal
+        cantidadAlmacen: Number(item.cantidadAlmacen) || 0, // ✅ USAR valor real del campo cantidadAlmacen
+        cantidadCliente: Number(item.cantidadCliente) || 0, // ✅ AGREGAR valor real del campo cantidadCliente
+        cantidadTotal: Number(item.cantidad) || 0, // ✅ cantidad ya contiene la suma total
         precioUnitario: Number(item.precioUnitario) || 0,
         total: Number(item.total) || 0,
       }));
