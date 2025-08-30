@@ -34,6 +34,7 @@ interface TransportsSectionProps {
   form: FormInstance;
   isTreasury?: boolean;
   isPrivateSale?: boolean; // Nueva prop para determinar si es venta privada
+  incluyeTransporte?: boolean; // Nueva prop para el switch de transporte
   privateSaleData?: {
     tipoEntrega?: string;
     nombreAgencia?: string;
@@ -133,7 +134,7 @@ const TransportPayments = ({ transporteId, montoFlete, form, fieldName }: Transp
   );
 };
 
-const TransportsSection = ({ form, isTreasury, isPrivateSale = false, privateSaleData }: TransportsSectionProps) => {
+const TransportsSection = ({ form, isTreasury, isPrivateSale = false, incluyeTransporte = true, privateSaleData }: TransportsSectionProps) => {
   const { transports } = useGlobalInformation();
 
   // 🔍 DEBUG: Agregar console.log para diagnosticar
@@ -149,7 +150,8 @@ const TransportsSection = ({ form, isTreasury, isPrivateSale = false, privateSal
       rules={[
         {
           validator(_, arr) {
-            if (!arr.length) {
+            // Solo validar si incluye transporte
+            if (incluyeTransporte && !arr.length) {
               return Promise.reject(new Error('Debe ingresar por lo menos 1 transporte para continuar.'));
             }
             return Promise.resolve();

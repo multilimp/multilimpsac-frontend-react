@@ -1,6 +1,6 @@
 import { Fragment, useState, useEffect } from 'react';
 import { Form, notification, Spin, Input, InputNumber } from 'antd';
-import { Business, Delete, Add, Inventory } from '@mui/icons-material';
+import { Business, Delete, Add, Inventory, LocalShipping } from '@mui/icons-material';
 import {
   Box,
   Card,
@@ -18,6 +18,7 @@ import {
   TableHead,
   TableRow,
   IconButton,
+  Switch,
 } from '@mui/material';
 import InputAntd from '@/components/InputAntd';
 import SelectCompanies from '@/components/selects/SelectCompanies';
@@ -204,6 +205,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
         embalaje: orderData.embalaje || '',
         tipoPago: orderData.tipoPago || '',
         notaPago: orderData.notaPago || '',
+        incluyeTransporte: orderData.transportesAsignados && orderData.transportesAsignados.length > 0, // ✅ NUEVO: Determinar si incluye transporte
         productos: productosFormatted,
         pagosProveedor: Array.isArray(orderData.pagos) && orderData.pagos.length > 0
           ? (orderData.pagos as any[]).map((pago: any): PagoRecord => ({
@@ -255,6 +257,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
         observaciones: '',
         etiquetado: '',
         embalaje: '',
+        incluyeTransporte: true, // ✅ NUEVO: Por defecto incluye transporte
         pagosProveedor: [],
         productos: [getEmptyProductRecord()], // ✅ USAR función simplificada
       });
@@ -364,10 +367,20 @@ const calculateProductTotals = (form: any, fieldName: number) => {
 
       const totalProductos = productosArr.reduce((sum: number, producto: { total: number }) => sum + Number(producto.total), 0);
 
-      // ✅ APLICAR LA LÓGICA CORRECTA PARA TRANSPORTES
-      const transportesData = isEditing
-        ? processTransportesForUpdate(values.transportes as any[])
-        : { create: transportesArr };
+      // ✅ APLICAR LA LÓGICA CORRECTA PARA TRANSPORTES SOLO SI INCLUYE TRANSPORTE
+      const incluyeTransporte = values.incluyeTransporte;
+      let transportesData;
+
+      if (incluyeTransporte) {
+        transportesData = isEditing
+          ? processTransportesForUpdate(values.transportes as any[])
+          : { create: transportesArr };
+      } else {
+        // Si no incluye transporte, enviar estructura vacía
+        transportesData = isEditing
+          ? { deleteMany: {}, create: [] }
+          : { create: [] };
+      }
 
       const body = {
         ordenCompraId: sale.id,
@@ -1054,17 +1067,59 @@ const calculateProductTotals = (form: any, fieldName: number) => {
             }}
           </Form.Item>
 
-          <TransportsSection
-            isTreasury={fromTreasury}
-            form={form}
-            isPrivateSale={sale?.ventaPrivada || false}
-            privateSaleData={privateSaleData ? {
-              tipoEntrega: privateSaleData.tipoEntrega,
-              nombreAgencia: privateSaleData.nombreAgencia,
-              destinoFinal: privateSaleData.destinoFinal,
-              nombreEntidad: privateSaleData.nombreEntidad,
-            } : undefined}
-          />
+          {/* Switch para incluir/excluir transportes */}
+          <Card sx={{ mb: 3 }}>
+            <CardContent>
+              <Stack direction="row" alignItems="center" spacing={2}>
+                <LocalShipping sx={{ fontSize: 28, color: '#887bad' }} />
+                <Form.Item
+                  name="incluyeTransporte"
+                  valuePropName="checked"
+                  style={{ margin: 0 }}
+                  initialValue={true} // Por defecto incluye transporte
+                >
+                  <Switch
+                    size="medium"
+                    disabled={fromTreasury}
+                  />
+                </Form.Item>
+                <Box sx={{ flexGrow: 1 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
+                    Incluir Transporte
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Activar esta opción si la orden requiere servicios de transporte
+                  </Typography>
+                </Box>
+              </Stack>
+            </CardContent>
+          </Card>
+
+          {/* Sección de transportes - solo mostrar si incluyeTransporte está activado */}
+          <Form.Item noStyle shouldUpdate>
+            {({ getFieldValue }) => {
+              const incluyeTransporte = getFieldValue('incluyeTransporte');
+
+              if (!incluyeTransporte) {
+                return null;
+              }
+
+              return (
+                <TransportsSection
+                  isTreasury={fromTreasury}
+                  form={form}
+                  isPrivateSale={sale?.ventaPrivada || false}
+                  incluyeTransporte={incluyeTransporte}
+                  privateSaleData={privateSaleData ? {
+                    tipoEntrega: privateSaleData.tipoEntrega,
+                    nombreAgencia: privateSaleData.nombreAgencia,
+                    destinoFinal: privateSaleData.destinoFinal,
+                    nombreEntidad: privateSaleData.nombreEntidad,
+                  } : undefined}
+                />
+              );
+            }}
+          </Form.Item>
 
           {fromTreasury !== true && (
             <>
