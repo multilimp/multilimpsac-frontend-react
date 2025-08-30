@@ -365,7 +365,7 @@ const TransportsSection = ({ form, isTreasury, isPrivateSale = false, incluyeTra
                         <Form.Item
                           name={[field.name, 'destino']}
                           style={{ margin: 0, minWidth: 130 }}
-                          initialValue="CLIENTE"
+                          initialValue="ALMACEN"
                         >
                           <SelectGeneric
                             label=""
@@ -373,7 +373,6 @@ const TransportsSection = ({ form, isTreasury, isPrivateSale = false, incluyeTra
                             size="small"
                             style={{ color: "black" }}
                             options={[
-                              { value: 'CLIENTE', label: 'Cliente' },
                               { value: 'ALMACEN', label: 'Almacén' },
                               { value: 'AGENCIA', label: 'Agencia' }
                             ]}

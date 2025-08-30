@@ -308,7 +308,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
             distrito: item.distrito || null,
             direccion: item.direccion || null,
             notaTransporte: item.nota || null,
-            tipoDestino: item.destino === 'CLIENTE' ? 'CLIENTE' : item.destino === 'AGENCIA' ? 'AGENCIA' : 'ALMACEN',
+            tipoDestino: item.destino === 'AGENCIA' ? 'AGENCIA' : 'ALMACEN',
             montoFlete: Number(item.flete) || null,
             cotizacionTransporte: cotizacionUrl,
           };
@@ -336,7 +336,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
                 direccion: transporte.direccion || null,
                 notaTransporte: transporte.nota || null,
                 montoFlete: transporte.flete ? parseFloat(transporte.flete) : 0,
-                tipoDestino: transporte.destino === 'CLIENTE' ? 'CLIENTE' : transporte.destino === 'AGENCIA' ? 'AGENCIA' : 'ALMACEN',
+                tipoDestino: transporte.destino === 'AGENCIA' ? 'AGENCIA' : 'ALMACEN',
                 // NO incluir codigoTransporte - se mantiene el existente
               }
             });
@@ -352,7 +352,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
               direccion: transporte.direccion || null,
               notaTransporte: transporte.nota || null,
               montoFlete: transporte.flete ? parseFloat(transporte.flete) : 0,
-              tipoDestino: transporte.destino === 'CLIENTE' ? 'CLIENTE' : transporte.destino === 'AGENCIA' ? 'AGENCIA' : 'ALMACEN',
+              tipoDestino: transporte.destino === 'AGENCIA' ? 'AGENCIA' : 'ALMACEN',
               // codigoTransporte se generará automáticamente en el backend
             });
           }
@@ -1068,32 +1068,34 @@ const calculateProductTotals = (form: any, fieldName: number) => {
           </Form.Item>
 
           {/* Switch para incluir/excluir transportes */}
-          <Card sx={{ mb: 3 }}>
-            <CardContent>
-              <Stack direction="row" alignItems="center" spacing={2}>
-                <LocalShipping sx={{ fontSize: 28, color: '#887bad' }} />
-                <Form.Item
-                  name="incluyeTransporte"
-                  valuePropName="checked"
-                  style={{ margin: 0 }}
-                  initialValue={true} // Por defecto incluye transporte
-                >
-                  <Switch
-                    size="medium"
-                    disabled={fromTreasury}
-                  />
-                </Form.Item>
-                <Box sx={{ flexGrow: 1 }}>
-                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
-                    Incluir Transporte
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Activar esta opción si la orden requiere servicios de transporte
-                  </Typography>
-                </Box>
-              </Stack>
-            </CardContent>
-          </Card>
+          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+            <Card sx={{ width: 'fit-content' }}>
+              <CardContent sx={{ display: 'flex', justifyContent: 'center' }}>
+                <Stack direction="row" alignItems="center" spacing={2}>
+                  <LocalShipping sx={{ fontSize: 28, color: '#887bad' }} />
+                  <Form.Item
+                    name="incluyeTransporte"
+                    valuePropName="checked"
+                    style={{ margin: 0 }}
+                    initialValue={true} // Por defecto incluye transporte
+                  >
+                    <Switch
+                      size="medium"
+                      disabled={fromTreasury}
+                    />
+                  </Form.Item>
+                  <Box sx={{ flexGrow: 1 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
+                      Incluir Transporte
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Activar esta opción si la orden requiere servicios de transporte
+                    </Typography>
+                  </Box>
+                </Stack>
+              </CardContent>
+            </Card>
+          </Box>
 
           {/* Sección de transportes - solo mostrar si incluyeTransporte está activado */}
           <Form.Item noStyle shouldUpdate>
