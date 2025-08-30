@@ -29,6 +29,8 @@ export interface BillingProps {
   estadoFacturacion?: number;
   // ID de la facturación para updates
   facturacionId?: number | null;
+  // Fecha de creación de la facturación
+  createdAt?: string;
 }
 
 export interface BillingData {

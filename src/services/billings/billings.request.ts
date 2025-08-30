@@ -7,7 +7,7 @@ export const getBillings = async (): Promise<BillingProps[]> => {
     // Obtenemos las órdenes de compra para crear la data de facturación
     const response = await apiClient.get('/ordenes-compra');
     const ordenesCompra = response.data;
-    
+
     // Transformamos las OCs en datos de facturación
     const billings: BillingProps[] = ordenesCompra.map((oc: any) => ({
       id: oc.id,
@@ -31,7 +31,7 @@ export const getBillings = async (): Promise<BillingProps[]> => {
       isRefact: false, // Campo calculado o predeterminado
       status: oc.estadoActivo ? 'pending' : 'cancelled',
     }));
-    
+
     return billings;
   } catch (error) {
     console.error('Error al obtener billings:', error);
@@ -94,13 +94,13 @@ export const getBillingByOrdenCompraId = async (ordenCompraId: number): Promise<
     // Como ahora es 1:1, obtenemos directamente la orden de compra con su facturación
     const response = await apiClient.get(`/ordenes-compra/${ordenCompraId}?include=facturacion`);
     const ordenCompra = response.data;
-    
+
     if (!ordenCompra.facturacion) {
       return null;
     }
-    
+
     const facturacion = ordenCompra.facturacion;
-    
+
     return {
       id: facturacion.id,
       saleId: ordenCompra.id,
@@ -142,7 +142,7 @@ export const createOrUpdateBilling = async (ordenCompraId: number, billingData: 
   try {
     // Primero verificamos si ya existe una facturación para esta orden de compra
     const existingBilling = await getBillingByOrdenCompraId(ordenCompraId);
-    
+
     if (existingBilling && existingBilling.facturacionId) {
       // Si existe, actualizamos
       const response = await apiClient.put(`/facturacion/${existingBilling.facturacionId}`, billingData);
@@ -155,5 +155,62 @@ export const createOrUpdateBilling = async (ordenCompraId: number, billingData: 
   } catch (error) {
     console.error('Error creating or updating billing:', error);
     throw error;
+  }
+};
+
+// Función para obtener historial de facturaciones por orden de compra ID
+export const getBillingHistoryByOrdenCompraId = async (ordenCompraId: number): Promise<BillingProps[]> => {
+  try {
+    console.log('🔍 Backend: Solicitando historial para orden:', ordenCompraId);
+    // Cambiar a usar el endpoint directo de facturaciones
+    const response = await apiClient.get(`/facturacion/orden-compra/${ordenCompraId}`);
+    const facturaciones = response.data;
+    console.log('📦 Backend: Facturaciones encontradas:', facturaciones);
+
+    if (!Array.isArray(facturaciones)) {
+      console.log('⚠️ Backend: No es array o no hay facturaciones');
+      return [];
+    }
+
+    console.log('✅ Backend: Procesando', facturaciones.length, 'facturaciones');
+
+    // Necesitamos obtener la información de la orden de compra para completar los datos
+    const ordenResponse = await apiClient.get(`/ordenes-compra/${ordenCompraId}?include=cliente,empresa,contactoCliente`);
+    const ordenCompra = ordenResponse.data;
+
+    return facturaciones.map((facturacion: any) => ({
+      id: facturacion.id,
+      saleId: ordenCompra.id,
+      clientBusinessName: ordenCompra.cliente?.razonSocial || '',
+      clientRuc: ordenCompra.cliente?.ruc || '',
+      companyRuc: ordenCompra.empresa?.ruc || '',
+      companyBusinessName: ordenCompra.empresa?.razonSocial || '',
+      contact: ordenCompra.contactoCliente?.telefono || '',
+      registerDate: ordenCompra.fechaEmision || new Date().toISOString(),
+      maxDeliveryDate: ordenCompra.fechaMaxForm || new Date().toISOString(),
+      deliveryDateOC: ordenCompra.fechaEntrega || undefined,
+      saleAmount: parseFloat(ordenCompra.montoVenta || '0'),
+      oce: ordenCompra.documentoOce || '',
+      ocf: ordenCompra.documentoOcf || '',
+      receptionDate: ordenCompra.fechaEntrega || new Date().toISOString(),
+      programmingDate: ordenCompra.fechaMaxForm || new Date().toISOString(),
+      invoiceNumber: facturacion.factura || undefined,
+      invoiceDate: facturacion.fechaFactura || undefined,
+      grr: facturacion.grr || undefined,
+      isRefact: false,
+      status: ordenCompra.estadoActivo ? 'pending' : 'cancelled',
+      // Campos específicos de facturación del backend
+      factura: facturacion.factura || undefined,
+      fechaFactura: facturacion.fechaFactura || undefined,
+      retencion: facturacion.retencion || undefined,
+      detraccion: facturacion.detraccion || undefined,
+      formaEnvioFactura: facturacion.formaEnvioFactura || undefined,
+      estadoFacturacion: facturacion.estado || undefined,
+      facturacionId: facturacion.id,
+      createdAt: facturacion.createdAt || undefined
+    }));
+  } catch (error) {
+    console.error('❌ Backend: Error al obtener historial de facturaciones:', error);
+    return [];
   }
 };
