@@ -205,7 +205,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
         embalaje: orderData.embalaje || '',
         tipoPago: orderData.tipoPago || '',
         notaPago: orderData.notaPago || '',
-        incluyeTransporte: orderData.transportesAsignados && orderData.transportesAsignados.length > 0, // ✅ NUEVO: Determinar si incluye transporte
+        incluyeTransporte: !(orderData.transportesAsignados && orderData.transportesAsignados.length > 0), // ✅ Invertir lógica: si tiene transportes, switch desactivado
         productos: productosFormatted,
         pagosProveedor: Array.isArray(orderData.pagos) && orderData.pagos.length > 0
           ? (orderData.pagos as any[]).map((pago: any): PagoRecord => ({
@@ -257,7 +257,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
         observaciones: '',
         etiquetado: '',
         embalaje: '',
-        incluyeTransporte: true, // ✅ NUEVO: Por defecto incluye transporte
+        incluyeTransporte: false, // ✅ Por defecto NO requiere transporte (mostrar sección)
         pagosProveedor: [],
         productos: [getEmptyProductRecord()], // ✅ USAR función simplificada
       });
@@ -367,16 +367,16 @@ const calculateProductTotals = (form: any, fieldName: number) => {
 
       const totalProductos = productosArr.reduce((sum: number, producto: { total: number }) => sum + Number(producto.total), 0);
 
-      // ✅ APLICAR LA LÓGICA CORRECTA PARA TRANSPORTES SOLO SI INCLUYE TRANSPORTE
+      // ✅ LÓGICA INVERTIDA: guardar transportes SOLO cuando switch está DESACTIVADO (sí requiere transporte)
       const incluyeTransporte = values.incluyeTransporte;
       let transportesData;
 
-      if (incluyeTransporte) {
+      if (!incluyeTransporte) {  // Si NO está activado (SÍ requiere transporte)
         transportesData = isEditing
           ? processTransportesForUpdate(values.transportes as any[])
           : { create: transportesArr };
       } else {
-        // Si no incluye transporte, enviar estructura vacía
+        // Si está activado (NO requiere transporte), enviar estructura vacía
         transportesData = isEditing
           ? { deleteMany: {}, create: [] }
           : { create: [] };
@@ -1077,7 +1077,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
                     name="incluyeTransporte"
                     valuePropName="checked"
                     style={{ margin: 0 }}
-                    initialValue={true} // Por defecto incluye transporte
+                    initialValue={true} // Por defecto NO requiere transporte
                   >
                     <Switch
                       size="medium"
@@ -1086,10 +1086,10 @@ const calculateProductTotals = (form: any, fieldName: number) => {
                   </Form.Item>
                   <Box sx={{ flexGrow: 1 }}>
                     <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
-                      Incluir Transporte
+                      Incluye Transporte
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      Activar esta opción si la orden requiere servicios de transporte
+                      Activar esta opción si la orden NO requiere servicios de transporte
                     </Typography>
                   </Box>
                 </Stack>
@@ -1097,14 +1097,16 @@ const calculateProductTotals = (form: any, fieldName: number) => {
             </Card>
           </Box>
 
-          {/* Sección de transportes - solo mostrar si incluyeTransporte está activado */}
+          {/* Sección de transportes - mostrar cuando NO está activado el switch (sí requiere transporte) */}
           <Form.Item noStyle shouldUpdate>
             {({ getFieldValue }) => {
               const incluyeTransporte = getFieldValue('incluyeTransporte');
 
-              if (!incluyeTransporte) {
+              if (incluyeTransporte) {  // Si está activado (NO requiere transporte), ocultar sección
                 return null;
               }
+
+              // Si está desactivado (SÍ requiere transporte), mostrar sección
 
               return (
                 <TransportsSection

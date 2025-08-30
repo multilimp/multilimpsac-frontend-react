@@ -134,7 +134,7 @@ const TransportPayments = ({ transporteId, montoFlete, form, fieldName }: Transp
   );
 };
 
-const TransportsSection = ({ form, isTreasury, isPrivateSale = false, incluyeTransporte = true, privateSaleData }: TransportsSectionProps) => {
+const TransportsSection = ({ form, isTreasury, isPrivateSale = false, incluyeTransporte = false, privateSaleData }: TransportsSectionProps) => {
   const { transports } = useGlobalInformation();
 
   // 🔍 DEBUG: Agregar console.log para diagnosticar
@@ -150,8 +150,8 @@ const TransportsSection = ({ form, isTreasury, isPrivateSale = false, incluyeTra
       rules={[
         {
           validator(_, arr) {
-            // Solo validar si incluye transporte
-            if (incluyeTransporte && !arr.length) {
+            // Solo validar si requiere transporte (switch desactivado)
+            if (!incluyeTransporte && !arr.length) {
               return Promise.reject(new Error('Debe ingresar por lo menos 1 transporte para continuar.'));
             }
             return Promise.resolve();
