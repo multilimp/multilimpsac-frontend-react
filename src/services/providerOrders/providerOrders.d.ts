@@ -1,6 +1,7 @@
 import { ContactProps } from '../contacts/contacts';
 import { ProviderProps } from '../providers/providers';
 import { TransportProps } from '../transports/transports';
+import { Almacen } from '@/types/almacen.types';
 
 export interface ProviderOrderProps {
   id: number;
@@ -91,10 +92,12 @@ export interface ProviderOrderProps {
     estadoPago: null;
     montoFlete: null;
     grt: null;
+    almacenId: number | null;
     createdAt: string;
     updatedAt: string;
     transporte: TransportProps;
     contactoTransporte: ContactProps;
+    almacen?: Almacen | null;
     pagos: [];
   }>;
 }

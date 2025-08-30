@@ -221,6 +221,8 @@ const calculateProductTotals = (form: any, fieldName: number) => {
           transporteCompleto: transporte.transporte, // ✅ SINCRONIZACIÓN: Objeto completo para información
           contacto: transporte.contactoTransporte?.id || transporte.contactoTransporteId, // ✅ SINCRONIZACIÓN: Usar ID para select
           contactoCompleto: transporte.contactoTransporte, // ✅ SINCRONIZACIÓN: Objeto completo para información
+          almacen: transporte.almacen?.id || transporte.almacenId, // ✅ AGREGADO: Mapear almacén
+          almacenCompleto: transporte.almacen, // ✅ AGREGADO: Objeto completo del almacén
           codigoTransporte: transporte.codigoTransporte, // ✅ AGREGADO: Mapear código de transporte
           region: transporte.region || '',
           provincia: transporte.provincia || '',
@@ -296,6 +298,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
           return {
             transporteId: typeof item.transporte === 'object' && item.transporte ? (item.transporte as { id: number }).id : item.transporte,
             contactoTransporteId: typeof item.contacto === 'object' && item.contacto ? (item.contacto as { id: number }).id : item.contacto,
+            almacenId: typeof item.almacen === 'object' && item.almacen ? (item.almacen as { id: number }).id : item.almacen || null,
             region: item.region || null,
             provincia: item.provincia || null,
             distrito: item.distrito || null,
@@ -322,6 +325,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
               data: {
                 transporteId: typeof transporte.transporte === 'object' ? transporte.transporte?.id : transporte.transporte,
                 contactoTransporteId: typeof transporte.contacto === 'object' ? transporte.contacto?.id : transporte.contacto,
+                almacenId: typeof transporte.almacen === 'object' ? transporte.almacen?.id : transporte.almacen || null,
                 region: transporte.region || null,
                 provincia: transporte.provincia || null,
                 distrito: transporte.distrito || null,
@@ -337,6 +341,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
             newTransportes.push({
               transporteId: typeof transporte.transporte === 'object' ? transporte.transporte?.id : transporte.transporte,
               contactoTransporteId: typeof transporte.contacto === 'object' ? transporte.contacto?.id : transporte.contacto,
+              almacenId: typeof transporte.almacen === 'object' ? transporte.almacen?.id : transporte.almacen || null,
               region: transporte.region || null,
               provincia: transporte.provincia || null,
               distrito: transporte.distrito || null,

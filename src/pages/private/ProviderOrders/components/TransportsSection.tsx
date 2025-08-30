@@ -16,6 +16,7 @@ import InputAntd from '@/components/InputAntd';
 import SelectGeneric from '@/components/selects/SelectGeneric';
 import SelectTransports from '@/components/selects/SelectTransports';
 import SelectContactsByTransport from '@/components/selects/SelectContactsByTransport';
+import SelectAlmacenes from '@/components/selects/SelectAlmacenes';
 import SimpleFileUpload from '@/components/SimpleFileUpload';
 import PaymentsList from '@/components/PaymentsList';
 import { usePayments } from '@/hooks/usePayments';
@@ -567,6 +568,42 @@ const TransportsSection = ({ form, isTreasury, isPrivateSale = false, privateSal
                           />
                         </Form.Item>
                       </Grid>
+
+                      {/* Campo dinámico de almacén - solo si destino es ALMACEN */}
+                      <Form.Item noStyle shouldUpdate>
+                        {({ getFieldValue }) => {
+                          const tipoDestino = getFieldValue(['transportes', field.name, 'destino']);
+
+                          if (tipoDestino === 'ALMACEN') {
+                            return (
+                              <Grid size={12}>
+                                <Form.Item
+                                  name={[field.name, 'almacen']}
+                                  rules={[{ required: true, message: 'El almacén es requerido cuando el destino es almacén' }]}
+                                >
+                                  <SelectAlmacenes
+                                    label="Seleccionar Almacén"
+                                    placeholder="Elige el almacén de destino"
+                                    size="large"
+                                    style={{
+                                      border: '1px solid #007bff',
+                                      borderRadius: '8px',
+                                    }}
+                                    onChange={(value, record) => {
+                                      // Guardar tanto el ID como el objeto completo para sincronización
+                                      form.setFieldsValue({
+                                        [`transportes[${field.name}].almacen`]: value,
+                                        [`transportes[${field.name}].almacenCompleto`]: record?.optiondata,
+                                      });
+                                    }}
+                                  />
+                                </Form.Item>
+                              </Grid>
+                            );
+                          }
+                          return null;
+                        }}
+                      </Form.Item>
 
                       {/* Cuarta fila: Subir Cotización y Flete Cotizado */}
                       <Grid size={{ xs: 12, sm: 6 }}>
