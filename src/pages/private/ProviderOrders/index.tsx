@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Tabs } from 'antd';
+import { Tabs, Button } from 'antd';
 import PageContent from '@/components/PageContent';
 import { SaleProps } from '@/services/sales/sales';
 import { ProviderOrderProps } from '@/services/providerOrders/providerOrders';
@@ -12,6 +12,9 @@ import { getAllOrderProviders } from '@/services/providerOrders/providerOrders.r
 import OpTable from '../OpTables/components/OpTable';
 import { notification } from 'antd';
 import { useNavigate } from 'react-router-dom';
+import { Box } from '@mui/material';
+import { Description } from '@mui/icons-material';
+import CargosEntregaModal from '../OpTables/components/CargosEntregaModal';
 
 const { TabPane } = Tabs;
 
@@ -20,6 +23,7 @@ const ProviderOrders = () => {
   const { sales, loadingSales } = useGlobalInformation();
   const [modal, setModal] = useState<ModalStateProps<SaleProps>>(null);
   const [activeTab, setActiveTab] = useState('oc');
+  const [isReportModalVisible, setIsReportModalVisible] = useState<boolean>(false);
 
   // Estados para el tab de OP
   const [loadingOps, setLoadingOps] = useState(false);
@@ -52,6 +56,14 @@ const ProviderOrders = () => {
     navigate(`/provider-orders/${op.id}`);
   };
 
+  const handleOpenReportModal = () => {
+    setIsReportModalVisible(true);
+  };
+
+  const handleCloseReportModal = () => {
+    setIsReportModalVisible(false);
+  };
+
   return (
     <PageContent>
       <Tabs
@@ -69,6 +81,17 @@ const ProviderOrders = () => {
         </TabPane>
 
         <TabPane tab="Tabla OP" key="op">
+          <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end' }}>
+            <Button
+              type="primary"
+              icon={<Description />}
+              onClick={handleOpenReportModal}
+              size="large"
+            >
+              Reporte de Cargos de Entrega
+            </Button>
+          </Box>
+
           <OpTable
             loading={loadingOps}
             data={ops}
@@ -84,6 +107,11 @@ const ProviderOrders = () => {
           data={modal.data!}
         />
       )}
+
+      <CargosEntregaModal
+        visible={isReportModalVisible}
+        onClose={handleCloseReportModal}
+      />
     </PageContent>
   );
 };
