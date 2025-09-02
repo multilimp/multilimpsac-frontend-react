@@ -9,12 +9,12 @@ import { ModalStateEnum } from '@/types/global.enum';
 import ProviderOrdersListDrawer from './components/ProviderOrdersListDrawer';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 import { getAllOrderProviders } from '@/services/providerOrders/providerOrders.requests';
-import OpTable from '../OpTables/components/OpTable';
+import OpTable from './components/OpTable';
 import { notification } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { Box } from '@mui/material';
 import { Description } from '@mui/icons-material';
-import CargosEntregaModal from '../OpTables/components/CargosEntregaModal';
+import CargosEntregaModal from './components/CargosEntregaModal';
 
 const { TabPane } = Tabs;
 
@@ -73,6 +73,16 @@ const ProviderOrders = () => {
         style={{ marginBottom: 16 }}
       >
         <TabPane tab="Tabla de Órdenes de Compra" key="oc">
+          <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end' }}>
+            <Button
+              type="primary"
+              icon={<Description />}
+              onClick={handleOpenReportModal}
+              size="large"
+            >
+              Reporte de Cargos de Entrega
+            </Button>
+          </Box>
           <ProviderOrdersTable
             loading={loadingSales}
             data={sales}

@@ -3,6 +3,7 @@ import { Modal, Form, DatePicker, Button, notification, Space, Typography } from
 import { Print } from '@mui/icons-material';
 import dayjs, { Dayjs } from 'dayjs';
 import { previewCargosEntregaReport } from '@/services/reportes/reportes.request';
+import { generateCargosEntregaPDF } from '@/services/print/print.requests';
 
 const { RangePicker } = DatePicker;
 const { Text } = Typography;
@@ -44,10 +45,10 @@ const CargosEntregaModal: React.FC<CargosEntregaModalProps> = ({
 
             const [startDate, endDate] = dateRange;
 
-            await previewCargosEntregaReport({
-                fechaInicio: startDate.format('YYYY-MM-DD'),
-                fechaFin: endDate.format('YYYY-MM-DD')
-            });
+            await generateCargosEntregaPDF(
+                startDate.format('YYYY-MM-DD'),
+                endDate.format('YYYY-MM-DD')
+            );
 
             notification.success({
                 message: 'Éxito',
