@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button, DatePicker, Space } from 'antd';
 import { Box } from '@mui/material';
 import { FilePdfOutlined } from '@ant-design/icons';
-import { generateCargosEntregaPDF } from '@/services/print/print.requests';
+import { printCargosEntregaMonochrome } from '@/services/print/printMonochrome.requests';
 import dayjs from 'dayjs';
 
 const OpTables = () => {
@@ -54,19 +54,19 @@ const OpTables = () => {
 
     try {
       setGeneratingPDF(true);
-      await generateCargosEntregaPDF(
+      await printCargosEntregaMonochrome(
         fechaInicio.format('YYYY-MM-DD'),
         fechaFin.format('YYYY-MM-DD')
       );
       notification.success({
-        message: 'PDF generado',
-        description: 'El reporte de cargos de entrega se ha descargado correctamente'
+        message: 'Impresión preparada',
+        description: 'El reporte de cargos de entrega se ha abierto para impresión'
       });
     } catch (error) {
-      console.error('Error generando PDF:', error);
+      console.error('Error preparando impresión:', error);
       notification.error({
-        message: 'Error al generar PDF',
-        description: 'No se pudo generar el reporte de cargos de entrega'
+        message: 'Error al preparar impresión',
+        description: 'No se pudo abrir la ventana de impresión'
       });
     } finally {
       setGeneratingPDF(false);
@@ -99,7 +99,7 @@ const OpTables = () => {
                 onClick={handleGenerateCargosEntregaPDF}
                 disabled={!fechaInicio || !fechaFin}
               >
-                Generar Reporte PDF
+                Imprimir Reporte
               </Button>
             </Space>
           </Box>
