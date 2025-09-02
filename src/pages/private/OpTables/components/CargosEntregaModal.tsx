@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Form, DatePicker, Button, notification, Space, Typography } from 'antd';
-import { FileDownload } from '@mui/icons-material';
+import { Print } from '@mui/icons-material';
 import dayjs, { Dayjs } from 'dayjs';
-import { generateCargosEntregaReport } from '@/services/reportes/reportes.request';
+import { previewCargosEntregaReport } from '@/services/reportes/reportes.request';
 
 const { RangePicker } = DatePicker;
 const { Text } = Typography;
@@ -19,7 +19,17 @@ const CargosEntregaModal: React.FC<CargosEntregaModalProps> = ({
     const [form] = Form.useForm();
     const [loading, setLoading] = useState<boolean>(false);
 
-    const handleGenerateReport = async (values: any) => {
+    // Establecer fecha por defecto cuando se abre el modal
+    useEffect(() => {
+        if (visible) {
+            const today = dayjs();
+            form.setFieldsValue({
+                dateRange: [today, today]
+            });
+        }
+    }, [visible, form]);
+
+    const handlePreviewReport = async (values: any) => {
         try {
             setLoading(true);
 
@@ -34,23 +44,21 @@ const CargosEntregaModal: React.FC<CargosEntregaModalProps> = ({
 
             const [startDate, endDate] = dateRange;
 
-            await generateCargosEntregaReport({
+            await previewCargosEntregaReport({
                 fechaInicio: startDate.format('YYYY-MM-DD'),
                 fechaFin: endDate.format('YYYY-MM-DD')
             });
 
             notification.success({
                 message: 'Éxito',
-                description: 'El reporte se ha generado y descargado correctamente',
+                description: 'El reporte se ha abierto para impresión',
             });
 
-            form.resetFields();
-            onClose();
         } catch (error) {
-            console.error('Error generating report:', error);
+            console.error('Error imprimiendo reporte:', error);
             notification.error({
                 message: 'Error',
-                description: 'No se pudo generar el reporte. Inténtalo de nuevo.',
+                description: 'No se pudo abrir la ventana de impresión. Inténtalo de nuevo.',
             });
         } finally {
             setLoading(false);
@@ -71,8 +79,8 @@ const CargosEntregaModal: React.FC<CargosEntregaModalProps> = ({
         <Modal
             title={
                 <Space>
-                    <FileDownload />
-                    <span>Generar Reporte de Cargos de Entrega</span>
+                    <Print />
+                    <span>Imprimir Reporte de Cargos de Entrega</span>
                 </Space>
             }
             open={visible}
@@ -84,7 +92,6 @@ const CargosEntregaModal: React.FC<CargosEntregaModalProps> = ({
             <Form
                 form={form}
                 layout="vertical"
-                onFinish={handleGenerateReport}
                 style={{ marginTop: 20 }}
             >
                 <Form.Item
@@ -113,23 +120,18 @@ const CargosEntregaModal: React.FC<CargosEntregaModalProps> = ({
                         </Button>
                         <Button
                             type="primary"
-                            htmlType="submit"
+                            onClick={() => {
+                                const values = form.getFieldsValue();
+                                handlePreviewReport(values);
+                            }}
                             loading={loading}
-                            icon={<FileDownload />}
+                            icon={<Print />}
                         >
-                            {loading ? 'Generando...' : 'Generar Reporte'}
+                            {loading ? 'Cargando...' : 'Imprimir Reporte'}
                         </Button>
                     </Space>
                 </Form.Item>
             </Form>
-
-            <div style={{ marginTop: 20, padding: 16, backgroundColor: '#f6f6f6', borderRadius: 6 }}>
-                <Text type="secondary">
-                    <strong>Información:</strong> Este reporte incluye todas las órdenes de proveedor
-                    con su fecha de programación dentro del rango seleccionado. Los datos se agrupan
-                    por fecha de programación y muestran detalles de productos, proveedores y destinos.
-                </Text>
-            </div>
         </Modal>
     );
 };
