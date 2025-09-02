@@ -58,15 +58,11 @@ export const printCargosEntregaMonochrome = async (fechaInicio: string, fechaFin
             </td>
             <td class="transporte-section">
               ${transporteAsignado ? `
-              <strong>TRANSPORTE ASIGNADO</strong><br>
               <strong>${escapeHtml(transporteAsignado.transporte.razonSocial || '')}</strong><br>
               <strong>RUC:</strong> ${escapeHtml(transporteAsignado.transporte.ruc || '')}<br>
               ${transporteAsignado.transporte.direccion ? `<strong>DIRECCIÓN:</strong> ${escapeHtml(transporteAsignado.transporte.direccion)}<br>` : ''}
               ${transporteAsignado.contactoTransporte ? `<strong>CONDUCTOR:</strong> ${escapeHtml(transporteAsignado.contactoTransporte.nombre || '')}` : ''}
               ${transporteAsignado.contactoTransporte?.telefono ? ` <strong>TELÉFONO:</strong> ${escapeHtml(transporteAsignado.contactoTransporte.telefono)}` : ''}<br>
-              ${transporteAsignado.codigoTransporte ? `<strong>CÓDIGO:</strong> ${escapeHtml(transporteAsignado.codigoTransporte)}<br>` : ''}
-              ${transporteAsignado.montoFlete ? `<strong>FLETE:</strong> S/ ${transporteAsignado.montoFlete.toFixed(2)}<br>` : ''}
-              ${transporteAsignado.almacen ? `<strong>ALMACÉN:</strong> ${escapeHtml(transporteAsignado.almacen.nombre)}<br>` : ''}
               ` : '<strong>SIN TRANSPORTE ASIGNADO</strong>'}
             </td>
           </tr>
@@ -170,11 +166,11 @@ export const printCargosEntregaMonochrome = async (fechaInicio: string, fechaFin
             padding: 8px;
             background: white;
             color: black;
-            border: none;
+            border: 1px solid #000;
         }
 
         .op-container {
-            border: 3px solid #000;
+            border: 1px solid #000;
             margin-bottom: 15px;
             page-break-inside: avoid;
             background: #fff;
@@ -198,9 +194,9 @@ export const printCargosEntregaMonochrome = async (fechaInicio: string, fechaFin
             background: white !important;
             color: black !important;
             font-weight: bold;
-            width: 60px;
+            width: 80px;
             text-align: center;
-            font-size: 18pt;
+            font-size: 44pt;
             border-right: 2px solid #000;
         }
 
@@ -209,6 +205,15 @@ export const printCargosEntregaMonochrome = async (fechaInicio: string, fechaFin
             font-weight: bold;
             text-align: left;
             padding-left: 10px;
+            font-size: 11pt;
+        }
+
+        .ocf-text {
+            font-size: 10pt;
+            color: #666;
+            font-weight: normal;
+            display: block;
+            margin-top: 3px;
         }
 
         .gestor-estado {
@@ -379,7 +384,10 @@ export const printCargosEntregaMonochrome = async (fechaInicio: string, fechaFin
                         <table class="op-header">
                             <tr>
                                 <td class="op-numero">${index + 1}</td>
-                                <td class="op-codigo">${escapeHtml(op.codigoOp)}${op.ocf ? `<br>OCF: ${escapeHtml(op.ocf)}` : ''}</td>
+                                <td class="op-codigo">
+                                    ${escapeHtml(op.codigoOp)}
+                                    ${op.ocf ? `<span class="ocf-text">OCF: ${escapeHtml(op.ocf)}</span>` : ''}
+                                </td>
                                 <td class="gestor-estado">Gestor:<br><br>Estado:</td>
                             </tr>
                         </table>
@@ -399,15 +407,40 @@ export const printCargosEntregaMonochrome = async (fechaInicio: string, fechaFin
             }
     </div>
 <script>
-  // Auto-imprimir cuando la página se carga
   window.onload = function() {
     window.print();
-    
-    // Cerrar la pestaña después de imprimir (opcional)
-    window.onafterprint = function() {
-      window.close();
-    };
   }
+
+  window.onafterprint = function() {
+    window.close();
+  }
+
+  window.onbeforeunload = function() {
+    return null;
+  }
+
+  let printDialogClosed = false;
+  
+  window.addEventListener('focus', function() {
+    if (!printDialogClosed) {
+      printDialogClosed = true;
+      setTimeout(function() {
+        window.close();
+      }, 500);
+    }
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      window.close();
+    }
+  });
+
+  setTimeout(function() {
+    if (!printDialogClosed) {
+      window.close();
+    }
+  }, 30000);
 </script>
 </body>
 </html>`;
