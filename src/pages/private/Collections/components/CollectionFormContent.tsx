@@ -53,14 +53,14 @@ interface CollectionFormContentProps {
 }
 
 const estadosCobranzaOptions = [
-  { label: 'Normal', value: 'NORMAL' },
   { label: 'REQ - Requerimiento', value: 'REQ' },
-  { label: 'PC1 - Primer Cobro', value: 'PC1' },
-  { label: 'PC2 - Segundo Cobro', value: 'PC2' },
-  { label: 'PC3 - Tercer Cobro', value: 'PC3' },
-  { label: 'CI - Carta de Intimación', value: 'CI' },
-  { label: 'RP - Reclamo Patrimonial', value: 'RP' },
-  { label: 'DJ - Demanda Judicial', value: 'DJ' }
+  { label: 'REIT1 - Reiterativo 1', value: 'REIT1' },
+  { label: 'REIT2 - Reiterativo 2', value: 'REIT2' },
+  { label: 'OCI - Org. control institucional', value: 'OCI' },
+  { label: 'PC - Peru Compras', value: 'PC' },
+  { label: 'MAXIMA AUTORIDAD - Entidad', value: 'MAXIMA_AUTORIDAD' },
+  { label: 'CARTA NOTARIAL', value: 'CARTA_NOTARIAL' },
+  { label: 'DENUNCIA JUDICIAL', value: 'DENUNCIA_JUDICIAL' }
 ];
 
 const etapasSiafOptions = [
@@ -108,9 +108,9 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
   const porcentajeDetraccion = parseFloat(sale.facturacion?.detraccion?.toString() || '0');
   const valorRetencion = (importeTotal * porcentajeRetencion / 100).toFixed(2);
   const valorDetraccion = (importeTotal * porcentajeDetraccion / 100).toFixed(2);
-  
+
   // Calcular neto cobrado usando la penalidad actual del estado
-  const netoCobrado = (importeTotal - parseFloat(valorRetencion) - parseFloat(valorDetraccion) - currentPenalidad).toFixed(2);  useEffect(() => {
+  const netoCobrado = (importeTotal - parseFloat(valorRetencion) - parseFloat(valorDetraccion) - currentPenalidad).toFixed(2); useEffect(() => {
     loadInitialData();
   }, [sale.id]);
 
@@ -231,7 +231,7 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
     const changedFields = getChangedFields(currentValues);
     const hasChangesNow = Object.keys(changedFields).length > 0;
     setHasChanges(hasChangesNow);
-    
+
     // Actualizar penalidad para recalcular neto cobrado en tiempo real
     const newPenalidad = parseFloat(currentValues.penalidad || '0');
     setCurrentPenalidad(newPenalidad);
@@ -265,7 +265,7 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
       console.log('Campos que cambiaron:', changedFields);
 
       await updateCobranzaFields(sale.id, changedFields);
-      
+
       // Actualizar los datos originales con los nuevos valores
       setOriginalCobranzaData(prev => ({ ...prev, ...changedFields }));
 
@@ -294,9 +294,9 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
 
   const handleEditGestion = (gestion: GestionCobranza) => {
     setEditingGestion(gestion);
-    
+
     // Convertir arrays a strings para el formulario
-    const archivosAdjuntosStr = Array.isArray(gestion.archivosAdjuntosNotasGestion) 
+    const archivosAdjuntosStr = Array.isArray(gestion.archivosAdjuntosNotasGestion)
       ? gestion.archivosAdjuntosNotasGestion.join(', ')
       : gestion.archivosAdjuntosNotasGestion || '';
 
@@ -331,7 +331,7 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
   const handleSaveGestion = async (values: GestionFormValues) => {
     try {
       // Procesar arrays de strings separados por comas
-      const archivosAdjuntos = typeof values.archivosAdjuntosNotasGestion === 'string' 
+      const archivosAdjuntos = typeof values.archivosAdjuntosNotasGestion === 'string'
         ? values.archivosAdjuntosNotasGestion.split(',').map((s: string) => s.trim()).filter((s: string) => s.length > 0)
         : values.archivosAdjuntosNotasGestion || [];
 
@@ -463,15 +463,15 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
           children={
             <Box sx={{ my: 1 }}>
               {/* Grid minimalista - Exactamente 3 columnas */}
-              <Box sx={{ 
-                display: 'grid', 
-                gridTemplateColumns: 'repeat(3, 1fr)', 
+              <Box sx={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, 1fr)',
                 gap: 1.5,
                 mb: 2
               }}>
                 {/* Card 1: SIAF */}
-                <Card sx={{ 
-                  backgroundColor: 'rgba(255, 255, 255, 0.95)', 
+                <Card sx={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
                   border: '1px solid #e0e0e0',
                   minHeight: '70px',
                   display: 'flex',
@@ -489,8 +489,8 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                 </Card>
 
                 {/* Card 2: Fecha SIAF */}
-                <Card sx={{ 
-                  backgroundColor: 'rgba(255, 255, 255, 0.95)', 
+                <Card sx={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
                   border: '1px solid #e0e0e0',
                   minHeight: '70px',
                   display: 'flex',
@@ -508,8 +508,8 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                 </Card>
 
                 {/* Card 3: Unidad Ejecutora */}
-                <Card sx={{ 
-                  backgroundColor: 'rgba(255, 255, 255, 0.95)', 
+                <Card sx={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
                   border: '1px solid #e0e0e0',
                   minHeight: '70px',
                   display: 'flex',
@@ -527,8 +527,8 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                 </Card>
 
                 {/* Card 4: Factura */}
-                <Card sx={{ 
-                  backgroundColor: 'rgba(255, 255, 255, 0.95)', 
+                <Card sx={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
                   border: '1px solid #e0e0e0',
                   minHeight: '70px',
                   display: 'flex',
@@ -546,8 +546,8 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                 </Card>
 
                 {/* Card 5: Fecha Factura */}
-                <Card sx={{ 
-                  backgroundColor: 'rgba(255, 255, 255, 0.95)', 
+                <Card sx={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
                   border: '1px solid #e0e0e0',
                   minHeight: '70px',
                   display: 'flex',
@@ -565,8 +565,8 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                 </Card>
 
                 {/* Card 6: Fecha Entrega OC */}
-                <Card sx={{ 
-                  backgroundColor: 'rgba(255, 255, 255, 0.95)', 
+                <Card sx={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
                   border: '1px solid #e0e0e0',
                   minHeight: '70px',
                   display: 'flex',
@@ -589,9 +589,9 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                 <Box sx={{
                   borderTop: '1px solid rgba(255, 255, 255, 0.2)'
                 }}>
-                  <Typography variant="caption" sx={{ 
-                    color: '#BDBDBD', 
-                    fontSize: '0.75rem', 
+                  <Typography variant="caption" sx={{
+                    color: '#BDBDBD',
+                    fontSize: '0.75rem',
                     fontWeight: 600,
                     mb: 1,
                     pl: 1,
@@ -599,16 +599,16 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                   }}>
                     DOCUMENTOS DISPONIBLES
                   </Typography>
-                  
-                  <Box sx={{ 
-                    display: 'grid', 
-                    gridTemplateColumns: 'repeat(3, 1fr)', 
+
+                  <Box sx={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(3, 1fr)',
                     gap: 1
                   }}>
                     {/* Perú Compras */}
                     {sale?.documentoPeruCompras && (
-                      <Card sx={{ 
-                        backgroundColor: 'rgba(255, 255, 255, 0.9)', 
+                      <Card sx={{
+                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
                         border: '1px solid #e0e0e0',
                         minHeight: '60px',
                         display: 'flex',
@@ -644,8 +644,8 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
 
                     {/* OCE */}
                     {sale?.documentoOce && (
-                      <Card sx={{ 
-                        backgroundColor: 'rgba(255, 255, 255, 0.9)', 
+                      <Card sx={{
+                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
                         border: '1px solid #e0e0e0',
                         minHeight: '60px',
                         display: 'flex',
@@ -681,8 +681,8 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
 
                     {/* OCF */}
                     {sale?.documentoOcf && (
-                      <Card sx={{ 
-                        backgroundColor: 'rgba(255, 255, 255, 0.9)', 
+                      <Card sx={{
+                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
                         border: '1px solid #e0e0e0',
                         minHeight: '60px',
                         display: 'flex',
@@ -722,9 +722,9 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
           }
         >
         </StepItemContent>
-        
+
         {/* mostrar productos de oc */}
-        { sale.productos && sale.productos.length > 0 && (
+        {sale.productos && sale.productos.length > 0 && (
           <Card sx={{ my: 3 }}>
             <CardContent>
               <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
@@ -793,24 +793,24 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
 
                 {/* Fila 2 */}
                 <Col span={8}>
-                  <Form.Item 
-                    label={porcentajeRetencion > 0 ? `Retención ${porcentajeRetencion}%` : 'Retención 0%'} 
+                  <Form.Item
+                    label={porcentajeRetencion > 0 ? `Retención ${porcentajeRetencion}%` : 'Retención 0%'}
                   >
-                    <InputAntd 
-                      disabled 
-                      placeholder="0.00" 
+                    <InputAntd
+                      disabled
+                      placeholder="0.00"
                       value={formatCurrency(parseFloat(valorRetencion))}
                       style={{ backgroundColor: '#f5f5f5' }}
                     />
                   </Form.Item>
                 </Col>
                 <Col span={8}>
-                  <Form.Item 
-                    label={porcentajeDetraccion > 0 ? `Detracción ${porcentajeDetraccion}%` : 'Detracción 0%'} 
+                  <Form.Item
+                    label={porcentajeDetraccion > 0 ? `Detracción ${porcentajeDetraccion}%` : 'Detracción 0%'}
                   >
-                    <InputAntd 
-                      disabled 
-                      placeholder="0.00" 
+                    <InputAntd
+                      disabled
+                      placeholder="0.00"
                       value={formatCurrency(parseFloat(valorDetraccion))}
                       style={{ backgroundColor: '#f5f5f5' }}
                     />
@@ -825,9 +825,9 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                 {/* Fila 3 */}
                 <Col span={8}>
                   <Form.Item label="Neto a Cobrar">
-                    <InputAntd 
-                      disabled 
-                      placeholder="0.00" 
+                    <InputAntd
+                      disabled
+                      placeholder="0.00"
                       value={formatCurrency(parseFloat(netoCobrado))}
                       style={{ backgroundColor: '#f5f5f5' }}
                     />
@@ -943,9 +943,9 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                         <TableCell>
                           <Stack direction="column" spacing={0.5}>
                             {gestion.voucherPagoUrl && (
-                              <Chip 
-                                label="Voucher" 
-                                size="small" 
+                              <Chip
+                                label="Voucher"
+                                size="small"
                                 variant="outlined"
                                 color="primary"
                                 onClick={() => window.open(gestion.voucherPagoUrl, '_blank')}
@@ -953,9 +953,9 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                               />
                             )}
                             {gestion.cartaAmpliacionUrl && (
-                              <Chip 
-                                label="Carta Amp." 
-                                size="small" 
+                              <Chip
+                                label="Carta Amp."
+                                size="small"
                                 variant="outlined"
                                 color="secondary"
                                 onClick={() => window.open(gestion.cartaAmpliacionUrl, '_blank')}
@@ -963,9 +963,9 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                               />
                             )}
                             {gestion.capturaEnvioDocumentoUrl && (
-                              <Chip 
-                                label="Captura Envío" 
-                                size="small" 
+                              <Chip
+                                label="Captura Envío"
+                                size="small"
                                 variant="outlined"
                                 color="info"
                                 onClick={() => window.open(gestion.capturaEnvioDocumentoUrl, '_blank')}
@@ -1057,8 +1057,8 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                 name="tipoCobranza"
                 rules={[{ required: true, message: 'Seleccione un tipo' }]}
               >
-                <Select 
-                  options={tipoCobranzaOptions} 
+                <Select
+                  options={tipoCobranzaOptions}
                   placeholder="Especial o Normal"
                 />
               </Form.Item>
@@ -1069,7 +1069,7 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                 name="estadoCobranza"
                 rules={[{ required: true, message: 'Seleccione un estado' }]}
               >
-                <Select 
+                <Select
                   options={estadosCobranzaOptions}
                   placeholder="Seleccionar estado"
                 />
@@ -1083,8 +1083,8 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
             name="notaGestion"
             rules={[{ required: true, message: 'Ingrese una nota' }]}
           >
-            <Input.TextArea 
-              rows={3} 
+            <Input.TextArea
+              rows={3}
               placeholder="Detalle de la gestión realizada..."
               maxLength={500}
               showCount
@@ -1099,7 +1099,7 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                 name="voucherPagoUrl"
                 tooltip="Subir voucher de pago según requerimientos"
               >
-                <SimpleFileUpload  />
+                <SimpleFileUpload />
               </Form.Item>
             </Col>
             <Col span={12}>
@@ -1145,8 +1145,8 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                 name="archivosAdjuntosNotasGestion"
                 tooltip="Subir múltiples archivos a notas de gestión"
               >
-                <Input.TextArea 
-                  rows={2} 
+                <Input.TextArea
+                  rows={2}
                   placeholder="URL1, URL2, URL3..."
                 />
               </Form.Item>
@@ -1157,8 +1157,8 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                 name="documentosRegistrados"
                 tooltip="Registro de documentos según requerimientos"
               >
-                <Input.TextArea 
-                  rows={2} 
+                <Input.TextArea
+                  rows={2}
                   placeholder="Documento1, Documento2..."
                 />
               </Form.Item>
@@ -1171,8 +1171,8 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
             name="notaEspecialEntrega"
             tooltip="Nota especial de entrega según requerimientos"
           >
-            <Input.TextArea 
-              rows={2} 
+            <Input.TextArea
+              rows={2}
               placeholder="Instrucciones especiales para la entrega..."
               maxLength={300}
               showCount
