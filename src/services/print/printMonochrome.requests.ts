@@ -3,26 +3,26 @@ import { CargosEntregaData } from './print.requests';
 
 // Función optimizada para impresión monocromatica en pestaña
 export const printCargosEntregaMonochrome = async (fechaInicio: string, fechaFin: string): Promise<void> => {
-    try {
-        // Obtener datos del backend
-        const response = await apiClient.get(`/print/cargos-entrega/data`, {
-            params: { fechaInicio, fechaFin }
-        });
+  try {
+    // Obtener datos del backend
+    const response = await apiClient.get(`/print/cargos-entrega/data`, {
+      params: { fechaInicio, fechaFin }
+    });
 
-        const data: CargosEntregaData = response.data.data;
+    const data: CargosEntregaData = response.data.data;
 
-        // Función auxiliar para escapar HTML
-        const escapeHtml = (text: string): string => {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        };
+    // Función auxiliar para escapar HTML
+    const escapeHtml = (text: string): string => {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    };
 
-        // Función para generar HTML de productos en formato de tabla compacta
-        const generateProductosHtml = (productos: any[]): string => {
-            if (!productos || productos.length === 0) return '';
+    // Función para generar HTML de productos en formato de tabla compacta
+    const generateProductosHtml = (productos: any[]): string => {
+      if (!productos || productos.length === 0) return '';
 
-            return `
+      return `
         <table class="tabla-productos">
           <thead>
             <tr>
@@ -42,39 +42,38 @@ export const printCargosEntregaMonochrome = async (fechaInicio: string, fechaFin
           </tbody>
         </table>
       `;
-        };
+    };
 
-        // Función para generar sección de proveedor y transporte
-        const generateProveedorTransporteHtml = (proveedor: any, transporteAsignado: any): string => {
-            if (!proveedor && !transporteAsignado) return '';
+    // Función para generar sección de proveedor y transporte
+    const generateProveedorTransporteHtml = (proveedor: any, transporteAsignado: any): string => {
+      if (!proveedor && !transporteAsignado) return '';
 
-            return `
+      return `
         <table class="info-horizontal">
           <tr>
             <td class="proveedor-section">
               <strong>PROVEEDOR</strong><br>
               ${escapeHtml(proveedor?.razonSocial || '')}<br>
-              ${proveedor?.contacto ? `<strong>VENTAS:</strong> ${escapeHtml(proveedor.contacto.nombre || '')} <strong>TELÉFONO:</strong> ${escapeHtml(proveedor.contacto.telefono || '')}` : ''}
+              ${proveedor?.contacto ? `<strong>${escapeHtml(proveedor.contacto.cargo || 'CONTACTO')}:</strong> ${escapeHtml(proveedor.contacto.nombre || '')} <strong>TELÉFONO:</strong> ${escapeHtml(proveedor.contacto.telefono || '')}` : ''}
             </td>
             <td class="transporte-section">
               ${transporteAsignado ? `
               <strong>${escapeHtml(transporteAsignado.transporte.razonSocial || '')}</strong><br>
-              <strong>RUC:</strong> ${escapeHtml(transporteAsignado.transporte.ruc || '')}<br>
               ${transporteAsignado.transporte.direccion ? `<strong>DIRECCIÓN:</strong> ${escapeHtml(transporteAsignado.transporte.direccion)}<br>` : ''}
-              ${transporteAsignado.contactoTransporte ? `<strong>CONDUCTOR:</strong> ${escapeHtml(transporteAsignado.contactoTransporte.nombre || '')}` : ''}
+              ${transporteAsignado.contactoTransporte ? `<strong>${escapeHtml(transporteAsignado.contactoTransporte.cargo || 'CONTACTO')}:</strong> ${escapeHtml(transporteAsignado.contactoTransporte.nombre || '')}` : ''}
               ${transporteAsignado.contactoTransporte?.telefono ? ` <strong>TELÉFONO:</strong> ${escapeHtml(transporteAsignado.contactoTransporte.telefono)}` : ''}<br>
               ` : '<strong>SIN TRANSPORTE ASIGNADO</strong>'}
             </td>
           </tr>
         </table>
       `;
-        };
+    };
 
-        // Función para generar sección de destino
-        const generateDestinoHtml = (destino: any): string => {
-            if (!destino) return '';
+    // Función para generar sección de destino
+    const generateDestinoHtml = (destino: any): string => {
+      if (!destino) return '';
 
-            return `
+      return `
         <table class="destino-table">
           <tr>
             <td class="destino-label"><strong>DESTINO</strong><br>Cliente</td>
@@ -83,19 +82,19 @@ export const printCargosEntregaMonochrome = async (fechaInicio: string, fechaFin
               <strong>DESTINO:</strong> ${escapeHtml(destino.direccion || '')}<br>
               ${destino.distrito ? `${escapeHtml(destino.distrito)} / ` : ''}${destino.provincia ? `${escapeHtml(destino.provincia)} / ` : ''}${destino.departamento ? escapeHtml(destino.departamento) : ''}<br>
               ${destino.referencia ? `<strong>REFERENCIA:</strong> ${escapeHtml(destino.referencia)}<br>` : ''}
-              ${destino.contacto ? `<strong>JEFE DE ALMACÉN:</strong> ${escapeHtml(destino.contacto.nombre || '')}<br>` : ''}
+              ${destino.contacto ? `<strong>${escapeHtml(destino.contacto.cargo || 'CONTACTO')}:</strong> ${escapeHtml(destino.contacto.nombre || '')}<br>` : ''}
               ${destino.contacto?.telefono ? `<strong>TELÉFONO:</strong> ${escapeHtml(destino.contacto.telefono)}<br>` : ''}
             </td>
           </tr>
         </table>
       `;
-        };
+    };
 
-        // Función para generar sección de observación
-        const generateObservacionHtml = (observacion: string): string => {
-            if (!observacion) return '';
+    // Función para generar sección de observación
+    const generateObservacionHtml = (observacion: string): string => {
+      if (!observacion) return '';
 
-            return `
+      return `
         <table class="observacion-table">
           <tr>
             <td class="observacion-label"><strong>OBSERVACIÓN</strong></td>
@@ -103,10 +102,10 @@ export const printCargosEntregaMonochrome = async (fechaInicio: string, fechaFin
           </tr>
         </table>
       `;
-        };
+    };
 
-        // Generar HTML completo con diseño monocromatico
-        const html = `
+    // Generar HTML completo con diseño monocromatico
+    const html = `
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -130,6 +129,12 @@ export const printCargosEntregaMonochrome = async (fechaInicio: string, fechaFin
         }
 
         @media print {
+            * {
+                -webkit-print-color-adjust: exact !important;
+                color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            
             body {
                 padding: 5px;
                 font-size: 9pt;
@@ -217,7 +222,7 @@ export const printCargosEntregaMonochrome = async (fechaInicio: string, fechaFin
         }
 
         .gestor-estado {
-            text-align: right;
+            text-align: left;
             padding-right: 10px;
             font-weight: normal;
         }
@@ -229,7 +234,7 @@ export const printCargosEntregaMonochrome = async (fechaInicio: string, fechaFin
         }
 
         .producto-header {
-            background: green !important;
+            background: #000 !important;
             color: white !important;
             padding: 6px;
             text-align: center;
@@ -240,7 +245,7 @@ export const printCargosEntregaMonochrome = async (fechaInicio: string, fechaFin
         }
 
         .descripcion-header {
-            background: green !important;
+            background: #000 !important;
             color: white !important;
             padding: 6px;
             text-align: center;
@@ -251,7 +256,7 @@ export const printCargosEntregaMonochrome = async (fechaInicio: string, fechaFin
         }
 
         .cantidad-header {
-            background: green !important;
+            background: #000 !important;
             color: white !important;
             padding: 6px;
             text-align: center;
@@ -376,7 +381,7 @@ export const printCargosEntregaMonochrome = async (fechaInicio: string, fechaFin
 <body>
     <div class="contenedor">
         ${data.fechasConCargos && data.fechasConCargos.length > 0 ?
-                data.fechasConCargos.map(fechaData => `
+        data.fechasConCargos.map(fechaData => `
             <div class="fecha-seccion">
                 <h2 class="fecha-titulo">Fecha de Programación: ${escapeHtml(fechaData.fecha)}</h2>
                 ${fechaData.ops.map((op, index) => `
@@ -400,11 +405,11 @@ export const printCargosEntregaMonochrome = async (fechaInicio: string, fechaFin
                 `).join('')}
             </div>
           `).join('') :
-                `<div class="sin-datos">
+        `<div class="sin-datos">
             <h3>No se encontraron datos</h3>
             <p>No hay órdenes de proveedor para el período seleccionado</p>
           </div>`
-            }
+      }
     </div>
 <script>
   window.onload = function() {
@@ -445,33 +450,33 @@ export const printCargosEntregaMonochrome = async (fechaInicio: string, fechaFin
 </body>
 </html>`;
 
-        // Abrir una nueva pestaña con el contenido HTML para imprimir
-        const printTab = window.open('', '_blank');
+    // Abrir una nueva pestaña con el contenido HTML para imprimir
+    const printTab = window.open('', '_blank');
 
-        if (printTab) {
-            printTab.document.open();
-            printTab.document.write(html);
-            printTab.document.close();
+    if (printTab) {
+      printTab.document.open();
+      printTab.document.write(html);
+      printTab.document.close();
 
-            // Enfocar la pestaña para que aparezca el diálogo de impresión
-            printTab.focus();
-        } else {
-            // Fallback si no se puede abrir la pestaña (bloqueador de popups)
-            const blob = new Blob([html], { type: 'text/html' });
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `cargos-entrega-${fechaInicio}-${fechaFin}.html`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
+      // Enfocar la pestaña para que aparezca el diálogo de impresión
+      printTab.focus();
+    } else {
+      // Fallback si no se puede abrir la pestaña (bloqueador de popups)
+      const blob = new Blob([html], { type: 'text/html' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `cargos-entrega-${fechaInicio}-${fechaFin}.html`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
 
-            throw new Error('No se pudo abrir la pestaña de impresión. Verifica que los popups estén habilitados.');
-        }
-
-    } catch (error) {
-        console.error('Error al imprimir reporte monocromatico de cargos de entrega:', error);
-        throw new Error('Error al generar el reporte monocromatico de cargos de entrega');
+      throw new Error('No se pudo abrir la pestaña de impresión. Verifica que los popups estén habilitados.');
     }
+
+  } catch (error) {
+    console.error('Error al imprimir reporte monocromatico de cargos de entrega:', error);
+    throw new Error('Error al generar el reporte monocromatico de cargos de entrega');
+  }
 };

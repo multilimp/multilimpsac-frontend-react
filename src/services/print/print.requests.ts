@@ -37,6 +37,7 @@ export interface CargosEntregaData {
         contacto?: {
           nombre: string;
           telefono: string;
+          cargo?: string;
         };
       };
       transporteAsignado?: {
@@ -49,6 +50,7 @@ export interface CargosEntregaData {
         contactoTransporte?: {
           nombre: string;
           telefono: string;
+          cargo?: string;
         };
         codigoTransporte: string;
         direccion?: string;
@@ -72,6 +74,7 @@ export interface CargosEntregaData {
         contacto?: {
           nombre: string;
           telefono: string;
+          cargo?: string;
         };
       };
       observacion?: string;
