@@ -2,14 +2,14 @@ import { Form, notification, Spin } from 'antd';
 import InputAntd from '@/components/InputAntd';
 import SubmitButton from '@/components/SubmitButton';
 import { CompanyProps } from '@/services/companies/company';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, Typography, Divider, Box } from '@mui/material';
 import SelectRegions from '@/components/selects/SelectRegions';
 import SelectProvinces from '@/components/selects/SelectProvinces';
 import SelectDistricts from '@/components/selects/SelectDistricts';
-import InputFile from '../../../../components/InputFile';
 import { EMAIL_PATTERN, PHONE_PATTERN } from '@/utils/constants';
 import { useEffect, useState } from 'react';
 import { postCompany, putCompany } from '@/services/companies/company.requests';
+import SimpleFileUpload from '@/components/SimpleFileUpload';
 
 interface CompaniesModalProps {
   data?: CompanyProps;
@@ -22,45 +22,73 @@ const CompaniesModal = ({ data, handleClose, handleReload }: CompaniesModalProps
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!data) return;
+    if (!data) {
+      form.setFieldsValue({
+        departamento: '',
+        provincia: '',
+        distrito: '',
+        web: '',
+        logo: '',
+        departamentoId: null,
+        provinciaId: null,
+        distritoId: null,
+      });
+      return;
+    }
     form.setFieldsValue({
       ruc: data.ruc,
       razon_social: data.razonSocial,
       telefono: data.telefono,
       email: data.email,
-      web: data.web,
-      departamentoComplete: data.departamento,
-      departamento: data.departamento?.id,
-      provinciaComplete: data.provincia,
-      provincia: data.provincia?.id,
-      distritoComplete: data.distrito,
-      distrito: data.distrito?.id,
+      web: data.web || '',
+      departamento: data.departamento || '',
+      provincia: data.provincia || '',
+      distrito: data.distrito || '',
       direccion: data.direccion,
+      logo: data.logo || '',
+      departamentoId: null,
+      provinciaId: null,
+      distritoId: null,
     });
-  }, [data]);
+  }, [data, form]);
 
-  const handleSubmit = async (raw: Record<string, string | File>) => {
+  const handleSubmit = async (values: Record<string, any>) => {
     try {
       setLoading(true);
 
-      const body: Record<string, string | undefined | File> = {
-        ...raw,
-        departamento: raw.departamento ? JSON.stringify(raw.departamentoComplete) : undefined,
-        provincia: raw.provincia ? JSON.stringify(raw.provinciaComplete) : undefined,
-        distrito: raw.distrito ? JSON.stringify(raw.distritoComplete) : undefined,
+      // Preparar datos para el backend con nombres de ubicación
+      const body = {
+        ruc: values.ruc,
+        razon_social: values.razon_social,
+        telefono: values.telefono,
+        email: values.email,
+        web: values.web,
+        departamento: values.departamento, // Guardar el nombre, no el objeto
+        provincia: values.provincia,       // Guardar el nombre, no el objeto
+        distrito: values.distrito,         // Guardar el nombre, no el objeto
+        direccion: values.direccion,
+        logo: values.logo,
       };
 
-      delete body.departamentoComplete;
-      delete body.provinciaComplete;
-      delete body.distritoComplete;
+      if (data) {
+        await putCompany(data.id, body);
+      } else {
+        await postCompany(body);
+      }
 
-      if (data) await putCompany(data.id, body);
-      else await postCompany(body);
+      notification.success({
+        message: 'Empresa guardada',
+        description: `La empresa se ${data ? 'actualizó' : 'creó'} correctamente.`,
+      });
 
       handleClose();
       handleReload();
     } catch (error) {
-      notification.error({ message: 'No se logró guardar la información de la empresa', description: String(error) });
+      console.error('Error al guardar empresa:', error);
+      notification.error({
+        message: 'Error al guardar',
+        description: 'No se pudo guardar la información de la empresa.'
+      });
     } finally {
       setLoading(false);
     }
@@ -84,132 +112,177 @@ const CompaniesModal = ({ data, handleClose, handleReload }: CompaniesModalProps
       <DialogTitle variant="h5" textAlign="center">
         {data ? 'Editar' : 'Agregar'} empresa
       </DialogTitle>
-      <DialogContent>
+      <DialogContent sx={{ padding: 2 }}>
         <Spin spinning={loading}>
           <Form form={form} onFinish={handleSubmit} layout="vertical" style={{ marginTop: 8 }} autoComplete="off">
-            <Grid container spacing={2}>
-              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <Form.Item
-                  name="ruc"
-                  rules={[
-                    { required: true, message: 'El RUC es requerido' },
-                    { len: 11, message: 'Ingrese un RUC válido' },
-                  ]}
-                >
-                  <InputAntd label="RUC" />
-                </Form.Item>
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6, md: 8 }}>
-                <Form.Item name="razon_social" rules={[{ required: true, message: 'La razón social es requerida' }]}>
-                  <InputAntd label="Razón social" />
-                </Form.Item>
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <Form.Item
-                  name="telefono"
-                  rules={[
-                    { required: true, message: 'El teléfono o celular es requerido' },
-                    { min: 6, max: 9, message: 'Ingrese un teléfeno o celular válido' },
-                    { pattern: PHONE_PATTERN, message: 'Ingrese un teléfono o celular válido' },
-                  ]}
-                >
-                  <InputAntd label="Tel / Cel" />
-                </Form.Item>
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <Form.Item
-                  name="email"
-                  rules={[
-                    { required: true, message: 'El correo electrónico es requerido' },
-                    { pattern: EMAIL_PATTERN, message: 'Ingrese un correo electrónico válido' },
-                  ]}
-                >
-                  <InputAntd label="Correo electrónico" />
-                </Form.Item>
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <Form.Item name="web">
-                  <InputAntd label="Dirección Web" />
-                </Form.Item>
-              </Grid>
 
-              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <Form.Item name="departamentoComplete" noStyle />
-                <Form.Item name="departamento">
-                  <SelectRegions
-                    label="Departamento"
-                    onChange={(value, record: any) =>
-                      form.setFieldsValue({
-                        departamento: value,
-                        departamentoComplete: record?.optiondata,
-                        provincia: null,
-                        provinciaComplete: null,
-                        distrito: null,
-                        distritoComplete: null,
-                      })
-                    }
-                  />
-                </Form.Item>
+            {/* Sección: Información Básica */}
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="h6" sx={{ mb: 1, color: 'primary.main', fontWeight: 'bold' }}>
+                📋 Información Básica
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Form.Item
+                    name="ruc"
+                    rules={[
+                      { required: true, message: 'El RUC es requerido' },
+                      { len: 11, message: 'Ingrese un RUC válido de 11 dígitos' },
+                      { pattern: /^\d+$/, message: 'El RUC debe contener solo números' },
+                    ]}
+                  >
+                    <InputAntd label="RUC" />
+                  </Form.Item>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 8 }}>
+                  <Form.Item name="razon_social" rules={[{ required: true, message: 'La razón social es requerida' }]}>
+                    <InputAntd label="Razón social" />
+                  </Form.Item>
+                </Grid>
               </Grid>
-              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <Form.Item name="provinciaComplete" noStyle />
-                <Form.Item noStyle shouldUpdate>
-                  {({ getFieldValue }) => (
-                    <Form.Item name="provincia">
-                      <SelectProvinces
-                        label="Provincia"
-                        regionId={getFieldValue('departamento')}
-                        onChange={(value, record: any) =>
-                          form.setFieldsValue({
-                            provincia: value,
-                            provinciaComplete: record?.optiondata,
-                            distrito: null,
-                            distritoComplete: null,
-                          })
-                        }
-                      />
-                    </Form.Item>
-                  )}
-                </Form.Item>
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <Form.Item name="distritoComplete" noStyle />
-                <Form.Item noStyle shouldUpdate>
-                  {({ getFieldValue }) => (
-                    <Form.Item name="distrito">
-                      <SelectDistricts
-                        label="Distrito"
-                        provinceId={getFieldValue('provincia')}
-                        onChange={(value, record: any) =>
-                          form.setFieldsValue({
-                            distrito: value,
-                            distritoComplete: record?.optiondata,
-                          })
-                        }
-                      />
-                    </Form.Item>
-                  )}
-                </Form.Item>
-              </Grid>
+            </Box>
 
-              <Grid size={{ xs: 12, sm: 6, md: 6 }}>
-                <Form.Item name="direccion" rules={[{ required: true, message: 'La dirección es requerida' }]}>
-                  <InputAntd label="Dirección" />
-                </Form.Item>
+            <Divider sx={{ my: 1.5 }} />
+
+            {/* Sección: Información de Contacto */}
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="h6" sx={{ mb: 1, color: 'primary.main', fontWeight: 'bold' }}>
+                📞 Información de Contacto
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Form.Item
+                    name="telefono"
+                    rules={[
+                      { required: true, message: 'El teléfono o celular es requerido' },
+                      { min: 7, max: 15, message: 'Ingrese un teléfono o celular válido (7-15 dígitos)' },
+                      { pattern: PHONE_PATTERN, message: 'Ingrese un teléfono o celular válido' },
+                    ]}
+                  >
+                    <InputAntd label="Tel / Cel" />
+                  </Form.Item>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Form.Item
+                    name="email"
+                    rules={[
+                      { required: true, message: 'El correo electrónico es requerido' },
+                      { pattern: EMAIL_PATTERN, message: 'Ingrese un correo electrónico válido' },
+                    ]}
+                  >
+                    <InputAntd label="Correo electrónico" />
+                  </Form.Item>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Form.Item name="web">
+                    <InputAntd label="Dirección Web" />
+                  </Form.Item>
+                </Grid>
               </Grid>
-              <Grid size={{ xs: 12, sm: 6, md: 6 }}>
-                <Form.Item name="logo">
-                  <InputFile label="Seleccione el logo de la empresa" onChange={(file) => form.setFieldValue('logo', file)} />
-                </Form.Item>
-                <Button className="d-none" type="submit">
-                  SUBMIT
-                </Button>
+            </Box>
+
+            <Divider sx={{ my: 1.5 }} />
+
+            {/* Sección: Ubicación */}
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="h6" sx={{ mb: 1, color: 'primary.main', fontWeight: 'bold' }}>
+                📍 Ubicación
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Form.Item name="departamento">
+                    <SelectRegions
+                      label="Departamento"
+                      onChange={(value, record: any) => {
+                        const departamentoName = record?.optiondata?.name || '';
+                        form.setFieldsValue({
+                          departamento: departamentoName,
+                          departamentoId: value,
+                          provincia: null,
+                          provinciaId: null,
+                          distrito: null,
+                          distritoId: null,
+                        });
+                      }}
+                    />
+                  </Form.Item>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Form.Item noStyle shouldUpdate>
+                    {({ getFieldValue }) => (
+                      <Form.Item name="provincia">
+                        <SelectProvinces
+                          label="Provincia"
+                          regionId={getFieldValue('departamentoId')}
+                          onChange={(value, record: any) => {
+                            const provinciaName = record?.optiondata?.name || '';
+                            form.setFieldsValue({
+                              provincia: provinciaName,
+                              provinciaId: value,
+                              distrito: null,
+                              distritoId: null,
+                            });
+                          }}
+                        />
+                      </Form.Item>
+                    )}
+                  </Form.Item>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Form.Item noStyle shouldUpdate>
+                    {({ getFieldValue }) => (
+                      <Form.Item name="distrito">
+                        <SelectDistricts
+                          label="Distrito"
+                          provinceId={getFieldValue('provinciaId')}
+                          onChange={(value, record: any) => {
+                            const distritoName = record?.optiondata?.name || '';
+                            form.setFieldsValue({
+                              distrito: distritoName,
+                              distritoId: value,
+                            });
+                          }}
+                        />
+                      </Form.Item>
+                    )}
+                  </Form.Item>
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <Form.Item name="direccion" rules={[{ required: true, message: 'La dirección es requerida' }]}>
+                    <InputAntd label="Dirección completa" />
+                  </Form.Item>
+                </Grid>
               </Grid>
-            </Grid>
+            </Box>
+
+            <Divider sx={{ my: 1.5 }} />
+
+            {/* Sección: Recursos Adicionales */}
+            <Box sx={{ mb: 1 }}>
+              <Typography variant="h6" sx={{ mb: 1, color: 'primary.main', fontWeight: 'bold' }}>
+                🎨 Recursos Adicionales
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <Form.Item name="logo">
+                    <SimpleFileUpload label="Logo de la empresa" accept='.png, .jpg, .jpeg' />
+                  </Form.Item>
+                </Grid>
+              </Grid>
+            </Box>
+
+            {/* Campos ocultos para los IDs de ubicación */}
+            <Form.Item name="departamentoId" noStyle />
+            <Form.Item name="provinciaId" noStyle />
+            <Form.Item name="distritoId" noStyle />
+
+            <Button className="d-none" type="submit">
+              SUBMIT
+            </Button>
           </Form>
         </Spin>
       </DialogContent>
-      <DialogActions>
+      <DialogActions sx={{ padding: 2, gap: 1.5 }}>
         <Button variant="outlined" color="error" onClick={handleClose} disabled={loading}>
           Cancelar
         </Button>
