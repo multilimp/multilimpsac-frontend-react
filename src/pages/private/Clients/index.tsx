@@ -21,7 +21,12 @@ const ClientsPage = () => {
 
   return (
     <PageContent component={<Button onClick={() => setModalState({ mode: ModalStateEnum.BOX })}>Agregar</Button>}>
-      <ClientsTable data={clients} loading={loadingClients} onRecordAction={(mode, data) => setModalState({ mode, data })} />
+      <ClientsTable
+        data={clients}
+        loading={loadingClients}
+        onRecordAction={(mode, data) => setModalState({ mode, data })}
+        onReload={obtainClients}
+      />
 
       {modalState?.mode === ModalStateEnum.BOX && <ClientsModal data={modalState.data} handleClose={handleCloseModal} handleReload={obtainClients} />}
 

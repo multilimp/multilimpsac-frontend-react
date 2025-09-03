@@ -19,7 +19,12 @@ const Providers = () => {
 
   return (
     <PageContent component={<Button onClick={() => setModal({ mode: ModalStateEnum.BOX })}>Agregar</Button>}>
-      <ProvidersTable data={providers} loading={loadingProviders} onRecordAction={(mode, data) => setModal({ mode, data })} />
+      <ProvidersTable
+        data={providers}
+        loading={loadingProviders}
+        onRecordAction={(mode, data) => setModal({ mode, data })}
+        onReload={obtainProviders}
+      />
 
       {modal?.mode === ModalStateEnum.BOX ? <ProvidersModal data={modal.data} handleReload={obtainProviders} handleClose={handleClose} /> : null}
 

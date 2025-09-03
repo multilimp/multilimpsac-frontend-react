@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Form, notification, Spin } from 'antd';
 import InputAntd from '@/components/InputAntd';
 import SubmitButton from '@/components/SubmitButton';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, Typography, Divider, Box } from '@mui/material';
 import SelectRegions from '@/components/selects/SelectRegions';
 import SelectProvinces from '@/components/selects/SelectProvinces';
 import SelectDistricts from '@/components/selects/SelectDistricts';
@@ -20,18 +20,28 @@ const ClientsModal = ({ data, handleClose, handleReload }: ClientsModalProps) =>
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!data) return;
+    if (!data) {
+      form.setFieldsValue({
+        departamento: '',
+        provincia: '',
+        distrito: '',
+        departamentoId: null,
+        provinciaId: null,
+        distritoId: null,
+      });
+      return;
+    }
     form.setFieldsValue({
       ruc: data.ruc,
       razon_social: data.razonSocial,
       cod_unidad: data.codigoUnidadEjecutora,
-      departamentoComplete: data.departamento,
-      departamento: data.departamento?.id,
-      provinciaComplete: data.provincia,
-      provincia: data.provincia?.id,
-      distritoComplete: data.distrito,
-      distrito: data.distrito?.id,
+      departamento: data.departamento?.name || '',
+      provincia: data.provincia?.name || '',
+      distrito: data.distrito?.name || '',
       direccion: data.direccion,
+      departamentoId: data.departamento?.id,
+      provinciaId: data.provincia?.id,
+      distritoId: data.distrito?.id,
     });
   }, [data]);
 
@@ -41,14 +51,23 @@ const ClientsModal = ({ data, handleClose, handleReload }: ClientsModalProps) =>
 
       const body: Record<string, string | undefined> = {
         ...raw,
-        departamento: raw.departamento ? JSON.stringify(raw.departamentoComplete) : undefined,
-        provincia: raw.provincia ? JSON.stringify(raw.provinciaComplete) : undefined,
-        distrito: raw.distrito ? JSON.stringify(raw.distritoComplete) : undefined,
+        departamento: raw.departamentoId ? JSON.stringify({
+          id: raw.departamentoId,
+          name: raw.departamento
+        }) : undefined,
+        provincia: raw.provinciaId ? JSON.stringify({
+          id: raw.provinciaId,
+          name: raw.provincia
+        }) : undefined,
+        distrito: raw.distritoId ? JSON.stringify({
+          id: raw.distritoId,
+          name: raw.distrito
+        }) : undefined,
       };
 
-      delete body.departamentoComplete;
-      delete body.provinciaComplete;
-      delete body.distritoComplete;
+      delete body.departamentoId;
+      delete body.provinciaId;
+      delete body.distritoId;
 
       if (data) await putClient(data.id, body);
       else await postClient(body);
@@ -62,33 +81,40 @@ const ClientsModal = ({ data, handleClose, handleReload }: ClientsModalProps) =>
     }
   };
 
-  return (    <Dialog 
-      open 
-      fullWidth 
-      maxWidth="md"
-      sx={{
-        zIndex: 1300, // Más alto que el sidebar (1200)
-        '& .MuiDialog-paper': {
-          zIndex: 1300,
-        },
-        '& .MuiBackdrop-root': {
-          zIndex: 1299,
-        }
-      }}
-    >
-      <DialogTitle variant="h5" textAlign="center">
-        {data ? 'Editar' : 'Agregar'} cliente
-      </DialogTitle>
-      <DialogContent>
-        <Spin spinning={loading}>
-          <Form form={form} onFinish={handleSubmit} layout="vertical" style={{ marginTop: 8 }} autoComplete="off">
+  return (<Dialog
+    open
+    fullWidth
+    maxWidth="md"
+    sx={{
+      zIndex: 1300, // Más alto que el sidebar (1200)
+      '& .MuiDialog-paper': {
+        zIndex: 1300,
+      },
+      '& .MuiBackdrop-root': {
+        zIndex: 1299,
+      }
+    }}
+  >
+    <DialogTitle variant="h5" textAlign="center">
+      {data ? 'Editar' : 'Agregar'} cliente
+    </DialogTitle>
+    <DialogContent sx={{ padding: 2 }}>
+      <Spin spinning={loading}>
+        <Form form={form} onFinish={handleSubmit} layout="vertical" style={{ marginTop: 8 }} autoComplete="off">
+
+          {/* Sección: Información Básica */}
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="h6" sx={{ mb: 1, color: 'primary.main', fontWeight: 'bold' }}>
+              📋 Información Básica
+            </Typography>
             <Grid container spacing={2}>
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                 <Form.Item
                   name="ruc"
                   rules={[
                     { required: true, message: 'El RUC es requerido' },
-                    { len: 11, message: 'Ingrese un RUC válido' },
+                    { len: 11, message: 'Ingrese un RUC válido de 11 dígitos' },
+                    { pattern: /^\d+$/, message: 'El RUC debe contener solo números' },
                   ]}
                 >
                   <InputAntd label="RUC" />
@@ -104,87 +130,101 @@ const ClientsModal = ({ data, handleClose, handleReload }: ClientsModalProps) =>
                   <InputAntd label="Código de unidad" />
                 </Form.Item>
               </Grid>
+            </Grid>
+          </Box>
 
+          <Divider sx={{ my: 1.5 }} />
+
+          {/* Sección: Ubicación */}
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="h6" sx={{ mb: 1, color: 'primary.main', fontWeight: 'bold' }}>
+              📍 Ubicación
+            </Typography>
+            <Grid container spacing={2}>
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <Form.Item name="departamentoComplete" noStyle />
+                <Form.Item name="departamentoId" noStyle />
                 <Form.Item name="departamento">
                   <SelectRegions
                     label="Departamento"
-                    onChange={(value, record: any) =>
+                    onChange={(value, record: any) => {
+                      const departamentoName = record?.optiondata?.name || '';
                       form.setFieldsValue({
-                        departamento: value,
-                        departamentoComplete: record?.optiondata,
-                        provincia: null,
-                        provinciaComplete: null,
-                        distrito: null,
-                        distritoComplete: null,
-                      })
-                    }
+                        departamento: departamentoName,
+                        departamentoId: value,
+                        provincia: '',
+                        provinciaId: null,
+                        distrito: '',
+                        distritoId: null,
+                      });
+                    }}
                   />
                 </Form.Item>
               </Grid>
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <Form.Item name="provinciaComplete" noStyle />
+                <Form.Item name="provinciaId" noStyle />
                 <Form.Item noStyle shouldUpdate>
                   {({ getFieldValue }) => (
                     <Form.Item name="provincia">
                       <SelectProvinces
                         label="Provincia"
-                        regionId={getFieldValue('departamento')}
-                        onChange={(value, record: any) =>
+                        regionId={getFieldValue('departamentoId')}
+                        onChange={(value, record: any) => {
+                          const provinciaName = record?.optiondata?.name || '';
                           form.setFieldsValue({
-                            provincia: value,
-                            provinciaComplete: record?.optiondata,
-                            distrito: null,
-                            distritoComplete: null,
-                          })
-                        }
+                            provincia: provinciaName,
+                            provinciaId: value,
+                            distrito: '',
+                            distritoId: null,
+                          });
+                        }}
                       />
                     </Form.Item>
                   )}
                 </Form.Item>
               </Grid>
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <Form.Item name="distritoComplete" noStyle />
+                <Form.Item name="distritoId" noStyle />
                 <Form.Item noStyle shouldUpdate>
                   {({ getFieldValue }) => (
                     <Form.Item name="distrito">
                       <SelectDistricts
                         label="Distrito"
-                        provinceId={getFieldValue('provincia')}
-                        onChange={(value, record: any) =>
+                        provinceId={getFieldValue('provinciaId')}
+                        onChange={(value, record: any) => {
+                          const distritoName = record?.optiondata?.name || '';
                           form.setFieldsValue({
-                            distrito: value,
-                            distritoComplete: record?.optiondata,
-                          })
-                        }
+                            distrito: distritoName,
+                            distritoId: value,
+                          });
+                        }}
                       />
                     </Form.Item>
                   )}
                 </Form.Item>
               </Grid>
-
               <Grid size={12}>
                 <Form.Item name="direccion" rules={[{ required: true, message: 'La dirección es requerida' }]}>
                   <InputAntd label="Dirección" />
                 </Form.Item>
               </Grid>
             </Grid>
-            <Button className="d-none" type="submit">
-              SUBMIT
-            </Button>
-          </Form>
-        </Spin>
-      </DialogContent>
-      <DialogActions>
-        <Button variant="outlined" color="error" onClick={handleClose} disabled={loading}>
-          Cancelar
-        </Button>
-        <SubmitButton form={form} onClick={() => form.submit()} loading={loading}>
-          Guardar{data ? ' cambios' : ''}
-        </SubmitButton>
-      </DialogActions>
-    </Dialog>
+          </Box>
+
+          <Button className="d-none" type="submit">
+            SUBMIT
+          </Button>
+        </Form>
+      </Spin>
+    </DialogContent>
+    <DialogActions>
+      <Button variant="outlined" color="error" onClick={handleClose} disabled={loading}>
+        Cancelar
+      </Button>
+      <SubmitButton form={form} onClick={() => form.submit()} loading={loading}>
+        Guardar{data ? ' cambios' : ''}
+      </SubmitButton>
+    </DialogActions>
+  </Dialog>
   );
 };
 

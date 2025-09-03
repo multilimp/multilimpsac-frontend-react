@@ -1,17 +1,38 @@
-import { Delete, Edit, PermContactCalendar, RadioButtonChecked, RadioButtonUnchecked } from '@mui/icons-material';
+import { Delete, Edit, PermContactCalendar, RadioButtonChecked, RadioButtonUnchecked, MoreVert } from '@mui/icons-material';
 import AntTable, { AntColumnType } from '@/components/AntTable';
-import { Button, ButtonGroup, Typography } from '@mui/material';
+import { Typography, IconButton, Menu, MenuItem, ListItemIcon, ListItemText, Button } from '@mui/material';
 import { ModalStateEnum } from '@/types/global.enum';
 import { ProviderProps } from '@/services/providers/providers';
+import { useState } from 'react';
 
 interface ProvidersTableProps {
   data: Array<ProviderProps>;
   loading: boolean;
   onRecordAction: (action: ModalStateEnum, data: ProviderProps) => void;
   hideActions?: boolean;
+  onReload?: () => void;
 }
 
-const ProvidersTable = ({ data, loading, onRecordAction, hideActions }: ProvidersTableProps) => {
+const ProvidersTable = ({ data, loading, onRecordAction, hideActions, onReload }: ProvidersTableProps) => {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedRecord, setSelectedRecord] = useState<ProviderProps | null>(null);
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, record: ProviderProps) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedRecord(record);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setSelectedRecord(null);
+  };
+
+  const handleMenuAction = (action: ModalStateEnum) => {
+    if (selectedRecord) {
+      onRecordAction(action, selectedRecord);
+    }
+    handleMenuClose();
+  };
   const columns: Array<AntColumnType<ProviderProps> | false> = [
     { title: 'Razón social', dataIndex: 'razonSocial', width: 250, filter: true },
     { title: 'RUC', dataIndex: 'ruc', width: 150, filter: true },
@@ -37,23 +58,35 @@ const ProvidersTable = ({ data, loading, onRecordAction, hideActions }: Provider
     { title: 'Correo electrónico', dataIndex: 'email', width: 200, filter: true },
     { title: 'Teléfono', dataIndex: 'telefono', width: 150, filter: true },
     !hideActions && {
+      title: 'Contactos',
+      dataIndex: 'contactos',
+      width: 120,
+      render: (_, record) => (
+        <Button
+          variant="outlined"
+          size="small"
+          startIcon={<PermContactCalendar />}
+          onClick={() => onRecordAction(ModalStateEnum.DRAWER, record)}
+          sx={{ minWidth: 'auto' }}
+        >
+          Ver
+        </Button>
+      ),
+    },
+    !hideActions && {
       title: 'Acciones',
       dataIndex: 'id',
       fixed: 'right',
       align: 'center',
-      width: 200,
+      width: 120,
       render: (_, record) => (
-        <ButtonGroup size="small" sx={{ bgcolor: '#fff' }}>
-          <Button color="warning" onClick={() => onRecordAction(ModalStateEnum.DRAWER, record)}>
-            <PermContactCalendar />
-          </Button>
-          <Button color="info" onClick={() => onRecordAction(ModalStateEnum.BOX, record)}>
-            <Edit />
-          </Button>
-          <Button color="error" onClick={() => onRecordAction(ModalStateEnum.DELETE, record)}>
-            <Delete />
-          </Button>
-        </ButtonGroup>
+        <IconButton
+          size="small"
+          onClick={(event) => handleMenuOpen(event, record)}
+          aria-label="más acciones"
+        >
+          <MoreVert />
+        </IconButton>
       ),
     },
   ];
@@ -61,18 +94,41 @@ const ProvidersTable = ({ data, loading, onRecordAction, hideActions }: Provider
   const filteredColumns = columns.filter((item) => !!item);
 
   return (
-    <AntTable
-      columns={filteredColumns}
-      data={data}
-      loading={loading}
-      onRow={(record) => {
-        if (!hideActions) return {};
-        return {
-          onClick: () => onRecordAction(ModalStateEnum.BOX, record),
-          style: { cursor: 'pointer' },
-        };
-      }}
-    />
+    <>
+      <AntTable
+        columns={filteredColumns}
+        data={data}
+        loading={loading}
+        onReload={onReload}
+        onRow={(record) => {
+          if (!hideActions) return {};
+          return {
+            onClick: () => onRecordAction(ModalStateEnum.BOX, record),
+            style: { cursor: 'pointer' },
+          };
+        }}
+      />
+
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleMenuClose}
+      >
+        <MenuItem onClick={() => handleMenuAction(ModalStateEnum.BOX)}>
+          <ListItemIcon>
+            <Edit fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Editar</ListItemText>
+        </MenuItem>
+
+        <MenuItem onClick={() => handleMenuAction(ModalStateEnum.DELETE)} sx={{ color: 'error.main' }}>
+          <ListItemIcon>
+            <Delete fontSize="small" sx={{ color: 'error.main' }} />
+          </ListItemIcon>
+          <ListItemText>Eliminar</ListItemText>
+        </MenuItem>
+      </Menu>
+    </>
   );
 };
 

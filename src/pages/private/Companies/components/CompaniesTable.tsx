@@ -102,13 +102,6 @@ const CompaniesTable = ({ data, loading, onRecordAction, onReload }: CompaniesTa
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
       >
-        <MenuItem onClick={() => handleMenuAction(ModalStateEnum.DRAWER)}>
-          <ListItemIcon>
-            <Visibility fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Ver Catálogos</ListItemText>
-        </MenuItem>
-
         <MenuItem onClick={() => handleMenuAction(ModalStateEnum.BOX)}>
           <ListItemIcon>
             <Edit fontSize="small" />

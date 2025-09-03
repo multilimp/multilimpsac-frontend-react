@@ -1,16 +1,37 @@
-import { Delete, Edit, PermContactCalendar } from '@mui/icons-material';
+import { Delete, Edit, PermContactCalendar, MoreVert } from '@mui/icons-material';
 import AntTable, { AntColumnType } from '@/components/AntTable';
-import { Button, ButtonGroup, Typography } from '@mui/material';
+import { Typography, IconButton, Menu, MenuItem, ListItemIcon, ListItemText, Button } from '@mui/material';
 import { ModalStateEnum } from '@/types/global.enum';
 import { TransportProps } from '@/services/transports/transports';
+import { useState } from 'react';
 
 interface TransportsTableProps {
   data: Array<TransportProps>;
   loading: boolean;
   onRecordAction: (action: ModalStateEnum, data: TransportProps) => void;
+  onReload?: () => void;
 }
 
-const TransportsTable = ({ data, loading, onRecordAction }: TransportsTableProps) => {
+const TransportsTable = ({ data, loading, onRecordAction, onReload }: TransportsTableProps) => {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedRecord, setSelectedRecord] = useState<TransportProps | null>(null);
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, record: TransportProps) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedRecord(record);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setSelectedRecord(null);
+  };
+
+  const handleMenuAction = (action: ModalStateEnum) => {
+    if (selectedRecord) {
+      onRecordAction(action, selectedRecord);
+    }
+    handleMenuClose();
+  };
   const columns: Array<AntColumnType<TransportProps>> = [
     { title: 'Razón social', dataIndex: 'razonSocial', width: 250, filter: true, sort: true },
     { title: 'RUC', dataIndex: 'ruc', width: 150, filter: true, sort: true },
@@ -31,28 +52,64 @@ const TransportsTable = ({ data, loading, onRecordAction }: TransportsTableProps
       ),
     },
     {
+      title: 'Contactos',
+      dataIndex: 'contactos',
+      width: 120,
+      render: (_, record) => (
+        <Button
+          variant="outlined"
+          size="small"
+          startIcon={<PermContactCalendar />}
+          onClick={() => onRecordAction(ModalStateEnum.DRAWER, record)}
+          sx={{ minWidth: 'auto' }}
+        >
+          Ver
+        </Button>
+      ),
+    },
+    {
       title: 'Acciones',
       dataIndex: 'id',
       align: 'center',
       fixed: 'right',
-      width: 200,
+      width: 120,
       render: (_, record) => (
-        <ButtonGroup size="small" sx={{ bgcolor: '#fff' }}>
-          <Button color="warning" onClick={() => onRecordAction(ModalStateEnum.DRAWER, record)}>
-            <PermContactCalendar />
-          </Button>
-          <Button color="info" onClick={() => onRecordAction(ModalStateEnum.BOX, record)}>
-            <Edit />
-          </Button>
-          <Button color="error" onClick={() => onRecordAction(ModalStateEnum.DELETE, record)}>
-            <Delete />
-          </Button>
-        </ButtonGroup>
+        <IconButton
+          size="small"
+          onClick={(event) => handleMenuOpen(event, record)}
+          aria-label="más acciones"
+        >
+          <MoreVert />
+        </IconButton>
       ),
     },
   ];
 
-  return <AntTable columns={columns} data={data} loading={loading} />;
+  return (
+    <>
+      <AntTable columns={columns} data={data} loading={loading} onReload={onReload} />
+
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleMenuClose}
+      >
+        <MenuItem onClick={() => handleMenuAction(ModalStateEnum.BOX)}>
+          <ListItemIcon>
+            <Edit fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Editar</ListItemText>
+        </MenuItem>
+
+        <MenuItem onClick={() => handleMenuAction(ModalStateEnum.DELETE)} sx={{ color: 'error.main' }}>
+          <ListItemIcon>
+            <Delete fontSize="small" sx={{ color: 'error.main' }} />
+          </ListItemIcon>
+          <ListItemText>Eliminar</ListItemText>
+        </MenuItem>
+      </Menu>
+    </>
+  );
 };
 
 export default TransportsTable;

@@ -19,7 +19,12 @@ const Transports = () => {
 
   return (
     <PageContent component={<Button onClick={() => setModal({ mode: ModalStateEnum.BOX })}>Agregar</Button>}>
-      <TransportsTable data={transports} loading={loadingTransports} onRecordAction={(mode, data) => setModal({ mode, data })} />
+      <TransportsTable
+        data={transports}
+        loading={loadingTransports}
+        onRecordAction={(mode, data) => setModal({ mode, data })}
+        onReload={obtainTransports}
+      />
 
       {modal?.mode === ModalStateEnum.BOX ? <TransportsModal data={modal.data} handleReload={obtainTransports} handleClose={handleClose} /> : null}
 
