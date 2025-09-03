@@ -1051,6 +1051,8 @@ const calculateProductTotals = (form: any, fieldName: number) => {
                 return sum + (Number(producto?.total) || 0);
               }, 0);
 
+              const proveedor: ProviderProps | null = getFieldValue('proveedor');
+
               return (
                 <PaymentsList
                   title="Pagos Proveedor"
@@ -1059,6 +1061,9 @@ const calculateProductTotals = (form: any, fieldName: number) => {
                   notaPago={getFieldValue('notaPago') || ''}
                   montoTotal={totalProductos}
                   mode={fromTreasury ? "edit" : "readonly"}
+                  entityType="PROVIDER"
+                  entityId={proveedor?.id}
+                  entityName={proveedor?.razonSocial || ''}
                   onPaymentsChange={handlePaymentsChange}
                   onTipoPagoChange={handleTipoPagoChange}
                   onNotaPagoChange={handleNotaPagoChange}

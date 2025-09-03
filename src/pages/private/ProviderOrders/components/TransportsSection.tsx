@@ -114,6 +114,7 @@ const TransportPayments = ({ transporteId, montoFlete, form, fieldName }: Transp
           const pagosTransporte = getFieldValue(['transportes', fieldName, 'pagosTransporte']) || [];
           const estadoPago = getFieldValue(['transportes', fieldName, 'estadoPago']) || '';
           const notaPago = getFieldValue(['transportes', fieldName, 'notaPago']) || '';
+          const transporteCompleto = getFieldValue(['transportes', fieldName, 'transporteCompleto']);
 
           return (
             <PaymentsList
@@ -123,6 +124,9 @@ const TransportPayments = ({ transporteId, montoFlete, form, fieldName }: Transp
               notaPago={notaPago}
               montoTotal={montoFlete}
               mode="edit"
+              entityType="TRANSPORT"
+              entityId={transporteId}
+              entityName={transporteCompleto?.razonSocial || ''}
               onPaymentsChange={handlePaymentsChange}
               onTipoPagoChange={handleTipoPagoChange}
               onNotaPagoChange={handleNotaPagoChange}
