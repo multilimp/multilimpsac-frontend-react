@@ -138,33 +138,7 @@ const Profile = () => {
                   marginBottom: 16
                 }}
               />
-              <Upload
-                accept="image/*"
-                showUploadList={false}
-                customRequest={async ({ file, onSuccess, onError }) => {
-                  try {
-                    const result = await uploadProfilePhoto(user.id, file as File);
-                    setUser({ ...user, foto: result.photoUrl });
-                    message.success('Foto de perfil actualizada correctamente');
-                    onSuccess?.(result);
-                  } catch (error) {
-                    message.error('Error al actualizar foto de perfil');
-                    onError?.(error as Error);
-                  }
-                }}
-              >
-                <Button
-                  type="primary"
-                  shape="circle"
-                  icon={<CameraOutlined />}
-                  size="small"
-                  style={{
-                    position: 'absolute',
-                    bottom: 16,
-                    right: -8,
-                  }}
-                />
-              </Upload>
+              {/*  */}
             </div>
           </Col>
 
@@ -184,10 +158,6 @@ const Profile = () => {
                 {user.estado ? 'Activo' : 'Inactivo'}
               </Tag>
             </Space>
-
-            <Text type="secondary" style={{ fontSize: 16 }}>
-              {user.email}
-            </Text>
           </Col>
 
           <Col xs={24} sm={24} md={6}>
@@ -197,6 +167,7 @@ const Profile = () => {
                 icon={<EditOutlined />}
                 onClick={handleEditProfile}
                 block={!screens.md}
+                style={{ marginBottom: screens.md ? 0 : 8, width: '100%' }}
               >
                 Editar Perfil
               </Button>
@@ -204,6 +175,7 @@ const Profile = () => {
                 icon={<LockOutlined />}
                 onClick={() => setPasswordModalOpen(true)}
                 block={!screens.md}
+                style={{ width: '100%' }}
               >
                 Cambiar Contraseña
               </Button>
@@ -359,12 +331,16 @@ const Profile = () => {
                 ))}
               </Space>
 
-              <Divider />
+              {user.role === RolesEnum.USER && (
+                <>
+                  <Divider />
+                  <Text type="secondary">
+                    <strong>Nota:</strong> Los permisos de acceso son asignados por el administrador del sistema.
+                    Si necesitas acceso a módulos adicionales, contacta al administrador.
+                  </Text>
+                </>
 
-              <Text type="secondary">
-                <strong>Nota:</strong> Los permisos de acceso son asignados por el administrador del sistema.
-                Si necesitas acceso a módulos adicionales, contacta al administrador.
-              </Text>
+              )}
             </Card>
           </Col>
         )}

@@ -1,5 +1,6 @@
 import apiClient from '../apiClient';
-import { UserProps } from './users';
+import { UserProps } from './users.d';
+import { uploadFile } from '../files/file.requests';
 
 export const getUsers = async (): Promise<UserProps[]> => {
   const res = await apiClient.get('/users');
@@ -52,16 +53,14 @@ export const updateProfile = async (userId: number, profileData: Partial<UserPro
   return res.data;
 };
 
-export const uploadProfilePhoto = async (userId: number, photoFile: File): Promise<{ photoUrl: string; user: UserProps }> => {
-  const formData = new FormData();
-  formData.append('photo', photoFile);
+export const uploadProfilePhoto = async (userId: number, photoFile: File): Promise<{ user: UserProps }> => {
+  // Primero subir la imagen y obtener la URL
+  const photoUrl = await uploadFile(photoFile);
 
-  const res = await apiClient.post(`/upload/profile/${userId}`, formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  });
-  return res.data;
+  // Luego actualizar el perfil del usuario con la URL de la foto
+  const updatedUser = await updateProfile(userId, { foto: photoUrl });
+
+  return { user: updatedUser };
 };
 
 export const changePassword = async (userId: number, passwordData: { currentPassword: string; newPassword: string }): Promise<boolean> => {
