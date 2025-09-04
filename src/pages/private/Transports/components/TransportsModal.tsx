@@ -1,14 +1,16 @@
-import React, { useEffect, useState } from 'react'; // Importar useEffect
-import { Form, notification, Spin } from 'antd';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, Typography, Divider, Box } from '@mui/material';
+import React, { useEffect, useState } from 'react'; // Importar      // Filtrar cuentas
+import { Form, notification, Spin, Select, message } from 'antd';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, Typography, Divider, Box, IconButton, Card, CardContent } from '@mui/material';
 import InputAntd from '@/components/InputAntd';
 import SelectRegions from '@/components/selects/SelectRegions';
 import SelectProvinces from '@/components/selects/SelectProvinces';
 import SelectDistricts from '@/components/selects/SelectDistricts';
 import SubmitButton from '@/components/SubmitButton';
 import { EMAIL_PATTERN, PHONE_PATTERN } from '@/utils/constants';
-import { TransportProps } from '@/services/transports/transports';
+import { TransportProps, BankAccount } from '@/services/transports/transports';
 import { createTransport, updateTransport } from '@/services/transports/transports.request';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 interface TransportsModalProps {
   data?: TransportProps;
@@ -29,6 +31,7 @@ const TransportsModal: React.FC<TransportsModalProps> = ({ data, handleClose, ha
         departamentoId: null,
         provinciaId: null,
         distritoId: null,
+        cuentasBancarias: [{}], // Inicializar con una cuenta vacía
       });
       return;
     }
@@ -44,6 +47,9 @@ const TransportsModal: React.FC<TransportsModalProps> = ({ data, handleClose, ha
       provincia: data.provincia || '',
       distrito: data.distrito || '',
       direccion: data.direccion,
+      cuentasBancarias: data.cuentasBancarias && data.cuentasBancarias.length > 0
+        ? data.cuentasBancarias
+        : [{}], // Si no hay cuentas, inicializar con una vacía
       // Establecer IDs como null para que no interfieran (solo guardamos nombres)
       departamentoId: null,
       provinciaId: null,
@@ -53,38 +59,63 @@ const TransportsModal: React.FC<TransportsModalProps> = ({ data, handleClose, ha
 
   const handleSubmit = async (values: any) => {
     try {
-      if (!values.ruc || !values.razonSocial) {
-        notification.error({ message: 'RUC y Razón Social son obligatorios' });
-        return;
-      }
-
       setLoading(true);
 
-      const transporteData = {
-        ...values,
-        departamentoId: undefined,
-        provinciaId: undefined,
-        distritoId: undefined,
+      // Filtrar cuentas bancarias válidas (solo banco y número de cuenta requeridos)
+      const cuentasBancariasFiltradas = values.cuentasBancarias?.filter((cuenta: any) =>
+        cuenta.banco && cuenta.numeroCuenta
+      ).map((cuenta: any) => ({
+        ...cuenta,
+        numeroCci: cuenta.cci || null, // Mapear cci a numeroCci para el backend
+        moneda: cuenta.moneda || 'SOLES', // Default a SOLES si no se especifica
+        tipoCuenta: cuenta.tipoCuenta || 'corriente', // Default a corriente
+        titularCuenta: cuenta.titularCuenta || '', // Default vacío
+      })) || [];
+
+      const payload = {
+        ruc: values.ruc,
+        razonSocial: values.razonSocial,
+        telefono: values.telefono,
+        email: values.email,
+        cobertura: values.cobertura,
+        departamento: values.departamento,
+        provincia: values.provincia,
+        distrito: values.distrito,
+        direccion: values.direccion,
+        cuentasBancarias: cuentasBancariasFiltradas,
       };
 
-      const response = data
-        ? await updateTransport(data.id, transporteData)
-        : await createTransport(transporteData);
+      if (data) {
+        await updateTransport(data.id, payload);
+        message.success('Transporte actualizado exitosamente');
+      } else {
+        await createTransport(payload);
+        message.success('Transporte creado exitosamente');
+      }
 
-      notification.success({
-        message: data
-          ? 'Transporte actualizado exitosamente'
-          : 'Transporte creado exitosamente'
-      });
-
-      form.resetFields();
       handleClose();
       handleReload();
-    } catch (error: any) {
-      console.error('Error:', error);
-      notification.error({ message: error.message || 'Error al procesar transporte' });
+    } catch (error) {
+      console.error('Error al guardar transporte:', error);
+      message.error('Error al guardar el transporte');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const addBankAccount = () => {
+    const currentAccounts = form.getFieldValue('cuentasBancarias') || [];
+    form.setFieldsValue({
+      cuentasBancarias: [...currentAccounts, {}],
+    });
+  };
+
+  const removeBankAccount = (index: number) => {
+    const currentAccounts = form.getFieldValue('cuentasBancarias') || [];
+    if (currentAccounts.length > 1) {
+      form.setFieldsValue({
+        cuentasBancarias: currentAccounts.filter((_: any, i: number) => i !== index),
+      });
     }
   };
 
@@ -241,6 +272,103 @@ const TransportsModal: React.FC<TransportsModalProps> = ({ data, handleClose, ha
             </Grid>
           </Box>
 
+          <Divider sx={{ my: 1.5 }} />
+
+          {/* Sección: Información Bancaria */}
+          <Box sx={{ mb: 2 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+              <Typography variant="h6" sx={{ color: 'primary.main', fontWeight: 'bold' }}>
+                💳 Información Bancaria
+              </Typography>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<AddIcon />}
+                onClick={addBankAccount}
+                sx={{ minWidth: 'auto' }}
+              >
+                Agregar Cuenta
+              </Button>
+            </Box>
+
+            <Form.List name="cuentasBancarias">
+              {(fields, { remove }) => (
+                <>
+                  {fields.map((field, index) => (
+                    <Card key={field.key} sx={{ mb: 2, position: 'relative' }}>
+                      <CardContent>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                          <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+                            Cuenta Bancaria #{index + 1}
+                          </Typography>
+                          {fields.length > 1 && (
+                            <IconButton
+                              color="error"
+                              size="small"
+                              onClick={() => {
+                                remove(field.name);
+                                removeBankAccount(index);
+                              }}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          )}
+                        </Box>
+
+                        <Grid container spacing={2}>
+                          <Grid size={{ xs: 12, sm: 6, md: 6 }}>
+                            <Form.Item
+                              {...field}
+                              name={[field.name, 'banco']}
+                              rules={[{ required: false, message: 'El banco es requerido' }]}
+                            >
+                              <InputAntd label="Banco" />
+                            </Form.Item>
+                          </Grid>
+                          <Grid size={{ xs: 12, sm: 6, md: 6 }}>
+                            <Form.Item
+                              {...field}
+                              name={[field.name, 'numeroCuenta']}
+                              rules={[{ required: false, message: 'El número de cuenta es requerido' }]}
+                            >
+                              <InputAntd label="Número de cuenta" />
+                            </Form.Item>
+                          </Grid>
+                          {/* Campos ocultos - no visibles para el usuario */}
+                          <Form.Item
+                            {...field}
+                            name={[field.name, 'tipoCuenta']}
+                            initialValue="corriente"
+                            style={{ display: 'none' }}
+                          >
+                            <Select style={{ width: '100%' }}>
+                              <Select.Option value="corriente">Cuenta Corriente</Select.Option>
+                              <Select.Option value="ahorros">Cuenta de Ahorros</Select.Option>
+                            </Select>
+                          </Form.Item>
+                          <Form.Item
+                            {...field}
+                            name={[field.name, 'cci']}
+                            style={{ display: 'none' }}
+                          >
+                            <InputAntd />
+                          </Form.Item>
+                          <Form.Item
+                            {...field}
+                            name={[field.name, 'titularCuenta']}
+                            style={{ display: 'none' }}
+                          >
+                            <InputAntd />
+                          </Form.Item>
+                        </Grid>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </>
+              )}
+            </Form.List>
+          </Box>
+
           {/* Campos ocultos para los IDs de ubicación */}
           <Form.Item name="departamentoId" noStyle />
           <Form.Item name="provinciaId" noStyle />
@@ -256,7 +384,7 @@ const TransportsModal: React.FC<TransportsModalProps> = ({ data, handleClose, ha
       <Button variant="outlined" color="error" onClick={handleClose} disabled={loading}>
         Cancelar
       </Button>
-      <SubmitButton form={form} onClick={() => form.submit()} loading={loading}>
+      <SubmitButton form={form} onClick={() => form.submit()} loading={loading} disabled={false}>
         Guardar{data ? ' cambios' : ''}
       </SubmitButton>
     </DialogActions>

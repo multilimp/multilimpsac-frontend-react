@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Form, notification, Spin } from 'antd';
-import { ProviderProps } from '@/services/providers/providers';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, Typography, Divider, Box } from '@mui/material';
+import { Form, notification, Spin, Select } from 'antd';
+import { ProviderProps, BankAccount } from '@/services/providers/providers';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, Typography, Divider, Box, IconButton, Card, CardContent } from '@mui/material';
 import { createProvider, updateProvider } from '@/services/providers/providers.request';
 import InputAntd from '@/components/InputAntd';
 import SelectRegions from '@/components/selects/SelectRegions';
@@ -9,6 +9,8 @@ import SelectProvinces from '@/components/selects/SelectProvinces';
 import SelectDistricts from '@/components/selects/SelectDistricts';
 import SubmitButton from '@/components/SubmitButton';
 import { EMAIL_PATTERN, PHONE_PATTERN } from '@/utils/constants';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 interface ProvidersModalProps {
   data?: ProviderProps;
@@ -29,6 +31,7 @@ const ProvidersModal: React.FC<ProvidersModalProps> = ({ data, handleClose, hand
         departamentoId: null,
         provinciaId: null,
         distritoId: null,
+        cuentasBancarias: [{}], // Inicializar con una cuenta vacía
       });
       return;
     }
@@ -42,15 +45,46 @@ const ProvidersModal: React.FC<ProvidersModalProps> = ({ data, handleClose, hand
       provincia: data.provincia || '',       // Leer como string directo
       distrito: data.distrito || '',         // Leer como string directo
       direccion: data.direccion,
+      cuentasBancarias: data.cuentasBancarias && data.cuentasBancarias.length > 0
+        ? data.cuentasBancarias
+        : [{}], // Si no hay cuentas, inicializar con una vacía
       departamentoId: null, // No necesitamos IDs para guardar
       provinciaId: null,
       distritoId: null,
     });
   }, [data]);
 
+  const addBankAccount = () => {
+    const currentAccounts = form.getFieldValue('cuentasBancarias') || [];
+    form.setFieldsValue({
+      cuentasBancarias: [...currentAccounts, {}]
+    });
+  };
+
+  const removeBankAccount = (index: number) => {
+    const currentAccounts = form.getFieldValue('cuentasBancarias') || [];
+    if (currentAccounts.length > 1) {
+      const newAccounts = currentAccounts.filter((_: any, i: number) => i !== index);
+      form.setFieldsValue({
+        cuentasBancarias: newAccounts
+      });
+    }
+  };
+
   const handleSubmit = async (values: Record<string, any>) => {
     try {
       setLoading(true);
+
+      // Filtrar cuentas bancarias válidas (solo banco y número de cuenta requeridos)
+      const cuentasBancariasFiltradas = values.cuentasBancarias?.filter((cuenta: any) =>
+        cuenta.banco && cuenta.numeroCuenta
+      ).map((cuenta: any) => ({
+        ...cuenta,
+        numeroCci: cuenta.cci || null, // Mapear cci a numeroCci para el backend
+        moneda: cuenta.moneda || 'SOLES', // Default a SOLES si no se especifica
+        tipoCuenta: cuenta.tipoCuenta || 'corriente', // Default a corriente
+        titularCuenta: cuenta.titularCuenta || '', // Default vacío
+      })) || [];
 
       // Preparar datos para el backend con nombres de ubicación
       const body = {
@@ -62,6 +96,7 @@ const ProvidersModal: React.FC<ProvidersModalProps> = ({ data, handleClose, hand
         provincia: values.provincia,       // Guardar el nombre, no el objeto
         distrito: values.distrito,         // Guardar el nombre, no el objeto
         direccion: values.direccion,
+        cuentasBancarias: cuentasBancariasFiltradas,
       };
 
       if (data) {
@@ -236,6 +271,103 @@ const ProvidersModal: React.FC<ProvidersModalProps> = ({ data, handleClose, hand
             </Grid>
           </Box>
 
+          <Divider sx={{ my: 1.5 }} />
+
+          {/* Sección: Información Bancaria */}
+          <Box sx={{ mb: 2 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+              <Typography variant="h6" sx={{ color: 'primary.main', fontWeight: 'bold' }}>
+                💳 Información Bancaria
+              </Typography>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<AddIcon />}
+                onClick={addBankAccount}
+                sx={{ minWidth: 'auto' }}
+              >
+                Agregar Cuenta
+              </Button>
+            </Box>
+
+            <Form.List name="cuentasBancarias">
+              {(fields, { remove }) => (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  {fields.map((field, index) => (
+                    <Card key={field.key} sx={{ border: '1px solid #e0e0e0' }}>
+                      <CardContent sx={{ pb: 1 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                          <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+                            Cuenta #{index + 1}
+                          </Typography>
+                          {fields.length > 1 && (
+                            <IconButton
+                              size="small"
+                              color="error"
+                              onClick={() => {
+                                remove(field.name);
+                                removeBankAccount(index);
+                              }}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          )}
+                        </Box>
+
+                        <Grid container spacing={2}>
+                          <Grid size={{ xs: 12, sm: 6, md: 6 }}>
+                            <Form.Item
+                              {...field}
+                              name={[field.name, 'banco']}
+                              rules={[{ required: true, message: 'El banco es requerido' }]}
+                            >
+                              <InputAntd label="Banco" />
+                            </Form.Item>
+                          </Grid>
+                          <Grid size={{ xs: 12, sm: 6, md: 6 }}>
+                            <Form.Item
+                              {...field}
+                              name={[field.name, 'numeroCuenta']}
+                              rules={[{ required: true, message: 'El número de cuenta es requerido' }]}
+                            >
+                              <InputAntd label="Número de cuenta" />
+                            </Form.Item>
+                          </Grid>
+                          {/* Campos ocultos - no visibles para el usuario */}
+                          <Form.Item
+                            {...field}
+                            name={[field.name, 'tipoCuenta']}
+                            initialValue="corriente"
+                            style={{ display: 'none' }}
+                          >
+                            <Select style={{ width: '100%' }}>
+                              <Select.Option value="corriente">Cuenta Corriente</Select.Option>
+                              <Select.Option value="ahorros">Cuenta de Ahorros</Select.Option>
+                            </Select>
+                          </Form.Item>
+                          <Form.Item
+                            {...field}
+                            name={[field.name, 'cci']}
+                            style={{ display: 'none' }}
+                          >
+                            <InputAntd />
+                          </Form.Item>
+                          <Form.Item
+                            {...field}
+                            name={[field.name, 'titularCuenta']}
+                            style={{ display: 'none' }}
+                          >
+                            <InputAntd />
+                          </Form.Item>
+                        </Grid>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </Box>
+              )}
+            </Form.List>
+          </Box>
+
           {/* Campos ocultos para los IDs de ubicación */}
           <Form.Item name="departamentoId" noStyle />
           <Form.Item name="provinciaId" noStyle />
@@ -251,7 +383,7 @@ const ProvidersModal: React.FC<ProvidersModalProps> = ({ data, handleClose, hand
       <Button variant="outlined" color="error" onClick={handleClose} disabled={loading}>
         Cancelar
       </Button>
-      <SubmitButton form={form} onClick={() => form.submit()} loading={loading}>
+      <SubmitButton form={form} onClick={() => form.submit()} loading={loading} disabled={false}>
         Guardar{data ? ' cambios' : ''}
       </SubmitButton>
     </DialogActions>
