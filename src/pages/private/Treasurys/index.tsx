@@ -10,11 +10,12 @@ import { PermissionsEnum } from '@/services/users/permissions.enum';
 import TreasurysTable from './components/TreasurysTable';
 import ProviderOrdersListDrawer from '../ProviderOrders/components/ProviderOrdersListDrawer';
 import DashboardTesoreria from '@/components/DashboardTesoreria';
+import { ProviderOrderProps } from '@/services/providerOrders/providerOrders';
 
 const Treasury = () => {
-  const { sales, loadingSales, obtainSales } = useGlobalInformation();
+  const { providerOrders, loadingProviderOrders, obtainProviderOrders } = useGlobalInformation();
   const { user } = useAppContext();
-  const [modal, setModal] = useState<ModalStateProps<SaleProps>>(null);
+  const [modal, setModal] = useState<ModalStateProps<ProviderOrderProps>>(null);
   const [activeTab, setActiveTab] = useState<number>(0);
 
   // Verificar permisos de tesorería
@@ -40,40 +41,40 @@ const Treasury = () => {
             onChange={(_, newValue) => setActiveTab(newValue)}
             aria-label="tabs de tesorería"
           >
+            <Tab label="Gestión de Ventas por OP" />
             <Tab label="Dashboard Pagos" />
-            <Tab label="Gestión de Ventas" />
           </Tabs>
         </Box>
-
-        {/* Tab Panel: Dashboard */}
-        <div
-          role="tabpanel"
-          hidden={activeTab !== 0}
-          id="tabpanel-dashboard"
-          aria-labelledby="tab-dashboard"
-        >
-          {activeTab === 0 && (
-            <Box sx={{ py: 3 }}>
-              <DashboardTesoreria />
-            </Box>
-          )}
-        </div>
 
         {/* Tab Panel: Gestión de Ventas */}
         <div
           role="tabpanel"
-          hidden={activeTab !== 1}
+          hidden={activeTab !== 0}
           id="tabpanel-ventas"
           aria-labelledby="tab-ventas"
         >
-          {activeTab === 1 && (
+          {activeTab === 0 && (
             <Box sx={{ py: 3 }}>
               <TreasurysTable
-                loading={loadingSales}
-                data={sales}
-                onRowClick={(sale) => setModal({ mode: ModalStateEnum.BOX, data: sale })}
-                onReload={obtainSales}
+                loading={loadingProviderOrders}
+                data={providerOrders}
+                onRowClick={(order) => setModal({ mode: ModalStateEnum.BOX, data: order })}
+                onReload={obtainProviderOrders}
               />
+            </Box>
+          )}
+        </div>
+
+        {/* Tab Panel: Dashboard */}
+        <div
+          role="tabpanel"
+          hidden={activeTab !== 1}
+          id="tabpanel-dashboard"
+          aria-labelledby="tab-dashboard"
+        >
+          {activeTab === 1 && (
+            <Box sx={{ py: 3 }}>
+              <DashboardTesoreria />
             </Box>
           )}
         </div>

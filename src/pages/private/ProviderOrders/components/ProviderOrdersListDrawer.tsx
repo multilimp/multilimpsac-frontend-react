@@ -1,6 +1,7 @@
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 import { getOrderProvidersByOC } from '@/services/providerOrders/providerOrders.requests';
 import { SaleProps } from '@/services/sales/sales';
+import { ProviderOrderProps } from '@/services/providerOrders/providerOrders';
 import { heroUIColors, alpha } from '@/styles/theme/heroui-colors';
 import { Delete, RemoveRedEye, Add, Close, Inventory2, ShoppingCart, Update } from '@mui/icons-material';
 import { Button, Card, CardActions, CardContent, CardHeader, Drawer, Stack, Box, Typography, IconButton, Chip, Divider, Skeleton } from '@mui/material';
@@ -11,7 +12,7 @@ import dayjs from 'dayjs';
 
 interface ProviderOrdersListDrawerProps {
   handleClose: VoidFunction;
-  data: SaleProps;
+  data: SaleProps | ProviderOrderProps;
   isTreasury?: boolean;
 }
 
@@ -26,30 +27,54 @@ const ProviderOrdersListDrawer = ({ handleClose, data, isTreasury = false }: Pro
     updatedAt: string;
   }>>([]);
 
+  // Type guard para determinar si es SaleProps
+  const isSaleProps = (data: SaleProps | ProviderOrderProps): data is SaleProps => {
+    return 'codigoVenta' in data;
+  };
+
+  // Type guard para determinar si es ProviderOrderProps
+  const isProviderOrderProps = (data: SaleProps | ProviderOrderProps): data is ProviderOrderProps => {
+    return 'codigoOp' in data;
+  };
+
   useEffect(() => {
     // Limpiar estado anterior cuando se abre el drawer con nueva data
     setOrderProvidersCodes([]);
-    handleGetData();
-  }, [data.id]); // Dependencia en data.id para resetear cuando cambie la venta
+    if (isSaleProps(data)) {
+      handleGetData();
+    } else if (isProviderOrderProps(data)) {
+      // Si es una OP directa, mostrarla directamente
+      setOrderProvidersCodes([{
+        id: data.id,
+        codigoOp: data.codigoOp,
+        createdAt: data.createdAt,
+        updatedAt: data.updatedAt
+      }]);
+    }
+  }, [data.id]); // Dependencia en data.id para resetear cuando cambie la data
 
   const handleSelected = (id?: number) => {
     if (!id) {
-      // Crear nueva OP
-      setSelectedSale(data);
-      const queryParams = isTreasury ? '?from=treasury' : '';
-      navigate(`/provider-orders/create${queryParams}`, {
-        state: { fromTreasury: isTreasury, saleData: data }
-      });
+      // Crear nueva OP - solo si es SaleProps
+      if (isSaleProps(data)) {
+        setSelectedSale(data);
+        const queryParams = isTreasury ? '?from=treasury' : '';
+        navigate(`/provider-orders/create${queryParams}`, {
+          state: { fromTreasury: isTreasury, saleData: data }
+        });
+      }
     } else {
       // Ver detalle de OP existente - navegar a la nueva ruta
       const queryParams = isTreasury ? '?from=treasury' : '';
       navigate(`/provider-orders/${id}${queryParams}`, {
-        state: { fromTreasury: isTreasury, saleData: data }
+        state: { fromTreasury: isTreasury, saleData: isSaleProps(data) ? data : null }
       });
     }
   };
 
   const handleGetData = async () => {
+    if (!isSaleProps(data)) return;
+
     try {
       setLoading(true);
       const res = await getOrderProvidersByOC(data.id);
@@ -133,7 +158,7 @@ const ProviderOrdersListDrawer = ({ handleClose, data, isTreasury = false }: Pro
             </IconButton>
           </Stack>
 
-          {/* Info de la OC sin efectos glass */}
+          {/* Info de la OC o OP sin efectos glass */}
           <Box
             sx={{
               background: alpha('#ffffff', 0.12),
@@ -158,14 +183,14 @@ const ProviderOrdersListDrawer = ({ handleClose, data, isTreasury = false }: Pro
               </Box>
               <Box sx={{ flex: 1 }}>
                 <Typography variant="caption" sx={{ opacity: 0.8, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                  Orden de Compra
+                  {isSaleProps(data) ? 'Orden de Compra' : 'Orden de Proveedor'}
                 </Typography>
                 <Typography variant="h6" fontWeight={700}>
-                  {data.codigoVenta}
+                  {isSaleProps(data) ? data.codigoVenta : data.codigoOp}
                 </Typography>
               </Box>
               <Chip
-                label={`${orderProvidersCodes.length} OPs`}
+                label={`${orderProvidersCodes.length} ${isSaleProps(data) ? 'OPs' : 'OP'}`}
                 size="small"
                 sx={{
                   background: alpha('#ffffff', 0.15),
@@ -451,10 +476,13 @@ const ProviderOrdersListDrawer = ({ handleClose, data, isTreasury = false }: Pro
                 lineHeight={1.6}
                 mb={3}
               >
-                No hay órdenes de proveedor asociadas a esta orden de compra. Agrega una nueva OP para comenzar el proceso.
+                {isSaleProps(data)
+                  ? 'No hay órdenes de proveedor asociadas a esta orden de compra. Agrega una nueva OP para comenzar el proceso.'
+                  : 'Esta es la orden de proveedor seleccionada.'
+                }
               </Typography>
 
-              {isTreasury !== true && (
+              {isSaleProps(data) && isTreasury !== true && (
                 <Button
                   variant="outlined"
                   startIcon={<Add />}
@@ -492,7 +520,7 @@ const ProviderOrdersListDrawer = ({ handleClose, data, isTreasury = false }: Pro
           }}
         >
           <Stack spacing={2}>
-            {isTreasury !== true && (
+            {isSaleProps(data) && isTreasury !== true && (
               <Button
                 fullWidth
                 variant="contained"

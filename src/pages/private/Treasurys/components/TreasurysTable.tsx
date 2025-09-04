@@ -3,24 +3,24 @@ import { useMemo } from 'react';
 import { Button } from '@mui/material';
 import { Visibility } from '@mui/icons-material';
 import AntTable, { AntColumnType } from '@/components/AntTable';
-import { SaleProps } from '@/services/sales/sales';
+import { ProviderOrderProps } from '@/services/providerOrders/providerOrders';
 import { formatCurrency, formattedDate } from '@/utils/functions';
 
-interface TreasurysTableProps {
-  data: SaleProps[];
+interface ProviderOrdersTreasuryTableProps {
+  data: ProviderOrderProps[];
   loading: boolean;
-  onRowClick: (sale: SaleProps) => void;
+  onRowClick: (order: ProviderOrderProps) => void;
   onReload?: () => void | Promise<void>;
 }
 
 const defaultText = 'N/A';
 
-export default function TreasurysTable({
+export default function ProviderOrdersTreasuryTable({
   data,
   loading,
   onRowClick,
   onReload,
-}: TreasurysTableProps) {
+}: ProviderOrdersTreasuryTableProps) {
   // const navigate = useNavigate();
   // const { setSelectedSale } = useGlobalInformation();
 
@@ -32,22 +32,22 @@ export default function TreasurysTable({
 
     return data.map((item) => ({
       id: item.id,
-      codigo_venta: item.codigoVenta || defaultText,
-      razon_social_cliente: item?.cliente?.razonSocial ?? defaultText,
-      ruc_cliente: item?.cliente?.ruc ?? defaultText,
-      ruc_empresa: item?.empresa?.ruc ?? defaultText,
-      razon_social_empresa: item?.empresa?.razonSocial ?? defaultText,
-      contacto: item?.contactoCliente?.nombre ?? defaultText,
-      estado_tesoreria: item.estadoVenta || 'pendiente',
-      monto_venta: formatCurrency(item.montoVenta ? parseInt(item.montoVenta, 10) : 0),
-      fecha_emision: formattedDate(item.fechaEmision, undefined, defaultText),
+      codigoOp: item.codigoOp || defaultText,
+      proveedorRazonSocial: item.proveedor?.razonSocial ?? defaultText,
+      proveedorRuc: item.proveedor?.ruc ?? defaultText,
+      contactoProveedor: item.contactoProveedor?.nombre ?? defaultText,
+      fechaProgramada: formattedDate(item.fechaProgramada, undefined, defaultText),
+      fechaDespacho: formattedDate(item.fechaDespacho, undefined, defaultText),
+      fechaRecepcion: formattedDate(item.fechaRecepcion, undefined, defaultText),
+      estadoOp: item.estadoOp || 'PENDIENTE',
+      ordenCompraId: item.ordenCompraId,
       rawdata: item,
     }));
   }, [data]);
   const columns: Array<AntColumnType<typeof formattedData[0]>> = [
     {
-      title: 'Código OC',
-      dataIndex: 'codigo_venta',
+      title: 'Código OP',
+      dataIndex: 'codigoOp',
       width: 200,
       render: (value, record) => (
         <Button
@@ -64,13 +64,27 @@ export default function TreasurysTable({
         </Button>
       )
     },
-    { title: 'Razón Social Cliente', dataIndex: 'razon_social_cliente', width: 200, sort: true, filter: true },
-    { title: 'RUC Cliente', dataIndex: 'ruc_cliente', width: 150, sort: true, filter: true },
-    { title: 'RUC Empresa', dataIndex: 'ruc_empresa', width: 150, sort: true, filter: true },
-    { title: 'Razón Social Empresa', dataIndex: 'razon_social_empresa', width: 200, sort: true, filter: true },
-    { title: 'Contacto', dataIndex: 'contacto', width: 200, sort: true, filter: true },
-    { title: 'Monto Venta', dataIndex: 'monto_venta', width: 130, sort: true, filter: true },
-    { title: 'Fecha Emisión', dataIndex: 'fecha_emision', width: 150, sort: true, filter: true }
+    { title: 'Proveedor', dataIndex: 'proveedorRazonSocial', width: 200, sort: true, filter: true },
+    { title: 'RUC Proveedor', dataIndex: 'proveedorRuc', width: 150, sort: true, filter: true },
+    { title: 'Contacto Proveedor', dataIndex: 'contactoProveedor', width: 200, sort: true, filter: true },
+    { title: 'Fecha Programada', dataIndex: 'fechaProgramada', width: 150, sort: true, filter: true },
+    { title: 'Fecha Despacho', dataIndex: 'fechaDespacho', width: 150, sort: true, filter: true },
+    { title: 'Fecha Recepción', dataIndex: 'fechaRecepcion', width: 150, sort: true, filter: true },
+    {
+      title: 'Estado OP',
+      dataIndex: 'estadoOp',
+      width: 120,
+      sort: true,
+      filter: true,
+      render: (value) => (
+        <span style={{
+          color: value === 'COMPLETADO' ? 'green' : value === 'PENDIENTE' ? 'orange' : 'red',
+          fontWeight: 'bold'
+        }}>
+          {value || 'PENDIENTE'}
+        </span>
+      )
+    }
   ];
 
   return (
@@ -78,7 +92,7 @@ export default function TreasurysTable({
       data={formattedData}
       columns={columns}
       loading={loading}
-      scroll={{ x: 1600 }}
+      scroll={{ x: 1400 }}
       size="small"
       onReload={onReload}
     />

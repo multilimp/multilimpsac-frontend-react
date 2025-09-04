@@ -20,6 +20,8 @@ import { TrackingProps } from '@/services/trackings/trackings.d';
 import { CotizacionProps } from '@/types/cotizacion.types';
 import { getCotizaciones } from '@/services/quotes/quotes.request';
 import { BlackBarKeyEnum } from '@/types/global.enum';
+import { ProviderOrderProps } from '@/services/providerOrders/providerOrders';
+import { getAllOrderProviders } from '@/services/providerOrders/providerOrders.requests';
 
 export type SaleInputsType = { enterprise: null | CompanyProps; tipoVenta: 'directa' | 'privada'; file: null | File };
 export type QuoteInputsType = { enterprise: null | CompanyProps };
@@ -41,6 +43,8 @@ interface ContextProps {
   trackings: Array<TrackingProps>;
   loadingQuotes: boolean;
   quotes: Array<CotizacionProps>;
+  loadingProviderOrders: boolean;
+  providerOrders: Array<ProviderOrderProps>;
   selectedSale: null | SaleProps;
   selectedQuote: null | CotizacionProps;
   saleInputValues: SaleInputsType;
@@ -56,6 +60,7 @@ interface ContextProps {
   obtainSales: VoidFunction;
   obtainTrackings: VoidFunction;
   obtainQuotes: VoidFunction;
+  obtainProviderOrders: VoidFunction;
   setSaleInputValues: Dispatch<SetStateAction<SaleInputsType>>;
   setQuoteInputValues: Dispatch<SetStateAction<QuoteInputsType>>;
   setBlackBarKey: Dispatch<SetStateAction<BlackBarKeyEnum | null>>;
@@ -94,6 +99,9 @@ const GlobalInformationProvider = ({ children }: { children: ReactNode }) => {
   const [quotes, setQuotes] = useState<Array<CotizacionProps>>([]);
   const [selectedQuote, setSelectedQuote] = useState<null | CotizacionProps>(null);
 
+  const [loadingProviderOrders, setLoadingProviderOrders] = useState(false);
+  const [providerOrders, setProviderOrders] = useState<Array<ProviderOrderProps>>([]);
+
   const [saleInputValues, setSaleInputValues] = useState<SaleInputsType>({ enterprise: null, file: null, tipoVenta: 'directa' });
   const [quoteInputValues, setQuoteInputValues] = useState<QuoteInputsType>({ enterprise: null });
   const [blackBarKey, setBlackBarKey] = useState<null | BlackBarKeyEnum>(null);
@@ -110,6 +118,7 @@ const GlobalInformationProvider = ({ children }: { children: ReactNode }) => {
     obtainSales();
     obtainTrackings();
     obtainQuotes();
+    obtainProviderOrders();
   }, [user]);
 
   const obtainRegions = async () => {
@@ -229,6 +238,21 @@ const GlobalInformationProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const obtainProviderOrders = async () => {
+    try {
+      setLoadingProviderOrders(true);
+      const data = await getAllOrderProviders();
+      setProviderOrders(data);
+    } catch (error) {
+      notification.error({
+        message: 'Error al obtener órdenes de proveedor',
+        description: error instanceof Error ? error.message : String(error),
+      });
+    } finally {
+      setLoadingProviderOrders(false);
+    }
+  };
+
   const values = useMemo(
     () => ({
       loadingRegions,
@@ -252,6 +276,8 @@ const GlobalInformationProvider = ({ children }: { children: ReactNode }) => {
       saleInputValues,
       quoteInputValues,
       blackBarKey,
+      providerOrders,
+      loadingProviderOrders,
       setSelectedSale,
       setSelectedQuote,
       obtainClients,
@@ -262,6 +288,7 @@ const GlobalInformationProvider = ({ children }: { children: ReactNode }) => {
       obtainSales,
       obtainTrackings,
       obtainQuotes,
+      obtainProviderOrders,
       setSaleInputValues,
       setQuoteInputValues,
       setBlackBarKey,
@@ -288,6 +315,8 @@ const GlobalInformationProvider = ({ children }: { children: ReactNode }) => {
       saleInputValues,
       quoteInputValues,
       blackBarKey,
+      providerOrders,
+      loadingProviderOrders,
     ]
   );
 
