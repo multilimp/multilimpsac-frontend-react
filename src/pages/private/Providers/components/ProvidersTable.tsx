@@ -49,12 +49,6 @@ const ProvidersTable = ({ data, loading, onRecordAction, hideActions, onReload }
         </div>
       ),
     },
-    {
-      title: 'Estado',
-      dataIndex: 'estado',
-      width: 100,
-      render: (value) => (value ? <RadioButtonChecked color="success" /> : <RadioButtonUnchecked color="error" />),
-    },
     { title: 'Correo electrónico', dataIndex: 'email', width: 200, filter: true },
     { title: 'Teléfono', dataIndex: 'telefono', width: 150, filter: true },
     !hideActions && {

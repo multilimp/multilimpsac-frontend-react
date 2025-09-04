@@ -39,47 +39,50 @@ const TransportsModal: React.FC<TransportsModalProps> = ({ data, handleClose, ha
       telefono: data.telefono,
       email: data.email,
       cobertura: data.cobertura,
-      departamento: data.departamento?.name || '',
-      provincia: data.provincia?.name || '',
-      distrito: data.distrito?.name || '',
+      // Para edición, usar directamente los nombres desde el backend
+      departamento: data.departamento || '',
+      provincia: data.provincia || '',
+      distrito: data.distrito || '',
       direccion: data.direccion,
-      departamentoId: data.departamento?.id,
-      provinciaId: data.provincia?.id,
-      distritoId: data.distrito?.id,
+      // Establecer IDs como null para que no interfieran (solo guardamos nombres)
+      departamentoId: null,
+      provinciaId: null,
+      distritoId: null,
     });
   }, [data]);
 
-  const handleSubmit = async (raw: Record<string, string>) => {
+  const handleSubmit = async (values: any) => {
     try {
+      if (!values.ruc || !values.razonSocial) {
+        notification.error({ message: 'RUC y Razón Social son obligatorios' });
+        return;
+      }
+
       setLoading(true);
 
-      const body: Record<string, string | undefined> = {
-        ...raw,
-        departamento: raw.departamentoId ? JSON.stringify({
-          id: raw.departamentoId,
-          name: raw.departamento
-        }) : undefined,
-        provincia: raw.provinciaId ? JSON.stringify({
-          id: raw.provinciaId,
-          name: raw.provincia
-        }) : undefined,
-        distrito: raw.distritoId ? JSON.stringify({
-          id: raw.distritoId,
-          name: raw.distrito
-        }) : undefined,
+      const transporteData = {
+        ...values,
+        departamentoId: undefined,
+        provinciaId: undefined,
+        distritoId: undefined,
       };
 
-      delete body.departamentoId;
-      delete body.provinciaId;
-      delete body.distritoId;
+      const response = data
+        ? await updateTransport(data.id, transporteData)
+        : await createTransport(transporteData);
 
-      if (data) await updateTransport(data.id, body);
-      else await createTransport(body);
+      notification.success({
+        message: data
+          ? 'Transporte actualizado exitosamente'
+          : 'Transporte creado exitosamente'
+      });
 
+      form.resetFields();
       handleClose();
       handleReload();
-    } catch (error) {
-      notification.error({ message: 'No se logró guardar la información del transporte', description: String(error) });
+    } catch (error: any) {
+      console.error('Error:', error);
+      notification.error({ message: error.message || 'Error al procesar transporte' });
     } finally {
       setLoading(false);
     }
