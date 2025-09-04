@@ -142,7 +142,6 @@ const ClientsModal = ({ data, handleClose, handleReload }: ClientsModalProps) =>
             </Typography>
             <Grid container spacing={2}>
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <Form.Item name="departamentoId" noStyle />
                 <Form.Item name="departamento">
                   <SelectRegions
                     label="Departamento"
@@ -151,9 +150,9 @@ const ClientsModal = ({ data, handleClose, handleReload }: ClientsModalProps) =>
                       form.setFieldsValue({
                         departamento: departamentoName,
                         departamentoId: value,
-                        provincia: '',
+                        provincia: null,
                         provinciaId: null,
-                        distrito: '',
+                        distrito: null,
                         distritoId: null,
                       });
                     }}
@@ -161,7 +160,6 @@ const ClientsModal = ({ data, handleClose, handleReload }: ClientsModalProps) =>
                 </Form.Item>
               </Grid>
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <Form.Item name="provinciaId" noStyle />
                 <Form.Item noStyle shouldUpdate>
                   {({ getFieldValue }) => (
                     <Form.Item name="provincia">
@@ -173,7 +171,7 @@ const ClientsModal = ({ data, handleClose, handleReload }: ClientsModalProps) =>
                           form.setFieldsValue({
                             provincia: provinciaName,
                             provinciaId: value,
-                            distrito: '',
+                            distrito: null,
                             distritoId: null,
                           });
                         }}
@@ -183,7 +181,6 @@ const ClientsModal = ({ data, handleClose, handleReload }: ClientsModalProps) =>
                 </Form.Item>
               </Grid>
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <Form.Item name="distritoId" noStyle />
                 <Form.Item noStyle shouldUpdate>
                   {({ getFieldValue }) => (
                     <Form.Item name="distrito">
@@ -209,6 +206,11 @@ const ClientsModal = ({ data, handleClose, handleReload }: ClientsModalProps) =>
               </Grid>
             </Grid>
           </Box>
+
+          {/* Campos ocultos para los IDs de ubicación */}
+          <Form.Item name="departamentoId" noStyle />
+          <Form.Item name="provinciaId" noStyle />
+          <Form.Item name="distritoId" noStyle />
 
           <Button className="d-none" type="submit">
             SUBMIT

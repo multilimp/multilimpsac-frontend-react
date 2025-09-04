@@ -167,7 +167,6 @@ const ProvidersModal: React.FC<ProvidersModalProps> = ({ data, handleClose, hand
             </Typography>
             <Grid container spacing={2}>
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <Form.Item name="departamentoId" noStyle />
                 <Form.Item name="departamento">
                   <SelectRegions
                     label="Departamento"
@@ -176,9 +175,9 @@ const ProvidersModal: React.FC<ProvidersModalProps> = ({ data, handleClose, hand
                       form.setFieldsValue({
                         departamento: departamentoName,
                         departamentoId: value,
-                        provincia: '',
+                        provincia: null,
                         provinciaId: null,
-                        distrito: '',
+                        distrito: null,
                         distritoId: null,
                       });
                     }}
@@ -186,7 +185,6 @@ const ProvidersModal: React.FC<ProvidersModalProps> = ({ data, handleClose, hand
                 </Form.Item>
               </Grid>
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <Form.Item name="provinciaId" noStyle />
                 <Form.Item noStyle shouldUpdate>
                   {({ getFieldValue }) => (
                     <Form.Item name="provincia">
@@ -198,7 +196,7 @@ const ProvidersModal: React.FC<ProvidersModalProps> = ({ data, handleClose, hand
                           form.setFieldsValue({
                             provincia: provinciaName,
                             provinciaId: value,
-                            distrito: '',
+                            distrito: null,
                             distritoId: null,
                           });
                         }}
@@ -208,7 +206,6 @@ const ProvidersModal: React.FC<ProvidersModalProps> = ({ data, handleClose, hand
                 </Form.Item>
               </Grid>
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <Form.Item name="distritoId" noStyle />
                 <Form.Item noStyle shouldUpdate>
                   {({ getFieldValue }) => (
                     <Form.Item name="distrito">
@@ -234,6 +231,11 @@ const ProvidersModal: React.FC<ProvidersModalProps> = ({ data, handleClose, hand
               </Grid>
             </Grid>
           </Box>
+
+          {/* Campos ocultos para los IDs de ubicación */}
+          <Form.Item name="departamentoId" noStyle />
+          <Form.Item name="provinciaId" noStyle />
+          <Form.Item name="distritoId" noStyle />
 
           <Button className="d-none" type="submit">
             SUBMIT
