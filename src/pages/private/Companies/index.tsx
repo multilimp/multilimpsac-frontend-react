@@ -15,8 +15,6 @@ const Companies = () => {
   const { companies, loadingCompanies, obtainCompanies } = useGlobalInformation();
   const [modal, setModal] = useState<ModalStateProps<CompanyProps>>(null);
 
-  console.log('🔍 Modal state:', modal);
-
   const handleRecordAction = (mode: ModalStateEnum, data: CompanyProps) => {
     console.log('🎯 Record action called with:', { mode, data: data.razonSocial });
     setModal({ mode, data });

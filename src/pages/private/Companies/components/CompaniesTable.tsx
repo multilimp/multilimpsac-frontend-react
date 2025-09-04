@@ -49,7 +49,7 @@ const CompaniesTable = ({ data, loading, onRecordAction, onReload }: CompaniesTa
       render: (_, record) => (
         <>
           <Typography variant="body2">{record.direccion}</Typography>
-          <FormHelperText>{[record.departamento?.name, record.provincia?.name, record.distrito?.name].filter(Boolean).join(' - ')}</FormHelperText>
+          <FormHelperText>{[record.departamento, record.provincia, record.distrito].filter(Boolean).join(' - ')}</FormHelperText>
         </>
       ),
     },
