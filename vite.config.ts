@@ -2,17 +2,16 @@ import { defineConfig } from "vite";
 import path from "path";
 import react from "@vitejs/plugin-react";
 
-// https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   plugins: [
-    react(),  // solo el plugin oficial de React
+    react(),
   ],
   server: {
-    host: "::", // accesible desde la red local
+    host: "::",
     port: 8080,
   },
   preview: {
-    host: "0.0.0.0",
+    host: true,
     port: 3000,
   },
   resolve: {
@@ -21,21 +20,26 @@ export default defineConfig(({ mode }) => ({
     },
   },
   optimizeDeps: {
-    force: true, // Forzar re-optimización
-    exclude: [], // Dependencias a excluir de la optimización
+    force: true,
+    exclude: [],
     include: [
       "react",
       "react-dom",
       "react-router-dom",
       "@mui/material",
-      "antd"
-    ]
+      "@mui/icons-material",
+      "@emotion/react",
+      "@emotion/styled",
+      "antd",
+      "dayjs",
+      "axios",
+    ],
   },
   build: {
     outDir: "dist",
     sourcemap: mode === "development",
     emptyOutDir: true,
-    chunkSizeWarningLimit: 1000, // aumentar límite de advertencia
+    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
         manualChunks: {
@@ -44,10 +48,25 @@ export default defineConfig(({ mode }) => ({
             "react-dom",
             "react-router-dom",
             "@mui/material",
+            "@mui/icons-material",
+            "@emotion/react",
+            "@emotion/styled",
             "antd",
+          ],
+          utils: [
+            "dayjs",
+            "axios",
           ],
         },
       },
     },
+  },
+  css: {
+    modules: {
+      localsConvention: "camelCase",
+    },
+  },
+  define: {
+    __APP_VERSION__: JSON.stringify(process.env.npm_package_version || "1.0.0"),
   },
 }));
