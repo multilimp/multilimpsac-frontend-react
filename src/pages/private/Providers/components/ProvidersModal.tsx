@@ -38,47 +38,51 @@ const ProvidersModal: React.FC<ProvidersModalProps> = ({ data, handleClose, hand
       razonSocial: data.razonSocial,
       telefono: data.telefono,
       email: data.email,
-      departamento: data.departamento?.name || '',
-      provincia: data.provincia?.name || '',
-      distrito: data.distrito?.name || '',
+      departamento: data.departamento || '', // Leer como string directo
+      provincia: data.provincia || '',       // Leer como string directo
+      distrito: data.distrito || '',         // Leer como string directo
       direccion: data.direccion,
-      departamentoId: data.departamento?.id,
-      provinciaId: data.provincia?.id,
-      distritoId: data.distrito?.id,
+      departamentoId: null, // No necesitamos IDs para guardar
+      provinciaId: null,
+      distritoId: null,
     });
   }, [data]);
 
-  const handleSubmit = async (raw: Record<string, string>) => {
+  const handleSubmit = async (values: Record<string, any>) => {
     try {
       setLoading(true);
 
-      const body: Record<string, string | undefined> = {
-        ...raw,
-        departamento: raw.departamentoId ? JSON.stringify({
-          id: raw.departamentoId,
-          name: raw.departamento
-        }) : undefined,
-        provincia: raw.provinciaId ? JSON.stringify({
-          id: raw.provinciaId,
-          name: raw.provincia
-        }) : undefined,
-        distrito: raw.distritoId ? JSON.stringify({
-          id: raw.distritoId,
-          name: raw.distrito
-        }) : undefined,
+      // Preparar datos para el backend con nombres de ubicación
+      const body = {
+        ruc: values.ruc,
+        razonSocial: values.razonSocial,
+        telefono: values.telefono,
+        email: values.email,
+        departamento: values.departamento, // Guardar el nombre, no el objeto
+        provincia: values.provincia,       // Guardar el nombre, no el objeto
+        distrito: values.distrito,         // Guardar el nombre, no el objeto
+        direccion: values.direccion,
       };
 
-      delete body.departamentoId;
-      delete body.provinciaId;
-      delete body.distritoId;
+      if (data) {
+        await updateProvider(data.id, body);
+      } else {
+        await createProvider(body);
+      }
 
-      if (data) await updateProvider(data.id, body);
-      else await createProvider(body);
+      notification.success({
+        message: 'Proveedor guardado',
+        description: `El proveedor se ${data ? 'actualizó' : 'creó'} correctamente.`,
+      });
 
       handleClose();
       handleReload();
     } catch (error) {
-      notification.error({ message: 'No se logró guardar la información del proveedor', description: String(error) });
+      console.error('Error al guardar proveedor:', error);
+      notification.error({
+        message: 'Error al guardar',
+        description: 'No se pudo guardar la información del proveedor.'
+      });
     } finally {
       setLoading(false);
     }
