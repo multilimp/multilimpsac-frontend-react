@@ -45,16 +45,16 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onReload }) => {
       return {
         id: item.id,
         codigo_venta: item.codigoVenta,
-        razon_social_cliente: item.cliente.razonSocial,
-        ruc_cliente: item.cliente.ruc,
-        ruc_empresa: item.empresa.ruc,
-        razon_social_empresa: item.empresa.razonSocial,
+        razon_social_cliente: item.cliente?.razonSocial || 'Sin cliente',
+        ruc_cliente: item.cliente?.ruc || '',
+        ruc_empresa: item.empresa?.ruc || '',
+        razon_social_empresa: item.empresa?.razonSocial || 'Sin empresa',
         contacto: item.contactoCliente ? `${item.contactoCliente.nombre} - ${item.contactoCliente.cargo}` : '',
         catalogo: item.catalogoEmpresa?.nombre ?? '',
         fecha_formalizacion: formattedDate(item.fechaForm),
         fecha_max_entrega: formattedDate(item.fechaMaxForm),
         monto_venta: formatCurrency(Number(item.montoVenta)),
-        cue: item.cliente.codigoUnidadEjecutora,
+        cue: item.cliente?.codigoUnidadEjecutora || '',
         direccion_entrega: `${item.direccionEntrega ?? ''} -
                             ${item.departamentoEntrega ?? ''}
                             ${item.provinciaEntrega ?? ''}
