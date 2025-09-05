@@ -1,6 +1,7 @@
 import { AttachMoney, BarChart, Bento, North, Plagiarism, South } from '@mui/icons-material';
 import { Box, Card, CardContent, CardHeader, Chip, Grid, Stack, Typography } from '@mui/material';
 import { LineChart, Line, BarChart as RechartsBarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import ComingSoonOverlay from '@/components/ComingSoonOverlay';
 
 const Dashboard = () => {
   const data = [
@@ -70,7 +71,7 @@ const Dashboard = () => {
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
   return (
-    <Box>
+    <Box sx={{ position: 'relative' }}>
       <Typography variant="h5" fontWeight={700}>
         Panel de control
       </Typography>
@@ -220,6 +221,7 @@ const Dashboard = () => {
           </Card>
         </Grid>
       </Grid>
+      <ComingSoonOverlay />
     </Box>
   );
 };

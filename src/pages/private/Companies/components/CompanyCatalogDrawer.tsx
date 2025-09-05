@@ -42,36 +42,32 @@ const CompanyCatalogDrawer = ({ data, handleClose }: CompanyCatalogDrawerProps) 
       onClose={handleClose}
       sx={{
         '& .MuiDrawer-paper': {
-          background: 'linear-gradient(135deg, #161e2a 0%, #1e2936 50%, #283042 100%)',
+          background: '#0f1a2b',
           color: 'white',
         }
       }}
     >
       <Box sx={{ borderRadius: 0, width: { xs: '100%', sm: 400 } }}>
-        <CardHeader
-          title="CATÁLOGOS"
-          subheader={data.razonSocial}
-          slotProps={{
-            title: {
-              fontWeight: 700,
-              fontSize: 20,
-              color: 'white'
-            },
-            subheader: {
-              color: 'rgba(255, 255, 255, 0.8)',
-              fontSize: '0.9rem'
-            }
-          }}
+        <Box
           sx={{
-            pt: 2,
-            pb: 1,
-            background: 'rgba(255, 255, 255, 0.1)',
-            backdropFilter: 'blur(10px)',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.2)'
+            background: 'rgba(15, 26, 43, 0.9)',
+            color: 'white',
+            p: 3,
           }}
-          action={
+        >
+          <Stack direction="row" alignItems="center" justifyContent="space-between">
+            <Stack direction="row" alignItems="center" spacing={2}>
+              <AddBox sx={{ fontSize: 32 }} />
+              <Box>
+                <Typography variant="h5" sx={{ fontWeight: 'bold', letterSpacing: 1 }}>
+                  CATÁLOGOS
+                </Typography>
+                <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                  {data.razonSocial}
+                </Typography>
+              </Box>
+            </Stack>
             <IconButton
-              size="small"
               onClick={handleClose}
               disabled={isLoading}
               sx={{
@@ -83,13 +79,22 @@ const CompanyCatalogDrawer = ({ data, handleClose }: CompanyCatalogDrawerProps) 
             >
               <Close fontSize="large" />
             </IconButton>
-          }
-        />
-        <CardContent sx={{
-          height: 'calc((100vh) - 225px)',
+          </Stack>
+        </Box>
+        <Box sx={{
+          height: 'calc(100vh - 120px)',
           overflow: 'auto',
-          pt: 2,
-          background: 'transparent'
+          p: 2,
+          '&::-webkit-scrollbar': {
+            width: '8px',
+          },
+          '&::-webkit-scrollbar-track': {
+            background: 'rgba(4, 186, 107, 0.1)',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            background: '#04BA6B',
+            borderRadius: '4px',
+          },
         }}>
           {isLoading ? (
             <Stack direction="column" spacing={2}>
@@ -289,7 +294,7 @@ const CompanyCatalogDrawer = ({ data, handleClose }: CompanyCatalogDrawerProps) 
               )}
             </Stack>
           )}
-        </CardContent>
+        </Box>
       </Box>
     </Drawer>
   );
