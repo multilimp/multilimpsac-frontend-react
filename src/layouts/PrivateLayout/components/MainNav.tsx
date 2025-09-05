@@ -1,19 +1,19 @@
 import React, { useState, useRef, useEffect } from 'react';
 import usePopover from '@/hooks/usePopover';
 import { Search, Person, Close, KeyboardArrowDown } from '@mui/icons-material';
-import { 
-  Avatar, 
-  Box, 
-  IconButton, 
-  Stack, 
-  Tooltip, 
-  Typography, 
-  InputBase, 
-  Popper, 
-  Paper, 
-  List, 
-  ListItem, 
-  ListItemText, 
+import {
+  Avatar,
+  Box,
+  IconButton,
+  Stack,
+  Tooltip,
+  Typography,
+  InputBase,
+  Popper,
+  Paper,
+  List,
+  ListItem,
+  ListItemText,
   ListItemIcon,
   Chip,
   ClickAwayListener,
@@ -86,11 +86,11 @@ const MainNav = () => {
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const query = event.target.value;
     setSearchQuery(query);
-    
+
     if (query.length > 0) {
       const filtered = mockSearchResults.filter(result => {
         const matchesQuery = result.title.toLowerCase().includes(query.toLowerCase()) ||
-                           result.subtitle.toLowerCase().includes(query.toLowerCase());
+          result.subtitle.toLowerCase().includes(query.toLowerCase());
         return matchesQuery;
       });
       setSearchResults(filtered);
@@ -137,12 +137,9 @@ const MainNav = () => {
       <Box
         component="header"
         sx={{
-          borderBottom: '1px solid var(--mui-palette-divider)',
-          backgroundColor: 'var(--mui-palette-background-paper)',
           position: 'sticky',
           top: 0,
-          zIndex: 1,
-          boxShadow: '0 2px 10px rgba(0, 0, 0, 0.05)',
+          zIndex: 1
         }}
       >
         <Stack
@@ -276,21 +273,21 @@ const MainNav = () => {
                       </Typography>
                     }
                   />
-                                     <Chip
-                     label={result.type === 'client' ? 'Cliente' : 
-                           result.type === 'product' ? 'Producto' :
-                           result.type === 'order' ? 'Orden' :
-                           result.type === 'quote' ? 'Cotización' :
-                           result.type === 'provider' ? 'Proveedor' : 'Otro'}
-                     size="small"
-                     color={result.type === 'client' ? 'success' :
-                           result.type === 'product' ? 'warning' :
-                           result.type === 'order' ? 'info' :
-                           result.type === 'quote' ? 'secondary' :
-                           result.type === 'provider' ? 'error' : 'default' as any}
-                     variant="outlined"
-                     sx={{ fontSize: '0.7rem', height: '20px' }}
-                   />
+                  <Chip
+                    label={result.type === 'client' ? 'Cliente' :
+                      result.type === 'product' ? 'Producto' :
+                        result.type === 'order' ? 'Orden' :
+                          result.type === 'quote' ? 'Cotización' :
+                            result.type === 'provider' ? 'Proveedor' : 'Otro'}
+                    size="small"
+                    color={result.type === 'client' ? 'success' :
+                      result.type === 'product' ? 'warning' :
+                        result.type === 'order' ? 'info' :
+                          result.type === 'quote' ? 'secondary' :
+                            result.type === 'provider' ? 'error' : 'default' as any}
+                    variant="outlined"
+                    sx={{ fontSize: '0.7rem', height: '20px' }}
+                  />
                 </ListItem>
               ))}
             </List>
