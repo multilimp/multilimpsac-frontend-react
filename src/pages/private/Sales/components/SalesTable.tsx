@@ -1,12 +1,14 @@
-import React, { useMemo } from 'react';
-import { IconButton, Button, Box } from '@mui/material';
+import React, { useMemo, useState } from 'react';
+import { IconButton, Button, Box, Drawer, List, ListItem, ListItemText, Typography, Tooltip } from '@mui/material';
 import { SaleProps } from '@/services/sales/sales';
-import { PictureAsPdf, Visibility } from '@mui/icons-material';
+import { PictureAsPdf, Visibility, Contacts } from '@mui/icons-material';
 import { formatCurrency, formattedDate } from '@/utils/functions';
 import { ModalStateEnum } from '@/types/global.enum';
 import AntTable, { AntColumnType } from '@/components/AntTable';
 import { useNavigate } from 'react-router-dom';
 import { heroUIColors } from '@/styles/theme/heroui-colors';
+import ContactsDrawer from '@/components/ContactsDrawer';
+import { ContactTypeEnum } from '@/services/contacts/contacts.enum';
 
 interface SalesTableProps {
   data: SaleProps[];
@@ -17,6 +19,17 @@ interface SalesTableProps {
 
 const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onReload }) => {
   const navigate = useNavigate();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [selectedContacts, setSelectedContacts] = useState<any[]>([]);
+  const [contactsDrawerOpen, setContactsDrawerOpen] = useState(false);
+  const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
+  const [selectedTitle, setSelectedTitle] = useState<string>('');
+
+  const handleOpenContactsDrawer = (clientId: number, title: string) => {
+    setSelectedClientId(clientId);
+    setSelectedTitle(title);
+    setContactsDrawerOpen(true);
+  };
 
   // ✅ Función para normalizar estados desde el backend
   const normalizeStatus = (status: string | null | undefined): string => {
@@ -49,8 +62,10 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onReload }) => {
         ruc_cliente: item.cliente?.ruc || '',
         ruc_empresa: item.empresa?.ruc || '',
         razon_social_empresa: item.empresa?.razonSocial || 'Sin empresa',
-        contacto: item.contactoCliente ? `${item.contactoCliente.nombre} - ${item.contactoCliente.cargo}` : '',
-        catalogo: item.catalogoEmpresa?.nombre ?? '',
+        contacto: item.contactoCliente ? `${item.contactoCliente.nombre} - ${item.contactoCliente.cargo}` : 'Sin contacto',
+        clienteId: item.cliente?.id,
+        razonSocialCliente: item.cliente?.razonSocial,
+        rucCliente: item.cliente?.ruc,
         fecha_formalizacion: formattedDate(item.fechaForm),
         fecha_max_entrega: formattedDate(item.fechaMaxForm),
         monto_venta: formatCurrency(Number(item.montoVenta)),
@@ -63,8 +78,6 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onReload }) => {
         // ✅ Usar estado normalizado para ambos campos
         estado_venta: normalizedStatus,
         estado_indicador: normalizedStatus,
-        oce: item.documentoOce,
-        ocf: item.documentoOcf,
         rawdata: item,
       };
     });
@@ -123,53 +136,52 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onReload }) => {
       dataIndex: 'codigo_venta',
       width: 200,
       render: (value, record) => (
-        <Button
-          variant="contained"
-          onClick={() => {
-            navigate('/sales/' + record.id + '/edit')
-          }}
-          startIcon={<Visibility />}
-          size="small"
-          color="info"
-          style={{ width: '100%' }}
-        >
-          {value}
-        </Button>
+        <Tooltip title="Editar venta">
+          <Button
+            variant="contained"
+            onClick={() => {
+              navigate('/sales/' + record.id + '/edit')
+            }}
+            startIcon={<Visibility />}
+            size="small"
+            color="info"
+            style={{ width: '100%' }}
+          >
+            {value}
+          </Button>
+        </Tooltip>
       )
     },
     { title: 'Razón Social Cliente', dataIndex: 'razon_social_cliente', width: 200, sort: true, filter: true },
     { title: 'RUC Cliente', dataIndex: 'ruc_cliente', width: 200, sort: true, filter: true },
     { title: 'RUC Empresa', dataIndex: 'ruc_empresa', width: 200, sort: true, filter: true },
     { title: 'Razón Social Empresa', dataIndex: 'razon_social_empresa', width: 200, sort: true, filter: true },
-    { title: 'Contacto', dataIndex: 'contacto', width: 200, sort: true, filter: true },
-    { title: 'Catálogo', dataIndex: 'catalogo', width: 200, sort: true, filter: true },
+    {
+      title: 'Contactos',
+      dataIndex: 'contacto',
+      width: 150,
+      sort: true,
+      filter: true,
+      align: 'center',
+      render: (_, record) => (
+        <Tooltip title="Ver contactos del cliente">
+          <Button
+            variant="outlined"
+            startIcon={<Contacts />}
+            onClick={() => handleOpenContactsDrawer(record.clienteId, `${record.razonSocialCliente} - ${record.rucCliente}`)}
+            size="small"
+            color="primary"
+          >
+            Ver
+          </Button>
+        </Tooltip>
+      ),
+    },
     { title: 'Fecha Formalización', dataIndex: 'fecha_formalizacion', width: 200, sort: true, filter: true },
     { title: 'Fecha Máxima Entrega', dataIndex: 'fecha_max_entrega', width: 200, sort: true, filter: true },
     { title: 'Monto Venta', dataIndex: 'monto_venta', width: 200, sort: true, filter: true },
     { title: 'CUE', dataIndex: 'cue', width: 200, sort: true, filter: true },
     { title: 'Dirección Entrega', dataIndex: 'direccion_entrega', width: 300, sort: true, filter: true },
-    {
-      title: 'OCE',
-      dataIndex: 'oce',
-      width: 100,
-      render: (value) =>
-        value && (
-          <IconButton color="error" component="a" href={value} target="_blank">
-            <PictureAsPdf />
-          </IconButton>
-        ),
-    },
-    {
-      title: 'OCF',
-      dataIndex: 'ocf',
-      width: 100,
-      render: (value) =>
-        value && (
-          <IconButton color="error" component="a" href={value} target="_blank">
-            <PictureAsPdf />
-          </IconButton>
-        ),
-    },
     {
       title: 'Estado',
       dataIndex: 'estado_venta',
@@ -209,7 +221,20 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onReload }) => {
     },
   ];
 
-  return <AntTable data={formattedData} columns={columns} loading={loading} onReload={onReload} />;
+  return (
+    <>
+      <AntTable data={formattedData} columns={columns} loading={loading} onReload={onReload} />
+      {contactsDrawerOpen && selectedClientId && (
+        <ContactsDrawer
+          handleClose={() => setContactsDrawerOpen(false)}
+          tipo={ContactTypeEnum.CLIENTE}
+          referenceId={selectedClientId}
+          title={selectedTitle}
+          readOnly={true}
+        />
+      )}
+    </>
+  );
 };
 
 export default SalesTable;

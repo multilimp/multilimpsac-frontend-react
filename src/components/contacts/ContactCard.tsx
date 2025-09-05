@@ -31,13 +31,15 @@ interface ContactCardProps {
   onUpdate: (contactId: number, data: ContactUpdateProps) => Promise<void>;
   onDelete: (contactId: number) => Promise<void>;
   loading?: boolean;
+  readOnly?: boolean;
 }
 
 export const ContactCard: React.FC<ContactCardProps> = ({
   contact,
   onUpdate,
   onDelete,
-  loading = false
+  loading = false,
+  readOnly = false
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [form] = Form.useForm();
@@ -297,46 +299,48 @@ export const ContactCard: React.FC<ContactCardProps> = ({
           </Box>
 
           {/* Botones de acción */}
-          <Stack direction="row" spacing={0.5}>
-            <IconButton
-              onClick={handleEdit}
-              size="small"
-              sx={{
-                color: '#04BA6B',
-                backgroundColor: 'rgba(4, 186, 107, 0.1)',
-                '&:hover': {
-                  backgroundColor: 'rgba(4, 186, 107, 0.2)',
-                  transform: 'scale(1.1)',
-                }
-              }}
-            >
-              <Edit fontSize="small" />
-            </IconButton>
-
-            <Popconfirm
-              title="¿Eliminar contacto?"
-              description="Esta acción no se puede deshacer"
-              onConfirm={handleDelete}
-              okText="Eliminar"
-              cancelText="Cancelar"
-              okButtonProps={{ danger: true }}
-            >
+          {!readOnly && (
+            <Stack direction="row" spacing={0.5}>
               <IconButton
+                onClick={handleEdit}
                 size="small"
                 sx={{
-                  color: 'rgba(239, 68, 68, 0.8)',
-                  backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                  color: '#04BA6B',
+                  backgroundColor: 'rgba(4, 186, 107, 0.1)',
                   '&:hover': {
-                    color: '#ef4444',
-                    backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                    backgroundColor: 'rgba(4, 186, 107, 0.2)',
                     transform: 'scale(1.1)',
                   }
                 }}
               >
-                <Delete fontSize="small" />
+                <Edit fontSize="small" />
               </IconButton>
-            </Popconfirm>
-          </Stack>
+
+              <Popconfirm
+                title="¿Eliminar contacto?"
+                description="Esta acción no se puede deshacer"
+                onConfirm={handleDelete}
+                okText="Eliminar"
+                cancelText="Cancelar"
+                okButtonProps={{ danger: true }}
+              >
+                <IconButton
+                  size="small"
+                  sx={{
+                    color: 'rgba(239, 68, 68, 0.8)',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    '&:hover': {
+                      color: '#ef4444',
+                      backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                      transform: 'scale(1.1)',
+                    }
+                  }}
+                >
+                  <Delete fontSize="small" />
+                </IconButton>
+              </Popconfirm>
+            </Stack>
+          )}
         </Stack>
       </CardContent>
     </MuiCard>

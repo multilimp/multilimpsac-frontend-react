@@ -15,9 +15,11 @@ interface ContactsDrawerProps {
   tipo: ContactTypeEnum;
   referenceId: number;
   onContactCreated?: VoidFunction;
+  title?: string;
+  readOnly?: boolean;
 }
 
-const ContactsDrawer = ({ handleClose, tipo, referenceId, onContactCreated }: ContactsDrawerProps) => {
+const ContactsDrawer = ({ handleClose, tipo, referenceId, onContactCreated, title, readOnly = false }: ContactsDrawerProps) => {
   // Usar useContactsByEntity para filtrar correctamente por entidad específica
   const entityType = tipo.toLowerCase() as 'cliente' | 'proveedor' | 'transporte';
   const { contacts, loadingContacts, obtainContacts, updateContactData, deleteContactData } = useContactsByEntity(entityType, referenceId);
@@ -55,7 +57,7 @@ const ContactsDrawer = ({ handleClose, tipo, referenceId, onContactCreated }: Co
         {/* Header profesional */}
         <Box
           sx={{
-            background: '',
+            background: 'rgba(15, 26, 43, 0.9)',
             color: 'white',
             p: 3,
           }}
@@ -68,7 +70,7 @@ const ContactsDrawer = ({ handleClose, tipo, referenceId, onContactCreated }: Co
                   CONTACTOS
                 </Typography>
                 <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                  Gestión de contactos empresariales
+                  {title || 'Gestión de contactos empresariales'}
                 </Typography>
               </Box>
             </Stack>
@@ -101,7 +103,7 @@ const ContactsDrawer = ({ handleClose, tipo, referenceId, onContactCreated }: Co
             background: 'rgba(4, 186, 107, 0.1)',
           },
           '&::-webkit-scrollbar-thumb': {
-            background: 'linear-gradient(180deg, #04BA6B, #26c985)',
+            background: '#04BA6B',
             borderRadius: '4px',
           },
         }}>
@@ -112,7 +114,7 @@ const ContactsDrawer = ({ handleClose, tipo, referenceId, onContactCreated }: Co
                 <Card
                   key={index}
                   sx={{
-                    background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(4, 186, 107, 0.1) 30%, rgba(15, 26, 43, 0.8) 100%)',
+                    background: 'rgba(30, 41, 59, 0.8)',
                     border: '1px solid rgba(4, 186, 107, 0.3)',
                     borderRadius: 2,
                     p: 2.5,
@@ -125,8 +127,7 @@ const ContactsDrawer = ({ handleClose, tipo, referenceId, onContactCreated }: Co
                         size="small"
                         style={{
                           width: '60%',
-                          marginBottom: '8px',
-                          backgroundColor: 'rgba(4, 186, 107, 0.2)'
+                          marginBottom: '8px'
                         }}
                       />
                       <Skeleton.Input
@@ -134,8 +135,7 @@ const ContactsDrawer = ({ handleClose, tipo, referenceId, onContactCreated }: Co
                         size="small"
                         style={{
                           width: '40%',
-                          marginBottom: '16px',
-                          backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                          marginBottom: '16px'
                         }}
                       />
                       <Stack spacing={1}>
@@ -143,16 +143,14 @@ const ContactsDrawer = ({ handleClose, tipo, referenceId, onContactCreated }: Co
                           active
                           size="small"
                           style={{
-                            width: '80%',
-                            backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                            width: '80%'
                           }}
                         />
                         <Skeleton.Input
                           active
                           size="small"
                           style={{
-                            width: '70%',
-                            backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                            width: '70%'
                           }}
                         />
                       </Stack>
@@ -162,7 +160,6 @@ const ContactsDrawer = ({ handleClose, tipo, referenceId, onContactCreated }: Co
                         active
                         size="small"
                         style={{
-                          backgroundColor: 'rgba(4, 186, 107, 0.2)',
                           borderRadius: '50%'
                         }}
                       />
@@ -170,7 +167,6 @@ const ContactsDrawer = ({ handleClose, tipo, referenceId, onContactCreated }: Co
                         active
                         size="small"
                         style={{
-                          backgroundColor: 'rgba(239, 68, 68, 0.2)',
                           borderRadius: '50%'
                         }}
                       />
@@ -190,6 +186,7 @@ const ContactsDrawer = ({ handleClose, tipo, referenceId, onContactCreated }: Co
                     onUpdate={updateContactData}
                     onDelete={deleteContactData}
                     loading={isLoading}
+                    readOnly={readOnly}
                   />
                 ))
               ) : (
@@ -212,29 +209,33 @@ const ContactsDrawer = ({ handleClose, tipo, referenceId, onContactCreated }: Co
               )}
 
               {/* Botón/Formulario para agregar contacto */}
-              {openForm ? (
-                <CardForm handleClose={() => setOpenForm(false)} tipo={tipo} referenceId={referenceId} onSubmit={onSubmit} />
-              ) : (
-                <Card
-                  sx={{
-                    background: 'inherit',
-                    border: '1px dashed #04BA6B',
-                    borderRadius: 3,
-                    transition: 'all 0.3s ease'
-                  }}
-                >
-                  <CardActionArea onClick={() => setOpenForm(true)} sx={{ p: 3 }}>
-                    <Stack direction="column" justifyContent="center" alignItems="center" spacing={2}>
-                      <AddBox sx={{ fontSize: 40, color: '#04BA6B' }} />
-                      <Typography variant="h6" sx={{ color: heroUIColors.secondary[500], fontWeight: 'bold' }}>
-                        Agregar Nuevo Contacto
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', textAlign: 'center' }}>
-                        Registra un nuevo contacto para esta entidad
-                      </Typography>
-                    </Stack>
-                  </CardActionArea>
-                </Card>
+              {!readOnly && (
+                <>
+                  {openForm ? (
+                    <CardForm handleClose={() => setOpenForm(false)} tipo={tipo} referenceId={referenceId} onSubmit={onSubmit} />
+                  ) : (
+                    <Card
+                      sx={{
+                        background: 'inherit',
+                        border: '1px dashed #04BA6B',
+                        borderRadius: 3,
+                        transition: 'all 0.3s ease'
+                      }}
+                    >
+                      <CardActionArea onClick={() => setOpenForm(true)} sx={{ p: 3 }}>
+                        <Stack direction="column" justifyContent="center" alignItems="center" spacing={2}>
+                          <AddBox sx={{ fontSize: 40, color: '#04BA6B' }} />
+                          <Typography variant="h6" sx={{ color: heroUIColors.secondary[500], fontWeight: 'bold' }}>
+                            Agregar Nuevo Contacto
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', textAlign: 'center' }}>
+                            Registra un nuevo contacto para esta entidad
+                          </Typography>
+                        </Stack>
+                      </CardActionArea>
+                    </Card>
+                  )}
+                </>
               )}
             </Stack>
           )}

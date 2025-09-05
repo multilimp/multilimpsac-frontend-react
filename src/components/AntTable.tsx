@@ -17,6 +17,7 @@ import {
   Stack,
   Switch,
   TextField,
+  Tooltip,
   Typography,
   useTheme,
 } from '@mui/material';
@@ -223,21 +224,25 @@ const AntTable = <T extends Record<string, any>>(props: AntTablePropsProps<T>) =
             </Stack>
           </CardContent>
           <CardActions sx={{ flexDirection: 'column', gap: 2, py: 2 }}>
-            <Button
-              startIcon={<Replay />}
-              fullWidth
-              onClick={() => {
-                columnsCloned.forEach((_, index) => {
-                  columnsCloned[index].selected = true;
-                });
-                setColumnsCloned([...columnsCloned]);
-              }}
-            >
-              Reestablecer Predeterminado
-            </Button>
-            <Button startIcon={<Close />} fullWidth variant="outlined" color="inherit" onClick={() => setShowDrawer(false)}>
-              Cerrar
-            </Button>
+            <Tooltip title="Restaurar todas las columnas visibles">
+              <Button
+                startIcon={<Replay />}
+                fullWidth
+                onClick={() => {
+                  columnsCloned.forEach((_, index) => {
+                    columnsCloned[index].selected = true;
+                  });
+                  setColumnsCloned([...columnsCloned]);
+                }}
+              >
+                Reestablecer Predeterminado
+              </Button>
+            </Tooltip>
+            <Tooltip title="Cerrar panel de personalización">
+              <Button startIcon={<Close />} fullWidth variant="outlined" color="inherit" onClick={() => setShowDrawer(false)}>
+                Cerrar
+              </Button>
+            </Tooltip>
           </CardActions>
         </Box>
       </Drawer>
@@ -252,9 +257,11 @@ const AntTable = <T extends Record<string, any>>(props: AntTablePropsProps<T>) =
           title={() => (
             <Stack direction="row" spacing={2} alignItems="center">
               {!hideToolbar && (
-                <IconButton color="primary" size="small" onClick={() => setShowDrawer(true)}>
-                  <Reorder />
-                </IconButton>
+                <Tooltip title="Personalizar columnas">
+                  <IconButton color="primary" size="small" onClick={() => setShowDrawer(true)}>
+                    <Reorder />
+                  </IconButton>
+                </Tooltip>
               )}
 
               <TextField
@@ -275,20 +282,28 @@ const AntTable = <T extends Record<string, any>>(props: AntTablePropsProps<T>) =
 
               {!hideToolbar && (
                 <>
-                  <IconButton color="primary" size="small" onClick={() => setShowInputs(!showInputs)} sx={{ border: showInputs ? '1px solid' : '0' }}>
-                    <Bolt />
-                  </IconButton>
-                  <IconButton color="primary" size="small" onClick={handleDownloadCSV}>
-                    <SaveAlt />
-                  </IconButton>
-                  {onReload && (
-                    <IconButton color="success" size="small" onClick={handleReload}>
-                      <Replay />
+                  <Tooltip title="Filtros avanzados">
+                    <IconButton color="primary" size="small" onClick={() => setShowInputs(!showInputs)} sx={{ border: showInputs ? '1px solid' : '0' }}>
+                      <Bolt />
                     </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Descargar CSV">
+                    <IconButton color="primary" size="small" onClick={handleDownloadCSV}>
+                      <SaveAlt />
+                    </IconButton>
+                  </Tooltip>
+                  {onReload && (
+                    <Tooltip title="Recargar datos">
+                      <IconButton color="success" size="small" onClick={handleReload}>
+                        <Replay />
+                      </IconButton>
+                    </Tooltip>
                   )}
-                  <IconButton color="error" size="small" onClick={handleClear}>
-                    <Clear />
-                  </IconButton>
+                  <Tooltip title="Limpiar filtros">
+                    <IconButton color="error" size="small" onClick={handleClear}>
+                      <Clear />
+                    </IconButton>
+                  </Tooltip>
                 </>
               )}
             </Stack>
