@@ -15,9 +15,10 @@ interface SalesTableProps {
   loading: boolean;
   onRecordAction?: (action: ModalStateEnum, data: SaleProps) => void;
   onReload?: () => void | Promise<void>;
+  isPrivateSales?: boolean;
 }
 
-const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onReload }) => {
+const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onReload, isPrivateSales = false }) => {
   const navigate = useNavigate();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedContacts, setSelectedContacts] = useState<any[]>([]);
@@ -66,7 +67,7 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onReload }) => {
         clienteId: item.cliente?.id,
         razonSocialCliente: item.cliente?.razonSocial,
         rucCliente: item.cliente?.ruc,
-        fecha_formalizacion: formattedDate(item.fechaForm),
+        ...(isPrivateSales ? {} : { fecha_formalizacion: formattedDate(item.fechaForm) }),
         fecha_max_entrega: formattedDate(item.fechaMaxForm),
         monto_venta: formatCurrency(Number(item.montoVenta)),
         cue: item.cliente?.codigoUnidadEjecutora || '',
@@ -177,7 +178,7 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onReload }) => {
         </Tooltip>
       ),
     },
-    { title: 'Fecha Formalización', dataIndex: 'fecha_formalizacion', width: 200, sort: true, filter: true },
+    ...(isPrivateSales ? [] : [{ title: 'Fecha Formalización', dataIndex: 'fecha_formalizacion', width: 200, sort: true, filter: true }]),
     { title: 'Fecha Máxima Entrega', dataIndex: 'fecha_max_entrega', width: 200, sort: true, filter: true },
     { title: 'Monto Venta', dataIndex: 'monto_venta', width: 200, sort: true, filter: true },
     { title: 'CUE', dataIndex: 'cue', width: 200, sort: true, filter: true },

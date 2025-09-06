@@ -4,7 +4,6 @@ import { Box, Stack, Typography } from '@mui/material';
 import { DeleteOutlined, CreditCardOutlined, PaperClipOutlined, CalendarOutlined, BankOutlined, FileTextOutlined, DollarOutlined } from '@ant-design/icons';
 import DatePickerAntd from '@/components/DatePickerAnt';
 import SimpleFileUpload from '@/components/SimpleFileUpload';
-import EntityFinancialInfo from '@/components/EntityFinancialInfo';
 
 const { Title, Text } = AntTypography;
 
@@ -206,12 +205,8 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
         <Box sx={{ flex: 1 }}>
           {entityType && entityId && entityName ? (
-            <EntityFinancialInfo
-              entityType={entityType}
-              entityId={entityId}
-              entityName={entityName}
-              titleSuffix=""
-            />
+            <>
+            </>
           ) : (
             <Stack direction="row" alignItems="center" spacing={2}>
               <Typography variant="h6" fontWeight={700} sx={{ color: '#1a1a1a', display: 'flex', alignItems: 'center' }}>

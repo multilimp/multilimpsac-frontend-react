@@ -9,20 +9,27 @@ import ProvidersTable from './components/ProvidersTable';
 import ProvidersModal from './components/ProvidersModal';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 import ContactsDrawer from '@/components/ContactsDrawer';
-import ProviderSaldosDrawer from '@/components/ProviderSaldosDrawer';
+import PagosModal from '@/components/PagosModal';
 import { ContactTypeEnum } from '@/services/contacts/contacts.enum';
 
 const Providers = () => {
   const { providers, obtainProviders, loadingProviders } = useGlobalInformation();
   const [modal, setModal] = useState<ModalStateProps<ProviderProps>>(null);
   const [saldosDrawerData, setSaldosDrawerData] = useState<ProviderProps | null>(null);
+  const [pagosModalData, setPagosModalData] = useState<{ open: boolean; entidad: ProviderProps | null }>({
+    open: false,
+    entidad: null
+  });
 
   const handleClose = () => setModal(null);
 
-  const handleRecordAction = (mode: ModalStateEnum | 'MANAGE_SALDOS', data: ProviderProps) => {
+  const handleRecordAction = (mode: ModalStateEnum | 'MANAGE_SALDOS' | 'MANAGE_PAGOS', data: ProviderProps) => {
     if (mode === 'MANAGE_SALDOS') {
       // Abrir el drawer de saldos
       setSaldosDrawerData(data);
+    } else if (mode === 'MANAGE_PAGOS') {
+      // Abrir el modal de pagos
+      setPagosModalData({ open: true, entidad: data });
     } else {
       setModal({ mode, data });
     }
@@ -47,18 +54,18 @@ const Providers = () => {
         <ContactsDrawer referenceId={modal.data?.id!} handleClose={handleClose} tipo={ContactTypeEnum.PROVEEDOR} />
       ) : null}
 
-      {/* Drawer de gestión de saldos */}
-      {saldosDrawerData && (
-        <ProviderSaldosDrawer
-          providerId={saldosDrawerData.id}
-          providerName={saldosDrawerData.razonSocial}
-          handleClose={() => setSaldosDrawerData(null)}
-          onSaldoUpdated={() => {
-            // Aquí podrías recargar datos si es necesario
-            console.log('Saldo actualizado para proveedor:', saldosDrawerData.id);
-          }}
-        />
-      )}
+      {/* Modal de pagos */}
+      <PagosModal
+        open={pagosModalData.open}
+        onClose={() => setPagosModalData({ open: false, entidad: null })}
+        entidadId={pagosModalData.entidad?.id || 0}
+        tipoEntidad="PROVEEDOR"
+        entidadNombre={pagosModalData.entidad?.razonSocial || ''}
+        onSuccess={() => {
+          // Aquí podrías recargar datos si es necesario
+          console.log('Pago registrado para proveedor:', pagosModalData.entidad?.id);
+        }}
+      />
     </PageContent>
   );
 };

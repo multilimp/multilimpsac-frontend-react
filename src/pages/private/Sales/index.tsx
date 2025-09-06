@@ -87,6 +87,7 @@ const SalesPage = () => {
                 data={ventasEstado}
                 loading={loadingSales}
                 onReload={obtainSales}
+                isPrivateSales={false}
               />
             </Box>
           )}
@@ -105,6 +106,7 @@ const SalesPage = () => {
                 data={ventasPrivadas}
                 loading={loadingSales}
                 onReload={obtainSales}
+                isPrivateSales={true}
               />
             </Box>
           )}

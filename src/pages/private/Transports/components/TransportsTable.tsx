@@ -1,4 +1,4 @@
-import { Delete, Edit, PermContactCalendar, MoreVert } from '@mui/icons-material';
+import { Delete, Edit, PermContactCalendar, MoreVert, Payment } from '@mui/icons-material';
 import AntTable, { AntColumnType } from '@/components/AntTable';
 import { Typography, IconButton, Menu, MenuItem, ListItemIcon, ListItemText, Button } from '@mui/material';
 import { ModalStateEnum } from '@/types/global.enum';
@@ -8,7 +8,7 @@ import { useState } from 'react';
 interface TransportsTableProps {
   data: Array<TransportProps>;
   loading: boolean;
-  onRecordAction: (action: ModalStateEnum, data: TransportProps) => void;
+  onRecordAction: (action: ModalStateEnum | 'MANAGE_PAGOS', data: TransportProps) => void;
   onReload?: () => void;
 }
 
@@ -26,7 +26,7 @@ const TransportsTable = ({ data, loading, onRecordAction, onReload }: Transports
     setSelectedRecord(null);
   };
 
-  const handleMenuAction = (action: ModalStateEnum) => {
+  const handleMenuAction = (action: ModalStateEnum | 'MANAGE_PAGOS') => {
     if (selectedRecord) {
       onRecordAction(action, selectedRecord);
     }
@@ -61,6 +61,22 @@ const TransportsTable = ({ data, loading, onRecordAction, onReload }: Transports
           size="small"
           startIcon={<PermContactCalendar />}
           onClick={() => onRecordAction(ModalStateEnum.DRAWER, record)}
+          sx={{ minWidth: 'auto' }}
+        >
+          Ver
+        </Button>
+      ),
+    },
+    {
+      title: 'Pagos',
+      dataIndex: 'pagos',
+      width: 120,
+      render: (_, record) => (
+        <Button
+          variant="outlined"
+          size="small"
+          startIcon={<Payment />}
+          onClick={() => onRecordAction('MANAGE_PAGOS', record)}
           sx={{ minWidth: 'auto' }}
         >
           Ver

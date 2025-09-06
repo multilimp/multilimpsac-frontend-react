@@ -1,4 +1,4 @@
-import { Delete, Edit, PermContactCalendar, RadioButtonChecked, RadioButtonUnchecked, MoreVert, AccountBalance } from '@mui/icons-material';
+import { Delete, Edit, PermContactCalendar, RadioButtonChecked, RadioButtonUnchecked, MoreVert, AccountBalance, Payment } from '@mui/icons-material';
 import AntTable, { AntColumnType } from '@/components/AntTable';
 import { Typography, IconButton, Menu, MenuItem, ListItemIcon, ListItemText, Button } from '@mui/material';
 import { ModalStateEnum } from '@/types/global.enum';
@@ -8,7 +8,7 @@ import { useState } from 'react';
 interface ProvidersTableProps {
   data: Array<ProviderProps>;
   loading: boolean;
-  onRecordAction: (action: ModalStateEnum | 'MANAGE_SALDOS', data: ProviderProps) => void;
+  onRecordAction: (action: ModalStateEnum | 'MANAGE_SALDOS' | 'MANAGE_PAGOS', data: ProviderProps) => void;
   hideActions?: boolean;
   onReload?: () => void;
 }
@@ -27,7 +27,7 @@ const ProvidersTable = ({ data, loading, onRecordAction, hideActions, onReload }
     setSelectedRecord(null);
   };
 
-  const handleMenuAction = (action: ModalStateEnum | 'MANAGE_SALDOS') => {
+  const handleMenuAction = (action: ModalStateEnum | 'MANAGE_SALDOS' | 'MANAGE_PAGOS') => {
     if (selectedRecord) {
       onRecordAction(action, selectedRecord);
     }
@@ -68,15 +68,15 @@ const ProvidersTable = ({ data, loading, onRecordAction, hideActions, onReload }
       ),
     },
     !hideActions && {
-      title: 'Saldos',
-      dataIndex: 'saldos',
+      title: 'Pagos',
+      dataIndex: 'pagos',
       width: 120,
       render: (_, record) => (
         <Button
           variant="outlined"
           size="small"
-          startIcon={<AccountBalance />}
-          onClick={() => onRecordAction('MANAGE_SALDOS', record)}
+          startIcon={<Payment />}
+          onClick={() => onRecordAction('MANAGE_PAGOS', record)}
           sx={{ minWidth: 'auto' }}
         >
           Ver
@@ -124,13 +124,6 @@ const ProvidersTable = ({ data, loading, onRecordAction, hideActions, onReload }
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
       >
-        <MenuItem onClick={() => handleMenuAction('MANAGE_SALDOS')}>
-          <ListItemIcon>
-            <AccountBalance fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Gestionar Saldos</ListItemText>
-        </MenuItem>
-
         <MenuItem onClick={() => handleMenuAction(ModalStateEnum.BOX)}>
           <ListItemIcon>
             <Edit fontSize="small" />

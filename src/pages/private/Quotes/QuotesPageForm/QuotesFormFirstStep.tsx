@@ -65,7 +65,7 @@ const QuotesFormFirstStep = ({ form, isEditing }: { form: FormInstance; isEditin
                 <SelectContactsByClient
                   placeholder="Contacto"
                   clientId={cliente?.id}
-                  size="middle"
+                  size="large"
                   onChange={(value, record: unknown) => {
                     const recordData = record as { optiondata?: { nombre: string; telefono: string; cargo: string } };
                     form.setFieldsValue({
