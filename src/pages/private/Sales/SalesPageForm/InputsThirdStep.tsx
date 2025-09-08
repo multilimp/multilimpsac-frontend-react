@@ -74,7 +74,7 @@ const InputsThirdStep = ({ form, companyId, isPrivateSale = false }: InputsThird
               <>
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                   <Form.Item name="cotizacion">
-                    <InputAntd label="Cotización" />
+                    <InputAntd label="Cod. Cotización" />
                   </Form.Item>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>

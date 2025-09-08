@@ -361,11 +361,11 @@ const PagosModal: React.FC<PagosModalProps> = ({
                                 {/* Filas de la tabla */}
                                 {[...Array(2)].map((_, index) => (
                                     <Skeleton
-                                        key={index}
+                                        key={`table-skeleton-${index}`}
                                         variant="rectangular"
                                         height={48}
                                         sx={{
-                                            mb: index < 4 ? 1 : 0,
+                                            mb: index < 1 ? 1 : 0,
                                             bgcolor: 'grey.200'
                                         }}
                                     />
