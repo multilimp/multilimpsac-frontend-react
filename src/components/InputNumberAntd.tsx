@@ -28,23 +28,23 @@ interface NumberInputProps {
 }
 
 const InputNumberAntd = (props: NumberInputProps) => {
-  const { 
-    label, 
-    isFloating, 
-    isAddonBefore, 
-    hasError, 
-    size = 'large', 
+  const {
+    label,
+    isFloating,
+    isAddonBefore,
+    hasError,
+    size = 'large',
     className,
     style,
     isCurrency,
     ...inputProps
   } = props;
-  
+
   const [focus, setFocus] = useState(false);
 
   const value = props.value !== undefined ? String(props.value) : '';
   const isFloatingAux = focus || (value && value.length !== 0);
-  
+
   let labelClass = isFloatingAux || isFloating ? 'label label-float' : 'label';
   labelClass += size ? ` ${size}` : ' middle';
   labelClass += focus ? ' focus' : '';
@@ -62,11 +62,11 @@ const InputNumberAntd = (props: NumberInputProps) => {
     if (value === undefined || value === null || value === '') return '';
     const numValue = typeof value === 'string' ? parseFloat(value) : value;
     if (isNaN(numValue)) return '';
-    
+
     return new Intl.NumberFormat('es-PE', {
       style: 'currency',
       currency: 'PEN',
-      minimumFractionDigits: 4,
+      minimumFractionDigits: 0,
       maximumFractionDigits: 4
     }).format(numValue);
   } : undefined;

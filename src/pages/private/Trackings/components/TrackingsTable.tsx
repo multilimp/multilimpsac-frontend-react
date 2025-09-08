@@ -38,15 +38,13 @@ const TrackingsTable = ({ data, loading, onRowClick, onReload }: TrackingsTableP
   const navigate = useNavigate();
 
   const handleRowClick = (sale: SaleProps) => {
-    // Establecer la venta seleccionada en el contexto global
-    setSelectedSale(sale);
-
-    // Navegar al formulario de seguimiento
-    navigate(`/tracking/${sale.id}`);
-
-    // También llamar al callback original si existe
+    // Si hay un callback personalizado, usarlo
     if (onRowClick) {
       onRowClick(sale);
+    } else {
+      // Comportamiento por defecto
+      setSelectedSale(sale);
+      navigate(`/tracking/${sale.id}`);
     }
   };
 

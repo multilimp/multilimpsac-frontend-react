@@ -161,7 +161,6 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onReload, isPriv
       title: 'Contactos',
       dataIndex: 'contacto',
       width: 150,
-      sort: true,
       filter: true,
       align: 'center',
       render: (_, record) => (

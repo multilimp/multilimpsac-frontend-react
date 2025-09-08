@@ -90,7 +90,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
       const cantidadCliente = Number(producto.cantidadCliente) || 0;
       const cantidadTotal = cantidadAlmacen + cantidadCliente;
       const precioUnitario = Number(producto.precioUnitario) || 0;
-      const total = Math.round((cantidadTotal * precioUnitario) * 100) / 100; // Redondear a 2 decimales
+      const total = cantidadTotal * precioUnitario; // Sin redondeo
 
       // Actualizar cantidad total y total del producto
       form.setFieldValue(['productos', fieldName, 'cantidad'], cantidadTotal);
@@ -855,7 +855,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
                                   style={{ margin: 0 }}
                                 >
                                   <InputNumberAntd
-                                    placeholder="0.0000"
+                                    placeholder="S/ 0.0000"
                                     isCurrency
                                     disabled={fromTreasury}
                                     style={{
@@ -863,7 +863,10 @@ const calculateProductTotals = (form: any, fieldName: number) => {
                                       borderRadius: 4,
                                       textAlign: 'center',
                                       textAlignLast: 'center',
-                                      height: '54px', // Altura fija para igualar al TextArea
+                                      height: '54px',
+                                      fontSize: '16px',
+                                      fontWeight: 600,
+                                      backgroundColor: '#f0f8ff',
                                     }}
                                     onChange={() => calculateProductTotals(form, field.name)}
                                   />
