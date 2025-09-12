@@ -356,12 +356,11 @@ const CardForm = ({ handleClose, tipo, referenceId, onSubmit }: CardFormProps) =
             <Form.Item
               name="email"
               rules={[
-                { required: true, message: 'El email es requerido' },
                 { type: 'email', message: 'Formato de email inválido' }
               ]}
               style={{ marginBottom: 16 }}
             >
-              <InputAntd label="Correo electrónico" />
+              <InputAntd label="Correo electrónico (opcional)" />
             </Form.Item>
           </Box>
 

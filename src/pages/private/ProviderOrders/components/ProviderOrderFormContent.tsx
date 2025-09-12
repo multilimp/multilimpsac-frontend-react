@@ -567,17 +567,17 @@ const calculateProductTotals = (form: any, fieldName: number) => {
           >
             <Grid container columnSpacing={2}>
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <Form.Item name="fechaRecepcion" rules={[requiredField]}>
+                <Form.Item name="fechaRecepcion">
                   <DatePickerAntd label="Fecha de recepción" disabled={fromTreasury} />
                 </Form.Item>
               </Grid>
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <Form.Item name="fechaProgramada" rules={[requiredField]}>
+                <Form.Item name="fechaProgramada">
                   <DatePickerAntd label="Fecha programada" disabled={fromTreasury} />
                 </Form.Item>
               </Grid>
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <Form.Item name="fechaDespacho" rules={[requiredField]}>
+                <Form.Item name="fechaDespacho">
                   <DatePickerAntd label="Fecha de despacho" disabled={fromTreasury} />
                 </Form.Item>
               </Grid>
@@ -703,8 +703,8 @@ const calculateProductTotals = (form: any, fieldName: number) => {
                       <TableCell sx={{ fontWeight: 600, fontSize: 12, width: 120 }}>Código</TableCell>
                       <TableCell sx={{ fontWeight: 600, fontSize: 12, width: 400 }}>Descripción</TableCell>
                       <TableCell sx={{ fontWeight: 600, fontSize: 12, width: 80 }}>U. Medida</TableCell>
-                      <TableCell sx={{ fontWeight: 600, fontSize: 12, width: 100 }}>Cant. Almacén</TableCell>
                       <TableCell sx={{ fontWeight: 600, fontSize: 12, width: 100 }}>Cant. Cliente</TableCell>
+                      <TableCell sx={{ fontWeight: 600, fontSize: 12, width: 100 }}>Cant. Almacén</TableCell>
                       <TableCell sx={{ fontWeight: 600, fontSize: 12, width: 100 }}>Cantidad</TableCell>
                       <TableCell sx={{ fontWeight: 600, fontSize: 12, width: 150 }}>Precio Unit.</TableCell>
                       <TableCell sx={{ fontWeight: 600, fontSize: 12, width: 150 }}>Total</TableCell>
@@ -788,12 +788,14 @@ const calculateProductTotals = (form: any, fieldName: number) => {
                               </TableCell>
                               <TableCell sx={{ p: 1, verticalAlign: 'middle' }}>
                                 <Form.Item
-                                  name={[field.name, 'cantidadAlmacen']}
+                                  name={[field.name, 'cantidadCliente']}
                                   rules={fromTreasury ? [] : [{ required: true, message: 'Requerido' }]}
                                   style={{ margin: 0 }}
                                 >
                                   <InputNumberAntd
                                     placeholder="0"
+                                    size="large"
+                                    min={0}
                                     disabled={fromTreasury}
                                     style={{
                                       width: '100%',
@@ -808,14 +810,12 @@ const calculateProductTotals = (form: any, fieldName: number) => {
                               </TableCell>
                               <TableCell sx={{ p: 1, verticalAlign: 'middle' }}>
                                 <Form.Item
-                                  name={[field.name, 'cantidadCliente']}
+                                  name={[field.name, 'cantidadAlmacen']}
                                   rules={fromTreasury ? [] : [{ required: true, message: 'Requerido' }]}
                                   style={{ margin: 0 }}
                                 >
                                   <InputNumberAntd
                                     placeholder="0"
-                                    size="large"
-                                    min={0}
                                     disabled={fromTreasury}
                                     style={{
                                       width: '100%',

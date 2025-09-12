@@ -767,6 +767,25 @@ const BlackBar = memo(() => {
                               >
                                 {item.cantidad} {item.unidadMedida || 'unid.'}
                               </Typography>
+                              <IconButton
+                                size="small"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCopyDescription(String(item.cantidad));
+                                }}
+                                sx={{
+                                  color: '#57c98d',
+                                  bgcolor: 'rgba(87, 201, 141, 0.1)',
+                                  '&:hover': {
+                                    bgcolor: 'rgba(87, 201, 141, 0.2)',
+                                  },
+                                  width: 20,
+                                  height: 20,
+                                }}
+                                title="Copiar cantidad"
+                              >
+                                <ContentCopy sx={{ fontSize: 12 }} />
+                              </IconButton>
                             </Box>
                           </Box>
 
