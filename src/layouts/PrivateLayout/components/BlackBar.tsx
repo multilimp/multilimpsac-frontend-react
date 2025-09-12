@@ -471,9 +471,6 @@ const BlackBar = memo(() => {
             '& .ant-select-arrow': {
               color: '#ffffff !important',
             },
-            // '& .float-label label': {
-            //   display: 'none !important', // Oculta el label flotante
-            // },
           }}
         >
           <SelectCompanies
