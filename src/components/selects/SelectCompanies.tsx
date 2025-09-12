@@ -13,9 +13,9 @@ const SelectCompanies = ({ label, ...rest }: SelectCompaniesProps) => {
   return (
     <SelectContainer label={label}>
       <Select
-        showSearch
         filterOption={filterOptions}
         size="large"
+        allowClear
         style={{ width: '100%' }}
         loading={loadingCompanies}
         disabled={loadingCompanies}

@@ -471,13 +471,13 @@ const BlackBar = memo(() => {
             '& .ant-select-arrow': {
               color: '#ffffff !important',
             },
-            '& .float-label label': {
-              display: 'none !important', // Oculta el label flotante
-            },
+            // '& .float-label label': {
+            //   display: 'none !important', // Oculta el label flotante
+            // },
           }}
         >
           <SelectCompanies
-            label="Selecciona una empresa"
+            label={saleInputValues.enterprise?.id ? "" : "Selecciona una empresa"}
             value={saleInputValues.enterprise?.id}
             onChange={(_, option: any) => setSaleInputValues({ ...saleInputValues, enterprise: option?.optiondata })}
           />
@@ -513,7 +513,7 @@ const BlackBar = memo(() => {
           }}
         >
           <SelectGeneric
-            label="Tipo de venta"
+            label={saleInputValues.tipoVenta ? "" : "Tipo de venta"}
             options={saleTypeOptions}
             value={saleInputValues.tipoVenta}
             onChange={(tipoVenta) => setSaleInputValues({ ...saleInputValues, tipoVenta })}

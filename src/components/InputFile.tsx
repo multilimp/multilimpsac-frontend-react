@@ -101,23 +101,12 @@ const InputFile = ({
     }
   };
 
-  const handleDownload = () => {
+  const handleView = () => {
     const url = file ? URL.createObjectURL(file) : fileUrl;
     if (!url) return;
 
-    if (!file && fileUrl) {
-      // Si es una URL (archivo subido), abrir en nueva pestaña
-      window.open(fileUrl, '_blank');
-    } else {
-      // Si es un archivo local, descargar
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = file?.name || 'archivo';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      if (file) URL.revokeObjectURL(url);
-    }
+    // Siempre abrir en nueva pestaña
+    window.open(url, '_blank');
   };
 
   const showFile = !!file || !!fileUrl;
@@ -181,7 +170,7 @@ const InputFile = ({
           {showFile && (
             <Button
               variant="contained"
-              onClick={handleDownload}
+              onClick={handleView}
               sx={{
                 padding: '4px 12px',
                 background: '#151d29',
@@ -192,7 +181,7 @@ const InputFile = ({
               }}
             >
               <Typography variant="caption" sx={{ fontSize: 12, fontWeight: 500 }}>
-                Descargar
+                Visualizar
               </Typography>
             </Button>
           )}
