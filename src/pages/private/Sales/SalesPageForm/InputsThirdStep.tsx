@@ -10,6 +10,7 @@ import InputFile from '@/components/InputFile';
 import SimpleFileUpload from '@/components/SimpleFileUpload';
 import SelectCatalogs from '@/components/selects/SelectCatalogs';
 import { Info } from '@mui/icons-material';
+import InputNumberAntd from '@/components/InputNumberAntd';
 
 interface InputsThirdStepProps {
   form: FormInstance;
@@ -65,7 +66,7 @@ const InputsThirdStep = ({ form, companyId, isPrivateSale = false }: InputsThird
 
             <Grid size={{ xs: 12, sm: 6, md: isPrivateSale ? 3 : 3 }}>
               <Form.Item name="montoVenta" rules={conditionalRules}>
-                <InputAntd label="Monto de venta" type="number" />
+                <InputNumberAntd label="Monto de venta" isCurrency />
               </Form.Item>
             </Grid>
 
