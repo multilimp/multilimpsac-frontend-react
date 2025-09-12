@@ -39,6 +39,7 @@ const ClientsModal = ({ data, handleClose, handleReload }: ClientsModalProps) =>
       provincia: data.provincia || '',       // Leer como string directo
       distrito: data.distrito || '',         // Leer como string directo
       direccion: data.direccion,
+      sede: data.sede,
       departamentoId: null, // No necesitamos IDs para guardar
       provinciaId: null,
       distritoId: null,
@@ -60,6 +61,7 @@ const ClientsModal = ({ data, handleClose, handleReload }: ClientsModalProps) =>
         provincia: values.provincia,       // Guardar el nombre, no el objeto
         distrito: values.distrito,         // Guardar el nombre, no el objeto
         direccion: values.direccion,
+        sede: values.sede,
       };
 
       if (data) {
@@ -133,6 +135,11 @@ const ClientsModal = ({ data, handleClose, handleReload }: ClientsModalProps) =>
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                 <Form.Item name="cod_unidad" rules={[{ required: true, message: 'El código de unidad es requerido' }]}>
                   <InputAntd label="Código de unidad" />
+                </Form.Item>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                <Form.Item name="sede">
+                  <InputAntd label="Sede" />
                 </Form.Item>
               </Grid>
             </Grid>

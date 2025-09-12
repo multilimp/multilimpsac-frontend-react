@@ -13,5 +13,6 @@ export interface ClientProps {
   razonSocial: string;
   ruc: string;
   telefono?: string;
+  sede?: string;
   updatedAt: string;
 }
