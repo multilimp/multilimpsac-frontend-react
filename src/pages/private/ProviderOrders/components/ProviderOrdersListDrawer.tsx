@@ -105,26 +105,12 @@ const ProviderOrdersListDrawer = ({ handleClose, data, isTreasury = false }: Pro
         <Box>
           <Stack direction="row" alignItems="center" justifyContent="space-between" mb={2}>
             <Stack direction="row" alignItems="center" spacing={2}>
-              <Box
-                sx={{
-                  width: 56,
-                  height: 56,
-                  borderRadius: heroUIColors.radius.lg,
-                  background: alpha('#ffffff', 0.15),
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  border: `1px solid ${alpha('#ffffff', 0.2)}`,
-                }}
-              >
-                <Inventory2 sx={{ color: 'white', fontSize: 28 }} />
-              </Box>
               <Box>
                 <Typography variant="h5" fontWeight={700} letterSpacing='-0.02em'>
-                  Órdenes de Proveedor
+                  {isSaleProps(data) ? `${data.codigoVenta}` : ''}
                 </Typography>
                 <Typography variant="body2" sx={{ opacity: 0.9, fontWeight: 500 }}>
-                  Gestión integral de OPs
+                  {isSaleProps(data) ? `${data.cliente.razonSocial}` : ''}
                 </Typography>
               </Box>
             </Stack>
@@ -147,51 +133,6 @@ const ProviderOrdersListDrawer = ({ handleClose, data, isTreasury = false }: Pro
               <Close />
             </IconButton>
           </Stack>
-
-          {/* Info de la OC o OP sin efectos glass */}
-          <Box
-            sx={{
-              background: alpha('#ffffff', 0.12),
-              borderRadius: heroUIColors.radius.lg,
-              p: 2,
-              border: `1px solid ${alpha('#ffffff', 0.2)}`,
-            }}
-          >
-            <Stack direction="row" alignItems="center" spacing={2}>
-              <Box
-                sx={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: heroUIColors.radius.md,
-                  background: alpha('#ffffff', 0.15),
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <ShoppingCart sx={{ fontSize: 20, color: 'white' }} />
-              </Box>
-              <Box sx={{ flex: 1 }}>
-                <Typography variant="caption" sx={{ opacity: 0.8, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                  {isSaleProps(data) ? 'Orden de Compra' : 'Orden de Proveedor'}
-                </Typography>
-                <Typography variant="h6" fontWeight={700}>
-                  {isSaleProps(data) ? data.codigoVenta : data.codigoOp}
-                </Typography>
-              </Box>
-              <Chip
-                label={`${orderProviders.length} ${isSaleProps(data) ? 'OPs' : 'OP'}`}
-                size="small"
-                sx={{
-                  background: alpha('#ffffff', 0.15),
-                  color: 'white',
-                  fontWeight: 700,
-                  border: `1px solid ${alpha('#ffffff', 0.25)}`,
-                  borderRadius: heroUIColors.radius.md,
-                }}
-              />
-            </Stack>
-          </Box>
         </Box>
       </Box>
 
