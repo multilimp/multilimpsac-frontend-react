@@ -53,16 +53,12 @@ const getEmptyPaymentRecord = (): PaymentItem => ({
 
 const PaymentsList: React.FC<PaymentsListProps> = ({
   payments = [],
-  tipoPago = '',
+  tipoPago = 'PENDIENTE',
   notaPago = '',
   title = 'Pagos',
   mode = 'edit',
   saldoFavor = 0,
   montoTotal = 0,
-  estadoPago = 'Completo',
-  entityType,
-  entityId,
-  entityName = '',
   onPaymentsChange,
   onTipoPagoChange,
   onNotaPagoChange,
@@ -70,11 +66,11 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
   const isReadonly = mode === 'readonly';
 
   // Permitir edición de notaPago y tipoPago siempre
-  const [localTipoPago, setLocalTipoPago] = useState<string>(tipoPago || 'PENDIENTE');
+  const [localTipoPago, setLocalTipoPago] = useState<string>(tipoPago);
   const [localNotaPago, setLocalNotaPago] = useState<string>(notaPago);
 
   useEffect(() => {
-    setLocalTipoPago(tipoPago || 'PENDIENTE');
+    setLocalTipoPago(tipoPago);
     setLocalNotaPago(notaPago);
   }, [tipoPago, notaPago]);
 
@@ -97,15 +93,6 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
   useEffect(() => {
     setLocalPayments(payments);
   }, [payments]);
-
-  // Sincronizar tipoPago y notaPago por separado
-  useEffect(() => {
-    setLocalTipoPago(tipoPago);
-  }, [tipoPago]);
-
-  useEffect(() => {
-    setLocalNotaPago(notaPago);
-  }, [notaPago]);
 
   // Detectar cambios
   useEffect(() => {

@@ -25,7 +25,7 @@ import SelectCompanies from '@/components/selects/SelectCompanies';
 import DatePickerAntd from '@/components/DatePickerAnt';
 import { SaleProps } from '@/services/sales/sales';
 import SelectContactsByProvider from '@/components/selects/SelectContactsByProvider';
-import { createOrderProvider, updateOrderProvider } from '@/services/providerOrders/providerOrders.requests';
+import { createOrderProvider, updateOrderProvider, getOrderProvider } from '@/services/providerOrders/providerOrders.requests';
 import { uploadFile } from '@/services/files/file.requests';
 import { printOrdenProveedor } from '@/services/print/print.requests';
 import { useNavigate } from 'react-router-dom';
@@ -117,6 +117,9 @@ const calculateProductTotals = (form: any, fieldName: number) => {
 
   const [selectedCompany, setSelectedCompany] = useState<{ id: number; razonSocial: string; ruc: string } | null>(null);
 
+  // Estado para lista de órdenes de proveedor de la misma OC
+  const [providerOrders, setProviderOrders] = useState<ProviderOrderProps[]>([]);
+
   const empresaValue = Form.useWatch('empresa', form);
 
   const { handlePaymentsUpdate } = usePayments({
@@ -204,7 +207,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
         observaciones: orderData.observaciones || '',
         etiquetado: orderData.etiquetado || '',
         embalaje: orderData.embalaje || '',
-        tipoPago: orderData.tipoPago || '',
+        tipoPago: orderData.tipoPago || 'PENDIENTE',
         notaPago: orderData.notaPago || '',
         incluyeTransporte: !(orderData.transportesAsignados && orderData.transportesAsignados.length > 0), // ✅ Invertir lógica: si tiene transportes, switch desactivado
         productos: productosFormatted,
@@ -252,7 +255,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
     } else {
       form.setFieldsValue({
         empresa: sale.empresa?.id,
-        tipoPago: '',
+        tipoPago: 'PENDIENTE',
         notaPago: '',
         productosNota: '',
         observaciones: '',
@@ -264,6 +267,82 @@ const calculateProductTotals = (form: any, fieldName: number) => {
       });
     }
   }, [isEditing, orderData, form, sale]);
+
+  // Cargar lista de órdenes de proveedor para navegación
+  useEffect(() => {
+    const loadProviderOrders = async () => {
+      try {
+        const orders = await getOrderProvider(sale.id);
+        setProviderOrders(orders);
+      } catch (error) {
+        console.error('Error al cargar órdenes de proveedor:', error);
+      }
+    };
+
+    if (sale?.id) {
+      loadProviderOrders();
+    }
+  }, [sale?.id]);
+
+  const handleNavigateToOrder = (orderId: number) => {
+    navigate(`/provider-orders/${orderId}`);
+  };
+
+  const renderOrderNavigation = () => {
+    if (providerOrders.length <= 1) return null;
+
+    return (
+      <Box sx={{ ml: 3, p: 2, bgcolor: '#f8f9fa', borderRadius: 2, border: '1px solid #e9ecef' }}>
+        <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 600, color: '#495057', textAlign: 'center' }}>
+          Órdenes de Proveedor ({providerOrders.length})
+        </Typography>
+        <Stack direction="row" spacing={1} flexWrap="wrap" justifyContent="center">
+          {providerOrders.map((order) => (
+            <Button
+              key={order.id}
+              size="small"
+              variant={order.id === orderData?.id ? "contained" : "outlined"}
+              onClick={() => handleNavigateToOrder(order.id)}
+              disabled={order.id === orderData?.id}
+              sx={{
+                minWidth: 'auto',
+                px: 2,
+                py: 0.75,
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                textTransform: 'none',
+                borderRadius: 2,
+                ...(order.id === orderData?.id && {
+                  bgcolor: '#1976d2',
+                  color: 'white',
+                  '&:hover': {
+                    bgcolor: '#1565c0',
+                  },
+                  '&.Mui-disabled': {
+                    bgcolor: '#1976d2',
+                    color: 'white',
+                  },
+                }),
+                ...(!(order.id === orderData?.id) && {
+                  borderColor: '#ced4da',
+                  color: '#495057',
+                  '&:hover': {
+                    bgcolor: '#e9ecef',
+                    borderColor: '#adb5bd',
+                  },
+                }),
+              }}
+            >
+              {order.codigoOp || `OP-${order.id}`}
+            </Button>
+          ))}
+        </Stack>
+        <Typography variant="caption" sx={{ mt: 1, display: 'block', textAlign: 'center', color: '#6c757d' }}>
+          OP actual: {orderData?.codigoOp || `OP-${orderData?.id}`}
+        </Typography>
+      </Box>
+    );
+  };
 
   const handleFinish = async (values: Record<string, unknown>) => {
     try {
@@ -1127,7 +1206,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
                 <PaymentsList
                   title="Pagos Proveedor"
                   payments={getFieldValue('pagosProveedor') || []}
-                  tipoPago={getFieldValue('tipoPago') || ''}
+                  tipoPago={getFieldValue('tipoPago')}
                   notaPago={getFieldValue('notaPago') || ''}
                   montoTotal={totalProductos}
                   mode={fromTreasury ? "edit" : "readonly"}
@@ -1203,7 +1282,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
           {fromTreasury !== true && (
             <>
               <br />
-              <Stack alignItems="center" my={2}>
+              <Stack direction="row" alignItems="center" justifyContent="center" my={2} spacing={2}>
                 <Button
                   disabled={loading}
                   type="submit"
@@ -1219,6 +1298,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
                 >
                   {loading ? 'Guardando...' : 'Guardar Cambios'}
                 </Button>
+                {renderOrderNavigation()}
               </Stack>
             </>
 
