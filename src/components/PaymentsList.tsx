@@ -204,22 +204,17 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
       {/* HEADER */}
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
         <Box sx={{ flex: 1 }}>
-          {entityType && entityId && entityName ? (
-            <>
-            </>
-          ) : (
-            <Stack direction="row" alignItems="center" spacing={2}>
-              <Typography variant="h6" fontWeight={700} sx={{ color: '#1a1a1a', display: 'flex', alignItems: 'center' }}>
-                <CreditCardOutlined style={{ fontSize: 28, marginRight: 8 }} />
-                {title}
+          <Stack direction="row" alignItems="center" spacing={2}>
+            <Typography variant="h6" fontWeight={700} sx={{ color: '#1a1a1a', display: 'flex', alignItems: 'center' }}>
+              <CreditCardOutlined style={{ fontSize: 28, marginRight: 8 }} />
+              {title}
+            </Typography>
+            {saldoFavor > 0 && (
+              <Typography variant="h5" sx={{ color: '#1890ff', fontWeight: 700 }}>
+                saldo a favor: S/ {saldoFavor.toFixed(2)}
               </Typography>
-              {saldoFavor > 0 && (
-                <Typography variant="h5" sx={{ color: '#1890ff', fontWeight: 700 }}>
-                  saldo a favor: S/ {saldoFavor.toFixed(2)}
-                </Typography>
-              )}
-            </Stack>
-          )}
+            )}
+          </Stack>
         </Box>
         <Stack direction="row" alignItems="center" spacing={2}>
           {/* Tipo de Pago */}
