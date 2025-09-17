@@ -290,7 +290,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
         estadoPago: pago.status,
       }));
 
-      const transportesArr = await Promise.all(
+      const transportesArr = values.transportes && Array.isArray(values.transportes) ? await Promise.all(
         (values.transportes as Record<string, unknown>[]).map(async (item: Record<string, unknown>) => {
           let cotizacionUrl = null;
 
@@ -314,7 +314,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
             cotizacionTransporte: cotizacionUrl,
           };
         })
-      );
+      ) : [];
 
       // Al procesar transportes, distinguir entre existentes y nuevos
       const processTransportesForUpdate = (transportes: any[]): any => {
@@ -377,13 +377,17 @@ const calculateProductTotals = (form: any, fieldName: number) => {
           ? processTransportesForUpdate(values.transportes as any[])
           : { create: transportesArr };
       } else {
-        // Si está activado (NO requiere transporte), enviar estructura vacía
-        transportesData = isEditing
-          ? { deleteMany: {}, create: [] }
-          : { create: [] };
+        // Si está activado (NO requiere transporte)
+        if (isEditing) {
+          // En edición, eliminar todos los transportes existentes
+          transportesData = { deleteMany: {} };
+        } else {
+          // En creación, no incluir el campo
+          transportesData = undefined;
+        }
       }
 
-      const body = {
+      const body: any = {
         ordenCompraId: sale.id,
         empresaId: values.empresa as number,
         proveedorId: typeof values.proveedor === 'object' ? (values.proveedor as ProviderProps).id : values.proveedor,
@@ -401,8 +405,12 @@ const calculateProductTotals = (form: any, fieldName: number) => {
         notaPago: values.notaPago as string || null,
         productos: isEditing ? { deleteMany: {}, create: productosArr } : { create: productosArr },
         pagos: isEditing ? { deleteMany: {}, create: pagosArr } : { create: pagosArr },
-        transportesAsignados: transportesData, // ✅ USAR LA LÓGICA CORRECTA
       };
+
+      // Solo incluir transportesAsignados si hay datos
+      if (transportesData !== undefined) {
+        body.transportesAsignados = transportesData;
+      }
 
       if (isEditing && orderData) {
         await updateOrderProvider(orderData.id, body);
@@ -412,8 +420,10 @@ const calculateProductTotals = (form: any, fieldName: number) => {
         notification.success({ message: 'La orden del proveedor se registró correctamente' });
       }
 
-    } catch {
-      notification.error({ message: 'No se logró guardar la información' });
+    } catch (error) {
+      console.error('Error al guardar orden de proveedor:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+      notification.error({ message: `No se logró guardar la información: ${errorMessage}` });
     } finally {
       setLoading(false);
     }
@@ -471,6 +481,18 @@ const calculateProductTotals = (form: any, fieldName: number) => {
     await handlePaymentsUpdate(formattedPayments, tipoPago, notaPago);
 
     form.setFieldValue('pagosProveedor', payments);
+  };
+
+  const handleCreateWarehouseSale = () => {
+    // Abrir el módulo de almacén en una nueva pestaña
+    const newTab = window.open('/warehouse', '_blank');
+
+    if (!newTab) {
+      notification.error({
+        message: 'Error al abrir nueva pestaña',
+        description: 'Verifica que los popups estén habilitados en tu navegador'
+      });
+    }
   };
 
   return (
@@ -724,6 +746,18 @@ const calculateProductTotals = (form: any, fieldName: number) => {
                   <Business color="primary" />
                   Productos de la Orden
                 </Typography>
+              }
+              action={
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  startIcon={<Inventory />}
+                  onClick={handleCreateWarehouseSale}
+                  size="small"
+                  sx={{ mr: 1 }}
+                >
+                  Almacén
+                </Button>
               }
               sx={{ pb: 1 }}
             />
