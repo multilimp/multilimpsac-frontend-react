@@ -1,5 +1,5 @@
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
-import { getOrderProvidersByOC } from '@/services/providerOrders/providerOrders.requests';
+import { getOrderProvider } from '@/services/providerOrders/providerOrders.requests';
 import { SaleProps } from '@/services/sales/sales';
 import { ProviderOrderProps } from '@/services/providerOrders/providerOrders';
 import { heroUIColors, alpha } from '@/styles/theme/heroui-colors';
@@ -20,12 +20,7 @@ const ProviderOrdersListDrawer = ({ handleClose, data, isTreasury = false }: Pro
   const { setSelectedSale } = useGlobalInformation();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [orderProvidersCodes, setOrderProvidersCodes] = useState<Array<{
-    id: number;
-    codigoOp: string;
-    createdAt: string;
-    updatedAt: string;
-  }>>([]);
+  const [orderProviders, setOrderProviders] = useState<ProviderOrderProps[]>([]);
 
   // Type guard para determinar si es SaleProps
   const isSaleProps = (data: SaleProps | ProviderOrderProps): data is SaleProps => {
@@ -39,17 +34,12 @@ const ProviderOrdersListDrawer = ({ handleClose, data, isTreasury = false }: Pro
 
   useEffect(() => {
     // Limpiar estado anterior cuando se abre el drawer con nueva data
-    setOrderProvidersCodes([]);
+    setOrderProviders([]);
     if (isSaleProps(data)) {
       handleGetData();
     } else if (isProviderOrderProps(data)) {
       // Si es una OP directa, mostrarla directamente
-      setOrderProvidersCodes([{
-        id: data.id,
-        codigoOp: data.codigoOp,
-        createdAt: data.createdAt,
-        updatedAt: data.updatedAt
-      }]);
+      setOrderProviders([data]);
     }
   }, [data.id]); // Dependencia en data.id para resetear cuando cambie la data
 
@@ -77,8 +67,8 @@ const ProviderOrdersListDrawer = ({ handleClose, data, isTreasury = false }: Pro
 
     try {
       setLoading(true);
-      const res = await getOrderProvidersByOC(data.id);
-      setOrderProvidersCodes([...res]);
+      const res = await getOrderProvider(data.id);
+      setOrderProviders(res);
     } catch {
       notification.error({ message: 'No se logró obtener la información' });
     } finally {
@@ -190,7 +180,7 @@ const ProviderOrdersListDrawer = ({ handleClose, data, isTreasury = false }: Pro
                 </Typography>
               </Box>
               <Chip
-                label={`${orderProvidersCodes.length} ${isSaleProps(data) ? 'OPs' : 'OP'}`}
+                label={`${orderProviders.length} ${isSaleProps(data) ? 'OPs' : 'OP'}`}
                 size="small"
                 sx={{
                   background: alpha('#ffffff', 0.15),
@@ -315,10 +305,10 @@ const ProviderOrdersListDrawer = ({ handleClose, data, isTreasury = false }: Pro
                 </Card>
               ))}
             </Stack>
-          ) : orderProvidersCodes.length ? (
+          ) : orderProviders.length ? (
             // ...existing code...
             <Stack direction="column" spacing={3}>
-              {orderProvidersCodes.map((item) => (
+              {orderProviders.map((item) => (
                 <Card
                   key={item.id}
                   sx={{
@@ -344,31 +334,86 @@ const ProviderOrdersListDrawer = ({ handleClose, data, isTreasury = false }: Pro
                         {item.codigoOp}
                       </Typography>
                     }
-                    // ✅ Subheader con fecha de modificación de la OP
+                    // ✅ Subheader con información del proveedor y estado
                     subheader={
-                      <Stack direction="row" alignItems="center" spacing={2} sx={{ mt: 1 }}>
-                        <Box
-                          sx={{
-                            width: 28,
-                            height: 28,
-                            borderRadius: '50%',
-                            background: alpha('#1890ff', 0.15),
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            border: `1px solid ${alpha('#1890ff', 0.25)}`,
-                          }}
-                        >
-                          <Update sx={{ fontSize: 14, color: '#1890ff' }} />
-                        </Box>
-                        <Box>
-                          <Typography variant="caption" sx={{ color: alpha('#ffffff', 0.6), textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                            Última modificación OP
-                          </Typography>
-                          <Typography variant="body2" fontWeight={500} sx={{ color: alpha('#ffffff', 0.9) }}>
-                            {item.updatedAt ? dayjs(item.updatedAt).format('DD/MM/YYYY - HH:mm') : 'No disponible'}
-                          </Typography>
-                        </Box>
+                      <Stack direction="column" spacing={1.5} sx={{ mt: 1 }}>
+                        {/* Información del Proveedor */}
+                        <Stack direction="row" alignItems="center" spacing={2}>
+                          <Box
+                            sx={{
+                              width: 28,
+                              height: 28,
+                              borderRadius: '50%',
+                              background: alpha('#10b981', 0.15),
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              border: `1px solid ${alpha('#10b981', 0.25)}`,
+                            }}
+                          >
+                            <ShoppingCart sx={{ fontSize: 14, color: '#10b981' }} />
+                          </Box>
+                          <Box>
+                            <Typography variant="caption" sx={{ color: alpha('#ffffff', 0.6), textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                              Proveedor
+                            </Typography>
+                            <Typography variant="body2" fontWeight={500} sx={{ color: alpha('#ffffff', 0.9) }}>
+                              {item.proveedor?.razonSocial || 'No disponible'}
+                            </Typography>
+                          </Box>
+                        </Stack>
+
+                        {/* Estado de la OP */}
+                        <Stack direction="row" alignItems="center" spacing={2}>
+                          <Box
+                            sx={{
+                              width: 28,
+                              height: 28,
+                              borderRadius: '50%',
+                              background: alpha('#f59e0b', 0.15),
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              border: `1px solid ${alpha('#f59e0b', 0.25)}`,
+                            }}
+                          >
+                            <Update sx={{ fontSize: 14, color: '#f59e0b' }} />
+                          </Box>
+                          <Box>
+                            <Typography variant="caption" sx={{ color: alpha('#ffffff', 0.6), textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                              Estado OP
+                            </Typography>
+                            <Typography variant="body2" fontWeight={500} sx={{ color: alpha('#ffffff', 0.9) }}>
+                              {item.estadoOp || 'PENDIENTE'}
+                            </Typography>
+                          </Box>
+                        </Stack>
+
+                        {/* Fecha de modificación */}
+                        <Stack direction="row" alignItems="center" spacing={2}>
+                          <Box
+                            sx={{
+                              width: 28,
+                              height: 28,
+                              borderRadius: '50%',
+                              background: alpha('#1890ff', 0.15),
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              border: `1px solid ${alpha('#1890ff', 0.25)}`,
+                            }}
+                          >
+                            <Update sx={{ fontSize: 14, color: '#1890ff' }} />
+                          </Box>
+                          <Box>
+                            <Typography variant="caption" sx={{ color: alpha('#ffffff', 0.6), textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                              Última modificación
+                            </Typography>
+                            <Typography variant="body2" fontWeight={500} sx={{ color: alpha('#ffffff', 0.9) }}>
+                              {item.updatedAt ? dayjs(item.updatedAt).format('DD/MM/YYYY - HH:mm') : 'No disponible'}
+                            </Typography>
+                          </Box>
+                        </Stack>
                       </Stack>
                     }
                     sx={{ pb: 1 }}
