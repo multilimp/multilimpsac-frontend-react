@@ -1,6 +1,6 @@
 import { Fragment, useState, useEffect } from 'react';
 import { Form, notification, Spin, Input, InputNumber } from 'antd';
-import { Business, Delete, Add, Inventory, LocalShipping } from '@mui/icons-material';
+import { Business, Delete, Add, Inventory, LocalShipping, Print } from '@mui/icons-material';
 import {
   Box,
   Card,
@@ -27,6 +27,7 @@ import { SaleProps } from '@/services/sales/sales';
 import SelectContactsByProvider from '@/components/selects/SelectContactsByProvider';
 import { createOrderProvider, updateOrderProvider } from '@/services/providerOrders/providerOrders.requests';
 import { uploadFile } from '@/services/files/file.requests';
+import { printOrdenProveedor } from '@/services/print/print.requests';
 import { useNavigate } from 'react-router-dom';
 import { StepItemContent } from '../../Sales/SalesPageForm/smallcomponents';
 import PaymentsList from '@/components/PaymentsList';
@@ -411,11 +412,22 @@ const calculateProductTotals = (form: any, fieldName: number) => {
         notification.success({ message: 'La orden del proveedor se registró correctamente' });
       }
 
-      navigate('/provider-orders');
     } catch {
       notification.error({ message: 'No se logró guardar la información' });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePrint = async () => {
+    if (!orderData?.id) {
+      notification.error({ message: 'Debe guardar la orden primero para imprimir' });
+      return;
+    }
+    try {
+      await printOrdenProveedor(orderData);
+    } catch (error) {
+      notification.error({ message: 'Error al imprimir la orden' });
     }
   };
 
@@ -512,6 +524,27 @@ const calculateProductTotals = (form: any, fieldName: number) => {
             showFooter
             ResumeIcon={Business}
             onClickSearch={fromTreasury ? undefined : () => setOpenProvider(true)}
+            resumeButtons={
+              isEditing && orderData ? (
+                <IconButton
+                  sx={{
+                    border: '1px solid',
+                    borderRadius: 1,
+                    color: '#04BA6B',
+                    zIndex: 900,
+                    padding: 1.5,
+                    minWidth: 44,
+                    minHeight: 44,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                  onClick={handlePrint}
+                >
+                  <Print sx={{ fontSize: 20 }} />
+                </IconButton>
+              ) : null
+            }
             headerLeft={
               <Form.Item noStyle shouldUpdate>
                 {({ getFieldValue }) => {
