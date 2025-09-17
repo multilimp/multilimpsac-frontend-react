@@ -378,7 +378,8 @@ const TransportsSection = ({ form, isTreasury, isPrivateSale = false, incluyeTra
                             style={{ color: "black" }}
                             options={[
                               { value: 'ALMACEN', label: 'Almacén' },
-                              { value: 'AGENCIA', label: 'Agencia' }
+                              { value: 'AGENCIA', label: 'Agencia' },
+                              { value: 'CLIENTE', label: 'Cliente' }
                             ]}
                           />
                         </Form.Item>

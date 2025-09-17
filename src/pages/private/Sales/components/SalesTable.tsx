@@ -189,6 +189,7 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onReload, isPriv
     { title: 'Monto Venta', dataIndex: 'monto_venta', width: 200, sort: true, filter: true },
     { title: 'CUE', dataIndex: 'cue', width: 200, sort: true, filter: true },
     { title: 'Dirección Entrega', dataIndex: 'direccion_entrega', width: 300, sort: true, filter: true },
+    { title: 'Fuentes Financiamiento', dataIndex: 'fuentes_financiamiento', width: 200, sort: true, filter: true },
     {
       title: 'Estado',
       dataIndex: 'estado_venta',
@@ -226,7 +227,6 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onReload, isPriv
         );
       },
     },
-    { title: 'Fuentes Financiamiento', dataIndex: 'fuentes_financiamiento', width: 200, sort: true, filter: true },
   ];
 
   return (
