@@ -1,5 +1,5 @@
-import { Fragment } from 'react';
-import { Form, FormInstance } from 'antd';
+import React, { Fragment, useEffect } from 'react';
+import { Form, FormInstance, Radio, Select } from 'antd';
 import { StepItemContent } from './smallcomponents';
 import { Grid, Typography, Stack, Box } from '@mui/material';
 import SelectGeneric from '@/components/selects/SelectGeneric';
@@ -25,14 +25,50 @@ const InputsThirdStep = ({ form, companyId, isPrivateSale = false }: InputsThird
   const conditionalRules = isPrivateSale ? [] : [requiredField];
   const siafRules = isPrivateSale ? [] : [requiredField];
 
+  // Observar cambios en el cliente seleccionado
+  const cliente = Form.useWatch('clienteEstado', form);
+
+  // Establecer valor por defecto del OCF basado en la RUC del cliente
+  useEffect(() => {
+    if (cliente?.ruc && !isPrivateSale) {
+      const currentOcfValue = form.getFieldValue('codigoOcf');
+      // Solo establecer si el campo está vacío o si el cliente cambió y el valor actual coincide con el patrón anterior
+      const shouldUpdate = !currentOcfValue ||
+        currentOcfValue === '' ||
+        (currentOcfValue.match(/^\d{11}-$/) && !currentOcfValue.startsWith(cliente.ruc));
+
+      if (shouldUpdate) {
+        form.setFieldsValue({
+          codigoOcf: `${cliente.ruc}-`
+        });
+      }
+    }
+  }, [cliente?.ruc, isPrivateSale, form]);
+
   return (
     <Fragment>
       <StepItemContent>
         <Box sx={{ backgroundColor: 'white', m: -2, p: 4, borderRadius: 1 }}>
-          <Typography variant="h6" fontWeight={600} component={Stack} direction="row" alignItems="flex-end" spacing={1} mb={2} sx={{ color: '#1f2937' }}>
-            <Info />
-            Datos generales
-          </Typography>
+          {/* Título con switch de fuentes de financiamiento */}
+          <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
+            <Typography variant="h6" fontWeight={600} component={Stack} direction="row" alignItems="center" spacing={1} sx={{ color: '#1f2937' }}>
+              <Info />
+              Datos generales
+            </Typography>
+
+            {/* Switch de fuentes de financiamiento */}
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <Typography variant="body2" sx={{ color: '#6b7280', fontWeight: 500 }}>
+                Fuentes de financiamiento:
+              </Typography>
+              <Form.Item name="multipleFuentesFinanciamiento" initialValue={false}>
+                <Select size="small" style={{ minWidth: 180 }}>
+                  <Select.Option value={false}>Una fuente</Select.Option>
+                  <Select.Option value={true}>Múltiples fuentes</Select.Option>
+                </Select>
+              </Form.Item>
+            </Stack>
+          </Stack>
           {/* Primera fila: Datos principales */}
           <Grid container columnSpacing={2} rowSpacing={2}>
             {/* Solo mostrar catálogo y fecha formalización si NO es venta privada */}
@@ -120,7 +156,9 @@ const InputsThirdStep = ({ form, companyId, isPrivateSale = false }: InputsThird
               {/* OCF para ventas al estado junto a Fecha SIAF */}
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <Form.Item name="codigoOcf" rules={siafRules}>
-                  <InputAntd label="OCF" />
+                  <InputAntd
+                    label="OCF"
+                  />
                 </Form.Item>
               </Grid>
             </Grid>
@@ -145,6 +183,7 @@ const InputsThirdStep = ({ form, companyId, isPrivateSale = false }: InputsThird
                     label="Orden de Compra Física (OCF)"
                     accept="pdf"
                     maxSizeMB={10}
+                    fileNamePrefix={cliente?.ruc ? `${form.getFieldValue('codigoOcf') || ''}`.replace(/-$/, '') : undefined}
                   />
                 </Form.Item>
               </Grid>

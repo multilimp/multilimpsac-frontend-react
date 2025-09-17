@@ -52,6 +52,12 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onReload, isPriv
     return statusMap[normalizedStatus] || 'incompleto';
   };
 
+  // ✅ Función para formatear fuentes de financiamiento
+  const formatFuentesFinanciamiento = (multipleFuentes: boolean | null | undefined): string => {
+    if (multipleFuentes === true) return 'Múltiples fuentes';
+    return 'Una fuente';
+  };
+
   const formattedData = useMemo(() => {
     return data.map((item) => {
       const normalizedStatus = normalizeStatus(item.estadoVenta);
@@ -79,6 +85,7 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onReload, isPriv
         // ✅ Usar estado normalizado para ambos campos
         estado_venta: normalizedStatus,
         estado_indicador: normalizedStatus,
+        fuentes_financiamiento: formatFuentesFinanciamiento(item.multipleFuentesFinanciamiento),
         rawdata: item,
       };
     });
@@ -219,6 +226,7 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onReload, isPriv
         );
       },
     },
+    { title: 'Fuentes Financiamiento', dataIndex: 'fuentes_financiamiento', width: 200, sort: true, filter: true },
   ];
 
   return (

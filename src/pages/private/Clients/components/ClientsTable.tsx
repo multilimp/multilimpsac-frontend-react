@@ -37,6 +37,7 @@ const ClientsTable = ({ data, loading, hideActions, onRecordAction, modalMode, o
   const columns: Array<AntColumnType<ClientProps> | false> = [
     { title: 'Razón Social', dataIndex: 'razonSocial', width: 200, filter: true, sort: true },
     { title: 'RUC', dataIndex: 'ruc', width: 150, filter: true, sort: true },
+    { title: 'Sede', dataIndex: 'sede', width: 150, filter: true, sort: true },
     { title: 'Código Unidad', dataIndex: 'codigoUnidadEjecutora', width: 200, filter: true, sort: true },
     {
       title: 'Dirección',

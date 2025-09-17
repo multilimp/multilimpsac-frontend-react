@@ -7,9 +7,10 @@ export interface SelectContainerProps {
   hasError?: boolean;
   context?: any;
   isAddonBefore?: boolean;
+  labelColor?: string;
 }
 
-const SelectContainer = ({ children, label, isFloating, hasError, isAddonBefore, ...context }: SelectContainerProps) => {
+const SelectContainer = ({ children, label, isFloating, hasError, isAddonBefore, labelColor, ...context }: SelectContainerProps) => {
   const [focus, setFocus] = useState(false);
   const isFloatingAux = focus || (children?.props?.value && children.props.value.length !== 0);
   let labelClass = isFloatingAux || isFloating ? 'label label-float' : 'label';
@@ -25,7 +26,7 @@ const SelectContainer = ({ children, label, isFloating, hasError, isAddonBefore,
     <div className={`input-select-form ${children.props.size}`}>
       <div className="float-label" onBlur={() => setFocus(false)} onFocus={() => setFocus(true)}>
         {React.cloneElement(children, { value: children.props.value, ...contextAux })}
-        <label htmlFor={label} className={labelClass}>
+        <label htmlFor={label} className={labelClass} style={labelColor ? { color: labelColor } : undefined}>
           {label}
         </label>
       </div>

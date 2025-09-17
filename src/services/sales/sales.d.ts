@@ -14,6 +14,7 @@ export interface SaleProps {
   contactoClienteId: number;
   catalogoEmpresaId: number;
   ventaPrivada: boolean;
+  multipleFuentesFinanciamiento: boolean;
   departamentoEntrega?: string;
   provinciaEntrega?: string;
   distritoEntrega?: string;

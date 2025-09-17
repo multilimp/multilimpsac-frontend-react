@@ -11,6 +11,7 @@ interface InputFileProps {
   defaultValue?: string;
   value?: string; // Agregar prop value para Ant Design Form
   maxSizeMB?: number;
+  fileNamePrefix?: string; // Prefijo para renombrar el archivo
 }
 
 const acceptFiles = {
@@ -25,6 +26,7 @@ const InputFile = ({
   defaultValue,
   value, // Agregar prop value
   maxSizeMB = 1,
+  fileNamePrefix,
 }: InputFileProps) => {
   const [file, setFile] = useState<File | null>(null);
   const [fileUrl, setFileUrl] = useState<string | null>(value || defaultValue || null);
@@ -32,10 +34,21 @@ const InputFile = ({
   const [errorFile, setErrorFile] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
 
-  // Actualizar fileUrl cuando cambie el prop value o defaultValue
-  useEffect(() => {
-    setFileUrl(value || defaultValue || null);
-  }, [value, defaultValue]);
+  // Función para renombrar el archivo
+  const renameFile = (originalFile: File, prefix?: string): File => {
+    if (!prefix) return originalFile;
+
+    // Obtener la extensión del archivo original
+    const extension = originalFile.name.split('.').pop() || '';
+    const baseName = `${prefix}_OCF`;
+    const newName = extension ? `${baseName}.${extension}` : baseName;
+
+    // Crear un nuevo archivo con el nombre modificado
+    return new File([originalFile], newName, {
+      type: originalFile.type,
+      lastModified: originalFile.lastModified,
+    });
+  };
 
   const validateChange = async (event: ChangeEvent<HTMLInputElement>) => {
     try {
@@ -52,10 +65,13 @@ const InputFile = ({
       const sizeMB = extractedFile.size / (1024 * 1024);
       if (sizeMB > maxSizeMB) return handleError(`El archivo supera el tamaño máximo de ${maxSizeMB} MB.`);
 
-      // Actualizar estado inmediatamente con el archivo local
-      setFile(extractedFile);
+      // Renombrar el archivo si hay un prefijo
+      const fileToUpload = renameFile(extractedFile, fileNamePrefix);
 
-      const uploadedUrl = await uploadFile(extractedFile);
+      // Actualizar estado inmediatamente con el archivo local
+      setFile(fileToUpload);
+
+      const uploadedUrl = await uploadFile(fileToUpload);
 
       // Actualizar con la URL del servidor
       setFileUrl(uploadedUrl);

@@ -10,7 +10,7 @@ import {
     Link,
     Alert,
 } from '@mui/material';
-import { GroupWork, OpenInNew } from '@mui/icons-material';
+import { OpenInNew, Workspaces } from '@mui/icons-material';
 import { getAgrupacionByOrdenCompra } from '@/services/agrupaciones/agrupaciones.request';
 import { AgrupacionOrdenCompraProps } from '@/services/agrupaciones/agrupaciones.d';
 import { formatCurrency } from '@/utils/functions';
@@ -92,7 +92,7 @@ const OCsRelacionadas: React.FC<OCsRelacionadasProps> = ({
             <Stack spacing={2}>
                 {/* Header de la agrupación */}
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <GroupWork sx={{ color: '#1976d2', fontSize: 20 }} />
+                    <Workspaces sx={{ color: '#1976d2', fontSize: 20 }} />
                     <Typography variant="body2" sx={{ fontWeight: 600, color: '#1976d2' }}>
                         Grupo: {agrupacion.codigoGrupo}
                     </Typography>

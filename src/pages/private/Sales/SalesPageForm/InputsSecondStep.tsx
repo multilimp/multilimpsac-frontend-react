@@ -191,10 +191,12 @@ const InputsSecondStep = ({ form, isEditing = false, currentSale, isPrivateSale 
                 <Form.Item name="direccionEntrega" rules={conditionalRules}>
                   <InputAntd label="Dirección" />
                 </Form.Item>
-              </Grid>            {/* Segunda fila - Ubicación geográfica con texto libre para AI */}
+              </Grid>
+
+              {/* Segunda fila - Distrito, Provincia, Departamento */}
               <Grid size={{ xs: 12, sm: 4 }}>
-                <Form.Item name="regionEntrega" rules={conditionalRules}>
-                  <InputAntd label="Región" />
+                <Form.Item name="distritoEntrega" rules={conditionalRules}>
+                  <InputAntd label="Distrito" />
                 </Form.Item>
               </Grid>
 
@@ -205,10 +207,12 @@ const InputsSecondStep = ({ form, isEditing = false, currentSale, isPrivateSale 
               </Grid>
 
               <Grid size={{ xs: 12, sm: 4 }}>
-                <Form.Item name="distritoEntrega" rules={conditionalRules}>
-                  <InputAntd label="Distrito" />
+                <Form.Item name="regionEntrega" rules={conditionalRules}>
+                  <InputAntd label="Departamento" />
                 </Form.Item>
-              </Grid>{/* Tercera fila - Referencia */}
+              </Grid>
+
+              {/* Tercera fila - Referencia */}
               <Grid size={12}>
                 <Form.Item name="referenciaEntrega" rules={conditionalRules}>
                   <InputAntd label="Referencia" />

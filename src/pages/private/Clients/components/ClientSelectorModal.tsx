@@ -16,7 +16,7 @@ const ClientSelectorModal = ({ onSelected, onClose }: ClientSelectorModalProps) 
     <Dialog
       open
       fullWidth
-      maxWidth="md"
+      maxWidth="lg"
       onClose={onClose} // Permite cerrar haciendo clic fuera del modal
     >
       <DialogTitle

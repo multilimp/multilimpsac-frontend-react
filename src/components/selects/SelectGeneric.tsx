@@ -4,21 +4,22 @@ import { filterOptions } from '@/utils/functions';
 
 interface SelectGenericProps extends SelectProps {
   label?: string;
+  style?: React.CSSProperties;
+  showSearch?: boolean;
 }
 
-const SelectGeneric = ({ label, style, ...rest }: SelectGenericProps) => {
+const SelectGeneric = ({ label, style, showSearch, ...rest }: SelectGenericProps) => {
   return (
     <SelectContainer label={label || ''}>
-      <Select 
-        showSearch 
-        filterOption={filterOptions} 
-        size="large" 
-        style={{ 
+      <Select
+        showSearch={showSearch !== undefined ? showSearch : true}
+        filterOption={filterOptions}
+        size="large"
+        style={{
           width: '100%',
-          // Aplicar estilos personalizados si se pasan
           ...style,
-        }} 
-        {...rest} 
+        }}
+        {...rest}
       />
     </SelectContainer>
   );

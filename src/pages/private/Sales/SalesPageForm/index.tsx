@@ -80,12 +80,12 @@ const SalesPageForm = () => {
               catalogo: saleData.catalogoEmpresa.id,
               catalogoComplete: saleData.catalogoEmpresa,
             }),
-            fechaFormalizacion: dayjs(saleData.fechaForm),
-            fechaMaxEntrega: dayjs(saleData.fechaMaxForm),
+            fechaFormalizacion: saleData.fechaForm ? dayjs(saleData.fechaForm) : null,
+            fechaMaxEntrega: saleData.fechaMaxForm ? dayjs(saleData.fechaMaxForm) : null,
             montoVenta: saleData.montoVenta,
             numeroSIAF: saleData.siaf,
             etapaSIAF: saleData.etapaSiaf,
-            fechaSIAF: dayjs(saleData.fechaSiaf),
+            fechaSIAF: saleData.fechaSiaf ? dayjs(saleData.fechaSiaf) : null,
             ordenCompraElectronica: saleData.documentoOce,
             ordenCompraFisica: saleData.documentoOcf,
             codigoOcf: saleData.codigoOcf,
@@ -111,6 +111,7 @@ const SalesPageForm = () => {
             provinciaEntrega: saleData.provinciaEntrega,
             distritoEntrega: saleData.distritoEntrega,
             estadoVenta: saleData.estadoVenta || 'incompleto',
+            multipleFuentesFinanciamiento: saleData.multipleFuentesFinanciamiento || false,
           };
 
           // Si es venta privada, cargar datos específicos
@@ -127,6 +128,7 @@ const SalesPageForm = () => {
             formValues.nombreAgencia = (saleData.ordenCompraPrivada as any).nombreAgencia || null;
             formValues.destinoFinal = (saleData.ordenCompraPrivada as any).destinoFinal || null;
             formValues.destinoEntidad = (saleData.ordenCompraPrivada as any).nombreEntidad || null;
+            formValues.multipleFuentesFinanciamiento = (saleData.ordenCompraPrivada as any).multipleFuentesFinanciamiento || false;
 
             // Mapeo explícito de pagos desde backend a frontend
             const mappedPayments = Array.isArray(saleData.ordenCompraPrivada.pagos) && saleData.ordenCompraPrivada.pagos.length > 0
@@ -227,12 +229,18 @@ const SalesPageForm = () => {
         // Modo edición
         const baseVentaData = {
           // Solo incluir catálogo para ventas directas (no privadas)
-          ...(saleInputValues.tipoVenta !== 'privada' && {
-            catalogoEmpresaId: values.catalogoComplete?.id || values.catalogo?.id || values.catalogo
+          ...(saleInputValues.tipoVenta !== 'privada' && (values.catalogoComplete?.id || values.catalogo?.id || values.catalogo) && {
+            catalogoEmpresa: { connect: { id: values.catalogoComplete?.id || values.catalogo?.id || values.catalogo } }
           }),
-          clienteId: values.clienteEstado?.id || values.clienteEstado,
-          contactoClienteId: values.cargoContactoComplete?.id || values.cargoContacto?.id || values.cargoContacto,
-          empresaId: saleInputValues.enterprise?.id,
+          ...(values.clienteEstado?.id || values.clienteEstado) && {
+            cliente: { connect: { id: values.clienteEstado?.id || values.clienteEstado } }
+          },
+          ...(values.cargoContactoComplete?.id || values.cargoContacto?.id || values.cargoContacto) && {
+            contactoCliente: { connect: { id: values.cargoContactoComplete?.id || values.cargoContacto?.id || values.cargoContacto } }
+          },
+          ...(saleInputValues.enterprise?.id) && {
+            empresa: { connect: { id: saleInputValues.enterprise.id } }
+          },
           direccionEntrega: values.direccionEntrega || null,
           distritoEntrega: values.distritoEntrega || null,
           provinciaEntrega: values.provinciaEntrega || null,
@@ -273,6 +281,7 @@ const SalesPageForm = () => {
 
           const bodyVentaPrivada = {
             ...baseVentaData,
+            multipleFuentesFinanciamiento: values.multipleFuentesFinanciamiento || false,
             ventaPrivada: {
               estadoPago: tipoPago || 'PENDIENTE',
               fechaPago: values.dateFactura ? values.dateFactura.toISOString() : null,
@@ -393,6 +402,7 @@ const SalesPageForm = () => {
           }),
 
           ventaPrivada: bodyVentaPrivada,
+          multipleFuentesFinanciamiento: values.multipleFuentesFinanciamiento || false,
           departamentoEntrega: values.regionEntrega || null,
           provinciaEntrega: values.provinciaEntrega || null,
           distritoEntrega: values.distritoEntrega || null,

@@ -11,18 +11,8 @@ const SelectCompanies = ({ label, ...rest }: SelectCompaniesProps) => {
   const { companies, loadingCompanies } = useGlobalInformation();
 
   return (
-    <div style={{ position: 'relative' }}>
-      <style>
-        {`
-          .input-select-form .float-label .label {
-            color: #ffffff !important;
-          }
-          .input-select-form .float-label .label-float {
-            color: #ffffff !important;
-          }
-        `}
-      </style>
-      <SelectContainer label={label}>
+    <>
+      <SelectContainer label={label} labelColor="white">
         <Select
           filterOption={filterOptions}
           size="large"
@@ -39,7 +29,7 @@ const SelectCompanies = ({ label, ...rest }: SelectCompaniesProps) => {
           ))}
         </Select>
       </SelectContainer>
-    </div>
+    </>
   );
 };
 

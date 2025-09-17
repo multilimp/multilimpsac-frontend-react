@@ -7,7 +7,7 @@ import SelectGeneric from '@/components/selects/SelectGeneric';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 import { BlackBarKeyEnum } from '@/types/global.enum';
 import { formatCurrency, formattedDate } from '@/utils/functions';
-import { ExpandMore, Visibility, ContentCopy, Close, Upload, CheckCircle, PlayArrow, GroupWork, Add } from '@mui/icons-material';
+import { ExpandMore, Visibility, ContentCopy, Close, Upload, CheckCircle, PlayArrow, Add, Workspaces } from '@mui/icons-material';
 import Scrollbar from '@/components/Scrollbar';
 import ClipboardJS from 'clipboard';
 import { notification } from 'antd';
@@ -562,7 +562,7 @@ const BlackBar = memo(() => {
                   color: '#9e9e9e',
                 },
               }}
-              startIcon={<GroupWork />}
+              startIcon={<Workspaces />}
             >
               {selectedSale?.id ? `Agrupar OC ${selectedSale.codigoVenta}` : 'Selecciona una OC para agrupar'}
             </Button>
@@ -669,7 +669,7 @@ const BlackBar = memo(() => {
             <AccordionStyled title="Entrega">
               <Stack direction="column" spacing={2}>
                 {[
-                  { label: 'C - Dirección', value: selectedSale.direccionEntrega.toUpperCase() },
+                  { label: 'C - Dirección', value: selectedSale.direccionEntrega?.toUpperCase() ?? '-' },
                   { label: 'C - Distrito', value: selectedSale.distritoEntrega ?? '-' },
                   { label: 'C - Provincia', value: selectedSale.provinciaEntrega ?? '-' },
                   { label: 'C - Departamento', value: selectedSale.departamentoEntrega ?? '-' },
