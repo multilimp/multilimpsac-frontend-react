@@ -153,7 +153,7 @@ const MainNav = () => {
           }}
         >
           <Stack sx={{ alignItems: 'center' }} direction="row" spacing={2}>
-            <Box
+            {/* <Box
               sx={{
                 position: 'relative',
                 display: 'flex',
@@ -197,7 +197,7 @@ const MainNav = () => {
                   <Close sx={{ fontSize: '1rem' }} />
                 </IconButton>
               )}
-            </Box>
+            </Box> */}
 
 
           </Stack>

@@ -339,7 +339,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
       });
 
       setChangedOCFields(new Set());
-      
+
       // Recargar los datos de la OC desde el backend
       await reloadOCData();
     } catch (error) {
@@ -485,9 +485,6 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
               </Box>
             }
           >
-            <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
-              Información General de la Orden
-            </Typography>
             <Grid container spacing={2}>
               <Grid size={{ xs: 12, md: 4 }}>
                 <Typography variant="body2" color="text.secondary">Monto de Venta</Typography>

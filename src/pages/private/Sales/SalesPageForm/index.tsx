@@ -529,7 +529,7 @@ const SalesPageForm = () => {
                       size="large"
                       onChange={(value) => setCurrentEstadoValue(value)}
                       style={{
-                        minWidth: 220,
+                        maxWidth: 220,
                         borderRadius: 12,
                         fontWeight: 600,
                         fontSize: 16,
