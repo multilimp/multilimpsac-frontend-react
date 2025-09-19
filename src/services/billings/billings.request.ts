@@ -129,7 +129,8 @@ export const getBillingByOrdenCompraId = async (ordenCompraId: number): Promise<
       detraccion: facturacion.detraccion || undefined,
       formaEnvioFactura: facturacion.formaEnvioFactura || undefined,
       estadoFacturacion: facturacion.estado || undefined,
-      facturacionId: facturacion.id
+      facturacionId: facturacion.id,
+      esRefacturacion: facturacion.esRefacturacion || false
     };
   } catch (error) {
     console.error('Error al obtener facturación por orden de compra ID:', error);
@@ -207,10 +208,21 @@ export const getBillingHistoryByOrdenCompraId = async (ordenCompraId: number): P
       formaEnvioFactura: facturacion.formaEnvioFactura || undefined,
       estadoFacturacion: facturacion.estado || undefined,
       facturacionId: facturacion.id,
-      createdAt: facturacion.createdAt || undefined
+      createdAt: facturacion.createdAt || undefined,
+      esRefacturacion: facturacion.esRefacturacion || false
     }));
   } catch (error) {
     console.error('❌ Backend: Error al obtener historial de facturaciones:', error);
     return [];
+  }
+};
+
+export const refacturarBilling = async (id: number, notaCreditoData: { notaCreditoTexto?: string; notaCreditoArchivo?: string }): Promise<BillingProps> => {
+  try {
+    const response = await apiClient.put(`/facturacion/${id}/refacturar`, notaCreditoData);
+    return response.data;
+  } catch (error) {
+    console.error('Error refacturando billing:', error);
+    throw error;
   }
 };

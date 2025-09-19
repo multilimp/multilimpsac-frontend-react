@@ -31,6 +31,8 @@ export interface BillingProps {
   facturacionId?: number | null;
   // Fecha de creación de la facturación
   createdAt?: string;
+  // Indica si la facturación ha sido refacturada
+  esRefacturacion?: boolean;
 }
 
 export interface BillingData {

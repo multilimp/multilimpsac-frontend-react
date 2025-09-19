@@ -18,9 +18,11 @@ import {
   Receipt as ReceiptIcon,
   ArrowBack,
   Print,
-  Save as SaveIcon
+  Save as SaveIcon,
+  Assignment as AssignmentIcon,
+  Description as DescriptionIcon
 } from '@mui/icons-material';
-import { notification, Form } from 'antd';
+import { notification, Form, Input } from 'antd';
 import Grid from '@mui/material/Grid';
 import dayjs from 'dayjs';
 import { SaleProps } from '@/services/sales/sales';
@@ -58,8 +60,6 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
   const [editingBilling, setEditingBilling] = useState<BillingProps | null>(null);
   const [isRefactoring, setIsRefactoring] = useState(false);
   const [refactoringBilling, setRefactoringBilling] = useState<BillingProps | null>(null);
-  const [notaCreditoFile, setNotaCreditoFile] = useState<string | null>(null);
-  const [notaCreditoTexto, setNotaCreditoTexto] = useState<string>('');
 
   // Estados para documentos
   const [cartaCciUrl, setCartaCciUrl] = useState<string | null>(null);
@@ -362,8 +362,8 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
           detraccion: values.porcentajeDetraccion || 0,
           formaEnvioFactura: values.formaEnvioFactura || '',
           estado: parseInt(values.estado) || 1,
-          notaCreditoArchivo: notaCreditoFile,
-          notaCreditoTexto: notaCreditoTexto
+          notaCreditoArchivo: values.notaCreditoArchivo,
+          notaCreditoTexto: values.notaCreditoTexto
         };
 
         const newBilling = await createBilling(billingData);
@@ -377,8 +377,6 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
         await loadBillingHistory();
         setIsRefactoring(false);
         setRefactoringBilling(null);
-        setNotaCreditoFile(null);
-        setNotaCreditoTexto('');
 
         // Limpiar el formulario
         form.resetFields();
@@ -503,7 +501,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
           borderRadius: 2,
           boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
         }}>
-          <CardContent sx={{ p: 3 }}>
+          <CardContent sx={{ p: 4 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
               <Typography
                 variant="h6"
@@ -515,24 +513,27 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                   gap: 1
                 }}
               >
-                📄 Documentos
+                <DescriptionIcon sx={{ fontSize: 24 }} />
+                Documentos
               </Typography>
-              <Button
-                variant="contained"
-                startIcon={<SaveIcon />}
-                onClick={saveDocuments}
-                disabled={savingDocuments || (!cartaCciUrl && !cartaGarantiaUrl)}
-                sx={{
-                  bgcolor: '#667eea',
-                  '&:hover': { bgcolor: '#5a67d8' },
-                  '&:disabled': {
-                    bgcolor: '#cbd5e1',
-                    color: '#94a3b8'
-                  }
-                }}
-              >
-                {savingDocuments ? 'Guardando...' : 'Guardar Documentos'}
-              </Button>
+              {(cartaCciUrl || cartaGarantiaUrl) && (
+                <Button
+                  variant="contained"
+                  startIcon={<SaveIcon />}
+                  onClick={saveDocuments}
+                  disabled={savingDocuments}
+                  sx={{
+                    bgcolor: '#667eea',
+                    '&:hover': { bgcolor: '#5a67d8' },
+                    '&:disabled': {
+                      bgcolor: '#cbd5e1',
+                      color: '#94a3b8'
+                    }
+                  }}
+                >
+                  {savingDocuments ? 'Guardando...' : 'Guardar Documentos'}
+                </Button>
+              )}
             </Box>
 
             <Grid container spacing={3}>
@@ -662,13 +663,19 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                           {formatRelativeTime(billing.createdAt)}
                         </TableCell>
                         <TableCell>
-                          <Button
-                            size="small"
-                            variant="outlined"
-                            onClick={() => handleRefacturar(billing)}
-                          >
-                            Refacturar
-                          </Button>
+                          {billing.esRefacturacion ? (
+                            <Typography sx={{ color: '#dc2626', fontWeight: 600 }}>
+                              Refacturada
+                            </Typography>
+                          ) : (
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              onClick={() => handleRefacturar(billing)}
+                            >
+                              Refacturar
+                            </Button>
+                          )}
                         </TableCell>
                       </TableRow>
                     ))}
@@ -698,6 +705,67 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
     );
   });
 
+  const ProviderOrdersTableComponent = React.memo<{ ordenesProveedor: any[]; handlePrintOP: (op: any) => void }>(({ ordenesProveedor, handlePrintOP }) => (
+    <TableContainer sx={{
+      bgcolor: '#f8fafc',
+      borderRadius: 2,
+      maxHeight: '400px',
+      overflowY: 'auto'
+    }}>
+      <Table size="small">
+        <TableHead>
+          <TableRow sx={{ bgcolor: '#e2e8f0' }}>
+            <TableCell sx={{ fontWeight: 600, color: '#475569' }}>OP</TableCell>
+            <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Fecha Recepción</TableCell>
+            <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Fecha Programada</TableCell>
+            <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Fecha Despacho</TableCell>
+            <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Acciones</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {ordenesProveedor.map((op, index) => (
+            <TableRow
+              key={op.id}
+              sx={{
+                '&:hover': {
+                  bgcolor: '#f1f5f9'
+                }
+              }}
+            >
+              <TableCell sx={{ color: '#475569', fontWeight: 500 }}>
+                {op.codigoOp}
+              </TableCell>
+              <TableCell sx={{ color: '#64748b' }}>
+                {formattedDate(op.fechaRecepcion)}
+              </TableCell>
+              <TableCell sx={{ color: '#64748b' }}>
+                {formattedDate(op.fechaProgramada)}
+              </TableCell>
+              <TableCell sx={{ color: '#64748b' }}>
+                {formattedDate(op.fechaDespacho)}
+              </TableCell>
+              <TableCell>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => handlePrintOP(op)}
+                  size="small"
+                  sx={{
+                    minWidth: 'auto',
+                    px: 1.5,
+                    py: 0.5
+                  }}
+                >
+                  <Print sx={{ fontSize: 18 }} />
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  ));
+
   interface BillingFormSectionProps {
     form: any;
     isEditing: boolean;
@@ -705,18 +773,13 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
     loading: boolean;
     onSave: () => void;
     isRefactoring: boolean;
-    onNotaCreditoFileChange: (fileUrl: string | null) => void;
-    onNotaCreditoTextoChange: (texto: string) => void;
-    notaCreditoTexto: string;
   }
 
   const BillingFormSection = React.memo<BillingFormSectionProps>(({
+    form,
     isEditing,
     isDuplicating,
-    isRefactoring,
-    onNotaCreditoFileChange,
-    onNotaCreditoTextoChange,
-    notaCreditoTexto
+    isRefactoring
   }) => {
     return (
       <Card
@@ -864,23 +927,28 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
           {isRefactoring && (
             <Grid container spacing={3} sx={{ mt: 1 }}>
               <Grid size={{ xs: 12, md: 6 }}>
-                <Typography sx={{ color: '#667eea', mb: 1, fontSize: '0.875rem', fontWeight: 600 }}>
-                  Archivo de Nota de Crédito
-                </Typography>
-                <SimpleFileUpload
-                  onChange={(fileUrl) => onNotaCreditoFileChange(fileUrl)}
-                />
+                <Form.Item
+                  label="Archivo de Nota de Crédito"
+                  name="notaCreditoArchivo"
+                >
+                  <SimpleFileUpload
+                    onChange={(fileUrl) => {
+                      form.setFieldsValue({ notaCreditoArchivo: fileUrl });
+                    }}
+                  />
+                </Form.Item>
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
-                <Typography sx={{ color: '#667eea', mb: 1, fontSize: '0.875rem', fontWeight: 600 }}>
-                  Texto de Nota de Crédito
-                </Typography>
-                <InputAntd
-                  placeholder="Ingrese el texto de la nota de crédito"
-                  value={notaCreditoTexto}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => onNotaCreditoTextoChange(e.target.value)}
-                  size="large"
-                />
+                <Form.Item
+                  label="Texto de Nota de Crédito"
+                  name="notaCreditoTexto"
+                  rules={[{ required: true, message: 'Por favor ingrese el texto de la nota de crédito' }]}
+                >
+                  <InputAntd
+                    placeholder="Ingrese el texto de la nota de crédito"
+                    size="large"
+                  />
+                </Form.Item>
               </Grid>
             </Grid>
           )}
@@ -938,12 +1006,10 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                     {/* Card 1: Empresa */}
                     {sale?.empresa?.razonSocial && (
                       <Card sx={{
-                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                        border: '1px solid #e0e0e0',
                         minHeight: '70px',
                         display: 'flex',
                         alignItems: 'center',
-                        boxShadow: 'none'
+                        border: 'none'
                       }}>
                         <CardContent sx={{ py: 1, px: 1.5, '&:last-child': { pb: 1 } }}>
                           <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.7rem' }}>
@@ -966,8 +1032,6 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                     {/* Card 2: Fecha Emisión */}
                     {sale.fechaEmision && (
                       <Card sx={{
-                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                        border: '1px solid #e0e0e0',
                         minHeight: '70px',
                         display: 'flex',
                         alignItems: 'center',
@@ -986,8 +1050,6 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
 
                     {/* Card 3: Monto Total */}
                     <Card sx={{
-                      backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                      border: '1px solid #e0e0e0',
                       minHeight: '70px',
                       display: 'flex',
                       alignItems: 'center',
@@ -1007,168 +1069,54 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
               </StepItemContent>
 
               {/* Tabla de Órdenes de Proveedor - READONLY */}
-              <StepItemContent>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      fontWeight: 600,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1,
-                      color: '#1f2937',
-                      fontSize: '1.25rem'
-                    }}
-                  >
-                    <Icon sx={{ color: '#667eea', fontSize: 28 }} />
-                    Órdenes de Proveedor ({ordenesProveedor.length})
-                  </Typography>
-                </Box>
-
-                {loading ? (
-                  <ProviderOrdersTableSkeleton />
-                ) : ordenesProveedor.length === 0 ? (
-                  <Box sx={{
-                    textAlign: 'center',
-                    py: 8,
-                    bgcolor: '#f8fafc',
-                    borderRadius: 3,
-                    border: '2px dashed #cbd5e1'
-                  }}>
-                    <Box sx={{ mb: 2 }}>
-                      <Icon sx={{ fontSize: 48, color: '#94a3b8' }} />
-                    </Box>
+              <Card sx={{
+                border: '1px solid #e2e8f0',
+                borderRadius: 2,
+                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+              }}>
+                <CardContent sx={{ p: 4 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                     <Typography
                       variant="h6"
                       sx={{
-                        color: '#475569',
                         fontWeight: 600,
-                        fontSize: '1.1rem',
-                        mb: 1
+                        color: '#667eea',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1
                       }}
                     >
-                      No hay órdenes de proveedor
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: '#64748b',
-                        fontSize: '0.9rem'
-                      }}
-                    >
-                      No se encontraron órdenes de proveedor registradas para esta orden de compra
+                      <AssignmentIcon sx={{ fontSize: 24 }} />
+                      Órdenes de Proveedor ({ordenesProveedor.length})
                     </Typography>
                   </Box>
-                ) : (
-                  <Box sx={{
-                    bgcolor: '#ffffff',
-                    borderRadius: 2,
-                    overflow: 'hidden',
-                    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
-                  }}>
-                    <TableContainer>
-                      <Table>
-                        <TableHead>
-                          <TableRow sx={{ bgcolor: '#f8fafc' }}>
-                            <TableCell sx={{
-                              borderBottom: '2px solid #e2e8f0',
-                              fontWeight: 600,
-                              color: '#475569',
-                              fontSize: '0.875rem'
-                            }}>
-                              OP
-                            </TableCell>
-                            <TableCell sx={{
-                              borderBottom: '2px solid #e2e8f0',
-                              fontWeight: 600,
-                              color: '#475569',
-                              fontSize: '0.875rem'
-                            }}>
-                              Fecha Recepción
-                            </TableCell>
-                            <TableCell sx={{
-                              borderBottom: '2px solid #e2e8f0',
-                              fontWeight: 600,
-                              color: '#475569',
-                              fontSize: '0.875rem'
-                            }}>
-                              Fecha Programada
-                            </TableCell>
-                            <TableCell sx={{
-                              borderBottom: '2px solid #e2e8f0',
-                              fontWeight: 600,
-                              color: '#475569',
-                              fontSize: '0.875rem'
-                            }}>
-                              Fecha Despacho
-                            </TableCell>
-                            <TableCell sx={{
-                              borderBottom: '2px solid #e2e8f0',
-                              fontWeight: 600,
-                              color: '#475569',
-                              fontSize: '0.875rem'
-                            }}>
-                              Acciones
-                            </TableCell>
-                          </TableRow>
-                        </TableHead>
-                        <TableBody>
-                          {ordenesProveedor.map((op, index) => (
-                            <TableRow
-                              key={op.id}
-                              sx={{
-                                '&:hover': { bgcolor: '#f8fafc' },
-                                bgcolor: index % 2 === 0 ? '#ffffff' : '#fafafa'
-                              }}
-                            >
-                              <TableCell sx={{
-                                borderBottom: '1px solid #f1f5f9',
-                                fontWeight: 500,
-                                color: '#1e293b'
-                              }}>
-                                {op.codigoOp}
-                              </TableCell>
-                              <TableCell sx={{
-                                borderBottom: '1px solid #f1f5f9',
-                                color: '#475569'
-                              }}>
-                                {formattedDate(op.fechaRecepcion)}
-                              </TableCell>
-                              <TableCell sx={{
-                                borderBottom: '1px solid #f1f5f9',
-                                color: '#475569'
-                              }}>
-                                {formattedDate(op.fechaProgramada)}
-                              </TableCell>
-                              <TableCell sx={{
-                                borderBottom: '1px solid #f1f5f9',
-                                color: '#475569'
-                              }}>
-                                {formattedDate(op.fechaDespacho)}
-                              </TableCell>
-                              <TableCell sx={{ borderBottom: '1px solid #f1f5f9' }}>
-                                <Button
-                                  variant="contained"
-                                  color="primary"
-                                  onClick={() => handlePrintOP(op)}
-                                  size="small"
-                                  sx={{
-                                    minWidth: 'auto',
-                                    px: 1.5,
-                                    py: 0.5
-                                  }}
-                                >
-                                  <Print sx={{ fontSize: 18 }} />
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </TableContainer>
-                  </Box>
-                )}
-              </StepItemContent>
+
+                  {loading ? (
+                    <ProviderOrdersTableSkeleton />
+                  ) : ordenesProveedor.length === 0 ? (
+                    <Box sx={{
+                      textAlign: 'center',
+                      py: 4,
+                      bgcolor: '#f8fafc',
+                      borderRadius: 2,
+                      border: '2px dashed #e2e8f0'
+                    }}>
+                      <AssignmentIcon sx={{ fontSize: 48, color: '#cbd5e1', mb: 2 }} />
+                      <Typography variant="h6" sx={{ color: '#64748b', mb: 1 }}>
+                        No hay órdenes de proveedor
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: '#94a3b8', mb: 3 }}>
+                        No se encontraron órdenes de proveedor registradas para esta orden de compra
+                      </Typography>
+                    </Box>
+                  ) : (
+                    <ProviderOrdersTableComponent
+                      ordenesProveedor={ordenesProveedor}
+                      handlePrintOP={handlePrintOP}
+                    />
+                  )}
+                </CardContent>
+              </Card>
 
               {/* Sección Facturación - EDITABLE */}
               <BillingSection
@@ -1191,9 +1139,6 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                 loading={loading}
                 onSave={saveBilling}
                 isRefactoring={isRefactoring}
-                onNotaCreditoFileChange={setNotaCreditoFile}
-                onNotaCreditoTextoChange={setNotaCreditoTexto}
-                notaCreditoTexto={notaCreditoTexto}
               />
 
               {/* btn de submit */}
