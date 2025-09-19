@@ -56,6 +56,10 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
   const [isDuplicating, setIsDuplicating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingBilling, setEditingBilling] = useState<BillingProps | null>(null);
+  const [isRefactoring, setIsRefactoring] = useState(false);
+  const [refactoringBilling, setRefactoringBilling] = useState<BillingProps | null>(null);
+  const [notaCreditoFile, setNotaCreditoFile] = useState<string | null>(null);
+  const [notaCreditoTexto, setNotaCreditoTexto] = useState<string>('');
 
   // Estados para documentos
   const [cartaCciUrl, setCartaCciUrl] = useState<string | null>(null);
@@ -214,84 +218,6 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
     }
   };
 
-  const duplicateBilling = (billing: BillingProps) => {
-    setIsDuplicating(true);
-    setIsEditing(false);
-    setEditingBilling(null);
-    setFacturacionId(null); // Limpiar el ID para crear una nueva facturación
-
-    // Llenar el formulario con los datos de la facturación seleccionada
-    let fechaFactura = undefined;
-    if (billing.fechaFactura) {
-      try {
-        if (typeof billing.fechaFactura === 'string') {
-          fechaFactura = dayjs(billing.fechaFactura);
-        } else {
-          fechaFactura = dayjs(billing.fechaFactura);
-        }
-        if (!fechaFactura.isValid()) {
-          fechaFactura = undefined;
-        }
-      } catch (error) {
-        fechaFactura = undefined;
-      }
-    }
-
-    form.setFieldsValue({
-      numeroFactura: '', // Dejar vacío para que el usuario ingrese uno nuevo
-      fechaFactura: dayjs(), // Fecha actual por defecto
-      grr: billing.grr || '',
-      porcentajeRetencion: billing.retencion || 0,
-      porcentajeDetraccion: billing.detraccion || 0,
-      formaEnvioFactura: billing.formaEnvioFactura || '',
-      estado: '1' // Estado por defecto
-    });
-
-    notification.success({
-      message: 'Facturación duplicada',
-      description: 'Los datos han sido copiados. Modifique los campos necesarios y guarde.'
-    });
-  };
-
-  const editBilling = (billing: BillingProps) => {
-    setIsEditing(true);
-    setIsDuplicating(false);
-    setEditingBilling(billing);
-    setFacturacionId(billing.facturacionId || null);
-
-    // Llenar el formulario con los datos de la facturación para editar
-    let fechaFactura = undefined;
-    if (billing.fechaFactura) {
-      try {
-        if (typeof billing.fechaFactura === 'string') {
-          fechaFactura = dayjs(billing.fechaFactura);
-        } else {
-          fechaFactura = dayjs(billing.fechaFactura);
-        }
-        if (!fechaFactura.isValid()) {
-          fechaFactura = undefined;
-        }
-      } catch (error) {
-        fechaFactura = undefined;
-      }
-    }
-
-    form.setFieldsValue({
-      numeroFactura: billing.factura || '',
-      fechaFactura: fechaFactura,
-      grr: billing.grr || '',
-      porcentajeRetencion: billing.retencion || 0,
-      porcentajeDetraccion: billing.detraccion || 0,
-      formaEnvioFactura: billing.formaEnvioFactura || '',
-      estado: billing.estadoFacturacion ? billing.estadoFacturacion.toString() : '1'
-    });
-
-    notification.info({
-      message: 'Editando facturación',
-      description: 'Modifique los campos necesarios y guarde los cambios.'
-    });
-  };
-
   const createNewBilling = useCallback(() => {
     setIsEditing(false);
     setIsDuplicating(false);
@@ -313,6 +239,31 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
     notification.info({
       message: 'Nueva facturación',
       description: 'Complete los campos y guarde para crear una nueva facturación.'
+    });
+  }, [form]);
+
+  const handleRefacturar = useCallback((billing: BillingProps) => {
+    setIsRefactoring(true);
+    setRefactoringBilling(billing);
+    setIsEditing(false);
+    setIsDuplicating(false);
+    setEditingBilling(null);
+    setFacturacionId(null);
+
+    // Rellenar el formulario con los datos de la facturación seleccionada
+    form.setFieldsValue({
+      numeroFactura: billing.factura,
+      fechaFactura: billing.fechaFactura ? dayjs(billing.fechaFactura) : dayjs(),
+      grr: billing.grr,
+      porcentajeRetencion: billing.retencion,
+      porcentajeDetraccion: billing.detraccion,
+      formaEnvioFactura: billing.formaEnvioFactura,
+      estado: billing.estadoFacturacion?.toString() || '1'
+    });
+
+    notification.info({
+      message: 'Refacturando',
+      description: 'Los campos se han rellenado con los datos de la facturación seleccionada. Complete la nota de crédito y guarde.'
     });
   }, [form]);
 
@@ -393,6 +344,41 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
         setIsEditing(false);
         setEditingBilling(null);
         setFacturacionId(null);
+
+        // Limpiar el formulario
+        form.resetFields();
+        form.setFieldsValue({
+          fechaFactura: dayjs(),
+          estado: '1'
+        });
+      } else if (isRefactoring) {
+        // Crear nueva facturación de refacturación
+        const billingData = {
+          ordenCompraId: sale.id,
+          factura: values.numeroFactura || '',
+          fechaFactura: values.fechaFactura ? values.fechaFactura.toDate() : null,
+          grr: values.grr || '',
+          retencion: values.porcentajeRetencion || 0,
+          detraccion: values.porcentajeDetraccion || 0,
+          formaEnvioFactura: values.formaEnvioFactura || '',
+          estado: parseInt(values.estado) || 1,
+          notaCreditoArchivo: notaCreditoFile,
+          notaCreditoTexto: notaCreditoTexto
+        };
+
+        const newBilling = await createBilling(billingData);
+
+        notification.success({
+          message: 'Refacturación creada',
+          description: 'La refacturación se ha guardado correctamente con la nota de crédito'
+        });
+
+        // Recargar el historial y limpiar el estado
+        await loadBillingHistory();
+        setIsRefactoring(false);
+        setRefactoringBilling(null);
+        setNotaCreditoFile(null);
+        setNotaCreditoTexto('');
 
         // Limpiar el formulario
         form.resetFields();
@@ -626,16 +612,6 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                 <ReceiptIcon sx={{ fontSize: 24 }} />
                 Historial de Facturaciones
               </Typography>
-              <Button
-                variant="contained"
-                sx={{
-                  bgcolor: '#667eea',
-                  '&:hover': { bgcolor: '#5a67d8' }
-                }}
-                onClick={onCreateNew}
-              >
-                Nueva Facturación
-              </Button>
             </Box>
 
             {billingHistory.length > 0 ? (
@@ -654,6 +630,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                       <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Retención</TableCell>
                       <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Detracción</TableCell>
                       <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Creado</TableCell>
+                      <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Refacturar</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -684,6 +661,15 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                         <TableCell sx={{ color: '#64748b', fontSize: '0.875rem' }}>
                           {formatRelativeTime(billing.createdAt)}
                         </TableCell>
+                        <TableCell>
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            onClick={() => handleRefacturar(billing)}
+                          >
+                            Refacturar
+                          </Button>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -702,14 +688,10 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                   No hay facturaciones
                 </Typography>
                 <Typography variant="body2" sx={{ color: '#94a3b8', mb: 3 }}>
-                  Crea tu primera facturación usando el botón "Nueva Facturación"
+                  Complete el formulario para crear su primera facturación
                 </Typography>
               </Box>
             )}
-
-            <Typography variant="body2" sx={{ color: '#64748b', mt: 2, fontStyle: 'italic' }}>
-              Historial de facturaciones creadas para esta orden de compra
-            </Typography>
           </CardContent>
         </Card>
       </>
@@ -722,14 +704,19 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
     isDuplicating: boolean;
     loading: boolean;
     onSave: () => void;
+    isRefactoring: boolean;
+    onNotaCreditoFileChange: (fileUrl: string | null) => void;
+    onNotaCreditoTextoChange: (texto: string) => void;
+    notaCreditoTexto: string;
   }
 
   const BillingFormSection = React.memo<BillingFormSectionProps>(({
-    form,
     isEditing,
     isDuplicating,
-    loading,
-    onSave
+    isRefactoring,
+    onNotaCreditoFileChange,
+    onNotaCreditoTextoChange,
+    notaCreditoTexto
   }) => {
     return (
       <Card
@@ -757,58 +744,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
               }}
             >
               <ReceiptIcon sx={{ fontSize: 32, color: '#667eea' }} />
-              FACTURACIÓN
-              {isEditing && (
-                <Typography
-                  component="span"
-                  sx={{
-                    fontSize: '0.8rem',
-                    fontWeight: 400,
-                    color: '#667eea',
-                    backgroundColor: '#e0e7ff',
-                    px: 1,
-                    py: 0.5,
-                    borderRadius: 1,
-                    ml: 1
-                  }}
-                >
-                  EDITANDO
-                </Typography>
-              )}
-              {isDuplicating && (
-                <Typography
-                  component="span"
-                  sx={{
-                    fontSize: '0.8rem',
-                    fontWeight: 400,
-                    color: '#10b981',
-                    backgroundColor: '#d1fae5',
-                    px: 1,
-                    py: 0.5,
-                    borderRadius: 1,
-                    ml: 1
-                  }}
-                >
-                  DUPLICANDO
-                </Typography>
-              )}
-              {!isEditing && !isDuplicating && (
-                <Typography
-                  component="span"
-                  sx={{
-                    fontSize: '0.8rem',
-                    fontWeight: 400,
-                    color: '#f59e0b',
-                    backgroundColor: '#fef3c7',
-                    px: 1,
-                    py: 0.5,
-                    borderRadius: 1,
-                    ml: 1
-                  }}
-                >
-                  NUEVA
-                </Typography>
-              )}
+              {isRefactoring ? 'REFACTURACIÓN' : 'FACTURACIÓN'}
             </Typography>
           </Box>
 
@@ -866,7 +802,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
           <Grid container spacing={3}>
             <Grid size={{ xs: 12, md: 4 }}>
               <Typography sx={{ color: '#667eea', mb: 1, fontSize: '0.875rem', fontWeight: 600 }}>
-                Porcentaje de Retención
+                Retención
               </Typography>
               <Form.Item
                 name="porcentajeRetencion"
@@ -887,7 +823,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
 
             <Grid size={{ xs: 12, md: 4 }}>
               <Typography sx={{ color: '#667eea', mb: 1, fontSize: '0.875rem', fontWeight: 600 }}>
-                Porcentaje de Detracción
+                Detracción
               </Typography>
               <Form.Item
                 name="porcentajeDetraccion"
@@ -923,6 +859,31 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
               </Form.Item>
             </Grid>
           </Grid>
+
+          {/* Campo Nota de Crédito - Solo visible al refacturar */}
+          {isRefactoring && (
+            <Grid container spacing={3} sx={{ mt: 1 }}>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <Typography sx={{ color: '#667eea', mb: 1, fontSize: '0.875rem', fontWeight: 600 }}>
+                  Archivo de Nota de Crédito
+                </Typography>
+                <SimpleFileUpload
+                  onChange={(fileUrl) => onNotaCreditoFileChange(fileUrl)}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <Typography sx={{ color: '#667eea', mb: 1, fontSize: '0.875rem', fontWeight: 600 }}>
+                  Texto de Nota de Crédito
+                </Typography>
+                <InputAntd
+                  placeholder="Ingrese el texto de la nota de crédito"
+                  value={notaCreditoTexto}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => onNotaCreditoTextoChange(e.target.value)}
+                  size="large"
+                />
+              </Grid>
+            </Grid>
+          )}
         </CardContent>
       </Card>
     );
@@ -1229,6 +1190,10 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                 isDuplicating={isDuplicating}
                 loading={loading}
                 onSave={saveBilling}
+                isRefactoring={isRefactoring}
+                onNotaCreditoFileChange={setNotaCreditoFile}
+                onNotaCreditoTextoChange={setNotaCreditoTexto}
+                notaCreditoTexto={notaCreditoTexto}
               />
 
               {/* btn de submit */}
@@ -1238,11 +1203,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                 gap: 2,
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                mt: 4,
-                p: 3,
                 bgcolor: '#f8fafc',
-                borderRadius: 2,
-                border: '1px solid #e0e0e0'
               }}>
                 <Button
                   variant="outlined"
