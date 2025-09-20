@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { heroUIColors } from '@/styles/theme/heroui-colors';
 import ContactsDrawer from '@/components/ContactsDrawer';
 import { ContactTypeEnum } from '@/services/contacts/contacts.enum';
+import { ESTADO_ROL_COLORS, ESTADO_ROL_LABELS } from '@/constants/estado.constants';
 
 interface SalesTableProps {
   data: SaleProps[];
@@ -52,7 +53,6 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onReload, isPriv
     return statusMap[normalizedStatus] || 'incompleto';
   };
 
-  // ✅ Función para formatear fuentes de financiamiento
   const formatFuentesFinanciamiento = (multipleFuentes: boolean | null | undefined): string => {
     if (multipleFuentes === true) return 'Múltiples fuentes';
     return 'Una fuente';
@@ -82,7 +82,6 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onReload, isPriv
                             ${item.provinciaEntrega ?? ''}
                             ${item.distritoEntrega ?? ''} -
                             ${item.referenciaEntrega ?? ''}`,
-        // ✅ Usar estado normalizado para ambos campos
         estado_venta: normalizedStatus,
         estado_indicador: normalizedStatus,
         fuentes_financiamiento: formatFuentesFinanciamiento(item.multipleFuentesFinanciamiento),
@@ -91,28 +90,29 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onReload, isPriv
     });
   }, [data]);
 
-  // ✅ Función corregida con estados del backend
   const getStatusBackgroundColor = (status: string) => {
-    const statusColors: Record<string, string> = {
-      incompleto: heroUIColors.warning[500],    // Amarillo/Naranja
-      pendiente: heroUIColors.secondary[500],   // Azul
-      completo: heroUIColors.success[500],      // ✅ Verde - "completo" no "completado"
-      anulado: heroUIColors.error[500],         // Rojo
+    const statusMapping: Record<string, keyof typeof ESTADO_ROL_COLORS> = {
+      completo: 'COMPLETADO',
+      incompleto: 'EN_PROCESO',
+      pendiente: 'PENDIENTE',
+      anulado: 'CANCELADO',
     };
 
-    return statusColors[status] || heroUIColors.neutral[400]; // Gris por defecto
+    const estadoRolKey = statusMapping[status] || 'PENDIENTE';
+    return ESTADO_ROL_COLORS[estadoRolKey];
   };
 
-  // ✅ Función para labels legibles
   const getStatusLabel = (status: string) => {
-    const statusLabels: Record<string, string> = {
-      incompleto: 'Incompleto',
-      pendiente: 'Pendiente',
-      completo: 'Completo',      // ✅ Label correcto
-      anulado: 'Anulado',
+    // Mapear valores del backend a EstadoRol
+    const statusMapping: Record<string, keyof typeof ESTADO_ROL_LABELS> = {
+      incompleto: 'EN_PROCESO',
+      pendiente: 'PENDIENTE',
+      completo: 'COMPLETADO',
+      anulado: 'CANCELADO',
     };
 
-    return statusLabels[status] || 'Desconocido';
+    const estadoRolKey = statusMapping[status] || 'PENDIENTE';
+    return ESTADO_ROL_LABELS[estadoRolKey];
   };
 
   const columns: Array<AntColumnType<any>> = [

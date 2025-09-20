@@ -75,12 +75,12 @@ const TrackingsPage = () => {
             aria-label="tabs de seguimientos"
           >
             <Tab
-              label={`Ordenes de Compra (${sales.length})`}
+              label={`Tabla de Órdenes de Compra`}
               icon={<AccountBalance />}
               iconPosition="start"
             />
             <Tab
-              label={`Ordenes de Proveedor (${ops.length})`}
+              label={`Tabla OP`}
               icon={<Assignment />}
               iconPosition="start"
             />

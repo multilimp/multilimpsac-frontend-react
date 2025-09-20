@@ -62,12 +62,12 @@ const SalesPage = () => {
             aria-label="tabs de ventas"
           >
             <Tab
-              label={`Ventas al Estado (${ventasEstado.length})`}
+              label={`Ventas al Estado`}
               icon={<AccountBalance />}
               iconPosition="start"
             />
             <Tab
-              label={`Ventas Privadas (${ventasPrivadas.length})`}
+              label={`Ventas Privadas`}
               icon={<Business />}
               iconPosition="start"
             />

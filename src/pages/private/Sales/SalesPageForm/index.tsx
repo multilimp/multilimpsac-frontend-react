@@ -14,6 +14,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { SaleProps } from '@/services/sales/sales';
 import { parseJSON } from '@/utils/functions';
 import { Save } from '@mui/icons-material';
+import { estadoVentaOptions, estadoBgMap } from '@/constants/estado.constants';
 
 const SalesPageForm = () => {
   const { companies, clients, saleInputValues, setSaleInputValues, setBlackBarKey, obtainSales, setSelectedSale } = useGlobalInformation();
@@ -444,20 +445,7 @@ const SalesPageForm = () => {
     }
   };
 
-  const estadoVentaOptions = [
-    { value: 'completo', label: 'Completo' },
-    { value: 'procesando', label: 'En proceso' },
-    { value: 'cancelado', label: 'Cancelado' },
-  ];
-
-  // Sistema de colores para estados
-  const estadoBgMap: Record<string, string> = {
-    completo: '#10B981',      // Verde éxito
-    procesando: '#F59E0B',    // Naranja proceso
-    cancelado: '#EF4444',     // Rojo error
-  };
-
-  const [currentEstadoValue, setCurrentEstadoValue] = useState<string>('procesando');
+  // Estados para el formulario
 
   return (
     <Box>
@@ -522,12 +510,11 @@ const SalesPageForm = () => {
                   <Form.Item
                     name="estadoVenta"
                     style={{ marginBottom: 0 }}
-                    initialValue="procesando"
+                    initialValue="incompleto"
                   >
                     <Select
                       placeholder="Seleccione el estado"
                       size="large"
-                      onChange={(value) => setCurrentEstadoValue(value)}
                       style={{
                         maxWidth: 220,
                         borderRadius: 12,
