@@ -35,11 +35,13 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { getPagosPorEstado, PagosPorEstadoResponse, PagoPorEstado } from '@/services/notificaciones/notificaciones.request';
+import { getPagosPorEstado, getPagosUrgentes, getPagosPendientes, PagosPorEstadoResponse, PagosUrgentesResponse, PagoPorEstado, PagoUrgente } from '@/services/notificaciones/notificaciones.request';
 
 export const useDashboardTesoreria = () => {
     const [loading, setLoading] = useState(false);
     const [data, setData] = useState<PagosPorEstadoResponse | null>(null);
+    const [pagosUrgentesData, setPagosUrgentesData] = useState<PagosUrgentesResponse | null>(null);
+    const [pagosPendientesData, setPagosPendientesData] = useState<PagosUrgentesResponse | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
 
@@ -60,10 +62,54 @@ export const useDashboardTesoreria = () => {
         }
     }, []);
 
+    // Función para cargar pagos urgentes específicamente
+    const fetchPagosUrgentes = useCallback(async () => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            const response = await getPagosUrgentes();
+            setPagosUrgentesData(response);
+            setLastUpdate(new Date());
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Error al cargar pagos urgentes');
+            console.error('Error al cargar pagos urgentes:', err);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    // Función para cargar pagos pendientes específicamente
+    const fetchPagosPendientes = useCallback(async () => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            const response = await getPagosPendientes();
+            setPagosPendientesData(response);
+            setLastUpdate(new Date());
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Error al cargar pagos pendientes');
+            console.error('Error al cargar pagos pendientes:', err);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
     // Función para refrescar manualmente
     const refresh = useCallback(() => {
         fetchDashboard();
     }, [fetchDashboard]);
+
+    // Función para refrescar pagos urgentes específicamente
+    const refreshPagosUrgentes = useCallback(() => {
+        fetchPagosUrgentes();
+    }, [fetchPagosUrgentes]);
+
+    // Función para refrescar pagos pendientes específicamente
+    const refreshPagosPendientes = useCallback(() => {
+        fetchPagosPendientes();
+    }, [fetchPagosPendientes]);
 
     // Cargar datos al montar el componente
     useEffect(() => {
@@ -100,6 +146,50 @@ export const useDashboardTesoreria = () => {
         return data?.data.urgentes.filter(pago => pago.tipo === 'VENTA_PRIVADA') || [];
     }, [data]);
 
+    // Memoización de datos de pagos urgentes
+    const transportesUrgentesDirectos = useMemo((): PagoUrgente[] => {
+        return pagosUrgentesData?.data.transportes || [];
+    }, [pagosUrgentesData]);
+
+    const ordenesProveedorUrgentes = useMemo((): PagoUrgente[] => {
+        return pagosUrgentesData?.data.ventasPrivadas || [];
+    }, [pagosUrgentesData]);
+
+    // Memoización de datos de pagos pendientes
+    const transportesPendientesDirectos = useMemo((): PagoUrgente[] => {
+        return pagosPendientesData?.data.transportes || [];
+    }, [pagosPendientesData]);
+
+    const ordenesProveedorPendientes = useMemo((): PagoUrgente[] => {
+        return pagosPendientesData?.data.ventasPrivadas || [];
+    }, [pagosPendientesData]);
+
+    // Estadísticas de pagos urgentes
+    const estadisticasUrgentes = useMemo(() => {
+        if (!pagosUrgentesData?.estadisticas) return null;
+
+        return {
+            totalUrgentes: pagosUrgentesData.estadisticas.totalUrgentes,
+            totalTransportes: pagosUrgentesData.estadisticas.totalTransportes,
+            totalOrdenesProveedor: pagosUrgentesData.estadisticas.totalVentas,
+            montoTotal: pagosUrgentesData.estadisticas.montoTotal,
+            tiempoRespuesta: pagosUrgentesData.tiempoRespuesta || 0,
+        };
+    }, [pagosUrgentesData]);
+
+    // Estadísticas de pagos pendientes
+    const estadisticasPendientes = useMemo(() => {
+        if (!pagosPendientesData?.estadisticas) return null;
+
+        return {
+            totalPendientes: pagosPendientesData.estadisticas.totalUrgentes,
+            totalTransportes: pagosPendientesData.estadisticas.totalTransportes,
+            totalOrdenesProveedor: pagosPendientesData.estadisticas.totalVentas,
+            montoTotal: pagosPendientesData.estadisticas.montoTotal,
+            tiempoRespuesta: pagosPendientesData.tiempoRespuesta || 0,
+        };
+    }, [pagosPendientesData]);
+
     // Memoización de estadísticas calculadas
     const estadisticasCalculadas = useMemo(() => {
         const totalPagos = (data?.estadisticas.pendientes.total || 0) + (data?.estadisticas.urgentes.total || 0);
@@ -118,17 +208,31 @@ export const useDashboardTesoreria = () => {
         // Estados principales
         loading,
         data,
+        pagosUrgentesData,
+        pagosPendientesData,
         error,
         lastUpdate,
 
         // Acciones
         refresh,
+        refreshPagosUrgentes,
+        refreshPagosPendientes,
 
         // Datos procesados (memoizados)
         transportesPendientes,
         transportesUrgentes,
         ventasPrivadasPendientes,
         ventasPrivadasUrgentes,
+
+        // Datos de pagos urgentes directos
+        transportesUrgentesDirectos,
+        ordenesProveedorUrgentes,
+        estadisticasUrgentes,
+
+        // Datos de pagos pendientes directos
+        transportesPendientesDirectos,
+        ordenesProveedorPendientes,
+        estadisticasPendientes,
 
         // Estadísticas (memoizadas)
         estadisticas: data?.estadisticas,

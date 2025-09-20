@@ -70,6 +70,7 @@ export interface PagosUrgentesResponse {
         ventasPrivadas: PagoUrgente[];
     };
     estadisticas: EstadisticasPagosUrgentes;
+    tiempoRespuesta?: number;
 }
 
 export interface PagosPorEstadoResponse {
@@ -81,13 +82,13 @@ export interface PagosPorEstadoResponse {
     estadisticas: EstadisticasPorEstado;
 }
 
-// Servicio para obtener pagos urgentes
-export const getPagosUrgentes = async (): Promise<PagosUrgentesResponse> => {
+// Servicio para obtener pagos pendientes
+export const getPagosPendientes = async (): Promise<PagosUrgentesResponse> => {
     try {
-        const response = await apiClient.get('/tesoreria/pagos-urgentes');
+        const response = await apiClient.get('/tesoreria/pagos-pendientes');
         return response.data;
     } catch (error) {
-        console.error('Error al obtener pagos urgentes:', error);
+        console.error('Error al obtener pagos pendientes:', error);
         throw error;
     }
 };
