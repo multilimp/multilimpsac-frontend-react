@@ -8,18 +8,32 @@ import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 import { useAppContext } from '@/context';
 import { PermissionsEnum } from '@/services/users/permissions.enum';
 import TreasurysTable from './components/TreasurysTable';
+import SalesTable from './components/SalesTable';
 import ProviderOrdersListDrawer from '../ProviderOrders/components/ProviderOrdersListDrawer';
 import DashboardTesoreria from '@/components/DashboardTesoreria';
 import { ProviderOrderProps } from '@/services/providerOrders/providerOrders';
+import { useNavigate } from 'react-router-dom';
 
 const Treasury = () => {
-  const { providerOrders, loadingProviderOrders, obtainProviderOrders } = useGlobalInformation();
+  const { providerOrders, loadingProviderOrders, obtainProviderOrders, sales, loadingSales, obtainSales } = useGlobalInformation();
   const { user } = useAppContext();
-  const [modal, setModal] = useState<ModalStateProps<ProviderOrderProps>>(null);
+  const navigate = useNavigate();
+  const [modal, setModal] = useState<ModalStateProps<SaleProps>>(null);
   const [activeTab, setActiveTab] = useState<number>(0);
 
   // Verificar permisos de tesorería
   const hasTesoreriaPermission = user?.permisos?.includes(PermissionsEnum.TREASURY);
+
+  // Función para manejar click en OP (abre directamente sin drawer)
+  const handleProviderOrderClick = (order: ProviderOrderProps) => {
+    // Navegar directamente a la página de edición de OP
+    navigate(`/provider-orders/${order.id}?from=treasury`);
+  };
+
+  // Función para manejar click en OC (abre con drawer)
+  const handleSaleOrderClick = (sale: SaleProps) => {
+    setModal({ mode: ModalStateEnum.BOX, data: sale });
+  };
 
   if (!hasTesoreriaPermission) {
     return (
@@ -41,25 +55,45 @@ const Treasury = () => {
             onChange={(_, newValue) => setActiveTab(newValue)}
             aria-label="tabs de tesorería"
           >
-            <Tab label="Gestión de Ventas por OP" />
+            <Tab label="Órdenes de Proveedor (OP)" />
+            <Tab label="Órdenes de Compra (OC)" />
             <Tab label="Dashboard Pagos" />
           </Tabs>
         </Box>
 
-        {/* Tab Panel: Gestión de Ventas */}
+        {/* Tab Panel: Órdenes de Proveedor (OP) */}
         <div
           role="tabpanel"
           hidden={activeTab !== 0}
-          id="tabpanel-ventas"
-          aria-labelledby="tab-ventas"
+          id="tabpanel-op"
+          aria-labelledby="tab-op"
         >
           {activeTab === 0 && (
             <Box sx={{ py: 3 }}>
               <TreasurysTable
                 loading={loadingProviderOrders}
                 data={providerOrders}
-                onRowClick={(order) => setModal({ mode: ModalStateEnum.BOX, data: order })}
+                onRowClick={handleProviderOrderClick}
                 onReload={obtainProviderOrders}
+              />
+            </Box>
+          )}
+        </div>
+
+        {/* Tab Panel: Órdenes de Compra (OC) */}
+        <div
+          role="tabpanel"
+          hidden={activeTab !== 1}
+          id="tabpanel-oc"
+          aria-labelledby="tab-oc"
+        >
+          {activeTab === 1 && (
+            <Box sx={{ py: 3 }}>
+              <SalesTable
+                loading={loadingSales}
+                data={sales}
+                onRowClick={handleSaleOrderClick}
+                onReload={obtainSales}
               />
             </Box>
           )}
@@ -68,11 +102,11 @@ const Treasury = () => {
         {/* Tab Panel: Dashboard */}
         <div
           role="tabpanel"
-          hidden={activeTab !== 1}
+          hidden={activeTab !== 2}
           id="tabpanel-dashboard"
           aria-labelledby="tab-dashboard"
         >
-          {activeTab === 1 && (
+          {activeTab === 2 && (
             <Box sx={{ py: 3 }}>
               <DashboardTesoreria />
             </Box>
