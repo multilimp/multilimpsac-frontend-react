@@ -292,7 +292,10 @@ const DashboardTesoreria: React.FC = () => {
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                 <Box>
                     <Typography variant="h4" component="h1" gutterBottom>
-                        Dashboard de Tesorería - Optimizado ⚡
+                        Dashboard de Tesorería - Solo Optimizado ⚡
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary">
+                        Usando endpoints optimizados con índices de BD
                     </Typography>
                     <Typography variant="body2" color="textSecondary">
                         Última actualización: {lastUpdate.toLocaleTimeString('es-PE')}
@@ -307,7 +310,7 @@ const DashboardTesoreria: React.FC = () => {
                     >
                         {loading ? 'Actualizando...' : 'Actualizar Todo'}
                     </Button>
-                    {activeTab === 2 && (
+                    {activeTab === 0 && (
                         <Button
                             variant="contained"
                             onClick={refreshPagosUrgentes}
@@ -318,7 +321,7 @@ const DashboardTesoreria: React.FC = () => {
                             {loading ? 'Cargando...' : 'Cargar Urgentes Optimizados'}
                         </Button>
                     )}
-                    {activeTab === 3 && (
+                    {activeTab === 1 && (
                         <Button
                             variant="contained"
                             onClick={refreshPagosPendientes}
@@ -347,22 +350,22 @@ const DashboardTesoreria: React.FC = () => {
                     sx={{ borderBottom: 1, borderColor: 'divider' }}
                 >
                     <Tab
-                        label={`Pagos Urgentes (${tabsData.urgentes.length})`}
+                        label={`Pagos Urgentes (${transportesUrgentes?.length || 0})`}
                         icon={<WarningIcon />}
                         iconPosition="start"
                     />
                     <Tab
-                        label={`Pagos Pendientes (${tabsData.pendientes.length})`}
+                        label={`Pagos Pendientes (${transportesPendientes?.length || 0})`}
                         icon={<ClockIcon />}
                         iconPosition="start"
                     />
                     <Tab
-                        label={`Pagos Urgentes Optimizados (${(tabsData.urgentesOptimizados.transportes?.length || 0) + (tabsData.urgentesOptimizados.ordenesProveedor?.length || 0)})`}
+                        label={`Urgentes Optimizados (${(tabsData.urgentesOptimizados.transportes?.length || 0) + (tabsData.urgentesOptimizados.ordenesProveedor?.length || 0)})`}
                         icon={<TrendingUpIcon />}
                         iconPosition="start"
                     />
                     <Tab
-                        label={`Pagos Pendientes Optimizados (${(tabsData.pendientesOptimizados.transportes?.length || 0) + (tabsData.pendientesOptimizados.ordenesProveedor?.length || 0)})`}
+                        label={`Pendientes Optimizados (${(tabsData.pendientesOptimizados.transportes?.length || 0) + (tabsData.pendientesOptimizados.ordenesProveedor?.length || 0)})`}
                         icon={<MoneyIcon />}
                         iconPosition="start"
                     />
@@ -372,7 +375,7 @@ const DashboardTesoreria: React.FC = () => {
                 <Box sx={{ p: 3 }}>
                     {activeTab === 0 && (
                         <PaymentTable
-                            pagos={tabsData.urgentes}
+                            pagos={transportesUrgentes || []}
                             tipo="urgentes"
                             formatCurrency={formatCurrency}
                             formatDate={formatDate}
@@ -381,7 +384,7 @@ const DashboardTesoreria: React.FC = () => {
 
                     {activeTab === 1 && (
                         <PaymentTable
-                            pagos={tabsData.pendientes}
+                            pagos={transportesPendientes || []}
                             tipo="pendientes"
                             formatCurrency={formatCurrency}
                             formatDate={formatDate}

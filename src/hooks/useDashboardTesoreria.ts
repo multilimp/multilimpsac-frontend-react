@@ -35,7 +35,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { getPagosPorEstado, getPagosUrgentes, getPagosPendientes, PagosPorEstadoResponse, PagosUrgentesResponse, PagoPorEstado, PagoUrgente } from '@/services/notificaciones/notificaciones.request';
+import { getPagosPorEstado, getPagosUrgentes, getPagosPendientes, getTodosPagosPorEstado, PagosPorEstadoResponse, PagosUrgentesResponse, PagoPorEstado, PagoUrgente } from '@/services/notificaciones/notificaciones.request';
 
 export const useDashboardTesoreria = () => {
     const [loading, setLoading] = useState(false);
@@ -45,18 +45,39 @@ export const useDashboardTesoreria = () => {
     const [error, setError] = useState<string | null>(null);
     const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
 
-    // Función para cargar los datos
+    // Función para cargar los datos (ahora usando los servicios optimizados directamente)
     const fetchDashboard = useCallback(async () => {
         setLoading(true);
         setError(null);
 
         try {
-            const response = await getPagosPorEstado();
+            const response = await getTodosPagosPorEstado();
             setData(response);
             setLastUpdate(new Date());
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Error al cargar dashboard');
             console.error('Error en dashboard tesorería:', err);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    // Función para cargar pagos por estado específico usando el nuevo endpoint
+    const fetchPagosPorEstado = useCallback(async (estado: 'URGENTE' | 'PENDIENTE') => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            const response = await getPagosPorEstado(estado);
+            if (estado === 'URGENTE') {
+                setPagosUrgentesData(response);
+            } else {
+                setPagosPendientesData(response);
+            }
+            setLastUpdate(new Date());
+        } catch (err) {
+            setError(err instanceof Error ? err.message : `Error al cargar pagos ${estado.toLowerCase()}`);
+            console.error(`Error al cargar pagos ${estado}:`, err);
         } finally {
             setLoading(false);
         }
@@ -110,6 +131,21 @@ export const useDashboardTesoreria = () => {
     const refreshPagosPendientes = useCallback(() => {
         fetchPagosPendientes();
     }, [fetchPagosPendientes]);
+
+    // Función para refrescar pagos por estado usando el nuevo endpoint
+    const refreshPagosPorEstado = useCallback((estado: 'URGENTE' | 'PENDIENTE') => {
+        fetchPagosPorEstado(estado);
+    }, [fetchPagosPorEstado]);
+
+    // Función para refrescar urgentes optimizados
+    const refreshPagosUrgentesOptimizados = useCallback(() => {
+        fetchPagosPorEstado('URGENTE');
+    }, [fetchPagosPorEstado]);
+
+    // Función para refrescar pendientes optimizados
+    const refreshPagosPendientesOptimizados = useCallback(() => {
+        fetchPagosPorEstado('PENDIENTE');
+    }, [fetchPagosPorEstado]);
 
     // Cargar datos al montar el componente
     useEffect(() => {
@@ -217,6 +253,10 @@ export const useDashboardTesoreria = () => {
         refresh,
         refreshPagosUrgentes,
         refreshPagosPendientes,
+        refreshPagosPorEstado,
+        refreshPagosUrgentesOptimizados,
+        refreshPagosPendientesOptimizados,
+        fetchPagosPorEstado,
 
         // Datos procesados (memoizados)
         transportesPendientes,
