@@ -27,6 +27,7 @@ import {
 } from '@mui/icons-material';
 import { useDashboardTesoreria } from '@/hooks/useDashboardTesoreria';
 import { PagoPorEstado } from '@/services/notificaciones/notificaciones.request';
+import { formatCurrency } from '@/utils/functions';
 
 // Componente memoizado para tarjetas de estadísticas
 const StatsCard = React.memo<{
@@ -189,7 +190,6 @@ const DashboardTesoreria: React.FC = () => {
     const {
         loading,
         error,
-        lastUpdate,
         refresh,
         refreshPagosUrgentes,
         refreshPagosPendientes,
@@ -207,14 +207,6 @@ const DashboardTesoreria: React.FC = () => {
     } = useDashboardTesoreria();
 
     const [activeTab, setActiveTab] = useState<number>(0);
-
-    // Memoización de funciones de formateo
-    const formatCurrency = useCallback((amount: number): string => {
-        return new Intl.NumberFormat('es-PE', {
-            style: 'currency',
-            currency: 'PEN',
-        }).format(amount);
-    }, []);
 
     const formatDate = useCallback((date: Date | null): string => {
         if (!date) return 'Sin fecha';
@@ -292,13 +284,7 @@ const DashboardTesoreria: React.FC = () => {
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                 <Box>
                     <Typography variant="h4" component="h1" gutterBottom>
-                        Dashboard de Tesorería - Solo Optimizado ⚡
-                    </Typography>
-                    <Typography variant="body2" color="textSecondary">
-                        Usando endpoints optimizados con índices de BD
-                    </Typography>
-                    <Typography variant="body2" color="textSecondary">
-                        Última actualización: {lastUpdate.toLocaleTimeString('es-PE')}
+                        Dashboard de Tesorería
                     </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', gap: 1 }}>
@@ -357,16 +343,6 @@ const DashboardTesoreria: React.FC = () => {
                     <Tab
                         label={`Pagos Pendientes (${transportesPendientes?.length || 0})`}
                         icon={<ClockIcon />}
-                        iconPosition="start"
-                    />
-                    <Tab
-                        label={`Urgentes Optimizados (${(tabsData.urgentesOptimizados.transportes?.length || 0) + (tabsData.urgentesOptimizados.ordenesProveedor?.length || 0)})`}
-                        icon={<TrendingUpIcon />}
-                        iconPosition="start"
-                    />
-                    <Tab
-                        label={`Pendientes Optimizados (${(tabsData.pendientesOptimizados.transportes?.length || 0) + (tabsData.pendientesOptimizados.ordenesProveedor?.length || 0)})`}
-                        icon={<MoneyIcon />}
                         iconPosition="start"
                     />
                 </Tabs>

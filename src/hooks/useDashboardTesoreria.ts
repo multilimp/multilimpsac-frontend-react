@@ -45,7 +45,6 @@ export const useDashboardTesoreria = () => {
     const [error, setError] = useState<string | null>(null);
     const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
 
-    // Función para cargar los datos (ahora usando los servicios optimizados directamente)
     const fetchDashboard = useCallback(async () => {
         setLoading(true);
         setError(null);

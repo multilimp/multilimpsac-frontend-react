@@ -14,7 +14,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { SaleProps } from '@/services/sales/sales';
 import { parseJSON } from '@/utils/functions';
 import { Save } from '@mui/icons-material';
-import { estadoVentaOptions, estadoBgMap } from '@/constants/estado.constants';
+import { estadoVentaOptions, estadoBgMap } from '@/utils/constants';
 
 const SalesPageForm = () => {
   const { companies, clients, saleInputValues, setSaleInputValues, setBlackBarKey, obtainSales, setSelectedSale } = useGlobalInformation();

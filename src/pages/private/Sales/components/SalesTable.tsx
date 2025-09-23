@@ -1,15 +1,14 @@
 import React, { useMemo, useState } from 'react';
-import { IconButton, Button, Box, Drawer, List, ListItem, ListItemText, Typography, Tooltip } from '@mui/material';
+import { Button, Box, Tooltip } from '@mui/material';
 import { SaleProps } from '@/services/sales/sales';
-import { PictureAsPdf, Visibility, Contacts } from '@mui/icons-material';
+import { Visibility, Contacts } from '@mui/icons-material';
 import { formatCurrency, formattedDate } from '@/utils/functions';
 import { ModalStateEnum } from '@/types/global.enum';
 import AntTable, { AntColumnType } from '@/components/AntTable';
 import { useNavigate } from 'react-router-dom';
-import { heroUIColors } from '@/styles/theme/heroui-colors';
 import ContactsDrawer from '@/components/ContactsDrawer';
 import { ContactTypeEnum } from '@/services/contacts/contacts.enum';
-import { ESTADO_ROL_COLORS, ESTADO_ROL_LABELS } from '@/constants/estado.constants';
+import { ESTADO_ROL_COLORS, ESTADO_ROL_LABELS } from '@/utils/constants';
 
 interface SalesTableProps {
   data: SaleProps[];
