@@ -34,7 +34,7 @@ interface AntTablePropsProps<T> extends Omit<TableProps<T>, 'columns'> {
   data: T[];
   columns: AntColumnType<T>[];
   onReload?: () => void | Promise<void>;
-  hideToolbar?: boolean; // Nueva prop para ocultar elementos del toolbar
+  hideToolbar?: boolean;
 }
 
 const valTypes = (value: any) => ['number', 'string'].includes(typeof value);
@@ -311,9 +311,10 @@ const AntTable = <T extends Record<string, any>>(props: AntTablePropsProps<T>) =
           pagination={{
             position: ['bottomCenter'], // topLeft | topCenter | topRight | bottomLeft | bottomCenter | bottomRight
             showSizeChanger: true,
-            pageSizeOptions: ['10', '20', '50', '100', '250', '500'],
+            pageSizeOptions: ['5', '10', '20', '50', '100', '250', '500'],
             hideOnSinglePage: true,
             showTotal: (total, [from, to]) => `Mostrando del ${from} al ${to} de ${total} registros`,
+            defaultPageSize: 10,
           }}
           {...rest}
         />

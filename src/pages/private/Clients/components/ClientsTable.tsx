@@ -92,7 +92,7 @@ const ClientsTable = ({ data, loading, hideActions, onRecordAction, modalMode, o
         data={data}
         columns={filteredColumns}
         loading={loading}
-        hideToolbar={modalMode} // Ocultar toolbar cuando esté en modo modal
+        hideToolbar={modalMode}
         onReload={onReload}
         onRow={(record) => {
           if (!hideActions) return {};
