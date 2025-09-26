@@ -35,6 +35,7 @@ import SimpleFileUpload from '@/components/SimpleFileUpload';
 import { getBillingByOrdenCompraId, patchBilling, getBillingHistoryByOrdenCompraId, createBilling } from '@/services/billings/billings.request';
 import { formatCurrency, formattedDate } from '@/utils/functions';
 import { ProviderOrderProps } from '@/services/providerOrders/providerOrders';
+import { estadoOptions } from '@/utils/constants';
 import { getOpsByOrdenCompra } from '@/services/trackings/trackings.request';
 import { Icon } from '@mui/material';
 import { printOrdenProveedor } from '@/services/print/print.requests';
@@ -65,6 +66,13 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
   const [cartaCciUrl, setCartaCciUrl] = useState<string | null>(null);
   const [cartaGarantiaUrl, setCartaGarantiaUrl] = useState<string | null>(null);
   const [savingDocuments, setSavingDocuments] = useState(false);
+
+  // Estados para archivos de facturación
+  const [facturaArchivo, setFacturaArchivo] = useState<string | null>(null);
+  const [grrArchivo, setGrrArchivo] = useState<string | null>(null);
+
+  // Estado para el campo estadoFacturacion
+  const [estadoFacturacion, setEstadoFacturacion] = useState<string>('pendiente');
 
   // Estados para el control de cambios
   const changedOCFields = new Set<string>(); // Simulado para compatibilidad
@@ -163,8 +171,15 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
           porcentajeRetencion: latestBilling.retencion || 0,
           porcentajeDetraccion: latestBilling.detraccion || 0,
           formaEnvioFactura: latestBilling.formaEnvioFactura || '',
-          estado: latestBilling.estadoFacturacion ? latestBilling.estadoFacturacion.toString() : '1'
+          estadoFacturacion: latestBilling.estadoFacturacion || 'pendiente',
+          facturaArchivo: latestBilling.facturaArchivo || null,
+          grrArchivo: latestBilling.grrArchivo || null
         });
+
+        // Establecer estados de archivos
+        setFacturaArchivo(latestBilling.facturaArchivo || null);
+        setGrrArchivo(latestBilling.grrArchivo || null);
+        setEstadoFacturacion(String(latestBilling.estadoFacturacion || 'pendiente'));
 
         notification.info({
           message: 'Última facturación cargada',
@@ -208,8 +223,15 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
           porcentajeRetencion: billing.retencion || 0,
           porcentajeDetraccion: billing.detraccion || 0,
           formaEnvioFactura: billing.formaEnvioFactura || '',
-          estado: billing.estadoFacturacion ? billing.estadoFacturacion.toString() : '1'
+          estadoFacturacion: billing.estadoFacturacion || 'pendiente',
+          facturaArchivo: billing.facturaArchivo || null,
+          grrArchivo: billing.grrArchivo || null
         });
+
+        // Establecer estados de archivos
+        setFacturaArchivo(billing.facturaArchivo || null);
+        setGrrArchivo(billing.grrArchivo || null);
+        setEstadoFacturacion(String(billing.estadoFacturacion || 'pendiente'));
       }
     } catch (error) {
       console.error('Error loading existing billing:', error);
@@ -224,16 +246,23 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
     setEditingBilling(null);
     setFacturacionId(null);
 
+    // Limpiar estados de archivos
+    setFacturaArchivo(null);
+    setGrrArchivo(null);
+    setEstadoFacturacion('pendiente');
+
     // Limpiar completamente el formulario
     form.resetFields();
     form.setFieldsValue({
       fechaFactura: dayjs(), // Fecha actual por defecto
-      estado: '1', // Estado por defecto
       numeroFactura: '', // Asegurar que esté vacío
       grr: '',
       porcentajeRetencion: 0,
       porcentajeDetraccion: 0,
-      formaEnvioFactura: ''
+      formaEnvioFactura: '',
+      estadoFacturacion: 'pendiente',
+      facturaArchivo: null,
+      grrArchivo: null
     });
 
     notification.info({
@@ -258,8 +287,15 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
       porcentajeRetencion: billing.retencion,
       porcentajeDetraccion: billing.detraccion,
       formaEnvioFactura: billing.formaEnvioFactura,
-      estado: billing.estadoFacturacion?.toString() || '1'
+      estadoFacturacion: billing.estadoFacturacion || 'pendiente',
+      facturaArchivo: billing.facturaArchivo || null,
+      grrArchivo: billing.grrArchivo || null
     });
+
+    // Establecer estados de archivos
+    setFacturaArchivo(billing.facturaArchivo || null);
+    setGrrArchivo(billing.grrArchivo || null);
+    setEstadoFacturacion(String(billing.estadoFacturacion || 'pendiente'));
 
     notification.info({
       message: 'Refacturando',
@@ -291,7 +327,10 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
           retencion: values.porcentajeRetencion || 0,
           detraccion: values.porcentajeDetraccion || 0,
           formaEnvioFactura: values.formaEnvioFactura || '',
-          estado: parseInt(values.estado) || 1
+          estado: 1,
+          estadoFacturacion: values.estadoFacturacion || 'pendiente',
+          facturaArchivo: facturaArchivo,
+          grrArchivo: grrArchivo
         };
 
         const newBilling = await createBilling(billingData);
@@ -330,7 +369,9 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
         if (values.porcentajeRetencion !== undefined) updateData.retencion = values.porcentajeRetencion;
         if (values.porcentajeDetraccion !== undefined) updateData.detraccion = values.porcentajeDetraccion;
         if (values.formaEnvioFactura !== undefined) updateData.formaEnvioFactura = values.formaEnvioFactura;
-        if (values.estado) updateData.estado = parseInt(values.estado);
+        if (values.estadoFacturacion !== undefined) updateData.estadoFacturacion = values.estadoFacturacion;
+        if (facturaArchivo !== null) updateData.facturaArchivo = facturaArchivo;
+        if (grrArchivo !== null) updateData.grrArchivo = grrArchivo;
 
         await patchBilling(facturacionId, updateData);
 
@@ -345,11 +386,16 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
         setEditingBilling(null);
         setFacturacionId(null);
 
+        // Limpiar estados de archivos
+        setFacturaArchivo(null);
+        setGrrArchivo(null);
+
         // Limpiar el formulario
         form.resetFields();
         form.setFieldsValue({
           fechaFactura: dayjs(),
-          estado: '1'
+          facturaArchivo: null,
+          grrArchivo: null
         });
       } else if (isRefactoring) {
         // Crear nueva facturación de refacturación
@@ -361,9 +407,12 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
           retencion: values.porcentajeRetencion || 0,
           detraccion: values.porcentajeDetraccion || 0,
           formaEnvioFactura: values.formaEnvioFactura || '',
-          estado: parseInt(values.estado) || 1,
+          estado: 1,
+          estadoFacturacion: values.estadoFacturacion || 'pendiente',
           notaCreditoArchivo: values.notaCreditoArchivo,
-          notaCreditoTexto: values.notaCreditoTexto
+          notaCreditoTexto: values.notaCreditoTexto,
+          facturaArchivo: facturaArchivo,
+          grrArchivo: grrArchivo
         };
 
         const newBilling = await createBilling(billingData);
@@ -378,11 +427,16 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
         setIsRefactoring(false);
         setRefactoringBilling(null);
 
+        // Limpiar estados de archivos
+        setFacturaArchivo(null);
+        setGrrArchivo(null);
+
         // Limpiar el formulario
         form.resetFields();
         form.setFieldsValue({
           fechaFactura: dayjs(),
-          estado: '1'
+          facturaArchivo: null,
+          grrArchivo: null
         });
       }
 
@@ -465,17 +519,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
     onLoadHistory: () => void;
   }
 
-  const BillingSection = React.memo<BillingSectionProps>(({
-    sale,
-    billingHistory,
-    loading,
-    isEditing,
-    isDuplicating,
-    form,
-    onCreateNew,
-    onSave,
-    onLoadHistory
-  }) => {
+  const BillingSection = React.memo<BillingSectionProps>(({ billingHistory }) => {
     const formatRelativeTime = (date: string | Date | null | undefined) => {
       if (!date) return 'Sin fecha';
 
@@ -791,7 +835,8 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
         }}
       >
         <CardContent sx={{ p: 4 }}>
-          <Box sx={{ textAlign: 'center', mb: 4, borderBottom: '2px solid #667eea', pb: 2 }}>
+          {/* Header */}
+          <Box sx={{ textAlign: 'center', mb: 4, borderBottom: '2px solid #667eea', pb: 3 }}>
             <Typography
               variant="h4"
               sx={{
@@ -811,146 +856,209 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
             </Typography>
           </Box>
 
-          {/* Primera fila: Factura, Fecha Factura, GRR */}
-          <Grid container spacing={3} sx={{ mb: 3 }}>
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Typography sx={{ color: '#667eea', mb: 1, fontSize: '0.875rem', fontWeight: 600 }}>
-                Factura *
-              </Typography>
-              <Form.Item
-                name="numeroFactura"
-                rules={[{ required: true, message: 'Número de factura requerido' }]}
-                style={{ marginBottom: 0 }}
-              >
-                <InputAntd
-                  placeholder="Ingrese número de factura"
-                  size="large"
-                />
-              </Form.Item>
-            </Grid>
-
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Typography sx={{ color: '#667eea', mb: 1, fontSize: '0.875rem', fontWeight: 600 }}>
-                Fecha de Factura *
-              </Typography>
-              <Form.Item
-                name="fechaFactura"
-                rules={[{ required: true, message: 'Fecha de factura requerida' }]}
-                style={{ marginBottom: 0 }}
-              >
-                <DatePickerAntd
-                  label=""
-                  placeholder="Seleccionar fecha"
-                />
-              </Form.Item>
-            </Grid>
-
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Typography sx={{ color: '#667eea', mb: 1, fontSize: '0.875rem', fontWeight: 600 }}>
-                GRR (Guía de Remisión)
-              </Typography>
-              <Form.Item
-                name="grr"
-                style={{ marginBottom: 0 }}
-              >
-                <InputAntd
-                  placeholder="Ingrese número de GRR"
-                  size="large"
-                />
-              </Form.Item>
-            </Grid>
-          </Grid>
-
-          {/* Segunda fila: Porcentaje Retención, Porcentaje Detracción, Forma de Envío */}
-          <Grid container spacing={3}>
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Typography sx={{ color: '#667eea', mb: 1, fontSize: '0.875rem', fontWeight: 600 }}>
-                Retención
-              </Typography>
-              <Form.Item
-                name="porcentajeRetencion"
-                style={{ marginBottom: 0 }}
-                initialValue={0}
-              >
-                <SelectGeneric
-                  defaultValue={0}
-                  size="large"
-                  style={{ width: '100%' }}
-                  options={[
-                    { value: 0, label: '0%' },
-                    { value: 3, label: '3%' }
-                  ]}
-                />
-              </Form.Item>
-            </Grid>
-
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Typography sx={{ color: '#667eea', mb: 1, fontSize: '0.875rem', fontWeight: 600 }}>
-                Detracción
-              </Typography>
-              <Form.Item
-                name="porcentajeDetraccion"
-                style={{ marginBottom: 0 }}
-                initialValue={0}
-              >
-                <SelectGeneric
-                  defaultValue={0}
-                  size="large"
-                  style={{ width: '100%' }}
-                  options={[
-                    { value: 0, label: '0%' },
-                    { value: 4, label: '4%' },
-                    { value: 9, label: '9%' },
-                    { value: 10, label: '10%' }
-                  ]}
-                />
-              </Form.Item>
-            </Grid>
-
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Typography sx={{ color: '#667eea', mb: 1, fontSize: '0.875rem', fontWeight: 600 }}>
-                Forma de Envío de Factura
-              </Typography>
-              <Form.Item
-                name="formaEnvioFactura"
-                style={{ marginBottom: 0 }}
-              >
-                <InputAntd
-                  placeholder="Ej: Correo electrónico, Físico, etc."
-                  size="large"
-                />
-              </Form.Item>
-            </Grid>
-          </Grid>
-
-          {/* Campo Nota de Crédito - Solo visible al refacturar */}
-          {isRefactoring && (
-            <Grid container spacing={3} sx={{ mt: 1 }}>
-              <Grid size={{ xs: 12, md: 6 }}>
+          {/* Información de Facturación */}
+          <Box sx={{ mb: 4 }}>
+            <Grid container spacing={3}>
+              <Grid size={{ xs: 12, md: 3 }}>
+                <Typography sx={{ color: '#667eea', mb: 1, fontSize: '0.875rem', fontWeight: 600 }}>
+                  Número de Factura *
+                </Typography>
                 <Form.Item
-                  label="Archivo de Nota de Crédito"
-                  name="notaCreditoArchivo"
+                  name="numeroFactura"
+                  rules={[{ required: true, message: 'Número de factura requerido' }]}
+                  style={{ marginBottom: 0 }}
+                >
+                  <InputAntd
+                    placeholder="Ingrese número de factura"
+                    size="large"
+                  />
+                </Form.Item>
+              </Grid>
+
+              <Grid size={{ xs: 12, md: 3 }}>
+                <Typography sx={{ color: '#667eea', mb: 1, fontSize: '0.875rem', fontWeight: 600 }}>
+                  Archivo de Factura
+                </Typography>
+                <Form.Item
+                  name="facturaArchivo"
+                  style={{ marginBottom: 0 }}
                 >
                   <SimpleFileUpload
                     onChange={(fileUrl) => {
-                      form.setFieldsValue({ notaCreditoArchivo: fileUrl });
+                      setFacturaArchivo(fileUrl);
+                      form.setFieldsValue({ facturaArchivo: fileUrl });
                     }}
                   />
                 </Form.Item>
               </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
+
+              <Grid size={{ xs: 12, md: 3 }}>
+                <Typography sx={{ color: '#667eea', mb: 1, fontSize: '0.875rem', fontWeight: 600 }}>
+                  Número de GRR
+                </Typography>
                 <Form.Item
-                  label="Texto de Nota de Crédito"
-                  name="notaCreditoTexto"
-                  rules={[{ required: true, message: 'Por favor ingrese el texto de la nota de crédito' }]}
+                  name="grr"
+                  style={{ marginBottom: 0 }}
                 >
                   <InputAntd
-                    placeholder="Ingrese el texto de la nota de crédito"
+                    placeholder="Ingrese número de GRR"
+                    size="large"
+                  />
+                </Form.Item>
+              </Grid>
+
+              <Grid size={{ xs: 12, md: 3 }}>
+                <Typography sx={{ color: '#667eea', mb: 1, fontSize: '0.875rem', fontWeight: 600 }}>
+                  Archivo de GRR
+                </Typography>
+                <Form.Item
+                  name="grrArchivo"
+                  style={{ marginBottom: 0 }}
+                >
+                  <SimpleFileUpload
+                    onChange={(fileUrl) => {
+                      setGrrArchivo(fileUrl);
+                      form.setFieldsValue({ grrArchivo: fileUrl });
+                    }}
+                  />
+                </Form.Item>
+              </Grid>
+            </Grid>
+          </Box>
+
+          {/* Información de Facturación */}
+          <Box sx={{ mb: 4 }}>
+            <Grid container spacing={3}>
+              <Grid size={{ xs: 12, md: 3 }}>
+                <Typography sx={{ color: '#667eea', mb: 1, fontSize: '0.875rem', fontWeight: 600 }}>
+                  Fecha de Factura *
+                </Typography>
+                <Form.Item
+                  name="fechaFactura"
+                  rules={[{ required: true, message: 'Fecha de factura requerida' }]}
+                  style={{ marginBottom: 0 }}
+                >
+                  <DatePickerAntd
+                    label=""
+                    placeholder="Seleccionar fecha"
+                  />
+                </Form.Item>
+              </Grid>
+
+              <Grid size={{ xs: 12, md: 3 }}>
+                <Typography sx={{ color: '#667eea', mb: 1, fontSize: '0.875rem', fontWeight: 600 }}>
+                  Retención
+                </Typography>
+                <Form.Item
+                  name="porcentajeRetencion"
+                  style={{ marginBottom: 0 }}
+                  initialValue={0}
+                >
+                  <SelectGeneric
+                    defaultValue={0}
+                    size="large"
+                    style={{ width: '100%' }}
+                    options={[
+                      { value: 0, label: '0%' },
+                      { value: 3, label: '3%' }
+                    ]}
+                  />
+                </Form.Item>
+              </Grid>
+
+              <Grid size={{ xs: 12, md: 3 }}>
+                <Typography sx={{ color: '#667eea', mb: 1, fontSize: '0.875rem', fontWeight: 600 }}>
+                  Detracción
+                </Typography>
+                <Form.Item
+                  name="porcentajeDetraccion"
+                  style={{ marginBottom: 0 }}
+                  initialValue={0}
+                >
+                  <SelectGeneric
+                    defaultValue={0}
+                    size="large"
+                    style={{ width: '100%' }}
+                    options={[
+                      { value: 0, label: '0%' },
+                      { value: 4, label: '4%' },
+                      { value: 9, label: '9%' },
+                      { value: 10, label: '10%' }
+                    ]}
+                  />
+                </Form.Item>
+              </Grid>
+
+              <Grid size={{ xs: 12, md: 3 }}>
+                <Typography sx={{ color: '#667eea', mb: 1, fontSize: '0.875rem', fontWeight: 600 }}>
+                  Forma de Envío
+                </Typography>
+                <Form.Item
+                  name="formaEnvioFactura"
+                  style={{ marginBottom: 0 }}
+                >
+                  <InputAntd
+                    placeholder="Ej: Correo electrónico, Físico"
                     size="large"
                   />
                 </Form.Item>
               </Grid>
             </Grid>
+          </Box>
+
+          {/* Nota de Crédito - Solo visible al refacturar */}
+          {isRefactoring && (
+            <Box sx={{ mb: 4 }}>
+              <Typography
+                variant="h6"
+                sx={{
+                  color: '#475569',
+                  fontWeight: 600,
+                  mb: 3,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1
+                }}
+              >
+                🔄 Refacturación
+              </Typography>
+
+              <Box sx={{ p: 3, bgcolor: '#fef3c7', borderRadius: 2, border: '1px solid #fbbf24' }}>
+                <Grid container spacing={3}>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <Typography sx={{ color: '#92400e', mb: 1, fontSize: '0.875rem', fontWeight: 600 }}>
+                      Archivo de Nota de Crédito
+                    </Typography>
+                    <Form.Item
+                      name="notaCreditoArchivo"
+                      style={{ marginBottom: 0 }}
+                    >
+                      <SimpleFileUpload
+                        onChange={(fileUrl) => {
+                          form.setFieldsValue({ notaCreditoArchivo: fileUrl });
+                        }}
+                      />
+                    </Form.Item>
+                  </Grid>
+
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <Typography sx={{ color: '#92400e', mb: 1, fontSize: '0.875rem', fontWeight: 600 }}>
+                      Texto de Nota de Crédito *
+                    </Typography>
+                    <Form.Item
+                      name="notaCreditoTexto"
+                      rules={[{ required: true, message: 'Por favor ingrese el texto de la nota de crédito' }]}
+                      style={{ marginBottom: 0 }}
+                    >
+                      <InputAntd
+                        placeholder="Ingrese el motivo de la refacturación"
+                        size="large"
+                      />
+                    </Form.Item>
+                  </Grid>
+                </Grid>
+              </Box>
+            </Box>
           )}
         </CardContent>
       </Card>
@@ -996,8 +1104,16 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                 }
               >
                 {/* Información Empresarial Minimalista */}
-                <Box sx={{ mb: 3 }}>
+                <Box>
                   {/* Grid minimalista - Exactamente 3 columnas */}
+                  <Typography variant="h6" sx={{
+                    mb: 2, fontWeight: 600, color: '#667eea', display: 'flex',
+                    alignItems: 'center',
+                    gap: 1
+                  }}>
+                    <AssignmentIcon sx={{ fontSize: 24 }} />
+                    Información de la Orden de Compra
+                  </Typography>
                   <Box sx={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(3, 1fr)',
@@ -1150,21 +1266,28 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                 alignItems: 'center',
                 bgcolor: '#f8fafc',
               }}>
-                <Button
-                  variant="outlined"
-                  startIcon={<ArrowBack />}
-                  onClick={handleBack}
-                  sx={{
-                    borderColor: '#d1d5db',
-                    color: '#6b7280',
-                    '&:hover': {
-                      borderColor: '#9ca3af',
-                      backgroundColor: alpha('#f3f4f6', 0.5),
-                    }
-                  }}
-                >
-                  Volver
-                </Button>
+                <Box sx={{ minWidth: 200 }}>
+                  <Typography sx={{ color: '#667eea', mb: 1, fontSize: '0.875rem', fontWeight: 600 }}>
+                    Estado de Facturación
+                  </Typography>
+                  <Form.Item
+                    name="estadoFacturacion"
+                    initialValue="pendiente"
+                    style={{ marginBottom: 0 }}
+                  >
+                    <SelectGeneric
+                      value={estadoFacturacion}
+                      onChange={(value) => {
+                        setEstadoFacturacion(value);
+                        form.setFieldsValue({ estadoFacturacion: value });
+                      }}
+                      placeholder="Seleccionar estado"
+                      size="large"
+                      style={{ width: '100%' }}
+                      options={estadoOptions}
+                    />
+                  </Form.Item>
+                </Box>
 
 
                 <div style={{ display: 'flex', gap: 10 }}>
@@ -1220,8 +1343,6 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                           'Crear Facturación'}
                   </Button>
                 </div>
-
-
               </Box>
             </Stack>
           </Form>

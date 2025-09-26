@@ -33,6 +33,9 @@ export interface BillingProps {
   createdAt?: string;
   // Indica si la facturación ha sido refacturada
   esRefacturacion?: boolean;
+  // Archivos de documentos
+  facturaArchivo?: string | null;
+  grrArchivo?: string | null;
 }
 
 export interface BillingData {
@@ -44,4 +47,6 @@ export interface BillingData {
   detraccion: number;
   formaEnvioFactura: string;
   estado: number;
+  facturaArchivo?: string | null;
+  grrArchivo?: string | null;
 }

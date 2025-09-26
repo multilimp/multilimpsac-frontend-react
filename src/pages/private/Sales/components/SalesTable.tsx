@@ -34,13 +34,13 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onReload, isPriv
 
   // ✅ Función para normalizar estados desde el backend
   const normalizeStatus = (status: string | null | undefined): string => {
-    if (!status) return 'incompleto';
+    if (!status) return 'PENDIENTE';
 
     const statusMap: Record<string, string> = {
       'completo': 'completo',           // ✅ Backend devuelve "completo"
       'completado': 'completo',         // ✅ Normalizar variantes
-      'incompleto': 'incompleto',
-      'incomplete': 'incompleto',
+      'PENDIENTE': 'PENDIENTE',
+      'incomplete': 'PENDIENTE',
       'pendiente': 'pendiente',
       'pending': 'pendiente',
       'anulado': 'anulado',
@@ -49,7 +49,7 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onReload, isPriv
     };
 
     const normalizedStatus = status.toLowerCase().trim();
-    return statusMap[normalizedStatus] || 'incompleto';
+    return statusMap[normalizedStatus] || 'PENDIENTE';
   };
 
   const formatFuentesFinanciamiento = (multipleFuentes: boolean | null | undefined): string => {
@@ -92,7 +92,7 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onReload, isPriv
   const getStatusBackgroundColor = (status: string) => {
     const statusMapping: Record<string, keyof typeof ESTADO_ROL_COLORS> = {
       completo: 'COMPLETADO',
-      incompleto: 'EN_PROCESO',
+      PENDIENTE: 'EN_PROCESO',
       pendiente: 'PENDIENTE',
       anulado: 'CANCELADO',
     };
@@ -104,7 +104,7 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onReload, isPriv
   const getStatusLabel = (status: string) => {
     // Mapear valores del backend a EstadoRol
     const statusMapping: Record<string, keyof typeof ESTADO_ROL_LABELS> = {
-      incompleto: 'EN_PROCESO',
+      PENDIENTE: 'EN_PROCESO',
       pendiente: 'PENDIENTE',
       completo: 'COMPLETADO',
       anulado: 'CANCELADO',

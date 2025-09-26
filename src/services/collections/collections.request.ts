@@ -7,7 +7,7 @@ export const getCollections = async (): Promise<CollectionProps[]> => {
     // Obtenemos las órdenes de compra desde el endpoint de ventas (mismo backend)
     const response = await apiClient.get('/ordenes-compra');
     const ordenesCompra = response.data;
-    
+
     // Transformamos las OCs manteniendo la estructura exacta de ventas
     const collections: CollectionProps[] = ordenesCompra.map((oc: any) => ({
       id: oc.id,
@@ -36,7 +36,7 @@ export const getCollections = async (): Promise<CollectionProps[]> => {
       provinciaEntrega: oc.provinciaEntrega,
       distritoEntrega: oc.distritoEntrega,
       referenciaEntrega: oc.referenciaEntrega,
-      estadoVenta: oc.estadoVenta || 'incompleto',
+      estadoVenta: oc.estadoVenta || 'PENDIENTE',
       documentoOce: oc.documentoOce,
       documentoOcf: oc.documentoOcf,
       // Campos específicos de cobranza
@@ -46,14 +46,14 @@ export const getCollections = async (): Promise<CollectionProps[]> => {
       penalidad: oc.penalidad,
       fechaProximaGestion: oc.fechaProximaGestion,
     }));
-    
+
     // Ordenar por fecha de creación descendente (más recientes primero)
     const sortedCollections = collections.sort((a, b) => {
       const dateA = new Date(a.fechaForm || '').getTime();
       const dateB = new Date(b.fechaForm || '').getTime();
       return dateB - dateA; // Orden descendente
     });
-    
+
     return sortedCollections;
   } catch (error) {
     console.error('Error al obtener collections:', error);
@@ -65,9 +65,9 @@ export const createCollection = async (
 ): Promise<CollectionProps> => {
   try {
     // Por ahora retornamos un mock hasta implementar endpoint de creación
-    const newCollection: CollectionProps = { 
+    const newCollection: CollectionProps = {
       id: Date.now(), // ID temporal
-      ...payload 
+      ...payload
     };
     return newCollection;
   } catch (error) {
@@ -82,7 +82,7 @@ export const updateCollection = async (
 ): Promise<CollectionProps> => {
   try {
     // Por ahora retornamos un mock hasta implementar endpoint de actualización
-    const updatedCollection: CollectionProps = { 
+    const updatedCollection: CollectionProps = {
       ...payload as CollectionProps,
       id // Aseguramos que el ID se mantenga
     };

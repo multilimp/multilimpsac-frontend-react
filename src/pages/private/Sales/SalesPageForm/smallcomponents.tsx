@@ -94,6 +94,14 @@ export const StepItemContent = ({
         {footerContent}
       </Stack>
     ) : null}
-    <Box p={2}>{children}</Box>
+    <Box sx={
+      {
+        padding: 4,
+        bgcolor: 'white',
+        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+        borderBottomLeftRadius: showFooter ? 0 : 16,
+        borderBottomRightRadius: showFooter ? 0 : 16,
+      }
+    }>{children}</Box>
   </Box>
 );

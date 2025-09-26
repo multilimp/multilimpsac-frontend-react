@@ -14,7 +14,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { SaleProps } from '@/services/sales/sales';
 import { parseJSON } from '@/utils/functions';
 import { Save } from '@mui/icons-material';
-import { estadoVentaOptions, estadoBgMap } from '@/utils/constants';
+import { estadoOptions, estadoBgMap } from '@/utils/constants';
 
 const SalesPageForm = () => {
   const { companies, clients, saleInputValues, setSaleInputValues, setBlackBarKey, obtainSales, setSelectedSale } = useGlobalInformation();
@@ -111,7 +111,7 @@ const SalesPageForm = () => {
             regionEntrega: saleData.departamentoEntrega,
             provinciaEntrega: saleData.provinciaEntrega,
             distritoEntrega: saleData.distritoEntrega,
-            estadoVenta: saleData.estadoVenta || 'incompleto',
+            estadoVenta: saleData.estadoVenta || 'PENDIENTE',
             multipleFuentesFinanciamiento: saleData.multipleFuentesFinanciamiento || false,
           };
 
@@ -254,7 +254,7 @@ const SalesPageForm = () => {
           siaf: values.numeroSIAF ? String(values.numeroSIAF) : null,
           etapaSiaf: values.etapaSIAF || null,
           fechaSiaf: values.fechaSIAF ? values.fechaSIAF.toISOString() : null,
-          estadoVenta: values.estadoVenta || 'incompleto',
+          estadoVenta: values.estadoVenta || 'PENDIENTE',
           documentoOce: values.ordenCompraElectronica || null,
           documentoOcf: values.ordenCompraFisica || null,
           codigoOcf: values.codigoOcf || null,
@@ -415,7 +415,7 @@ const SalesPageForm = () => {
           siaf: values.numeroSIAF ? String(values.numeroSIAF) : null,
           etapaSiaf: values.etapaSIAF || null,
           fechaSiaf: values.fechaSIAF ? values.fechaSIAF.toISOString() : null,
-          estadoVenta: values.estadoVenta || 'incompleto',
+          estadoVenta: values.estadoVenta || 'PENDIENTE',
           documentoOce: values.ordenCompraElectronica || null,
           documentoOcf: values.ordenCompraFisica || null,
           codigoOcf: values.codigoOcf || null,
@@ -510,7 +510,7 @@ const SalesPageForm = () => {
                   <Form.Item
                     name="estadoVenta"
                     style={{ marginBottom: 0 }}
-                    initialValue="incompleto"
+                    initialValue="PENDIENTE"
                   >
                     <Select
                       placeholder="Seleccione el estado"
@@ -527,7 +527,7 @@ const SalesPageForm = () => {
                         fontSize: 16,
                       }}
                     >
-                      {estadoVentaOptions.map(option => (
+                      {estadoOptions.map(option => (
                         <Select.Option
                           key={option.value}
                           value={option.value}
