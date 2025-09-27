@@ -1,6 +1,6 @@
 // src/services/billings/billings.requests.ts
 import apiClient from '../apiClient';
-import { BillingData, BillingProps } from './billings.d';
+import { BillingData, BillingProps, BillingUpdateData } from './billings.d';
 
 export const getBillings = async (): Promise<BillingProps[]> => {
   try {
@@ -19,7 +19,7 @@ export const getBillings = async (): Promise<BillingProps[]> => {
       contact: oc.contactoCliente?.telefono,
       registerDate: oc.fechaEmision || new Date().toISOString(),
       maxDeliveryDate: oc.fechaMaxForm || new Date().toISOString(),
-      deliveryDateOC: oc.fechaEntrega || undefined,
+      deliveryDateOC: oc.fechaEntrega || null,
       saleAmount: parseFloat(oc.montoVenta || '0'),
       oce: oc.documentoOce || '',
       ocf: oc.documentoOcf || '',
@@ -69,7 +69,7 @@ export const updateBilling = async (id: number, billingData: Partial<BillingProp
   }
 };
 
-export const patchBilling = async (id: number, billingData: Partial<BillingProps>): Promise<BillingProps> => {
+export const patchBilling = async (id: number, billingData: BillingUpdateData): Promise<BillingProps> => {
   try {
     const response = await apiClient.patch(`/facturacion/${id}`, billingData);
     return response.data;
@@ -103,7 +103,7 @@ export const getBillingByOrdenCompraId = async (ordenCompraId: number): Promise<
 
     return {
       id: facturacion.id,
-      saleId: ordenCompra.id,
+      ordenCompraId: ordenCompra.id,
       clientBusinessName: ordenCompra.cliente?.razonSocial || '',
       clientRuc: ordenCompra.cliente?.ruc || '',
       companyRuc: ordenCompra.empresa?.ruc || '',
@@ -111,26 +111,30 @@ export const getBillingByOrdenCompraId = async (ordenCompraId: number): Promise<
       contact: ordenCompra.contactoCliente?.telefono || '',
       registerDate: ordenCompra.fechaEmision || new Date().toISOString(),
       maxDeliveryDate: ordenCompra.fechaMaxForm || new Date().toISOString(),
-      deliveryDateOC: ordenCompra.fechaEntrega || undefined,
+      deliveryDateOC: ordenCompra.fechaEntrega || null,
       saleAmount: parseFloat(ordenCompra.montoVenta || '0'),
       oce: ordenCompra.documentoOce || '',
       ocf: ordenCompra.documentoOcf || '',
       receptionDate: ordenCompra.fechaEntrega || new Date().toISOString(),
       programmingDate: ordenCompra.fechaMaxForm || new Date().toISOString(),
-      invoiceNumber: facturacion.factura || undefined,
-      invoiceDate: facturacion.fechaFactura || undefined,
-      grr: facturacion.grr || undefined,
+      invoiceNumber: facturacion.factura || null,
+      invoiceDate: facturacion.fechaFactura || null,
+      grr: facturacion.grr || null,
       isRefact: false,
-      status: ordenCompra.estadoActivo ? 'pending' : 'cancelled',
       // Campos específicos de facturación del backend
-      factura: facturacion.factura || undefined,
-      fechaFactura: facturacion.fechaFactura || undefined,
-      retencion: facturacion.retencion || undefined,
-      detraccion: facturacion.detraccion || undefined,
-      formaEnvioFactura: facturacion.formaEnvioFactura || undefined,
-      estadoFacturacion: facturacion.estado || undefined,
+      factura: facturacion.factura || null,
+      fechaFactura: facturacion.fechaFactura || null,
+      retencion: facturacion.retencion || null,
+      detraccion: facturacion.detraccion || null,
+      formaEnvioFactura: facturacion.formaEnvioFactura || null,
+      estadoFacturacion: facturacion.estado || null,
       facturacionId: facturacion.id,
-      esRefacturacion: facturacion.esRefacturacion || false
+      esRefacturacion: facturacion.esRefacturacion || false,
+      // Campos de archivos que faltaban
+      facturaArchivo: facturacion.facturaArchivo || null,
+      grrArchivo: facturacion.grrArchivo || null,
+      notaCreditoArchivo: facturacion.notaCreditoArchivo || null,
+      notaCreditoTexto: facturacion.notaCreditoTexto || null
     };
   } catch (error) {
     console.error('Error al obtener facturación por orden de compra ID:', error);
@@ -181,7 +185,7 @@ export const getBillingHistoryByOrdenCompraId = async (ordenCompraId: number): P
 
     return facturaciones.map((facturacion: any) => ({
       id: facturacion.id,
-      saleId: ordenCompra.id,
+      ordenCompraId: ordenCompra.id,
       clientBusinessName: ordenCompra.cliente?.razonSocial || '',
       clientRuc: ordenCompra.cliente?.ruc || '',
       companyRuc: ordenCompra.empresa?.ruc || '',
@@ -189,27 +193,32 @@ export const getBillingHistoryByOrdenCompraId = async (ordenCompraId: number): P
       contact: ordenCompra.contactoCliente?.telefono || '',
       registerDate: ordenCompra.fechaEmision || new Date().toISOString(),
       maxDeliveryDate: ordenCompra.fechaMaxForm || new Date().toISOString(),
-      deliveryDateOC: ordenCompra.fechaEntrega || undefined,
+      deliveryDateOC: ordenCompra.fechaEntrega || null,
       saleAmount: parseFloat(ordenCompra.montoVenta || '0'),
       oce: ordenCompra.documentoOce || '',
       ocf: ordenCompra.documentoOcf || '',
       receptionDate: ordenCompra.fechaEntrega || new Date().toISOString(),
       programmingDate: ordenCompra.fechaMaxForm || new Date().toISOString(),
-      invoiceNumber: facturacion.factura || undefined,
-      invoiceDate: facturacion.fechaFactura || undefined,
-      grr: facturacion.grr || undefined,
+      invoiceNumber: facturacion.factura || null,
+      invoiceDate: facturacion.fechaFactura || null,
+      grr: facturacion.grr || null,
       isRefact: false,
       status: ordenCompra.estadoActivo ? 'pending' : 'cancelled',
       // Campos específicos de facturación del backend
-      factura: facturacion.factura || undefined,
-      fechaFactura: facturacion.fechaFactura || undefined,
-      retencion: facturacion.retencion || undefined,
-      detraccion: facturacion.detraccion || undefined,
-      formaEnvioFactura: facturacion.formaEnvioFactura || undefined,
-      estadoFacturacion: facturacion.estado || undefined,
+      factura: facturacion.factura || null,
+      fechaFactura: facturacion.fechaFactura || null,
+      retencion: facturacion.retencion || null,
+      detraccion: facturacion.detraccion || null,
+      formaEnvioFactura: facturacion.formaEnvioFactura || null,
+      estadoFacturacion: facturacion.estado || null,
       facturacionId: facturacion.id,
-      createdAt: facturacion.createdAt || undefined,
-      esRefacturacion: facturacion.esRefacturacion || false
+      createdAt: facturacion.createdAt || null,
+      esRefacturacion: facturacion.esRefacturacion || false,
+      // Campos de archivos que faltaban
+      facturaArchivo: facturacion.facturaArchivo || null,
+      grrArchivo: facturacion.grrArchivo || null,
+      notaCreditoArchivo: facturacion.notaCreditoArchivo || null,
+      notaCreditoTexto: facturacion.notaCreditoTexto || null
     }));
   } catch (error) {
     console.error('❌ Backend: Error al obtener historial de facturaciones:', error);
@@ -217,9 +226,20 @@ export const getBillingHistoryByOrdenCompraId = async (ordenCompraId: number): P
   }
 };
 
-export const refacturarBilling = async (id: number, notaCreditoData: { notaCreditoTexto?: string; notaCreditoArchivo?: string }): Promise<BillingProps> => {
+export const refacturarBilling = async (id: number, refacturacionData: {
+  notaCreditoTexto?: string;
+  notaCreditoArchivo?: string;
+  // factura?: string | null;
+  // fechaFactura?: string | null;
+  // grr?: string | null;
+  // retencion?: number | null;
+  // detraccion?: number | null;
+  // formaEnvioFactura?: string | null;
+  // facturaArchivo?: string | null;
+  // grrArchivo?: string | null;
+}): Promise<BillingProps> => {
   try {
-    const response = await apiClient.put(`/facturacion/${id}/refacturar`, notaCreditoData);
+    const response = await apiClient.post(`/facturacion/${id}/refacturar`, refacturacionData);
     return response.data;
   } catch (error) {
     console.error('Error refacturando billing:', error);

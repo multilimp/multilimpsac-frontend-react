@@ -7,36 +7,30 @@ import {
   Card,
   CardContent,
   Button,
+  IconButton,
+  Tooltip,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
   Table,
-  IconButton,
-  Menu,
-  MenuItem,
-  ListItemIcon,
-  ListItemText,
   Chip,
   Dialog,
-  DialogTitle,
   DialogContent,
-  DialogActions,
-  TextField
+  DialogActions
 } from '@mui/material';
 import {
   Receipt as ReceiptIcon,
-  ArrowBack,
   Print,
   Save as SaveIcon,
   Assignment as AssignmentIcon,
   Description as DescriptionIcon,
-  MoreVert as MoreVertIcon,
   Edit as EditIcon,
   Refresh as RefreshIcon,
   Add as AddIcon,
-  Delete as DeleteIcon
+  Delete as DeleteIcon,
+  Visibility as VisibilityIcon
 } from '@mui/icons-material';
 import { notification, Form, Input } from 'antd';
 import Grid from '@mui/material/Grid';
@@ -48,7 +42,7 @@ import { alpha } from '@/styles/theme/heroui-colors';
 import { StepItemContent } from '../../Sales/SalesPageForm/smallcomponents';
 import SelectGeneric from '@/components/selects/SelectGeneric';
 import SimpleFileUpload from '@/components/SimpleFileUpload';
-import { getBillingByOrdenCompraId, patchBilling, getBillingHistoryByOrdenCompraId, createBilling, deleteBilling } from '@/services/billings/billings.request';
+import { getBillingByOrdenCompraId, patchBilling, getBillingHistoryByOrdenCompraId, createBilling, deleteBilling, refacturarBilling } from '@/services/billings/billings.request';
 import { formatCurrency, formattedDate } from '@/utils/functions';
 import { ProviderOrderProps } from '@/services/providerOrders/providerOrders';
 import { estadoOptions, ESTADOS, getEstadoByValue } from '@/utils/constants';
@@ -57,7 +51,7 @@ import { Icon } from '@mui/material';
 import { printOrdenProveedor } from '@/services/print/print.requests';
 import ProviderOrdersTableSkeleton from './ProviderOrdersTableSkeleton';
 import ProviderOrderFormSkeleton from '@/components/ProviderOrderFormSkeleton';
-import { BillingProps } from '@/services/billings/billings';
+import { BillingProps, BillingData, BillingUpdateData } from '@/services/billings/billings.d';
 
 interface BillingFormContentProps {
   sale: SaleProps;
@@ -84,22 +78,15 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
   // Estados para archivos de facturación
   const [facturaArchivo, setFacturaArchivo] = useState<string | null>(null);
   const [grrArchivo, setGrrArchivo] = useState<string | null>(null);
+  const [notaCreditoArchivo, setNotaCreditoArchivo] = useState<string | null>(null);
 
   // Estado para el campo estadoFacturacion
   const [estadoFacturacion, setEstadoFacturacion] = useState<string>('pendiente');
 
   // Estados para el menú de acciones
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [selectedRecord, setSelectedRecord] = useState<BillingProps | null>(null);
-
   // Estados para el modal CRUD
   const [modalOpen, setModalOpen] = useState(false);
-  const [modalMode, setModalMode] = useState<'create' | 'edit' | 'refactor'>('create');
-
-  // Estados para el control de cambios
-  const changedOCFields = new Set<string>(); // Simulado para compatibilidad
-  const savingOC = false; // Simulado para compatibilidad
-  const savingBilling = loading; // Usar el estado de loading existente
+  const [modalMode, setModalMode] = useState<'create' | 'edit' | 'refactor' | 'view'>('create');
 
   useEffect(() => {
     loadOrdenesProveedor();
@@ -176,7 +163,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
     setRefactoringBilling(billing);
     setIsEditing(false);
     setEditingBilling(null);
-    setFacturacionId(null);
+    setFacturacionId(billing.id);
 
     // Rellenar el formulario con los datos de la facturación seleccionada
     form.setFieldsValue({
@@ -200,17 +187,36 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
     });
   }, [form]);
 
-  const handleMenuOpen = useCallback((event: React.MouseEvent<HTMLElement>, billing: BillingProps) => {
-    event.preventDefault();
-    event.stopPropagation();
-    setAnchorEl(event.currentTarget);
-    setSelectedRecord(billing);
-  }, []);
+  const handleViewBilling = useCallback((billing: BillingProps) => {
+    setIsRefactoring(false);
+    setRefactoringBilling(null);
+    setIsEditing(false);
+    setEditingBilling(null);
+    setFacturacionId(billing.id);
 
-  const handleMenuClose = useCallback(() => {
-    setAnchorEl(null);
-    setSelectedRecord(null);
-  }, []);
+    // Rellenar el formulario con los datos de la facturación seleccionada (solo lectura)
+    form.setFieldsValue({
+      numeroFactura: billing.factura,
+      fechaFactura: billing.fechaFactura ? dayjs(billing.fechaFactura) : dayjs(),
+      grr: billing.grr,
+      porcentajeRetencion: billing.retencion,
+      porcentajeDetraccion: billing.detraccion,
+      formaEnvioFactura: billing.formaEnvioFactura,
+      facturaArchivo: billing.facturaArchivo || null,
+      grrArchivo: billing.grrArchivo || null,
+      notaCreditoTexto: billing.notaCreditoTexto || null,
+      notaCreditoArchivo: billing.notaCreditoArchivo || null
+    });
+
+    // Establecer estados de archivos
+    setFacturaArchivo(billing.facturaArchivo || null);
+    setGrrArchivo(billing.grrArchivo || null);
+
+    notification.info({
+      message: 'Visualizando facturación',
+      description: 'Vista de solo lectura de la facturación seleccionada.'
+    });
+  }, [form]);
 
   const handleEditar = useCallback((billing: BillingProps) => {
     setIsEditing(true);
@@ -231,28 +237,11 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
       grrArchivo: billing.grrArchivo || null
     });
 
-    // Establecer estados de archivos
-    setFacturaArchivo(billing.facturaArchivo || null);
-    setGrrArchivo(billing.grrArchivo || null);
-
     notification.info({
       message: 'Editando facturación',
       description: 'Los campos se han rellenado con los datos de la facturación seleccionada. Realice los cambios y guarde.'
     });
   }, [form]);
-
-  const handleMenuRefacturar = useCallback((billing: BillingProps) => {
-    handleRefacturar(billing);
-  }, [handleRefacturar]);
-
-  const handleMenuAction = useCallback((action: 'edit' | 'refacturar', billing: BillingProps) => {
-    if (action === 'edit') {
-      handleEditar(billing);
-    } else if (action === 'refacturar') {
-      handleMenuRefacturar(billing);
-    }
-    handleMenuClose();
-  }, [handleEditar, handleMenuRefacturar]);
 
   // Funciones CRUD para el modal
   const handleOpenCreateModal = useCallback(() => {
@@ -272,6 +261,12 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
     setModalOpen(true);
     handleRefacturar(billing);
   }, [handleRefacturar]);
+
+  const handleOpenViewModal = useCallback((billing: BillingProps) => {
+    setModalMode('view');
+    setModalOpen(true);
+    handleViewBilling(billing);
+  }, []);
 
   const handleCloseModal = useCallback(() => {
     setModalOpen(false);
@@ -302,9 +297,11 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
     }
   }, []);
 
-  const handleBack = useCallback(() => {
-    navigate('/billing');
-  }, [navigate]);
+  const handleViewFile = useCallback((fileUrl: string | null | undefined) => {
+    if (fileUrl) {
+      window.open(fileUrl, '_blank');
+    }
+  }, []);
 
   const saveBilling = useCallback(async () => {
     await handleSave();
@@ -316,19 +313,18 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
 
       const values = await form.validateFields();
 
-      if ((!isEditing && !facturacionId)) {
+      if ((!isEditing && !facturacionId && modalMode !== 'refactor')) {
         // Crear nueva facturación
-        const billingData = {
+        const billingData: BillingData = {
           ordenCompraId: sale.id,
-          factura: values.numeroFactura || '',
-          fechaFactura: values.fechaFactura ? values.fechaFactura.toDate() : null,
-          grr: values.grr || '',
+          factura: values.numeroFactura || null,
+          fechaFactura: values.fechaFactura ? values.fechaFactura.toISOString() : null,
+          grr: values.grr || null,
           retencion: values.porcentajeRetencion || 0,
           detraccion: values.porcentajeDetraccion || 0,
-          formaEnvioFactura: values.formaEnvioFactura || '',
-          estado: 1,
-          facturaArchivo: facturaArchivo,
-          grrArchivo: grrArchivo
+          formaEnvioFactura: values.formaEnvioFactura || null,
+          facturaArchivo: values.facturaArchivo,
+          grrArchivo: values.grrArchivo,
         };
 
         const newBilling = await createBilling(billingData);
@@ -353,16 +349,18 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
 
       } else if (isEditing && facturacionId) {
         // Actualizar facturación existente
-        const updateData: any = {};
+        const updateData: BillingUpdateData = {};
 
         if (values.numeroFactura !== undefined) updateData.factura = values.numeroFactura;
-        if (values.fechaFactura) updateData.fechaFactura = values.fechaFactura.toDate();
+        if (values.fechaFactura) updateData.fechaFactura = values.fechaFactura.toISOString();
         if (values.grr !== undefined) updateData.grr = values.grr;
         if (values.porcentajeRetencion !== undefined) updateData.retencion = values.porcentajeRetencion;
         if (values.porcentajeDetraccion !== undefined) updateData.detraccion = values.porcentajeDetraccion;
         if (values.formaEnvioFactura !== undefined) updateData.formaEnvioFactura = values.formaEnvioFactura;
-        if (facturaArchivo !== null) updateData.facturaArchivo = facturaArchivo;
-        if (grrArchivo !== null) updateData.grrArchivo = grrArchivo;
+
+        // Los campos de archivo siempre se incluyen ya que pueden ser null (para limpiar)
+        updateData.facturaArchivo = facturaArchivo;
+        updateData.grrArchivo = grrArchivo;
 
         await patchBilling(facturacionId, updateData);
 
@@ -388,28 +386,31 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
           facturaArchivo: null,
           grrArchivo: null
         });
-      } else if (isRefactoring) {
-        // Crear nueva facturación de refacturación
-        const billingData = {
-          ordenCompraId: sale.id,
-          factura: values.numeroFactura || '',
-          fechaFactura: values.fechaFactura ? values.fechaFactura.toDate() : null,
-          grr: values.grr || '',
-          retencion: values.porcentajeRetencion || 0,
-          detraccion: values.porcentajeDetraccion || 0,
-          formaEnvioFactura: values.formaEnvioFactura || '',
-          estado: 1,
-          notaCreditoArchivo: values.notaCreditoArchivo,
+      } else if (modalMode === 'refactor') {
+        // Refacturar la facturación existente usando el controlador específico
+        if (!facturacionId) {
+          throw new Error('No se encontró el ID de la facturación a refacturar');
+        }
+
+        const refacturacionData = {
           notaCreditoTexto: values.notaCreditoTexto,
+          notaCreditoArchivo: values.notaCreditoArchivo,
+          // También actualizar otros campos de la facturación
+          factura: values.numeroFactura || null,
+          fechaFactura: values.fechaFactura ? values.fechaFactura.toISOString() : null,
+          grr: values.grr || null,
+          retencion: values.porcentajeRetencion || null,
+          detraccion: values.porcentajeDetraccion || null,
+          formaEnvioFactura: values.formaEnvioFactura || null,
           facturaArchivo: facturaArchivo,
           grrArchivo: grrArchivo
         };
 
-        const newBilling = await createBilling(billingData);
+        await refacturarBilling(facturacionId, refacturacionData);
 
         notification.success({
-          message: 'Refacturación creada',
-          description: 'La refacturación se ha guardado correctamente con la nota de crédito'
+          message: 'Refacturación completada',
+          description: 'La facturación ha sido refacturada correctamente con la nota de crédito'
         });
 
         // Recargar el historial y limpiar el estado
@@ -512,23 +513,6 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
   }
 
   const BillingSection = React.memo<BillingSectionProps>(({ billingHistory }) => {
-    const formatRelativeTime = (date: string | Date | null | undefined) => {
-      if (!date) return 'Sin fecha';
-
-      const now = dayjs();
-      const targetDate = dayjs(date);
-      const diffInMinutes = now.diff(targetDate, 'minute');
-      const diffInHours = now.diff(targetDate, 'hour');
-      const diffInDays = now.diff(targetDate, 'day');
-
-      if (diffInMinutes < 1) return 'Ahora mismo';
-      if (diffInMinutes < 60) return `Hace ${diffInMinutes} minuto${diffInMinutes !== 1 ? 's' : ''}`;
-      if (diffInHours < 24) return `Hace ${diffInHours} hora${diffInHours !== 1 ? 's' : ''}`;
-      if (diffInDays < 7) return `Hace ${diffInDays} día${diffInDays !== 1 ? 's' : ''}`;
-
-      return targetDate.format('DD/MM/YYYY');
-    };
-
     return (
       <>
         {/* Apartado de Documentos */}
@@ -681,7 +665,6 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                       <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Detracción</TableCell>
                       <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Forma Envío</TableCell>
                       <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Archivos</TableCell>
-                      <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Creado</TableCell>
                       <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Tipo</TableCell>
                       <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Acciones</TableCell>
                     </TableRow>
@@ -722,6 +705,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                                 size="small"
                                 variant="outlined"
                                 sx={{ fontSize: '0.7rem', height: '20px' }}
+                                onClick={() => handleViewFile(billing.facturaArchivo)}
                               />
                             )}
                             {billing.grrArchivo && (
@@ -730,6 +714,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                                 size="small"
                                 variant="outlined"
                                 sx={{ fontSize: '0.7rem', height: '20px' }}
+                                onClick={() => handleViewFile(billing.grrArchivo)}
                               />
                             )}
                             {!billing.facturaArchivo && !billing.grrArchivo && (
@@ -739,20 +724,84 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                             )}
                           </Box>
                         </TableCell>
-                        <TableCell sx={{ color: '#64748b', fontSize: '0.875rem' }}>
-                          {formatRelativeTime(billing.createdAt)}
-                        </TableCell>
                         <TableCell sx={{ color: '#64748b' }}>
                           {billing.esRefacturacion ? 'Refacturación' : 'Facturación'}
                         </TableCell>
                         <TableCell>
-                          <IconButton
-                            size="small"
-                            onClick={(event) => handleMenuOpen(event, billing)}
-                            sx={{ color: '#64748b' }}
-                          >
-                            <MoreVertIcon fontSize="small" />
-                          </IconButton>
+                          <Stack direction="row" spacing={1.5}>
+                            <Tooltip title="Visualizar" arrow placement="top">
+                              <IconButton
+                                size="small"
+                                onClick={() => handleOpenViewModal(billing)}
+                                type="button"
+                                sx={{
+                                  border: '1px solid #10b981',
+                                  color: '#10b981',
+                                  '&:hover': {
+                                    bgcolor: 'rgba(16, 185, 129, 0.08)'
+                                  }
+                                }}
+                                aria-label="Visualizar facturación"
+                              >
+                                <VisibilityIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                            {!billing.esRefacturacion && (
+                              <>
+                                <Tooltip title="Editar" arrow placement="top">
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => handleOpenEditModal(billing)}
+                                    type="button"
+                                    sx={{
+                                      border: '1px solid #6366f1',
+                                      color: '#6366f1',
+                                      '&:hover': {
+                                        bgcolor: 'rgba(99, 102, 241, 0.08)'
+                                      }
+                                    }}
+                                    aria-label="Editar facturación"
+                                  >
+                                    <EditIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                                <Tooltip title="Refacturar" arrow placement="top">
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => handleOpenRefactorModal(billing)}
+                                    type="button"
+                                    sx={{
+                                      border: '1px solid #0ea5e9',
+                                      color: '#0ea5e9',
+                                      '&:hover': {
+                                        bgcolor: 'rgba(14, 165, 233, 0.1)'
+                                      }
+                                    }}
+                                    aria-label="Refacturar"
+                                  >
+                                    <RefreshIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                              </>
+                            )}
+                            {/* <Tooltip title="Eliminar" arrow placement="top">
+                              <IconButton
+                                size="small"
+                                onClick={() => handleDeleteBilling(billing)}
+                                type="button"
+                                sx={{
+                                  border: '1px solid #ef4444',
+                                  color: '#ef4444',
+                                  '&:hover': {
+                                    bgcolor: 'rgba(239, 68, 68, 0.1)'
+                                  }
+                                }}
+                                aria-label="Eliminar"
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip> */}
+                          </Stack>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -849,7 +898,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
     loading: boolean;
     onSave: () => void;
     isRefactoring: boolean;
-    modalMode?: 'create' | 'edit' | 'refactor';
+    modalMode?: 'create' | 'edit' | 'refactor' | 'view';
   }
 
   const BillingFormSection = React.memo<BillingFormSectionProps>(({
@@ -861,6 +910,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
       if (modalMode === 'create') return 'Nueva Facturación';
       if (modalMode === 'edit') return 'Editar Facturación';
       if (modalMode === 'refactor') return 'Refacturar';
+      if (modalMode === 'view') return 'Visualizar Facturación';
       return isRefactoring ? 'REFACTURACIÓN' : 'FACTURACIÓN';
     };
 
@@ -910,6 +960,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                   <InputAntd
                     placeholder="Ingrese número de factura"
                     size="large"
+                    disabled={modalMode === 'view'}
                   />
                 </Form.Item>
               </Grid>
@@ -923,6 +974,8 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                   style={{ marginBottom: 0 }}
                 >
                   <SimpleFileUpload
+                    editable={modalMode !== 'view'}
+                    value={facturaArchivo}
                     onChange={(fileUrl) => {
                       setFacturaArchivo(fileUrl);
                       form.setFieldsValue({ facturaArchivo: fileUrl });
@@ -942,6 +995,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                   <InputAntd
                     placeholder="Ingrese número de GRR"
                     size="large"
+                    disabled={modalMode === 'view'}
                   />
                 </Form.Item>
               </Grid>
@@ -955,6 +1009,8 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                   style={{ marginBottom: 0 }}
                 >
                   <SimpleFileUpload
+                    editable={modalMode !== 'view'}
+                    value={grrArchivo}
                     onChange={(fileUrl) => {
                       setGrrArchivo(fileUrl);
                       form.setFieldsValue({ grrArchivo: fileUrl });
@@ -980,6 +1036,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                   <DatePickerAntd
                     label=""
                     placeholder="Seleccionar fecha"
+                    disabled={modalMode === 'view'}
                   />
                 </Form.Item>
               </Grid>
@@ -997,6 +1054,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                     defaultValue={0}
                     size="large"
                     style={{ width: '100%' }}
+                    disabled={modalMode === 'view'}
                     options={[
                       { value: 0, label: '0%' },
                       { value: 3, label: '3%' }
@@ -1018,6 +1076,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                     defaultValue={0}
                     size="large"
                     style={{ width: '100%' }}
+                    disabled={modalMode === 'view'}
                     options={[
                       { value: 0, label: '0%' },
                       { value: 4, label: '4%' },
@@ -1039,14 +1098,15 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                   <InputAntd
                     placeholder="Ej: Correo electrónico, Físico"
                     size="large"
+                    disabled={modalMode === 'view'}
                   />
                 </Form.Item>
               </Grid>
             </Grid>
           </Box>
 
-          {/* Nota de Crédito - Solo visible al refacturar */}
-          {isRefactoring && (
+          {/* Nota de Crédito - Visible al refacturar o cuando hay datos en modo view */}
+          {(isRefactoring || (modalMode === 'view' && (form.getFieldValue('notaCreditoTexto') || form.getFieldValue('notaCreditoArchivo')))) && (
             <Box sx={{ mb: 4 }}>
               <Typography
                 variant="h6"
@@ -1059,13 +1119,13 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                   gap: 1
                 }}
               >
-                🔄 Refacturación
+                {isRefactoring ? '🔄 Refacturación' : '📄 Nota de Crédito'}
               </Typography>
 
-              <Box sx={{ p: 3, bgcolor: '#fef3c7', borderRadius: 2, border: '1px solid #fbbf24' }}>
+              <Box sx={{ p: 3, bgcolor: isRefactoring ? '#fef3c7' : '#f0f9ff', borderRadius: 2, border: `1px solid ${isRefactoring ? '#fbbf24' : '#0ea5e9'}` }}>
                 <Grid container spacing={3}>
                   <Grid size={{ xs: 12, md: 6 }}>
-                    <Typography sx={{ color: '#92400e', mb: 1, fontSize: '0.875rem', fontWeight: 600 }}>
+                    <Typography sx={{ color: isRefactoring ? '#92400e' : '#0c4a6e', mb: 1, fontSize: '0.875rem', fontWeight: 600 }}>
                       Archivo de Nota de Crédito
                     </Typography>
                     <Form.Item
@@ -1073,25 +1133,30 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                       style={{ marginBottom: 0 }}
                     >
                       <SimpleFileUpload
+                        editable={modalMode !== 'view'}
+                        value={form.getFieldValue('notaCreditoArchivo')}
                         onChange={(fileUrl) => {
-                          form.setFieldsValue({ notaCreditoArchivo: fileUrl });
+                          if (modalMode !== 'view') {
+                            form.setFieldsValue({ notaCreditoArchivo: fileUrl });
+                          }
                         }}
                       />
                     </Form.Item>
                   </Grid>
 
                   <Grid size={{ xs: 12, md: 6 }}>
-                    <Typography sx={{ color: '#92400e', mb: 1, fontSize: '0.875rem', fontWeight: 600 }}>
-                      Texto de Nota de Crédito *
+                    <Typography sx={{ color: isRefactoring ? '#92400e' : '#0c4a6e', mb: 1, fontSize: '0.875rem', fontWeight: 600 }}>
+                      Texto de Nota de Crédito {isRefactoring ? '*' : ''}
                     </Typography>
                     <Form.Item
                       name="notaCreditoTexto"
-                      rules={[{ required: true, message: 'Por favor ingrese el texto de la nota de crédito' }]}
+                      rules={isRefactoring ? [{ required: true, message: 'Por favor ingrese el texto de la nota de crédito' }] : []}
                       style={{ marginBottom: 0 }}
                     >
                       <InputAntd
                         placeholder="Ingrese el motivo de la refacturación"
                         size="large"
+                        disabled={modalMode === 'view'}
                       />
                     </Form.Item>
                   </Grid>
@@ -1328,101 +1393,58 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                 </Box>
               </Box>
             </Stack>
+            {/* Modal del formulario de facturación */}
+            <Dialog
+              open={modalOpen}
+              onClose={handleCloseModal}
+              maxWidth="md"
+              fullWidth
+              sx={{
+                '& .MuiDialog-paper': {
+                  borderRadius: 3,
+                  maxHeight: '90vh'
+                }
+              }}
+            >
+              <DialogContent sx={{ p: 0 }}>
+                <BillingFormSection
+                  form={form}
+                  isEditing={isEditing}
+                  loading={loading}
+                  onSave={saveBilling}
+                  isRefactoring={modalMode === 'refactor'}
+                  modalMode={modalMode}
+                />
+              </DialogContent>
+              <DialogActions sx={{ p: 3, pt: 0 }}>
+                <Button
+                  onClick={handleCloseModal}
+                  variant="outlined"
+                  sx={{ mr: 2 }}
+                >
+                  {modalMode === 'view' ? 'Cerrar' : 'Cancelar'}
+                </Button>
+                {modalMode !== 'view' && (
+                  <Button
+                    onClick={saveBilling}
+                    variant="contained"
+                    disabled={loading}
+                    startIcon={<SaveIcon />}
+                    sx={{
+                      bgcolor: '#667eea',
+                      '&:hover': {
+                        bgcolor: '#5a67d8'
+                      }
+                    }}
+                  >
+                    {loading ? 'Guardando...' : 'Guardar'}
+                  </Button>
+                )}
+              </DialogActions>
+            </Dialog>
           </Form>
         </Box>
       )}
-
-      {/* Menú de acciones */}
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleMenuClose}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'center',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'center',
-        }}
-        container={document.body}
-      >
-        <MenuItem
-          onClick={() => selectedRecord && handleOpenEditModal(selectedRecord)}
-          sx={{ minWidth: 150 }}
-        >
-          <ListItemIcon>
-            <EditIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Editar</ListItemText>
-        </MenuItem>
-        <MenuItem
-          onClick={() => selectedRecord && handleOpenRefactorModal(selectedRecord)}
-          sx={{ minWidth: 150 }}
-        >
-          <ListItemIcon>
-            <RefreshIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Refacturar</ListItemText>
-        </MenuItem>
-        <MenuItem
-          onClick={() => selectedRecord && handleDeleteBilling(selectedRecord)}
-          sx={{ minWidth: 150, color: 'error.main' }}
-        >
-          <ListItemIcon>
-            <DeleteIcon fontSize="small" sx={{ color: 'error.main' }} />
-          </ListItemIcon>
-          <ListItemText>Eliminar</ListItemText>
-        </MenuItem>
-      </Menu>
-
-      {/* Modal del formulario de facturación */}
-      <Dialog
-        open={modalOpen}
-        onClose={handleCloseModal}
-        maxWidth="md"
-        fullWidth
-        sx={{
-          '& .MuiDialog-paper': {
-            borderRadius: 3,
-            maxHeight: '90vh'
-          }
-        }}
-      >
-        <DialogContent sx={{ p: 0 }}>
-          <BillingFormSection
-            form={form}
-            isEditing={isEditing}
-            loading={loading}
-            onSave={saveBilling}
-            isRefactoring={modalMode === 'refactor'}
-            modalMode={modalMode}
-          />
-        </DialogContent>
-        <DialogActions sx={{ p: 3, pt: 0 }}>
-          <Button
-            onClick={handleCloseModal}
-            variant="outlined"
-            sx={{ mr: 2 }}
-          >
-            Cancelar
-          </Button>
-          <Button
-            onClick={saveBilling}
-            variant="contained"
-            disabled={loading}
-            startIcon={<SaveIcon />}
-            sx={{
-              bgcolor: '#667eea',
-              '&:hover': {
-                bgcolor: '#5a67d8'
-              }
-            }}
-          >
-            {loading ? 'Guardando...' : 'Guardar'}
-          </Button>
-        </DialogActions>
-      </Dialog>
     </>
   );
 };
