@@ -62,7 +62,17 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [facturacionId, setFacturacionId] = useState<number | null>(null);
+  const [facturacionId, _setFacturacionId] = useState<number | null>(null);
+
+  const setFacturacionId = useCallback((value: number | null | ((prev: number | null) => number | null)) => {
+    console.log('🔍 setFacturacionId called with:', value, 'from:', new Error().stack?.split('\n')[2]);
+    _setFacturacionId(value);
+  }, []);
+
+  const [savedModalState, setSavedModalState] = useState<{
+    modalMode: 'create' | 'edit' | 'refactor' | 'view';
+    facturacionId: number | null;
+  } | null>(null);
   const [ordenesProveedor, setOrdenesProveedor] = useState<ProviderOrderProps[]>([]);
   const [billingHistory, setBillingHistory] = useState<BillingProps[]>([]);
   const [isEditing, setIsEditing] = useState(false);
@@ -85,13 +95,30 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
 
   // Estados para el menú de acciones
   // Estados para el modal CRUD
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalMode, setModalMode] = useState<'create' | 'edit' | 'refactor' | 'view'>('create');
+  const [modalOpen, _setModalOpen] = useState(() => {
+    console.log('🔍 modalOpen initialized to false');
+    return false;
+  });
+
+  const setModalOpen = useCallback((value: boolean | ((prev: boolean) => boolean)) => {
+    console.log('🔍 setModalOpen called with:', value, 'from:', new Error().stack?.split('\n')[2]);
+    _setModalOpen(value);
+  }, []);
+  const [modalMode, _setModalMode] = useState<'create' | 'edit' | 'refactor' | 'view'>('create');
+
+  const setModalMode = useCallback((value: 'create' | 'edit' | 'refactor' | 'view' | ((prev: 'create' | 'edit' | 'refactor' | 'view') => 'create' | 'edit' | 'refactor' | 'view')) => {
+    console.log('🔍 setModalMode called with:', value, 'from:', new Error().stack?.split('\n')[2]);
+    _setModalMode(value);
+  }, []);
 
   useEffect(() => {
     loadOrdenesProveedor();
     loadBillingHistory();
   }, [sale.id]);
+
+  useEffect(() => {
+    console.log('🔍 Modal state changed:', { modalOpen, modalMode, facturacionId });
+  }, [modalOpen, modalMode, facturacionId]);
 
   useEffect(() => {
     console.log('Estado ordenesProveedor cambió:', ordenesProveedor);
@@ -159,6 +186,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
   }, [form]);
 
   const handleRefacturar = useCallback((billing: BillingProps) => {
+    console.log('🔍 handleRefacturar called with billing:', billing.id);
     setIsRefactoring(true);
     setRefactoringBilling(billing);
     setIsEditing(false);
@@ -174,7 +202,10 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
       porcentajeDetraccion: billing.detraccion,
       formaEnvioFactura: billing.formaEnvioFactura,
       facturaArchivo: billing.facturaArchivo || null,
-      grrArchivo: billing.grrArchivo || null
+      grrArchivo: billing.grrArchivo || null,
+      // Campos de nota de crédito para la nueva factura
+      notaCreditoTexto: null,
+      notaCreditoArchivo: null
     });
 
     // Establecer estados de archivos
@@ -183,7 +214,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
 
     notification.info({
       message: 'Refacturando',
-      description: 'Los campos se han rellenado con los datos de la facturación seleccionada. Complete la nota de crédito y guarde.'
+      description: 'Los campos se han rellenado con los datos de la facturación seleccionada. Complete la nota de crédito y guarde para crear una nueva factura.'
     });
   }, [form]);
 
@@ -257,8 +288,10 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
   }, [handleEditar]);
 
   const handleOpenRefactorModal = useCallback((billing: BillingProps) => {
+    console.log('🔍 handleOpenRefactorModal called with billing:', billing.id);
     setModalMode('refactor');
     setModalOpen(true);
+    setSavedModalState({ modalMode: 'refactor', facturacionId: billing.id });
     handleRefacturar(billing);
   }, [handleRefacturar]);
 
@@ -269,6 +302,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
   }, []);
 
   const handleCloseModal = useCallback(() => {
+    console.log('🔍 handleCloseModal called - closing modal');
     setModalOpen(false);
     setModalMode('create');
     // Limpiar estados
@@ -277,6 +311,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
     setIsRefactoring(false);
     setRefactoringBilling(null);
     setFacturacionId(null);
+    setSavedModalState(null);
     form.resetFields();
   }, [form]);
 
@@ -295,7 +330,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
         description: 'No se pudo eliminar la facturación'
       });
     }
-  }, []);
+  }, [loadBillingHistory]);
 
   const handleViewFile = useCallback((fileUrl: string | null | undefined) => {
     if (fileUrl) {
@@ -308,12 +343,33 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
   }, []);
 
   const handleSave = async () => {
+    console.log('🔍 handleSave called - Current state:', {
+      isEditing,
+      facturacionId,
+      modalMode,
+      isRefactoring,
+      refactoringBilling: refactoringBilling?.id,
+      modalOpen,
+      savedModalState
+    });
     try {
       setLoading(true);
 
       const values = await form.validateFields();
 
-      if ((!isEditing && !facturacionId && modalMode !== 'refactor')) {
+      // Usar el estado guardado cuando se abrió el modal
+      const currentMode = savedModalState?.modalMode || modalMode;
+      const currentFacturacionId = savedModalState?.facturacionId || facturacionId;
+
+      console.log('🔍 Final determination:', {
+        currentMode,
+        currentFacturacionId,
+        savedModalState,
+        modalMode,
+        facturacionId
+      });
+
+      if ((!isEditing && !currentFacturacionId && currentMode !== 'refactor')) {
         // Crear nueva facturación
         const billingData: BillingData = {
           ordenCompraId: sale.id,
@@ -347,7 +403,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
           estado: '1'
         });
 
-      } else if (isEditing && facturacionId) {
+      } else if (isEditing && currentFacturacionId) {
         // Actualizar facturación existente
         const updateData: BillingUpdateData = {};
 
@@ -362,7 +418,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
         updateData.facturaArchivo = facturaArchivo;
         updateData.grrArchivo = grrArchivo;
 
-        await patchBilling(facturacionId, updateData);
+        await patchBilling(currentFacturacionId, updateData);
 
         notification.success({
           message: 'Facturación actualizada',
@@ -386,9 +442,9 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
           facturaArchivo: null,
           grrArchivo: null
         });
-      } else if (modalMode === 'refactor') {
+      } else if (currentMode === 'refactor') {
         // Refacturar la facturación existente usando el controlador específico
-        if (!facturacionId) {
+        if (!currentFacturacionId) {
           throw new Error('No se encontró el ID de la facturación a refacturar');
         }
 
@@ -406,11 +462,11 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
           grrArchivo: grrArchivo
         };
 
-        await refacturarBilling(facturacionId, refacturacionData);
+        await refacturarBilling(currentFacturacionId, refacturacionData);
 
         notification.success({
-          message: 'Refacturación completada',
-          description: 'La facturación ha sido refacturada correctamente con la nota de crédito'
+          message: 'Nueva factura de refacturación creada',
+          description: 'La nueva factura ha sido creada correctamente con la nota de crédito'
         });
 
         // Recargar el historial y limpiar el estado
@@ -768,7 +824,10 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                                 <Tooltip title="Refacturar" arrow placement="top">
                                   <IconButton
                                     size="small"
-                                    onClick={() => handleOpenRefactorModal(billing)}
+                                    onClick={() => {
+                                      console.log('🔍 Refacturar button clicked for billing:', billing.id);
+                                      handleOpenRefactorModal(billing);
+                                    }}
                                     type="button"
                                     sx={{
                                       border: '1px solid #0ea5e9',
@@ -897,21 +956,21 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
     isEditing: boolean;
     loading: boolean;
     onSave: () => void;
-    isRefactoring: boolean;
     modalMode?: 'create' | 'edit' | 'refactor' | 'view';
+    currentFacturacionId: number | null;
   }
 
   const BillingFormSection = React.memo<BillingFormSectionProps>(({
     form,
-    isRefactoring,
-    modalMode
+    modalMode,
+    currentFacturacionId
   }) => {
     const getTitle = () => {
       if (modalMode === 'create') return 'Nueva Facturación';
       if (modalMode === 'edit') return 'Editar Facturación';
       if (modalMode === 'refactor') return 'Refacturar';
       if (modalMode === 'view') return 'Visualizar Facturación';
-      return isRefactoring ? 'REFACTURACIÓN' : 'FACTURACIÓN';
+      return 'FACTURACIÓN';
     };
 
     return (
@@ -1106,7 +1165,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
           </Box>
 
           {/* Nota de Crédito - Visible al refacturar o cuando hay datos en modo view */}
-          {(isRefactoring || (modalMode === 'view' && (form.getFieldValue('notaCreditoTexto') || form.getFieldValue('notaCreditoArchivo')))) && (
+          {(modalMode === 'refactor' || (modalMode === 'view' && (form.getFieldValue('notaCreditoTexto') || form.getFieldValue('notaCreditoArchivo')))) && (
             <Box sx={{ mb: 4 }}>
               <Typography
                 variant="h6"
@@ -1119,7 +1178,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                   gap: 1
                 }}
               >
-                {isRefactoring ? '🔄 Refacturación' : '📄 Nota de Crédito'}
+                {modalMode === 'refactor' ? '🔄 Refacturación' : '📄 Nota de Crédito'}
               </Typography>
 
               <Box sx={{ p: 3, bgcolor: isRefactoring ? '#fef3c7' : '#f0f9ff', borderRadius: 2, border: `1px solid ${isRefactoring ? '#fbbf24' : '#0ea5e9'}` }}>
@@ -1145,12 +1204,12 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                   </Grid>
 
                   <Grid size={{ xs: 12, md: 6 }}>
-                    <Typography sx={{ color: isRefactoring ? '#92400e' : '#0c4a6e', mb: 1, fontSize: '0.875rem', fontWeight: 600 }}>
-                      Texto de Nota de Crédito {isRefactoring ? '*' : ''}
+                    <Typography sx={{ color: modalMode === 'refactor' ? '#92400e' : '#0c4a6e', mb: 1, fontSize: '0.875rem', fontWeight: 600 }}>
+                      Texto de Nota de Crédito {modalMode === 'refactor' ? '*' : ''}
                     </Typography>
                     <Form.Item
                       name="notaCreditoTexto"
-                      rules={isRefactoring ? [{ required: true, message: 'Por favor ingrese el texto de la nota de crédito' }] : []}
+                      rules={modalMode === 'refactor' ? [{ required: true, message: 'Por favor ingrese el texto de la nota de crédito' }] : []}
                       style={{ marginBottom: 0 }}
                     >
                       <InputAntd
@@ -1407,14 +1466,23 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
               }}
             >
               <DialogContent sx={{ p: 0 }}>
-                <BillingFormSection
-                  form={form}
-                  isEditing={isEditing}
-                  loading={loading}
-                  onSave={saveBilling}
-                  isRefactoring={modalMode === 'refactor'}
-                  modalMode={modalMode}
-                />
+                {(() => {
+                  try {
+                    return (
+                      <BillingFormSection
+                        form={form}
+                        isEditing={isEditing}
+                        loading={loading}
+                        onSave={saveBilling}
+                        modalMode={modalMode}
+                        currentFacturacionId={facturacionId}
+                      />
+                    );
+                  } catch (error) {
+                    console.error('🔍 Error in BillingFormSection:', error);
+                    return <div>Error en el formulario</div>;
+                  }
+                })()}
               </DialogContent>
               <DialogActions sx={{ p: 3, pt: 0 }}>
                 <Button
