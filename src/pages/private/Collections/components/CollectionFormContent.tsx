@@ -24,7 +24,12 @@ import {
   Receipt as ReceiptIcon,
   Add as AddIcon,
   Edit as EditIcon,
-  Delete as DeleteIcon
+  Delete as DeleteIcon,
+  CloudUpload as CloudUploadIcon,
+  Image as ImageIcon,
+  PictureAsPdf as PdfIcon,
+  Description as DocumentIcon,
+  GetApp as DownloadIcon
 } from '@mui/icons-material';
 import { notification, Spin, Form, Input, DatePicker, Select, Modal, Row, Col, Checkbox } from 'antd';
 import { SaleProps } from '@/services/sales/sales';
@@ -42,6 +47,14 @@ import {
   type GestionCobranza,
   type CobranzaData
 } from '@/services/cobranza/cobranza.service';
+import { uploadFile } from '@/services/files/file.requests';
+import {
+  getArchivosAdjuntosByOrdenCompra,
+  createArchivoAdjunto,
+  updateArchivoAdjunto,
+  deleteArchivoAdjunto
+} from '@/services/archivosAdjuntos/archivosAdjuntos.requests';
+import { type ArchivoAdjunto } from '@/services/archivosAdjuntos/archivosAdjuntos.d';
 import { heroUIColors } from '@/components/ui';
 import InputAntd from '@/components/InputAntd';
 import SelectGeneric from '@/components/selects/SelectGeneric';
@@ -102,6 +115,12 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
   const [hasChanges, setHasChanges] = useState(false);
   const [currentPenalidad, setCurrentPenalidad] = useState(0);
 
+  // Estados para la galería de archivos
+  const [galleryFiles, setGalleryFiles] = useState<ArchivoAdjunto[]>([]);
+  const [galleryModalOpen, setGalleryModalOpen] = useState(false);
+  const [loadingFiles, setLoadingFiles] = useState(false);
+  const [uploadingFiles, setUploadingFiles] = useState(false);
+
   // Cálculos automáticos
   const importeTotal = parseFloat(sale.montoVenta || '0');
   const porcentajeRetencion = parseFloat(sale.facturacion?.retencion?.toString() || '0');
@@ -144,6 +163,9 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
       // Cargar gestiones
       await loadGestiones();
 
+      // Cargar archivos adjuntos
+      await loadArchivosAdjuntos();
+
     } catch (error) {
       console.error('Error loading collection data:', error);
       notification.error({
@@ -152,6 +174,22 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadArchivosAdjuntos = async () => {
+    try {
+      setLoadingFiles(true);
+      const archivos = await getArchivosAdjuntosByOrdenCompra(sale.id);
+      setGalleryFiles(archivos);
+    } catch (error) {
+      console.error('Error loading archivos adjuntos:', error);
+      notification.error({
+        message: 'Error al cargar archivos',
+        description: 'No se pudieron cargar los archivos adjuntos'
+      });
+    } finally {
+      setLoadingFiles(false);
     }
   };
 
@@ -316,42 +354,16 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
   interface GestionFormValues {
     fechaGestion?: Dayjs | null;
     notaGestion?: string;
-    estadoCobranza?: string;
-    tipoCobranza?: 'ESPECIAL' | 'NORMAL';
-    tipoGestion?: string;
-    voucherPagoUrl?: string;
-    pagoConformeTesoreria?: boolean;
-    cartaAmpliacionUrl?: string;
     capturaEnvioDocumentoUrl?: string;
-    archivosAdjuntosNotasGestion?: string[] | string;
-    documentosRegistrados?: string[] | string;
-    notaEspecialEntrega?: string;
   }
 
   const handleSaveGestion = async (values: GestionFormValues) => {
     try {
-      // Procesar arrays de strings separados por comas
-      const archivosAdjuntos = typeof values.archivosAdjuntosNotasGestion === 'string'
-        ? values.archivosAdjuntosNotasGestion.split(',').map((s: string) => s.trim()).filter((s: string) => s.length > 0)
-        : values.archivosAdjuntosNotasGestion || [];
-
-      const documentosReg = typeof values.documentosRegistrados === 'string'
-        ? values.documentosRegistrados.split(',').map((s: string) => s.trim()).filter((s: string) => s.length > 0)
-        : values.documentosRegistrados || [];
-
       const gestionData: Partial<GestionCobranza> = {
         ordenCompraId: sale.id,
         fechaGestion: values.fechaGestion ? values.fechaGestion.format('YYYY-MM-DD') : '',
         notaGestion: values.notaGestion || '',
-        estadoCobranza: values.estadoCobranza || '',
-        tipoCobranza: values.tipoCobranza || 'NORMAL',
-        voucherPagoUrl: values.voucherPagoUrl || '',
-        pagoConformeTesoreria: values.pagoConformeTesoreria || false,
-        cartaAmpliacionUrl: values.cartaAmpliacionUrl || '',
         capturaEnvioDocumentoUrl: values.capturaEnvioDocumentoUrl || '',
-        archivosAdjuntosNotasGestion: archivosAdjuntos,
-        documentosRegistrados: documentosReg,
-        notaEspecialEntrega: values.notaEspecialEntrega || '',
         usuarioId: 1 // TODO: Obtener del contexto de usuario
       };
 
@@ -407,6 +419,93 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
         }
       }
     });
+  };
+
+  // Funciones para la galería de archivos
+  const handleOpenGallery = () => {
+    setGalleryModalOpen(true);
+  };
+
+  const handleCloseGallery = () => {
+    setGalleryModalOpen(false);
+  };
+
+  const handleFileUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+
+    setUploadingFiles(true);
+    try {
+      const uploadedFiles: ArchivoAdjunto[] = [];
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const fileUrl = await uploadFile(file);
+
+        // Crear registro en la base de datos
+        const archivoAdjunto = await createArchivoAdjunto({
+          ordenCompraId: sale.id,
+          nombre: file.name,
+          url: fileUrl,
+          tipo: file.type,
+          tamano: file.size
+        });
+
+        uploadedFiles.push(archivoAdjunto);
+      }
+
+      setGalleryFiles(prev => [...prev, ...uploadedFiles]);
+      notification.success({
+        message: 'Archivos subidos',
+        description: `${uploadedFiles.length} archivo(s) subido(s) correctamente`
+      });
+    } catch (error) {
+      notification.error({
+        message: 'Error al subir archivos',
+        description: 'No se pudieron subir algunos archivos'
+      });
+      console.error('Error uploading files:', error);
+    } finally {
+      setUploadingFiles(false);
+    }
+  };
+
+  const handleDeleteFile = async (fileId: number) => {
+    Modal.confirm({
+      title: '¿Eliminar archivo?',
+      content: '¿Está seguro de que desea eliminar este archivo?',
+      okText: 'Eliminar',
+      cancelText: 'Cancelar',
+      onOk: async () => {
+        try {
+          await deleteArchivoAdjunto(fileId);
+          setGalleryFiles(prev => prev.filter(file => file.id !== fileId));
+          notification.success({
+            message: 'Archivo eliminado',
+            description: 'El archivo se ha eliminado correctamente'
+          });
+        } catch (error) {
+          notification.error({
+            message: 'Error al eliminar archivo',
+            description: 'No se pudo eliminar el archivo'
+          });
+          console.error('Error deleting file:', error);
+        }
+      }
+    });
+  };
+
+  const getFileIcon = (fileType: string) => {
+    if (fileType.startsWith('image/')) return <ImageIcon />;
+    if (fileType === 'application/pdf') return <PdfIcon />;
+    return <DocumentIcon />;
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   const getEstadoLabel = (estado: string) => {
@@ -845,19 +944,30 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                 </Col>
               </Row>
 
-              <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-                <Button variant="outlined" onClick={handleBack}>
-                  Cancelar
-                </Button>
+              <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Button
-                  variant="contained"
-                  onClick={() => form.submit()}
-                  startIcon={<Save />}
-                  disabled={loading || !hasChanges}
-                  color={hasChanges ? "primary" : "inherit"}
+                  variant="outlined"
+                  onClick={handleOpenGallery}
+                  startIcon={<CloudUploadIcon />}
+                  color="secondary"
                 >
-                  {hasChanges ? 'Guardar Cambios' : 'Sin Cambios'}
+                  Galería de Archivos ({galleryFiles.length})
                 </Button>
+
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <Button variant="outlined" onClick={handleBack}>
+                    Cancelar
+                  </Button>
+                  <Button
+                    variant="contained"
+                    onClick={() => form.submit()}
+                    startIcon={<Save />}
+                    disabled={loading || !hasChanges}
+                    color={hasChanges ? "primary" : "inherit"}
+                  >
+                    {hasChanges ? 'Guardar Cambios' : 'Sin Cambios'}
+                  </Button>
+                </Box>
               </Box>
             </Form>
           </CardContent>
@@ -873,40 +983,47 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                   Historial de Gestiones
                 </Typography>
               </Stack>
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={handleAddGestion}
-                size="small"
-              >
-                Nueva Gestión
-              </Button>
+              <Stack direction="row" spacing={2}>
+                <Button
+                  variant="outlined"
+                  startIcon={<CloudUploadIcon />}
+                  onClick={handleOpenGallery}
+                  size="small"
+                  color="secondary"
+                >
+                  Galería ({galleryFiles.length})
+                </Button>
+                <Button
+                  variant="contained"
+                  startIcon={<AddIcon />}
+                  onClick={handleAddGestion}
+                  size="small"
+                >
+                  Nueva Gestión
+                </Button>
+              </Stack>
             </Stack>
 
             <TableContainer component={Paper} variant="outlined">
               <Table size="small">
                 <TableHead>
                   <TableRow sx={{ backgroundColor: '#f8f9fa' }}>
-                    <TableCell sx={{ fontWeight: 600 }}>Fecha</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Usuario</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Tipo Cobranza</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Estado</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Documentos</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Tesorería</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Nota</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }} align="center">Acciones</TableCell>
+                    <TableCell sx={{ fontWeight: 600, width: '25%' }}>Fecha</TableCell>
+                    <TableCell sx={{ fontWeight: 600, width: '25%' }}>Documentos</TableCell>
+                    <TableCell sx={{ fontWeight: 600, width: '25%' }}>Nota</TableCell>
+                    <TableCell sx={{ fontWeight: 600, width: '25%', textAlign: 'center' }}>Acciones</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {gestionesLoading ? (
                     <TableRow>
-                      <TableCell colSpan={8} align="center">
+                      <TableCell colSpan={4} align="center">
                         <Spin />
                       </TableCell>
                     </TableRow>
                   ) : gestiones.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={8} align="center">
+                      <TableCell colSpan={4} align="center">
                         <Typography color="text.secondary">
                           No hay gestiones registradas
                         </Typography>
@@ -919,26 +1036,6 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                           <Typography variant="body2" sx={{ fontWeight: 500 }}>
                             {gestion.fechaGestion ? formattedDate(gestion.fechaGestion) : '-'}
                           </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {gestion.usuario?.nombre || 'Usuario no disponible'}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={getTipoLabel(gestion.tipoCobranza || 'NORMAL')}
-                            size="small"
-                            variant="outlined"
-                            color={gestion.tipoCobranza === 'ESPECIAL' ? 'warning' : 'success'}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={getEstadoLabel(gestion.estadoCobranza || 'Pendiente')}
-                            size="small"
-                            color={gestion.estadoCobranza === 'NORMAL' ? 'success' : 'warning'}
-                          />
                         </TableCell>
                         <TableCell>
                           <Stack direction="column" spacing={0.5}>
@@ -978,14 +1075,6 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                               </Typography>
                             )}
                           </Stack>
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={gestion.pagoConformeTesoreria ? 'Conforme' : 'Pendiente'}
-                            size="small"
-                            color={gestion.pagoConformeTesoreria ? 'success' : 'default'}
-                            variant={gestion.pagoConformeTesoreria ? 'filled' : 'outlined'}
-                          />
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2" sx={{ maxWidth: 150 }}>
@@ -1040,81 +1129,40 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
           layout="vertical"
           onFinish={handleSaveGestion}
         >
-          {/* Información básica */}
+          {/* Fecha de Gestión */}
           <Row gutter={16}>
-            <Col span={8}>
+            <Col span={24}>
               <Form.Item
                 label="Fecha de Gestión"
                 name="fechaGestion"
                 rules={[{ required: true, message: 'Seleccione una fecha' }]}
               >
-                <DatePicker style={{ width: '100%' }} />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item
-                label="Tipo de Cobranza"
-                name="tipoCobranza"
-                rules={[{ required: true, message: 'Seleccione un tipo' }]}
-              >
-                <Select
-                  options={tipoCobranzaOptions}
-                  placeholder="Especial o Normal"
-                />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item
-                label="Estado de Cobranza"
-                name="estadoCobranza"
-                rules={[{ required: true, message: 'Seleccione un estado' }]}
-              >
-                <Select
-                  options={estadosCobranzaOptions}
-                  placeholder="Seleccionar estado"
-                />
+                <DatePickerAntd size="small" style={{ width: '100%' }} />
               </Form.Item>
             </Col>
           </Row>
 
           {/* Nota de gestión */}
-          <Form.Item
-            label="Nota de Gestión"
-            name="notaGestion"
-            rules={[{ required: true, message: 'Ingrese una nota' }]}
-          >
-            <Input.TextArea
-              rows={3}
-              placeholder="Detalle de la gestión realizada..."
-              maxLength={500}
-              showCount
-            />
-          </Form.Item>
-
-          {/* Documentos y vouchers */}
           <Row gutter={16}>
-            <Col span={12}>
+            <Col span={24}>
               <Form.Item
-                label="URL Voucher de Pago"
-                name="voucherPagoUrl"
-                tooltip="Subir voucher de pago según requerimientos"
+                label="Nota de Gestión"
+                name="notaGestion"
+                rules={[{ required: true, message: 'Ingrese una nota' }]}
               >
-                <SimpleFileUpload />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                label="URL Carta de Ampliación"
-                name="cartaAmpliacionUrl"
-                tooltip="Mostrar carta de ampliación según requerimientos"
-              >
-                <SimpleFileUpload />
+                <Input.TextArea
+                  rows={4}
+                  placeholder="Detalle de la gestión realizada..."
+                  maxLength={500}
+                  showCount
+                />
               </Form.Item>
             </Col>
           </Row>
 
+          {/* Captura de envío de documento */}
           <Row gutter={16}>
-            <Col span={12}>
+            <Col span={24}>
               <Form.Item
                 label="URL Captura Envío Documento"
                 name="capturaEnvioDocumentoUrl"
@@ -1123,61 +1171,7 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                 <SimpleFileUpload />
               </Form.Item>
             </Col>
-            <Col span={12}>
-              <Form.Item
-                label="Pago Conforme Tesorería"
-                name="pagoConformeTesoreria"
-                valuePropName="checked"
-                tooltip="Visualizar conformidad de pago (Tesorería)"
-              >
-                <Checkbox>
-                  Pago confirmado por tesorería
-                </Checkbox>
-              </Form.Item>
-            </Col>
           </Row>
-
-          {/* Archivos múltiples */}
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                label="Archivos Adjuntos (URLs separadas por comas)"
-                name="archivosAdjuntosNotasGestion"
-                tooltip="Subir múltiples archivos a notas de gestión"
-              >
-                <Input.TextArea
-                  rows={2}
-                  placeholder="URL1, URL2, URL3..."
-                />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                label="Documentos Registrados (separados por comas)"
-                name="documentosRegistrados"
-                tooltip="Registro de documentos según requerimientos"
-              >
-                <Input.TextArea
-                  rows={2}
-                  placeholder="Documento1, Documento2..."
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          {/* Nota especial */}
-          <Form.Item
-            label="Nota Especial de Entrega"
-            name="notaEspecialEntrega"
-            tooltip="Nota especial de entrega según requerimientos"
-          >
-            <Input.TextArea
-              rows={2}
-              placeholder="Instrucciones especiales para la entrega..."
-              maxLength={300}
-              showCount
-            />
-          </Form.Item>
 
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 3 }}>
             <Button onClick={() => setModalVisible(false)}>
@@ -1191,6 +1185,120 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
             </Button>
           </Box>
         </Form>
+      </Modal>
+
+      {/* Modal de Galería de Archivos */}
+      <Modal
+        title={
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <CloudUploadIcon />
+            <Typography variant="h6">Galería de Archivos</Typography>
+          </Box>
+        }
+        open={galleryModalOpen}
+        onCancel={handleCloseGallery}
+        footer={null}
+        width={1000}
+        destroyOnClose
+      >
+        <Box sx={{ p: 2 }}>
+          {/* Upload Area */}
+          <Box
+            sx={{
+              border: '2px dashed #d0d0d0',
+              borderRadius: 2,
+              p: 3,
+              textAlign: 'center',
+              mb: 3,
+              backgroundColor: uploadingFiles ? '#f5f5f5' : '#fafafa',
+              transition: 'all 0.3s ease'
+            }}
+          >
+            <input
+              type="file"
+              multiple
+              onChange={(e) => handleFileUpload(e.target.files)}
+              style={{ display: 'none' }}
+              id="file-upload"
+              disabled={uploadingFiles}
+            />
+            <label htmlFor="file-upload" style={{ cursor: uploadingFiles ? 'not-allowed' : 'pointer' }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+                <CloudUploadIcon sx={{ fontSize: 48, color: uploadingFiles ? '#ccc' : '#1976d2' }} />
+                <Typography variant="h6" color={uploadingFiles ? 'text.secondary' : 'primary'}>
+                  {uploadingFiles ? 'Subiendo archivos...' : 'Haz clic para seleccionar archivos'}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Puedes seleccionar múltiples archivos a la vez
+                </Typography>
+              </Box>
+            </label>
+          </Box>
+
+          {/* Files Grid */}
+          {galleryFiles.length > 0 && (
+            <Box>
+              <Typography variant="h6" sx={{ mb: 2 }}>
+                Archivos Adjuntos ({galleryFiles.length})
+              </Typography>
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                  gap: 2,
+                  maxHeight: 400,
+                  overflowY: 'auto'
+                }}
+              >
+                {galleryFiles.map((file) => (
+                  <Card key={file.id} sx={{ position: 'relative' }}>
+                    <CardContent sx={{ p: 2, textAlign: 'center' }}>
+                      <Box sx={{ mb: 1 }}>
+                        {getFileIcon(file.tipo)}
+                      </Box>
+                      <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }} noWrap title={file.nombre}>
+                        {file.nombre}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {formatFileSize(file.tamano)}
+                      </Typography>
+                      <Box sx={{ mt: 1 }}>
+                        <IconButton
+                          size="small"
+                          color="primary"
+                          onClick={() => window.open(file.url, '_blank')}
+                          title="Ver archivo"
+                        >
+                          <DownloadIcon fontSize="small" />
+                        </IconButton>
+                        <IconButton
+                          size="small"
+                          color="error"
+                          onClick={() => handleDeleteFile(file.id)}
+                          title="Eliminar archivo"
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                ))}
+              </Box>
+            </Box>
+          )}
+
+          {galleryFiles.length === 0 && !uploadingFiles && (
+            <Box sx={{ textAlign: 'center', py: 4 }}>
+              <ImageIcon sx={{ fontSize: 64, color: '#ccc', mb: 2 }} />
+              <Typography variant="h6" color="text.secondary">
+                No hay archivos adjuntos
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Sube tus primeros archivos usando el área de arriba
+              </Typography>
+            </Box>
+          )}
+        </Box>
       </Modal>
     </Box>
   );
