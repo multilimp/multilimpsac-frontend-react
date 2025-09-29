@@ -791,8 +791,8 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
 
   return (
     <Box sx={{ p: 3 }}>
-      {/* Asignación de Cobrador - Solo visible para usuarios con permisos de cobranzas */}
-      {(user.permisos?.includes(PermissionsEnum.COLLECTIONS) || user.permisos?.includes(PermissionsEnum.JEFECOBRANZAS)) && (
+      {/* Asignación de Cobrador - Solo visible para usuarios con permiso de jefe de cobranzas */}
+      {user.permisos?.includes(PermissionsEnum.JEFECOBRANZAS) && (
         <Card sx={{ mb: 3, width: '100%' }}>
           <CardContent>
             <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 3 }}>
