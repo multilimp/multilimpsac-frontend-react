@@ -20,8 +20,6 @@ interface SalesTableProps {
 
 const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onReload, isPrivateSales = false }) => {
   const navigate = useNavigate();
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [selectedContacts, setSelectedContacts] = useState<any[]>([]);
   const [contactsDrawerOpen, setContactsDrawerOpen] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
   const [selectedTitle, setSelectedTitle] = useState<string>('');
@@ -32,26 +30,6 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onReload, isPriv
     setContactsDrawerOpen(true);
   };
 
-  // ✅ Función para normalizar estados desde el backend
-  const normalizeStatus = (status: string | null | undefined): string => {
-    if (!status) return 'PENDIENTE';
-
-    const statusMap: Record<string, string> = {
-      'completo': 'completo',           // ✅ Backend devuelve "completo"
-      'completado': 'completo',         // ✅ Normalizar variantes
-      'PENDIENTE': 'PENDIENTE',
-      'incomplete': 'PENDIENTE',
-      'pendiente': 'pendiente',
-      'pending': 'pendiente',
-      'anulado': 'anulado',
-      'cancelled': 'anulado',
-      'canceled': 'anulado',
-    };
-
-    const normalizedStatus = status.toLowerCase().trim();
-    return statusMap[normalizedStatus] || 'PENDIENTE';
-  };
-
   const formatFuentesFinanciamiento = (multipleFuentes: boolean | null | undefined): string => {
     if (multipleFuentes === true) return 'Múltiples fuentes';
     return 'Una fuente';
@@ -59,8 +37,6 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onReload, isPriv
 
   const formattedData = useMemo(() => {
     return data.map((item) => {
-      const normalizedStatus = normalizeStatus(item.estadoVenta);
-
       return {
         id: item.id,
         codigo_venta: item.codigoVenta,
@@ -81,8 +57,8 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onReload, isPriv
                             ${item.provinciaEntrega ?? ''}
                             ${item.distritoEntrega ?? ''} -
                             ${item.referenciaEntrega ?? ''}`,
-        estado_venta: normalizedStatus,
-        estado_indicador: normalizedStatus,
+        estado_venta: item.estadoVenta,
+        estado_indicador: item.estadoVenta,
         fuentes_financiamiento: formatFuentesFinanciamiento(item.multipleFuentesFinanciamiento),
         rawdata: item,
       };

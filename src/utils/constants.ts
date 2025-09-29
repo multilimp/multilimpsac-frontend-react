@@ -16,19 +16,19 @@ export const ESTADOS = {
         key: 'COMPLETADO',
         label: 'Completo',
         color: heroUIColors.success[500],
-        value: 'completado'
+        value: 'COMPLETADO'
     },
     CANCELADO: {
         key: 'CANCELADO',
         label: 'Cancelado',
         color: heroUIColors.error[500],
-        value: 'cancelado'
+        value: 'CANCELADO'
     },
     EN_PROCESO: {
         key: 'EN_PROCESO',
         label: 'En proceso',
         color: heroUIColors.secondary[500],
-        value: 'proceso'
+        value: 'EN_PROCESO'
     }
 } as const;
 
