@@ -100,6 +100,7 @@ export const getCobranzaByOrdenCompra = async (ordenCompraId: number): Promise<C
       penalidad: cobranza.penalidad,
       estadoCobranza: cobranza.estadoCobranza,
       fechaEstadoCobranza: cobranza.fechaEstadoCobranza,
+      cobradorId: cobranza.cobradorId,
     };
   } catch (error) {
     console.error('Error al obtener datos de cobranza:', error);

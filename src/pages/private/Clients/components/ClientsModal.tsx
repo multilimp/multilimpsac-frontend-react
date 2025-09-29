@@ -40,6 +40,7 @@ const ClientsModal = ({ data, handleClose, handleReload }: ClientsModalProps) =>
       distrito: data.distrito || '',         // Leer como string directo
       direccion: data.direccion,
       sede: data.sede,
+      promedio_cobranza: data.promedioCobranza,
       departamentoId: null, // No necesitamos IDs para guardar
       provinciaId: null,
       distritoId: null,
@@ -62,6 +63,7 @@ const ClientsModal = ({ data, handleClose, handleReload }: ClientsModalProps) =>
         distrito: values.distrito,         // Guardar el nombre, no el objeto
         direccion: values.direccion,
         sede: values.sede,
+        promedio_cobranza: values.promedio_cobranza ? String(values.promedio_cobranza) : undefined,
       };
 
       if (data) {
@@ -219,10 +221,21 @@ const ClientsModal = ({ data, handleClose, handleReload }: ClientsModalProps) =>
             </Grid>
           </Box>
 
-          {/* Campos ocultos para los IDs de ubicación */}
-          <Form.Item name="departamentoId" noStyle />
-          <Form.Item name="provinciaId" noStyle />
-          <Form.Item name="distritoId" noStyle />
+          <Divider sx={{ my: 1.5 }} />
+
+          {/* Sección: Información Financiera */}
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="h6" sx={{ mb: 1, color: 'primary.main', fontWeight: 'bold' }}>
+              💰 Información Financiera
+            </Typography>
+            <Grid container spacing={2}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                <Form.Item name="promedio_cobranza">
+                  <InputAntd label="Promedio de Cobranza (días)" type="number" min={0} />
+                </Form.Item>
+              </Grid>
+            </Grid>
+          </Box>
 
           <Button className="d-none" type="submit">
             SUBMIT

@@ -214,12 +214,7 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
       const updatedCobranza = await assignCobrador(sale.id, cobradorId);
 
       // Actualizar los datos originales
-      setOriginalCobranzaData(prev => prev ? { ...prev, cobradorId: cobradorId || undefined } : null);
-
-      // Actualizar el formulario de cobrador
-      cobradorForm.setFieldsValue({
-        cobradorId: cobradorId || undefined,
-      });
+      setOriginalCobranzaData(prev => ({ ...prev, cobradorId: cobradorId || undefined }));
 
       notification.success({
         message: cobradorId ? 'Cobrador asignado' : 'Cobrador removido',
@@ -815,30 +810,15 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
               onFinish={handleCobradorFinish}
             >
               <Row gutter={16}>
-                <Col span={16}>
+                <Col span={24}>
                   <Form.Item label="Cobrador Asignado" name="cobradorId">
                     <SelectGeneric
                       placeholder="Seleccionar cobrador"
                       options={getCobradorOptions(cobradores)}
                       loading={loadingCobradores}
                       allowClear
+                      onChange={(value) => handleAssignCobrador(value || null)}
                     />
-                  </Form.Item>
-                </Col>
-                <Col span={8}>
-                  <Form.Item label=" ">
-                    <Button
-                      variant="contained"
-                      onClick={() => {
-                        const values = cobradorForm.getFieldsValue();
-                        handleAssignCobrador(values.cobradorId || null);
-                      }}
-                      disabled={loading}
-                      fullWidth
-                      sx={{ mt: 0.5 }}
-                    >
-                      Asignar
-                    </Button>
                   </Form.Item>
                 </Col>
               </Row>
