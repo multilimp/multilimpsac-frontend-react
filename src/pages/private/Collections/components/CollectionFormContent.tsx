@@ -586,9 +586,25 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
               <Typography variant="h6" sx={{ fontWeight: 600, color: 'gray' }}>
                 Gestión de Cobranza
               </Typography>
-              <Typography variant="h4" sx={{ fontWeight: 600, color: 'white' }}>
-                {sale.codigoVenta}
-              </Typography>
+              <Stack direction="row" alignItems="center" spacing={2}>
+                <Typography variant="h4" sx={{ fontWeight: 600, color: 'white' }}>
+                  {sale.codigoVenta}
+                </Typography>
+                <Chip
+                  label={sale.multipleFuentesFinanciamiento ? 'MÚLTIPLES FUENTES DE FINANCIAMIENTO' : 'FUENTE ÚNICA DE FINANCIAMIENTO'}
+                  size="small"
+                  sx={{
+                    backgroundColor: '#ff9800',
+                    color: 'white',
+                    fontWeight: 600,
+                    fontSize: '0.7rem',
+                    height: '20px',
+                    '& .MuiChip-label': {
+                      padding: '0 8px'
+                    }
+                  }}
+                />
+              </Stack>
               <Typography variant="body2" sx={{ color: 'white' }}>
                 {sale.cliente?.razonSocial} - RUC: {sale.cliente?.ruc}
               </Typography>
@@ -1200,7 +1216,7 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
           <Row gutter={16}>
             <Col span={24}>
               <Form.Item
-                label="URL Captura Envío Documento"
+                label="Captura Envío Documento"
                 name="capturaEnvioDocumentoUrl"
                 tooltip="Captura de envío de documento + PDF según requerimientos"
               >
