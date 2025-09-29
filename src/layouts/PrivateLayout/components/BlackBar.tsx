@@ -762,7 +762,7 @@ const BlackBar = memo(() => {
                                   fontSize: '11px',
                                 }}
                               >
-                                {item.cantidad} {item.unidadMedida || 'unid.'}
+                                {item.cantidad}
                               </Typography>
                               <IconButton
                                 size="small"

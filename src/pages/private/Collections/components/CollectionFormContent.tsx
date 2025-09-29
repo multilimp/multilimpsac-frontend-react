@@ -15,7 +15,9 @@ import {
   TableRow,
   Paper,
   IconButton,
-  Chip
+  Chip,
+  ToggleButton,
+  ToggleButtonGroup
 } from '@mui/material';
 import {
   Save,
@@ -29,7 +31,11 @@ import {
   Image as ImageIcon,
   PictureAsPdf as PdfIcon,
   Description as DocumentIcon,
-  GetApp as DownloadIcon
+  GetApp as DownloadIcon,
+  EditOutlined,
+  VisibilityOutlined,
+  ViewList,
+  ViewModule
 } from '@mui/icons-material';
 import { notification, Spin, Form, Input, DatePicker, Select, Modal, Row, Col, Checkbox } from 'antd';
 import { SaleProps } from '@/services/sales/sales';
@@ -120,6 +126,11 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
   const [galleryModalOpen, setGalleryModalOpen] = useState(false);
   const [loadingFiles, setLoadingFiles] = useState(false);
   const [uploadingFiles, setUploadingFiles] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
+
+  // Estados para edición de archivos
+  const [editingFile, setEditingFile] = useState<ArchivoAdjunto | null>(null);
+  const [newFileName, setNewFileName] = useState('');
 
   // Cálculos automáticos
   const importeTotal = parseFloat(sale.montoVenta || '0');
@@ -494,18 +505,43 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
     });
   };
 
+  // Funciones para edición de archivos
+  const handleOpenEditModal = (file: ArchivoAdjunto) => {
+    setEditingFile(file);
+    setNewFileName(file.nombre);
+  };
+
+  const handleSaveFileName = async () => {
+    if (!editingFile || !newFileName.trim()) return;
+
+    try {
+      await updateArchivoAdjunto(editingFile.id, { nombre: newFileName.trim() });
+      notification.success({
+        message: 'Nombre actualizado',
+        description: 'El nombre del archivo se ha actualizado correctamente'
+      });
+      setEditingFile(null);
+      setNewFileName('');
+      // Refrescar la lista de archivos
+      await loadArchivosAdjuntos();
+    } catch (error) {
+      notification.error({
+        message: 'Error al actualizar nombre',
+        description: 'No se pudo actualizar el nombre del archivo'
+      });
+      console.error('Error updating file name:', error);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingFile(null);
+    setNewFileName('');
+  };
+
   const getFileIcon = (fileType: string) => {
     if (fileType.startsWith('image/')) return <ImageIcon />;
     if (fileType === 'application/pdf') return <PdfIcon />;
     return <DocumentIcon />;
-  };
-
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   const getEstadoLabel = (estado: string) => {
@@ -1235,55 +1271,147 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
             </label>
           </Box>
 
-          {/* Files Grid */}
+          {/* Files Display */}
           {galleryFiles.length > 0 && (
             <Box>
-              <Typography variant="h6" sx={{ mb: 2 }}>
-                Archivos Adjuntos ({galleryFiles.length})
-              </Typography>
-              <Box
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-                  gap: 2,
-                  maxHeight: 400,
-                  overflowY: 'auto'
-                }}
-              >
-                {galleryFiles.map((file) => (
-                  <Card key={file.id} sx={{ position: 'relative' }}>
-                    <CardContent sx={{ p: 2, textAlign: 'center' }}>
-                      <Box sx={{ mb: 1 }}>
-                        {getFileIcon(file.tipo)}
-                      </Box>
-                      <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }} noWrap title={file.nombre}>
-                        {file.nombre}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {formatFileSize(file.tamano)}
-                      </Typography>
-                      <Box sx={{ mt: 1 }}>
-                        <IconButton
-                          size="small"
-                          color="primary"
-                          onClick={() => window.open(file.url, '_blank')}
-                          title="Ver archivo"
-                        >
-                          <DownloadIcon fontSize="small" />
-                        </IconButton>
-                        <IconButton
-                          size="small"
-                          color="error"
-                          onClick={() => handleDeleteFile(file.id)}
-                          title="Eliminar archivo"
-                        >
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      </Box>
-                    </CardContent>
-                  </Card>
-                ))}
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Typography variant="h6">
+                  Archivos Adjuntos ({galleryFiles.length})
+                </Typography>
+                <ToggleButtonGroup
+                  value={viewMode}
+                  exclusive
+                  onChange={(event, newView) => {
+                    if (newView !== null) {
+                      setViewMode(newView);
+                    }
+                  }}
+                  size="small"
+                >
+                  <ToggleButton value="grid" aria-label="vista cuadrícula">
+                    <ViewModule />
+                  </ToggleButton>
+                  <ToggleButton value="table" aria-label="vista tabla">
+                    <ViewList />
+                  </ToggleButton>
+                </ToggleButtonGroup>
               </Box>
+
+              {viewMode === 'grid' ? (
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                    gap: 2,
+                    maxHeight: 400,
+                    overflowY: 'auto'
+                  }}
+                >
+                  {galleryFiles.map((file) => (
+                    <Card key={file.id} sx={{ position: 'relative' }}>
+                      <CardContent sx={{ p: 2, textAlign: 'center' }}>
+                        <Box sx={{ mb: 1 }}>
+                          {getFileIcon(file.tipo)}
+                        </Box>
+                        <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }} noWrap title={file.nombre}>
+                          {file.nombre}
+                        </Typography>
+                        <Box sx={{ mt: 1 }}>
+                          <IconButton
+                            size="small"
+                            color="primary"
+                            onClick={() => window.open(file.url, '_blank')}
+                            title="Ver archivo"
+                          >
+                            <VisibilityOutlined fontSize="small" />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            color="secondary"
+                            onClick={() => handleOpenEditModal(file)}
+                            title="Editar nombre"
+                          >
+                            <EditOutlined fontSize="small" />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            color="error"
+                            onClick={() => handleDeleteFile(file.id)}
+                            title="Eliminar archivo"
+                          >
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </Box>
+              ) : (
+                <TableContainer component={Paper} sx={{ maxHeight: 400 }}>
+                  <Table stickyHeader size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell sx={{ fontWeight: 'bold' }}>Nombre</TableCell>
+                        <TableCell sx={{ fontWeight: 'bold' }}>Tipo</TableCell>
+                        <TableCell sx={{ fontWeight: 'bold' }}>Fecha de Subida</TableCell>
+                        <TableCell sx={{ fontWeight: 'bold', width: 150 }} align="center">Acciones</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {galleryFiles.map((file) => (
+                        <TableRow key={file.id} hover>
+                          <TableCell>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              {getFileIcon(file.tipo)}
+                              <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                {file.nombre}
+                              </Typography>
+                            </Box>
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              label={file.tipo.split('/')[1]?.toUpperCase() || file.tipo}
+                              size="small"
+                              variant="outlined"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2" color="text.secondary">
+                              {file.createdAt ? formattedDate(file.createdAt) : 'N/A'}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="center">
+                            <IconButton
+                              size="small"
+                              color="primary"
+                              onClick={() => window.open(file.url, '_blank')}
+                              title="Ver archivo"
+                            >
+                              <VisibilityOutlined fontSize="small" />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              color="secondary"
+                              onClick={() => handleOpenEditModal(file)}
+                              title="Editar nombre"
+                            >
+                              <EditOutlined fontSize="small" />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              color="error"
+                              onClick={() => handleDeleteFile(file.id)}
+                              title="Eliminar archivo"
+                            >
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
             </Box>
           )}
 
@@ -1298,6 +1426,27 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
               </Typography>
             </Box>
           )}
+        </Box>
+      </Modal>
+
+      {/* Modal de edición de nombre de archivo */}
+      <Modal
+        title="Editar nombre del archivo"
+        open={!!editingFile}
+        onOk={handleSaveFileName}
+        onCancel={handleCancelEdit}
+        okText="Guardar"
+        cancelText="Cancelar"
+        destroyOnClose
+      >
+        <Box sx={{ p: 2 }}>
+          <Input
+            value={newFileName}
+            onChange={(e) => setNewFileName(e.target.value)}
+            placeholder="Nuevo nombre del archivo"
+            maxLength={255}
+            style={{ width: '100%' }}
+          />
         </Box>
       </Modal>
     </Box>
