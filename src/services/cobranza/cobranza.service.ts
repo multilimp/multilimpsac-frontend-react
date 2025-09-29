@@ -9,29 +9,29 @@ export interface GestionCobranza {
   fechaGestion: string;
   notaGestion?: string;
   estadoCobranza?: string;
-  
+
   // Tipo de cobranza según requerimientos (ESPECIAL vs NORMAL)
   tipoCobranza?: 'ESPECIAL' | 'NORMAL';
-  
+
   // Campos para gestión de vouchers y pagos
   voucherPagoUrl?: string;
   pagoConformeTesoreria?: boolean;
-  
+
   // Documentos de gestión
   cartaAmpliacionUrl?: string;
   capturaEnvioDocumentoUrl?: string;
-  
+
   // Archivos y documentos múltiples
   archivosAdjuntosNotasGestion?: string[];
   documentosRegistrados?: string[];
-  
+
   // Notas especiales
   notaEspecialEntrega?: string;
-  
+
   // Metadatos
   createdAt?: string;
   updatedAt?: string;
-  
+
   // Relaciones
   usuario?: {
     id: number;
@@ -53,6 +53,7 @@ export interface CobranzaData {
   penalidad?: string;
   estadoCobranza?: string;
   fechaEstadoCobranza?: string;
+  cobradorId?: number;
 }
 
 /**
@@ -73,13 +74,26 @@ export const updateCobranzaFields = async (ordenCompraId: number, data: Cobranza
 };
 
 /**
+ * Asigna un cobrador específico a una orden de compra
+ */
+export const assignCobrador = async (ordenCompraId: number, cobradorId: number | null): Promise<CobranzaData> => {
+  try {
+    const response = await apiClient.patch(`/orden-compra/${ordenCompraId}/cobranza/cobrador`, { cobradorId });
+    return response.data.data;
+  } catch (error) {
+    console.error('Error al asignar cobrador:', error);
+    throw new Error('No se pudo asignar el cobrador');
+  }
+};
+
+/**
  * Obtiene los datos de cobranza de una orden de compra
  */
 export const getCobranzaByOrdenCompra = async (ordenCompraId: number): Promise<CobranzaData> => {
   try {
     const response = await apiClient.get(`/orden-compra/${ordenCompraId}/cobranza`);
     const cobranza = response.data.data;
-    
+
     return {
       etapaSiaf: cobranza.etapaSiaf,
       fechaSiaf: cobranza.fechaSiaf,

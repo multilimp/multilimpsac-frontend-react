@@ -46,6 +46,7 @@ import type { Dayjs } from 'dayjs';
 import {
   getGestionesCobranza,
   updateCobranzaFields,
+  assignCobrador,
   createGestionCobranza,
   updateGestionCobranza,
   deleteGestionCobranza,
@@ -61,6 +62,9 @@ import {
   deleteArchivoAdjunto
 } from '@/services/archivosAdjuntos/archivosAdjuntos.requests';
 import { type ArchivoAdjunto } from '@/services/archivosAdjuntos/archivosAdjuntos.d';
+import { getUsers } from '@/services/users/users.request';
+import { type UserProps } from '@/services/users/users.d';
+import { PermissionsEnum } from '@/services/users/permissions.enum';
 import { heroUIColors } from '@/components/ui';
 import InputAntd from '@/components/InputAntd';
 import SelectGeneric from '@/components/selects/SelectGeneric';
@@ -120,9 +124,18 @@ const porcentajeDetraccionOptions = [
   { label: '10%', value: 10 }
 ];
 
+// Opciones para cobradores (se generan dinámicamente)
+const getCobradorOptions = (cobradores: UserProps[]) => {
+  return cobradores.map(cobrador => ({
+    label: cobrador.nombre,
+    value: cobrador.id
+  }));
+};
+
 export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
   const [form] = Form.useForm();
   const [gestionForm] = Form.useForm();
+  const [cobradorForm] = Form.useForm();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [gestiones, setGestiones] = useState<GestionCobranza[]>([]);
@@ -144,6 +157,71 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
   const [editingFile, setEditingFile] = useState<ArchivoAdjunto | null>(null);
   const [newFileName, setNewFileName] = useState('');
 
+  // Función para guardar solo el cobrador
+  const handleCobradorFinish = async (values: { cobradorId?: number }) => {
+    try {
+      setLoading(true);
+
+      const changedFields: Partial<CobranzaData> = {};
+
+      // Comparar cobradorId
+      const currentCobradorId = values.cobradorId || undefined;
+      const originalCobradorId = originalCobranzaData?.cobradorId || undefined;
+
+      if (currentCobradorId !== originalCobradorId) {
+        changedFields.cobradorId = currentCobradorId;
+
+        await updateCobranzaFields(sale.id, changedFields);
+
+        // Actualizar los datos originales
+        setOriginalCobranzaData(prev => ({ ...prev, ...changedFields }));
+
+        notification.success({
+          message: 'Cobrador actualizado',
+          description: 'El cobrador asignado se ha actualizado correctamente'
+        });
+      }
+    } catch (error) {
+      notification.error({
+        message: 'Error al guardar cobrador',
+        description: 'No se pudo actualizar el cobrador asignado'
+      });
+      console.error('Error saving cobrador:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Función para asignar cobrador usando endpoint específico
+  const handleAssignCobrador = async (cobradorId: number | null) => {
+    try {
+      setLoading(true);
+
+      const updatedCobranza = await assignCobrador(sale.id, cobradorId);
+
+      // Actualizar los datos originales
+      setOriginalCobranzaData(prev => prev ? { ...prev, cobradorId: cobradorId || undefined } : null);
+
+      // Actualizar el formulario de cobrador
+      cobradorForm.setFieldsValue({
+        cobradorId: cobradorId || undefined,
+      });
+
+      notification.success({
+        message: cobradorId ? 'Cobrador asignado' : 'Cobrador removido',
+        description: cobradorId ? 'El cobrador ha sido asignado correctamente' : 'El cobrador ha sido removido correctamente'
+      });
+    } catch (error) {
+      notification.error({
+        message: 'Error al asignar cobrador',
+        description: 'No se pudo asignar el cobrador seleccionado'
+      });
+      console.error('Error assigning cobrador:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Estados para porcentajes editables de retención y detracción
   const [porcentajeRetencionEditable, setPorcentajeRetencionEditable] = useState<number>(
     parseFloat(sale.facturacion?.retencion?.toString() || '0')
@@ -152,6 +230,10 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
     parseFloat(sale.facturacion?.detraccion?.toString() || '0')
   );
   const [hasFacturacionChanges, setHasFacturacionChanges] = useState(false);
+
+  // Estados para cobradores
+  const [cobradores, setCobradores] = useState<UserProps[]>([]);
+  const [loadingCobradores, setLoadingCobradores] = useState(false);
 
   // Cálculos automáticos
   const importeTotal = parseFloat(sale.montoVenta || '0');
@@ -192,6 +274,11 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
         fechaEstadoCobranza: cobranzaData.fechaEstadoCobranza ? dayjs(cobranzaData.fechaEstadoCobranza) : null,
       });
 
+      // Configurar formulario de cobrador
+      cobradorForm.setFieldsValue({
+        cobradorId: cobranzaData.cobradorId || undefined,
+      });
+
       // Inicializar penalidad para cálculo de neto cobrado
       setCurrentPenalidad(parseFloat(cobranzaData.penalidad || '0'));
 
@@ -201,6 +288,9 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
       // Cargar archivos adjuntos
       await loadArchivosAdjuntos();
 
+      // Cargar cobradores
+      await loadCobradores();
+
     } catch (error) {
       console.error('Error loading collection data:', error);
       notification.error({
@@ -209,6 +299,26 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadCobradores = async () => {
+    try {
+      setLoadingCobradores(true);
+      const allUsers = await getUsers();
+      // Filtrar usuarios que tienen permiso de collections
+      const cobradoresFiltrados = allUsers.filter(user =>
+        user.permisos?.includes(PermissionsEnum.COLLECTIONS) && user.estado
+      );
+      setCobradores(cobradoresFiltrados);
+    } catch (error) {
+      console.error('Error loading cobradores:', error);
+      notification.error({
+        message: 'Error al cargar cobradores',
+        description: 'No se pudieron cargar los usuarios con permiso de cobranzas'
+      });
+    } finally {
+      setLoadingCobradores(false);
     }
   };
 
@@ -601,6 +711,30 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
 
   return (
     <Box sx={{ p: 3 }}>
+      {/* Campo Cobrador Asignado - Arriba de todo */}
+      <Box sx={{ mb: 3 }}>
+        <Form form={cobradorForm} layout="vertical" onFinish={handleCobradorFinish}>
+          <Row gutter={[24, 16]}>
+            <Col span={8}>
+              <Form.Item label="Cobrador Asignado" name="cobradorId">
+                <SelectGeneric
+                  placeholder="Seleccionar cobrador"
+                  options={getCobradorOptions(cobradores)}
+                  loading={loadingCobradores}
+                  allowClear
+                />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              {/* Espacio vacío para mantener alineación */}
+            </Col>
+            <Col span={8}>
+              {/* Espacio vacío para mantener alineación */}
+            </Col>
+          </Row>
+        </Form>
+      </Box>
+
       <Spin spinning={loading}>
         {/* Barra Negra de OP */}
         <StepItemContent
@@ -1064,6 +1198,55 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                   </Button>
                 </Box>
               </Box>
+            </Form>
+          </CardContent>
+        </Card>
+
+        {/* Asignación de Cobrador */}
+        <Card>
+          <CardContent>
+            <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 3 }}>
+              <Stack direction="row" alignItems="center" spacing={2}>
+                <Business color="primary" />
+                <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                  Asignación de Cobrador
+                </Typography>
+              </Stack>
+            </Stack>
+
+            <Form
+              form={cobradorForm}
+              layout="vertical"
+              onFinish={handleCobradorFinish}
+            >
+              <Row gutter={16}>
+                <Col span={16}>
+                  <Form.Item label="Cobrador Asignado" name="cobradorId">
+                    <SelectGeneric
+                      placeholder="Seleccionar cobrador"
+                      options={getCobradorOptions(cobradores)}
+                      loading={loadingCobradores}
+                      allowClear
+                    />
+                  </Form.Item>
+                </Col>
+                <Col span={8}>
+                  <Form.Item label=" ">
+                    <Button
+                      variant="contained"
+                      onClick={() => {
+                        const values = cobradorForm.getFieldsValue();
+                        handleAssignCobrador(values.cobradorId || null);
+                      }}
+                      disabled={loading}
+                      fullWidth
+                      sx={{ mt: 0.5 }}
+                    >
+                      Asignar
+                    </Button>
+                  </Form.Item>
+                </Col>
+              </Row>
             </Form>
           </CardContent>
         </Card>
