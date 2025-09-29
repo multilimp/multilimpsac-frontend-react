@@ -108,6 +108,18 @@ const tipoGestionOptions = [
   { label: 'Reunión coordinación', value: 'REUNION' }
 ];
 
+const porcentajeRetencionOptions = [
+  { label: '0%', value: 0 },
+  { label: '3%', value: 3 }
+];
+
+const porcentajeDetraccionOptions = [
+  { label: '0%', value: 0 },
+  { label: '4%', value: 4 },
+  { label: '9%', value: 9 },
+  { label: '10%', value: 10 }
+];
+
 export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
   const [form] = Form.useForm();
   const [gestionForm] = Form.useForm();
@@ -132,23 +144,35 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
   const [editingFile, setEditingFile] = useState<ArchivoAdjunto | null>(null);
   const [newFileName, setNewFileName] = useState('');
 
+  // Estados para porcentajes editables de retención y detracción
+  const [porcentajeRetencionEditable, setPorcentajeRetencionEditable] = useState<number>(
+    parseFloat(sale.facturacion?.retencion?.toString() || '0')
+  );
+  const [porcentajeDetraccionEditable, setPorcentajeDetraccionEditable] = useState<number>(
+    parseFloat(sale.facturacion?.detraccion?.toString() || '0')
+  );
+  const [hasFacturacionChanges, setHasFacturacionChanges] = useState(false);
+
   // Cálculos automáticos
   const importeTotal = parseFloat(sale.montoVenta || '0');
-  const porcentajeRetencion = parseFloat(sale.facturacion?.retencion?.toString() || '0');
-  const porcentajeDetraccion = parseFloat(sale.facturacion?.detraccion?.toString() || '0');
-  const valorRetencion = (importeTotal * porcentajeRetencion / 100).toFixed(2);
-  const valorDetraccion = (importeTotal * porcentajeDetraccion / 100).toFixed(2);
+  const valorRetencion = (importeTotal * porcentajeRetencionEditable / 100).toFixed(2);
+  const valorDetraccion = (importeTotal * porcentajeDetraccionEditable / 100).toFixed(2);
 
   // Calcular neto cobrado usando la penalidad actual del estado
   const netoCobrado = (importeTotal - parseFloat(valorRetencion) - parseFloat(valorDetraccion) - currentPenalidad).toFixed(2); useEffect(() => {
     loadInitialData();
   }, [sale.id]);
 
-  // Efecto para recalcular valores cuando cambia la penalidad
+  // Efecto para detectar cambios en porcentajes editables
   useEffect(() => {
-    const subscription = form.getFieldsValue();
-    // Este efecto se ejecutará cuando el formulario cambie
-  }, [form]);
+    const originalRetencion = parseFloat(sale.facturacion?.retencion?.toString() || '0');
+    const originalDetraccion = parseFloat(sale.facturacion?.detraccion?.toString() || '0');
+
+    const hasRetencionChanged = porcentajeRetencionEditable !== originalRetencion;
+    const hasDetraccionChanged = porcentajeDetraccionEditable !== originalDetraccion;
+
+    setHasFacturacionChanges(hasRetencionChanged || hasDetraccionChanged);
+  }, [porcentajeRetencionEditable, porcentajeDetraccionEditable, sale.facturacion]);
 
   const loadInitialData = async () => {
     setLoading(true);
@@ -298,15 +322,31 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
     try {
       setLoading(true);
 
+      // Verificar si hay cambios de facturación
+      if (hasFacturacionChanges) {
+        notification.warning({
+          message: 'Cambios de Facturación Detectados',
+          description: 'Los porcentajes de retención y detracción modificados requieren actualización manual en el sistema de facturación. Los cambios de cobranza se guardarán normalmente.',
+          duration: 8
+        });
+      }
+
       // Obtener solo los campos que cambiaron
       const changedFields = getChangedFields(values);
 
-      // Si no hay cambios, no hacer la petición
+      // Si no hay cambios en cobranza, mostrar mensaje apropiado
       if (Object.keys(changedFields).length === 0) {
-        notification.info({
-          message: 'Sin cambios',
-          description: 'No se detectaron cambios en los datos de cobranza'
-        });
+        if (hasFacturacionChanges) {
+          notification.info({
+            message: 'Solo cambios de facturación',
+            description: 'Los cambios de retención y detracción requieren actualización manual en el sistema de facturación'
+          });
+        } else {
+          notification.info({
+            message: 'Sin cambios',
+            description: 'No se detectaron cambios en los datos de cobranza'
+          });
+        }
         setLoading(false);
         return;
       }
@@ -945,26 +985,38 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                 {/* Fila 2 */}
                 <Col span={8}>
                   <Form.Item
-                    label={porcentajeRetencion > 0 ? `Retención ${porcentajeRetencion}%` : 'Retención 0%'}
+                    label={`Retención ${porcentajeRetencionEditable}%`}
                   >
-                    <InputAntd
-                      disabled
-                      placeholder="0.00"
-                      value={formatCurrency(parseFloat(valorRetencion))}
-                      style={{ backgroundColor: '#f5f5f5' }}
-                    />
+                    <Stack direction="row" spacing={1}>
+                      <SelectGeneric
+                        placeholder="Seleccionar %"
+                        options={porcentajeRetencionOptions}
+                        value={porcentajeRetencionEditable}
+                        onChange={(value) => setPorcentajeRetencionEditable(value || 0)}
+                        style={{ width: '120px' }}
+                      />
+                      <Typography variant="body2" sx={{ alignSelf: 'center', fontWeight: 600, color: 'primary.main' }}>
+                        = {formatCurrency(parseFloat(valorRetencion))}
+                      </Typography>
+                    </Stack>
                   </Form.Item>
                 </Col>
                 <Col span={8}>
                   <Form.Item
-                    label={porcentajeDetraccion > 0 ? `Detracción ${porcentajeDetraccion}%` : 'Detracción 0%'}
+                    label={`Detracción ${porcentajeDetraccionEditable}%`}
                   >
-                    <InputAntd
-                      disabled
-                      placeholder="0.00"
-                      value={formatCurrency(parseFloat(valorDetraccion))}
-                      style={{ backgroundColor: '#f5f5f5' }}
-                    />
+                    <Stack direction="row" spacing={1}>
+                      <SelectGeneric
+                        placeholder="Seleccionar %"
+                        options={porcentajeDetraccionOptions}
+                        value={porcentajeDetraccionEditable}
+                        onChange={(value) => setPorcentajeDetraccionEditable(value || 0)}
+                        style={{ width: '120px' }}
+                      />
+                      <Typography variant="body2" sx={{ alignSelf: 'center', fontWeight: 600, color: 'primary.main' }}>
+                        = {formatCurrency(parseFloat(valorDetraccion))}
+                      </Typography>
+                    </Stack>
                   </Form.Item>
                 </Col>
                 <Col span={8}>
@@ -996,16 +1048,7 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                 </Col>
               </Row>
 
-              <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Button
-                  variant="outlined"
-                  onClick={handleOpenGallery}
-                  startIcon={<CloudUploadIcon />}
-                  color="secondary"
-                >
-                  Galería de Archivos ({galleryFiles.length})
-                </Button>
-
+              <Box sx={{ mt: 3, display: 'flex', justifyContent: 'right', alignItems: 'center' }}>
                 <Box sx={{ display: 'flex', gap: 2 }}>
                   <Button variant="outlined" onClick={handleBack}>
                     Cancelar
@@ -1014,10 +1057,10 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                     variant="contained"
                     onClick={() => form.submit()}
                     startIcon={<Save />}
-                    disabled={loading || !hasChanges}
-                    color={hasChanges ? "primary" : "inherit"}
+                    disabled={loading || (!hasChanges && !hasFacturacionChanges)}
+                    color={(hasChanges || hasFacturacionChanges) ? "primary" : "inherit"}
                   >
-                    {hasChanges ? 'Guardar Cambios' : 'Sin Cambios'}
+                    {(hasChanges || hasFacturacionChanges) ? 'Guardar Cambios' : 'Sin Cambios'}
                   </Button>
                 </Box>
               </Box>
