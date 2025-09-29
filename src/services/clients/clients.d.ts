@@ -15,4 +15,5 @@ export interface ClientProps {
   telefono?: string;
   sede?: string;
   updatedAt: string;
+  promedioCobranza?: number;
 }

@@ -35,7 +35,8 @@ import {
   EditOutlined,
   VisibilityOutlined,
   ViewList,
-  ViewModule
+  ViewModule,
+  People
 } from '@mui/icons-material';
 import { notification, Spin, Form, Input, DatePicker, Select, Modal, Row, Col, Checkbox } from 'antd';
 import { SaleProps } from '@/services/sales/sales';
@@ -65,11 +66,15 @@ import { type ArchivoAdjunto } from '@/services/archivosAdjuntos/archivosAdjunto
 import { getUsers } from '@/services/users/users.request';
 import { type UserProps } from '@/services/users/users.d';
 import { PermissionsEnum } from '@/services/users/permissions.enum';
+import { useAppContext } from '@/context';
 import { heroUIColors } from '@/components/ui';
 import InputAntd from '@/components/InputAntd';
 import SelectGeneric from '@/components/selects/SelectGeneric';
 import DatePickerAntd from '@/components/DatePickerAnt';
 import SimpleFileUpload from '@/components/SimpleFileUpload';
+import ContactsDrawer from '@/components/ContactsDrawer';
+import { ContactTypeEnum } from '@/services/contacts/contacts.enum';
+import apiClient from '@/services/apiClient';
 
 interface CollectionFormContentProps {
   sale: SaleProps;
@@ -137,6 +142,7 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
   const [gestionForm] = Form.useForm();
   const [cobradorForm] = Form.useForm();
   const navigate = useNavigate();
+  const { user } = useAppContext();
   const [loading, setLoading] = useState(false);
   const [gestiones, setGestiones] = useState<GestionCobranza[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
@@ -156,6 +162,14 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
   // Estados para edición de archivos
   const [editingFile, setEditingFile] = useState<ArchivoAdjunto | null>(null);
   const [newFileName, setNewFileName] = useState('');
+
+  // Estado para el drawer de contactos
+  const [contactsDrawerOpen, setContactsDrawerOpen] = useState(false);
+
+  // Estados para promedio de cobranza editable
+  const [promedioEditable, setPromedioEditable] = useState<number | null>(null);
+  const [editandoPromedio, setEditandoPromedio] = useState(false);
+  const [promedioLocal, setPromedioLocal] = useState<number | null>(sale.cliente?.promedioCobranza ? Number(sale.cliente.promedioCobranza) : null);
 
   // Función para guardar solo el cobrador
   const handleCobradorFinish = async (values: { cobradorId?: number }) => {
@@ -217,6 +231,35 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
         description: 'No se pudo asignar el cobrador seleccionado'
       });
       console.error('Error assigning cobrador:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Función para guardar promedio de cobranza
+  const handleSavePromedio = async () => {
+    if (promedioEditable === null || !sale.cliente?.id) return;
+
+    try {
+      setLoading(true);
+      await apiClient.put(`/ventas/cliente/${sale.cliente.id}/promedio-cobranza`, {
+        promedioCobranza: promedioEditable
+      });
+
+      notification.success({
+        message: 'Promedio actualizado',
+        description: 'El promedio de cobranza se ha actualizado correctamente'
+      });
+
+      // Actualizar el promedio local para reflejar el cambio en la UI
+      setPromedioLocal(promedioEditable);
+      setEditandoPromedio(false);
+    } catch (error) {
+      notification.error({
+        message: 'Error al guardar promedio',
+        description: 'No se pudo actualizar el promedio de cobranza'
+      });
+      console.error('Error saving promedio:', error);
     } finally {
       setLoading(false);
     }
@@ -291,6 +334,9 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
       // Cargar cobradores
       await loadCobradores();
 
+      // Calcular promedio de cobranza del cliente
+      await calcularPromedioCobranza();
+
     } catch (error) {
       console.error('Error loading collection data:', error);
       notification.error({
@@ -306,9 +352,9 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
     try {
       setLoadingCobradores(true);
       const allUsers = await getUsers();
-      // Filtrar usuarios que tienen permiso de collections
+      // Filtrar usuarios que tienen permiso de collections o jefe de cobranzas
       const cobradoresFiltrados = allUsers.filter(user =>
-        user.permisos?.includes(PermissionsEnum.COLLECTIONS) && user.estado
+        (user.permisos?.includes(PermissionsEnum.COLLECTIONS) || user.permisos?.includes(PermissionsEnum.JEFECOBRANZAS)) && user.estado
       );
       setCobradores(cobradoresFiltrados);
     } catch (error) {
@@ -319,6 +365,19 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
       });
     } finally {
       setLoadingCobradores(false);
+    }
+  };
+
+  const calcularPromedioCobranza = async () => {
+    if (!sale.cliente?.id) return;
+
+    try {
+      // Llamar al endpoint para calcular el promedio
+      await apiClient.get(`/ventas/cliente/${sale.cliente.id}/promedio-cobranza`);
+      // No necesitamos hacer nada con la respuesta, ya que se actualiza en la BD
+    } catch (error) {
+      console.error('Error calculando promedio de cobranza:', error);
+      // No mostrar notificación de error ya que es un cálculo en background
     }
   };
 
@@ -356,7 +415,33 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
   };
 
   const handleBack = () => {
-    navigate('/collections');
+    setContactsDrawerOpen(true);
+  };
+
+  const handleCancel = () => {
+    // Resetear formulario a valores originales
+    if (originalCobranzaData) {
+      form.setFieldsValue({
+        etapaSiaf: originalCobranzaData.etapaSiaf || '',
+        fechaSiaf: originalCobranzaData.fechaSiaf ? dayjs(originalCobranzaData.fechaSiaf) : null,
+        penalidad: originalCobranzaData.penalidad || '',
+        estadoCobranza: originalCobranzaData.estadoCobranza || '',
+        fechaEstadoCobranza: originalCobranzaData.fechaEstadoCobranza ? dayjs(originalCobranzaData.fechaEstadoCobranza) : null,
+      });
+    }
+
+    // Resetear porcentajes editables a valores originales
+    setPorcentajeRetencionEditable(parseFloat(sale.facturacion?.retencion?.toString() || '0'));
+    setPorcentajeDetraccionEditable(parseFloat(sale.facturacion?.detraccion?.toString() || '0'));
+
+    // Resetear estado de cambios
+    setHasChanges(false);
+    setHasFacturacionChanges(false);
+
+    notification.info({
+      message: 'Cambios cancelados',
+      description: 'Los cambios han sido revertidos'
+    });
   };
 
   /**
@@ -711,29 +796,56 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
 
   return (
     <Box sx={{ p: 3 }}>
-      {/* Campo Cobrador Asignado - Arriba de todo */}
-      <Box sx={{ mb: 3 }}>
-        <Form form={cobradorForm} layout="vertical" onFinish={handleCobradorFinish}>
-          <Row gutter={[24, 16]}>
-            <Col span={8}>
-              <Form.Item label="Cobrador Asignado" name="cobradorId">
-                <SelectGeneric
-                  placeholder="Seleccionar cobrador"
-                  options={getCobradorOptions(cobradores)}
-                  loading={loadingCobradores}
-                  allowClear
-                />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              {/* Espacio vacío para mantener alineación */}
-            </Col>
-            <Col span={8}>
-              {/* Espacio vacío para mantener alineación */}
-            </Col>
-          </Row>
-        </Form>
-      </Box>
+      {/* Asignación de Cobrador - Solo visible para usuarios con permisos de cobranzas */}
+      {(user.permisos?.includes(PermissionsEnum.COLLECTIONS) || user.permisos?.includes(PermissionsEnum.JEFECOBRANZAS)) && (
+        <Card sx={{ mb: 3, width: '100%' }}>
+          <CardContent>
+            <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 3 }}>
+              <Stack direction="row" alignItems="center" spacing={2}>
+                <Business color="primary" />
+                <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                  Asignación de Cobrador
+                </Typography>
+              </Stack>
+            </Stack>
+
+            <Form
+              form={cobradorForm}
+              layout="vertical"
+              onFinish={handleCobradorFinish}
+            >
+              <Row gutter={16}>
+                <Col span={16}>
+                  <Form.Item label="Cobrador Asignado" name="cobradorId">
+                    <SelectGeneric
+                      placeholder="Seleccionar cobrador"
+                      options={getCobradorOptions(cobradores)}
+                      loading={loadingCobradores}
+                      allowClear
+                    />
+                  </Form.Item>
+                </Col>
+                <Col span={8}>
+                  <Form.Item label=" ">
+                    <Button
+                      variant="contained"
+                      onClick={() => {
+                        const values = cobradorForm.getFieldsValue();
+                        handleAssignCobrador(values.cobradorId || null);
+                      }}
+                      disabled={loading}
+                      fullWidth
+                      sx={{ mt: 0.5 }}
+                    >
+                      Asignar
+                    </Button>
+                  </Form.Item>
+                </Col>
+              </Row>
+            </Form>
+          </CardContent>
+        </Card>
+      )}
 
       <Spin spinning={loading}>
         {/* Barra Negra de OP */}
@@ -753,6 +865,17 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
               <Typography sx={{ fontWeight: 600, color: heroUIColors.primary }}>
                 Fecha registro: {sale.createdAt ? formattedDate(sale.createdAt) : '-'}
               </Typography>
+            </Stack>
+          }
+          resumeButtons={
+            <Stack direction="row" alignItems="center" spacing={2}>
+              <Button
+                variant="outlined"
+                startIcon={<People />}
+                onClick={handleBack}
+              >
+                Ver Contactos
+              </Button>
             </Stack>
           }
           resumeContent={
@@ -1050,12 +1173,15 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
 
         {/* mostrar productos de oc */}
         {sale.productos && sale.productos.length > 0 && (
-          <Card sx={{ my: 3 }}>
+          <Card sx={{ my: 3, width: '100%' }}>
             <CardContent>
-              <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
-                <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                  OP PERÚ COMPRAS
-                </Typography>
+              <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 3 }}>
+                <Stack direction="row" alignItems="center" spacing={2}>
+                  <ReceiptIcon color="primary" />
+                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                    OP PERÚ COMPRAS
+                  </Typography>
+                </Stack>
               </Stack>
               <TableContainer>
                 <Table>
@@ -1084,13 +1210,15 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
         )}
 
         {/* Gestiones - Grid 3x3 */}
-        <Card sx={{ my: 3 }}>
+        <Card sx={{ my: 3, width: '100%' }}>
           <CardContent>
-            <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
-              <MoneyIcon color="primary" />
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                Gestiones de Cobranza
-              </Typography>
+            <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 3 }}>
+              <Stack direction="row" alignItems="center" spacing={2}>
+                <MoneyIcon color="primary" />
+                <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                  Gestiones de Cobranza
+                </Typography>
+              </Stack>
             </Stack>
 
             <Form form={form} layout="vertical" onFinish={handleFinish} onValuesChange={checkForChanges}>
@@ -1184,9 +1312,11 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
 
               <Box sx={{ mt: 3, display: 'flex', justifyContent: 'right', alignItems: 'center' }}>
                 <Box sx={{ display: 'flex', gap: 2 }}>
-                  <Button variant="outlined" onClick={handleBack}>
-                    Cancelar
-                  </Button>
+                  {(hasChanges || hasFacturacionChanges) && (
+                    <Button variant="outlined" onClick={handleCancel}>
+                      Cancelar
+                    </Button>
+                  )}
                   <Button
                     variant="contained"
                     onClick={() => form.submit()}
@@ -1202,57 +1332,8 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
           </CardContent>
         </Card>
 
-        {/* Asignación de Cobrador */}
-        <Card>
-          <CardContent>
-            <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 3 }}>
-              <Stack direction="row" alignItems="center" spacing={2}>
-                <Business color="primary" />
-                <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                  Asignación de Cobrador
-                </Typography>
-              </Stack>
-            </Stack>
-
-            <Form
-              form={cobradorForm}
-              layout="vertical"
-              onFinish={handleCobradorFinish}
-            >
-              <Row gutter={16}>
-                <Col span={16}>
-                  <Form.Item label="Cobrador Asignado" name="cobradorId">
-                    <SelectGeneric
-                      placeholder="Seleccionar cobrador"
-                      options={getCobradorOptions(cobradores)}
-                      loading={loadingCobradores}
-                      allowClear
-                    />
-                  </Form.Item>
-                </Col>
-                <Col span={8}>
-                  <Form.Item label=" ">
-                    <Button
-                      variant="contained"
-                      onClick={() => {
-                        const values = cobradorForm.getFieldsValue();
-                        handleAssignCobrador(values.cobradorId || null);
-                      }}
-                      disabled={loading}
-                      fullWidth
-                      sx={{ mt: 0.5 }}
-                    >
-                      Asignar
-                    </Button>
-                  </Form.Item>
-                </Col>
-              </Row>
-            </Form>
-          </CardContent>
-        </Card>
-
         {/* Historial de Gestiones */}
-        <Card>
+        <Card sx={{ my: 3, width: '100%' }}>
           <CardContent>
             <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 3 }}>
               <Stack direction="row" alignItems="center" spacing={2}>
@@ -1691,6 +1772,150 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
           />
         </Box>
       </Modal>
+
+      {/* Drawer de Contactos */}
+      {contactsDrawerOpen && sale.cliente?.id && (
+        <ContactsDrawer
+          handleClose={() => setContactsDrawerOpen(false)}
+          tipo={ContactTypeEnum.CLIENTE}
+          referenceId={sale.cliente.id}
+          title={`${sale.cliente.razonSocial} - ${sale.cliente.ruc}`}
+          readOnly={true}
+        />
+      )}
+
+      {/* Promedio de Cobranza del Cliente */}
+      <Card sx={{ my: 3, width: '100%' }}>
+        <CardContent>
+          <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 3 }}>
+            <Stack direction="row" alignItems="center" spacing={2}>
+              <Business color="primary" />
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                Promedio de Cobranza
+              </Typography>
+            </Stack>
+          </Stack>
+
+          <Box sx={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(2, 1fr)',
+            gap: 2
+          }}>
+            {/* Promedio en días */}
+            <Card sx={{
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              border: '1px solid #e0e0e0',
+              minHeight: '80px',
+              display: 'flex',
+              alignItems: 'center',
+              boxShadow: 'none'
+            }}>
+              <CardContent sx={{ py: 2, px: 2, '&:last-child': { pb: 2 }, width: '100%' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem' }}>
+                    Promedio de Cobranza
+                  </Typography>
+                  {!editandoPromedio && (
+                    <IconButton
+                      size="small"
+                      onClick={() => {
+                        setPromedioEditable(promedioLocal || 0);
+                        setEditandoPromedio(true);
+                      }}
+                      sx={{ p: 0.5 }}
+                    >
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                  )}
+                </Box>
+                {editandoPromedio ? (
+                  <Box sx={{ mt: 1 }}>
+                    <Input
+                      type="number"
+                      value={promedioEditable || 0}
+                      onChange={(e) => setPromedioEditable(Number(e.target.value) || 0)}
+                      placeholder="Días"
+                      min={0}
+                      style={{ width: '100%', marginBottom: 8 }}
+                    />
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      <Button
+                        size="small"
+                        variant="contained"
+                        onClick={handleSavePromedio}
+                        disabled={loading}
+                      >
+                        Guardar
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={() => setEditandoPromedio(false)}
+                      >
+                        Cancelar
+                      </Button>
+                    </Box>
+                  </Box>
+                ) : (
+                  <>
+                    <Typography variant="h5" sx={{ fontWeight: 600, color: '#1976d2', mt: 0.5 }}>
+                      {promedioLocal !== null
+                        ? `${Math.round(promedioLocal)} días`
+                        : 'No disponible'
+                      }
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                      Tiempo promedio de cobro
+                    </Typography>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Estado del promedio */}
+            <Card sx={{
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              border: '1px solid #e0e0e0',
+              minHeight: '80px',
+              display: 'flex',
+              alignItems: 'center',
+              boxShadow: 'none'
+            }}>
+              <CardContent sx={{ py: 2, px: 2, '&:last-child': { pb: 2 } }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem' }}>
+                  Clasificación
+                </Typography>
+                <Typography
+                  variant="h5"
+                  sx={{
+                    fontWeight: 600,
+                    mt: 0.5,
+                    color: promedioLocal !== null
+                      ? promedioLocal <= 30
+                        ? '#4caf50' // Verde para buen promedio
+                        : promedioLocal <= 60
+                          ? '#ff9800' // Naranja para promedio regular
+                          : '#f44336' // Rojo para mal promedio
+                      : '#757575'
+                  }}
+                >
+                  {promedioLocal !== null
+                    ? promedioLocal <= 30
+                      ? 'Excelente'
+                      : promedioLocal <= 60
+                        ? 'Regular'
+                        : 'Requiere Atención'
+                    : 'Sin datos'
+                  }
+                </Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                  Basado en histórico de pagos
+                </Typography>
+              </CardContent>
+            </Card>
+          </Box>
+        </CardContent>
+      </Card>
     </Box>
   );
 };

@@ -18,6 +18,7 @@ export enum PermissionsEnum {
   TREASURY = 'treasury',
   BILLING = 'billing',
   COLLECTIONS = 'collections',
+  JEFECOBRANZAS = 'jefecobranzas',
 
   // Reportes
   REPORTS = 'reports',
@@ -40,6 +41,7 @@ export const PERMISSION_LABELS: Record<PermissionsEnum, string> = {
   [PermissionsEnum.TREASURY]: 'Tesorería',
   [PermissionsEnum.BILLING]: 'Facturación',
   [PermissionsEnum.COLLECTIONS]: 'Cobranzas',
+  [PermissionsEnum.JEFECOBRANZAS]: 'Jefe de Cobranzas',
   [PermissionsEnum.REPORTS]: 'Reportes',
   [PermissionsEnum.USERS]: 'Usuarios',
   [PermissionsEnum.PROFILE]: 'Perfil',
