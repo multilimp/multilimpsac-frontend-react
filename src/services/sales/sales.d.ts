@@ -44,6 +44,8 @@ export interface SaleProps {
   estadoCobranza?: string;
   fechaEstadoCobranza?: string;
   fechaProximaGestion?: string;
+  cartaCci?: string;
+  cartaGarantia?: string;
   etapaActual: string;
   estadoVenta: string;
   estadoActivo: boolean;

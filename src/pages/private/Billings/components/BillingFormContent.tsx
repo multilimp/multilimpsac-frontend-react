@@ -86,6 +86,15 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
     loadBillingHistory();
   }, [sale.id]);
 
+  useEffect(() => {
+    if (sale.cartaCci) {
+      setCartaCciUrl(sale.cartaCci);
+    }
+    if (sale.cartaGarantia) {
+      setCartaGarantiaUrl(sale.cartaGarantia);
+    }
+  }, [sale.cartaCci, sale.cartaGarantia]);
+
   const loadOrdenesProveedor = useCallback(async () => {
     try {
       setLoading(true);
