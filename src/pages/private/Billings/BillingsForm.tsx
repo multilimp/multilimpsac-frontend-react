@@ -50,7 +50,7 @@ const BillingsForm = () => {
       {selectedSale ? (
         <BillingFormContent sale={selectedSale} />
       ) : (
-        <Empty 
+        <Empty
           description="No hay datos de facturación disponibles"
           style={{ marginTop: '2rem' }}
         />

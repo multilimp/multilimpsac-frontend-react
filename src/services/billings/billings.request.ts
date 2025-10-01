@@ -226,23 +226,3 @@ export const getBillingHistoryByOrdenCompraId = async (ordenCompraId: number): P
   }
 };
 
-export const refacturarBilling = async (id: number, refacturacionData: {
-  notaCreditoTexto?: string;
-  notaCreditoArchivo?: string;
-  // factura?: string | null;
-  // fechaFactura?: string | null;
-  // grr?: string | null;
-  // retencion?: number | null;
-  // detraccion?: number | null;
-  // formaEnvioFactura?: string | null;
-  // facturaArchivo?: string | null;
-  // grrArchivo?: string | null;
-}): Promise<BillingProps> => {
-  try {
-    const response = await apiClient.post(`/facturacion/${id}/refacturar`, refacturacionData);
-    return response.data;
-  } catch (error) {
-    console.error('Error refacturando billing:', error);
-    throw error;
-  }
-};

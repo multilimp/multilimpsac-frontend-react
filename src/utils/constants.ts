@@ -10,7 +10,7 @@ export const ESTADOS = {
         key: 'PENDIENTE',
         label: 'Pendiente',
         color: heroUIColors.warning[500],
-        value: 'pendiente'
+        value: 'PENDIENTE'
     },
     COMPLETADO: {
         key: 'COMPLETADO',

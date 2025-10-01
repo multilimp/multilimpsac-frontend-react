@@ -64,14 +64,12 @@ const InputAntd = (props: InputAntdProps) => {
   labelClass += isDisabled ? ' disabled' : '';
   labelClass += isAddonBefore ? ` label-addon-before${focus ? '-focus' : ''}` : '';
 
-  // Combinar clases del contenedor principal
   const containerClasses = [
     'input-form',
     size,
-    className // Agregar className personalizado
+    className
   ].filter(Boolean).join(' ');
 
-  // Estilos para estado disabled
   const disabledStyles = isDisabled ? {
     opacity: 0.6,
     cursor: 'not-allowed',

@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Stack,
@@ -29,10 +28,9 @@ import {
   Edit as EditIcon,
   Refresh as RefreshIcon,
   Add as AddIcon,
-  Delete as DeleteIcon,
   Visibility as VisibilityIcon
 } from '@mui/icons-material';
-import { notification, Form, Input } from 'antd';
+import { notification, Form } from 'antd';
 import Grid from '@mui/material/Grid';
 import dayjs from 'dayjs';
 import { SaleProps } from '@/services/sales/sales';
@@ -42,12 +40,11 @@ import { alpha } from '@/styles/theme/heroui-colors';
 import { StepItemContent } from '../../Sales/SalesPageForm/smallcomponents';
 import SelectGeneric from '@/components/selects/SelectGeneric';
 import SimpleFileUpload from '@/components/SimpleFileUpload';
-import { getBillingByOrdenCompraId, patchBilling, getBillingHistoryByOrdenCompraId, createBilling, deleteBilling, refacturarBilling } from '@/services/billings/billings.request';
+import { patchBilling, getBillingHistoryByOrdenCompraId, createBilling, deleteBilling } from '@/services/billings/billings.request';
 import { formatCurrency, formattedDate } from '@/utils/functions';
 import { ProviderOrderProps } from '@/services/providerOrders/providerOrders';
 import { estadoOptions, ESTADOS, getEstadoByValue } from '@/utils/constants';
 import { getOpsByOrdenCompra } from '@/services/trackings/trackings.request';
-import { Icon } from '@mui/material';
 import { printOrdenProveedor } from '@/services/print/print.requests';
 import ProviderOrdersTableSkeleton from './ProviderOrdersTableSkeleton';
 import ProviderOrderFormSkeleton from '@/components/ProviderOrderFormSkeleton';
@@ -60,14 +57,8 @@ interface BillingFormContentProps {
 
 const BillingFormContent = ({ sale }: BillingFormContentProps) => {
   const [form] = Form.useForm();
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [facturacionId, _setFacturacionId] = useState<number | null>(null);
-
-  const setFacturacionId = useCallback((value: number | null | ((prev: number | null) => number | null)) => {
-    console.log('🔍 setFacturacionId called with:', value, 'from:', new Error().stack?.split('\n')[2]);
-    _setFacturacionId(value);
-  }, []);
+  const [facturacionId, setFacturacionId] = useState<number | null>(null);
 
   const [savedModalState, setSavedModalState] = useState<{
     modalMode: 'create' | 'edit' | 'refactor' | 'view';
@@ -85,45 +76,18 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
   const [cartaGarantiaUrl, setCartaGarantiaUrl] = useState<string | null>(null);
   const [savingDocuments, setSavingDocuments] = useState(false);
 
-  // Estados para archivos de facturación
-  const [facturaArchivo, setFacturaArchivo] = useState<string | null>(null);
-  const [grrArchivo, setGrrArchivo] = useState<string | null>(null);
-  const [notaCreditoArchivo, setNotaCreditoArchivo] = useState<string | null>(null);
-
   // Estado para el campo estadoFacturacion
-  const [estadoFacturacion, setEstadoFacturacion] = useState<string>('pendiente');
+  const [estadoFacturacion, setEstadoFacturacion] = useState<string>(ESTADOS.PENDIENTE.value);
 
   // Estados para el menú de acciones
   // Estados para el modal CRUD
-  const [modalOpen, _setModalOpen] = useState(() => {
-    console.log('🔍 modalOpen initialized to false');
-    return false;
-  });
-
-  const setModalOpen = useCallback((value: boolean | ((prev: boolean) => boolean)) => {
-    console.log('🔍 setModalOpen called with:', value, 'from:', new Error().stack?.split('\n')[2]);
-    _setModalOpen(value);
-  }, []);
-  const [modalMode, _setModalMode] = useState<'create' | 'edit' | 'refactor' | 'view'>('create');
-
-  const setModalMode = useCallback((value: 'create' | 'edit' | 'refactor' | 'view' | ((prev: 'create' | 'edit' | 'refactor' | 'view') => 'create' | 'edit' | 'refactor' | 'view')) => {
-    console.log('🔍 setModalMode called with:', value, 'from:', new Error().stack?.split('\n')[2]);
-    _setModalMode(value);
-  }, []);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<'create' | 'edit' | 'refactor' | 'view'>('create');
 
   useEffect(() => {
     loadOrdenesProveedor();
     loadBillingHistory();
   }, [sale.id]);
-
-  useEffect(() => {
-    console.log('🔍 Modal state changed:', { modalOpen, modalMode, facturacionId });
-  }, [modalOpen, modalMode, facturacionId]);
-
-  useEffect(() => {
-    console.log('Estado ordenesProveedor cambió:', ordenesProveedor);
-    console.log('Longitud:', ordenesProveedor.length);
-  }, [ordenesProveedor]);
 
   const loadOrdenesProveedor = useCallback(async () => {
     try {
@@ -136,7 +100,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
         setOrdenesProveedor([]);
       }
     } catch (error) {
-      console.error('Error loading provider orders:', error);
+      console.error('Error loading provider orders:', error instanceof Error ? error.message : 'Unknown error');
       setOrdenesProveedor([]);
       notification.error({
         message: 'Error',
@@ -152,7 +116,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
       const history = await getBillingHistoryByOrdenCompraId(sale.id);
       setBillingHistory(history || []);
     } catch (error) {
-      console.error('❌ Error loading billing history:', error);
+      console.error('❌ Error loading billing history:', error instanceof Error ? error.message : 'Unknown error');
       setBillingHistory([]);
     }
   }, [sale.id]);
@@ -161,10 +125,6 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
     setIsEditing(false);
     setEditingBilling(null);
     setFacturacionId(null);
-
-    // Limpiar estados de archivos
-    setFacturaArchivo(null);
-    setGrrArchivo(null);
 
     // Limpiar completamente el formulario
     form.resetFields();
@@ -186,7 +146,6 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
   }, [form]);
 
   const handleRefacturar = useCallback((billing: BillingProps) => {
-    console.log('🔍 handleRefacturar called with billing:', billing.id);
     setIsRefactoring(true);
     setRefactoringBilling(billing);
     setIsEditing(false);
@@ -207,10 +166,6 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
       notaCreditoTexto: null,
       notaCreditoArchivo: null
     });
-
-    // Establecer estados de archivos
-    setFacturaArchivo(billing.facturaArchivo || null);
-    setGrrArchivo(billing.grrArchivo || null);
 
     notification.info({
       message: 'Refacturando',
@@ -238,10 +193,6 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
       notaCreditoTexto: billing.notaCreditoTexto || null,
       notaCreditoArchivo: billing.notaCreditoArchivo || null
     });
-
-    // Establecer estados de archivos
-    setFacturaArchivo(billing.facturaArchivo || null);
-    setGrrArchivo(billing.grrArchivo || null);
 
     notification.info({
       message: 'Visualizando facturación',
@@ -282,13 +233,36 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
   }, []);
 
   const handleOpenEditModal = useCallback((billing: BillingProps) => {
+    // PRIMERO: Guardar el estado - esto es la fuente de verdad
+    setSavedModalState({ modalMode: 'edit', facturacionId: billing.id });    // LUEGO: Actualizar los otros estados
     setModalMode('edit');
     setModalOpen(true);
-    handleEditar(billing);
-  }, [handleEditar]);
+
+    // FINALMENTE: Cargar los datos al formulario
+    setIsEditing(true);
+    setEditingBilling(billing);
+    setIsRefactoring(false);
+    setRefactoringBilling(null);
+    setFacturacionId(billing.id);
+
+    form.setFieldsValue({
+      numeroFactura: billing.factura,
+      fechaFactura: billing.fechaFactura ? dayjs(billing.fechaFactura) : dayjs(),
+      grr: billing.grr,
+      porcentajeRetencion: billing.retencion,
+      porcentajeDetraccion: billing.detraccion,
+      formaEnvioFactura: billing.formaEnvioFactura,
+      facturaArchivo: billing.facturaArchivo || null,
+      grrArchivo: billing.grrArchivo || null
+    });
+
+    notification.info({
+      message: 'Editando facturación',
+      description: 'Los campos se han rellenado con los datos de la facturación seleccionada. Realice los cambios y guarde.'
+    });
+  }, [form]);
 
   const handleOpenRefactorModal = useCallback((billing: BillingProps) => {
-    console.log('🔍 handleOpenRefactorModal called with billing:', billing.id);
     setModalMode('refactor');
     setModalOpen(true);
     setSavedModalState({ modalMode: 'refactor', facturacionId: billing.id });
@@ -302,7 +276,6 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
   }, []);
 
   const handleCloseModal = useCallback(() => {
-    console.log('🔍 handleCloseModal called - closing modal');
     setModalOpen(false);
     setModalMode('create');
     // Limpiar estados
@@ -311,7 +284,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
     setIsRefactoring(false);
     setRefactoringBilling(null);
     setFacturacionId(null);
-    setSavedModalState(null);
+    // NO limpiar savedModalState aquí - se limpia después de guardar exitosamente
     form.resetFields();
   }, [form]);
 
@@ -324,7 +297,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
       });
       await loadBillingHistory();
     } catch (error) {
-      console.error('Error deleting billing:', error);
+      console.error('Error deleting billing:', error instanceof Error ? error.message : String(error));
       notification.error({
         message: 'Error al eliminar',
         description: 'No se pudo eliminar la facturación'
@@ -342,162 +315,167 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
     await handleSave();
   }, []);
 
-  const handleSave = async () => {
-    console.log('🔍 handleSave called - Current state:', {
-      isEditing,
-      facturacionId,
-      modalMode,
-      isRefactoring,
-      refactoringBilling: refactoringBilling?.id,
-      modalOpen,
-      savedModalState
+  // Función para procesar cada acción de facturación
+  const processBillingAction = async (
+    mode: 'create' | 'edit' | 'refactor' | 'view',
+    facturacionId: number | null,
+    values: any
+  ) => {
+    switch (mode) {
+      case 'create':
+        return await handleCreateBilling(values);
+
+      case 'edit':
+        if (!facturacionId) throw new Error('ID de facturación requerido para editar');
+        return await handleUpdateBilling(facturacionId, values);
+
+      case 'refactor':
+        if (!facturacionId) throw new Error('ID de facturación requerido para refacturar');
+        return await handleRefactorBilling(facturacionId, values);
+
+      default:
+        throw new Error(`Modo no soportado: ${mode}`);
+    }
+  };
+
+  // Función específica para crear nueva facturación
+  const handleCreateBilling = async (values: any) => {
+    const billingData: BillingData = {
+      ordenCompraId: sale.id,
+      factura: values.numeroFactura || null,
+      fechaFactura: values.fechaFactura ? values.fechaFactura.toISOString() : null,
+      grr: values.grr || null,
+      retencion: values.porcentajeRetencion || 0,
+      detraccion: values.porcentajeDetraccion || 0,
+      formaEnvioFactura: values.formaEnvioFactura || null,
+      facturaArchivo: values.facturaArchivo,
+      grrArchivo: values.grrArchivo,
+    };
+
+    const newBilling = await createBilling(billingData);
+    return { type: 'created', data: newBilling };
+  };
+
+  // Función específica para actualizar facturación existente
+  const handleUpdateBilling = async (facturacionId: number, values: any) => {
+    const updateData: BillingUpdateData = {};
+
+    if (values.numeroFactura !== undefined) updateData.factura = values.numeroFactura;
+    if (values.fechaFactura) updateData.fechaFactura = values.fechaFactura.toISOString();
+    if (values.grr !== undefined) updateData.grr = values.grr;
+    if (values.porcentajeRetencion !== undefined) updateData.retencion = values.porcentajeRetencion;
+    if (values.porcentajeDetraccion !== undefined) updateData.detraccion = values.porcentajeDetraccion;
+    if (values.formaEnvioFactura !== undefined) updateData.formaEnvioFactura = values.formaEnvioFactura;
+
+    // Los campos de archivo siempre se incluyen ya que pueden ser null (para limpiar)
+    updateData.facturaArchivo = values.facturaArchivo;
+    updateData.grrArchivo = values.grrArchivo;
+
+    const updatedBilling = await patchBilling(facturacionId, updateData);
+    return { type: 'updated', data: updatedBilling };
+  };
+
+  // Función específica para refacturar facturación
+  const handleRefactorBilling = async (facturacionId: number, values: any) => {
+    const refacturacionData = {
+      ordenCompraId: sale.id,
+      notaCreditoTexto: values.notaCreditoTexto,
+      notaCreditoArchivo: values.notaCreditoArchivo,
+      factura: values.numeroFactura || null,
+      fechaFactura: values.fechaFactura ? values.fechaFactura.toISOString() : null,
+      grr: values.grr || null,
+      retencion: values.porcentajeRetencion || null,
+      detraccion: values.porcentajeDetraccion || null,
+      formaEnvioFactura: values.formaEnvioFactura || null,
+      facturaArchivo: values.facturaArchivo,
+      grrArchivo: values.grrArchivo,
+      esRefacturacion: true,
+      idFacturaOriginal: facturacionId
+    };
+
+    const newBilling = await createBilling(refacturacionData);
+    return { type: 'refactored', data: newBilling };
+  };
+
+  // Función para manejar el éxito del guardado
+  const handleSaveSuccess = async (result: any, mode: string) => {
+    // Mensajes específicos por tipo de acción
+    const messages = {
+      created: {
+        message: 'Facturación creada',
+        description: 'La nueva facturación se ha guardado correctamente'
+      },
+      updated: {
+        message: 'Facturación actualizada',
+        description: 'Los cambios se han guardado correctamente'
+      },
+      refactored: {
+        message: 'Nueva factura de refacturación creada',
+        description: 'La nueva factura ha sido creada correctamente con la nota de crédito'
+      }
+    };
+
+    const messageConfig = messages[result.type as keyof typeof messages] || {
+      message: 'Operación completada',
+      description: 'La operación se realizó correctamente'
+    };
+
+    notification.success(messageConfig);
+
+    // Acciones comunes
+    await loadBillingHistory();
+    resetFormState();
+
+    // Limpiar savedModalState después de guardar exitosamente
+    setSavedModalState(null);
+
+    // Cerrar el modal después de guardar
+    handleCloseModal();
+  };
+
+  // Función para manejar errores del guardado
+  const handleSaveError = (error: any) => {
+    console.error('Error saving billing:', error instanceof Error ? error.message : String(error));
+    notification.error({
+      message: 'Error al guardar',
+      description: error instanceof Error ? error.message : 'No se pudo guardar la facturación'
     });
+  };
+
+  // Función para resetear el estado del formulario
+  const resetFormState = () => {
+    setIsEditing(false);
+    setEditingBilling(null);
+    setIsRefactoring(false);
+    setRefactoringBilling(null);
+    setFacturacionId(null);
+
+    // Limpiar el formulario
+    form.resetFields();
+    form.setFieldsValue({
+      fechaFactura: dayjs(),
+      facturaArchivo: null,
+      grrArchivo: null
+    });
+  };
+
+  const handleSave = async () => {
     try {
       setLoading(true);
-
       const values = await form.validateFields();
 
       // Usar el estado guardado cuando se abrió el modal
       const currentMode = savedModalState?.modalMode || modalMode;
       const currentFacturacionId = savedModalState?.facturacionId || facturacionId;
 
-      console.log('🔍 Final determination:', {
-        currentMode,
-        currentFacturacionId,
-        savedModalState,
-        modalMode,
-        facturacionId
-      });
+      // Determinar qué acción realizar
+      const result = await processBillingAction(currentMode, currentFacturacionId, values);
 
-      if ((!isEditing && !currentFacturacionId && currentMode !== 'refactor')) {
-        // Crear nueva facturación
-        const billingData: BillingData = {
-          ordenCompraId: sale.id,
-          factura: values.numeroFactura || null,
-          fechaFactura: values.fechaFactura ? values.fechaFactura.toISOString() : null,
-          grr: values.grr || null,
-          retencion: values.porcentajeRetencion || 0,
-          detraccion: values.porcentajeDetraccion || 0,
-          formaEnvioFactura: values.formaEnvioFactura || null,
-          facturaArchivo: values.facturaArchivo,
-          grrArchivo: values.grrArchivo,
-        };
+      // Manejar el resultado común
+      await handleSaveSuccess(result, currentMode);
 
-        const newBilling = await createBilling(billingData);
-
-        notification.success({
-          message: 'Facturación creada',
-          description: 'La nueva facturación se ha guardado correctamente'
-        });
-
-        // Recargar el historial y limpiar el estado
-        await loadBillingHistory();
-        setIsEditing(false);
-        setEditingBilling(null);
-        setFacturacionId(null);
-
-        // Limpiar el formulario para permitir crear otra facturación
-        form.resetFields();
-        form.setFieldsValue({
-          fechaFactura: dayjs(),
-          estado: '1'
-        });
-
-      } else if (isEditing && currentFacturacionId) {
-        // Actualizar facturación existente
-        const updateData: BillingUpdateData = {};
-
-        if (values.numeroFactura !== undefined) updateData.factura = values.numeroFactura;
-        if (values.fechaFactura) updateData.fechaFactura = values.fechaFactura.toISOString();
-        if (values.grr !== undefined) updateData.grr = values.grr;
-        if (values.porcentajeRetencion !== undefined) updateData.retencion = values.porcentajeRetencion;
-        if (values.porcentajeDetraccion !== undefined) updateData.detraccion = values.porcentajeDetraccion;
-        if (values.formaEnvioFactura !== undefined) updateData.formaEnvioFactura = values.formaEnvioFactura;
-
-        // Los campos de archivo siempre se incluyen ya que pueden ser null (para limpiar)
-        updateData.facturaArchivo = facturaArchivo;
-        updateData.grrArchivo = grrArchivo;
-
-        await patchBilling(currentFacturacionId, updateData);
-
-        notification.success({
-          message: 'Facturación actualizada',
-          description: 'Los cambios se han guardado correctamente'
-        });
-
-        // Recargar el historial y limpiar el estado de edición
-        await loadBillingHistory();
-        setIsEditing(false);
-        setEditingBilling(null);
-        setFacturacionId(null);
-
-        // Limpiar estados de archivos
-        setFacturaArchivo(null);
-        setGrrArchivo(null);
-
-        // Limpiar el formulario
-        form.resetFields();
-        form.setFieldsValue({
-          fechaFactura: dayjs(),
-          facturaArchivo: null,
-          grrArchivo: null
-        });
-      } else if (currentMode === 'refactor') {
-        // Refacturar la facturación existente usando el controlador específico
-        if (!currentFacturacionId) {
-          throw new Error('No se encontró el ID de la facturación a refacturar');
-        }
-
-        const refacturacionData = {
-          notaCreditoTexto: values.notaCreditoTexto,
-          notaCreditoArchivo: values.notaCreditoArchivo,
-          // También actualizar otros campos de la facturación
-          factura: values.numeroFactura || null,
-          fechaFactura: values.fechaFactura ? values.fechaFactura.toISOString() : null,
-          grr: values.grr || null,
-          retencion: values.porcentajeRetencion || null,
-          detraccion: values.porcentajeDetraccion || null,
-          formaEnvioFactura: values.formaEnvioFactura || null,
-          facturaArchivo: facturaArchivo,
-          grrArchivo: grrArchivo
-        };
-
-        await refacturarBilling(currentFacturacionId, refacturacionData);
-
-        notification.success({
-          message: 'Nueva factura de refacturación creada',
-          description: 'La nueva factura ha sido creada correctamente con la nota de crédito'
-        });
-
-        // Recargar el historial y limpiar el estado
-        await loadBillingHistory();
-        setIsRefactoring(false);
-        setRefactoringBilling(null);
-
-        // Limpiar estados de archivos
-        setFacturaArchivo(null);
-        setGrrArchivo(null);
-
-        // Limpiar el formulario
-        form.resetFields();
-        form.setFieldsValue({
-          fechaFactura: dayjs(),
-          facturaArchivo: null,
-          grrArchivo: null
-        });
-      }
-
-      // No navegar automáticamente - permitir que el usuario continue trabajando
-      // navigate('/billing');
-
-      // Cerrar el modal después de guardar
-      handleCloseModal();
     } catch (error) {
-      console.error('Error saving billing:', error);
-      notification.error({
-        message: 'Error al guardar',
-        description: error instanceof Error ? error.message : 'No se pudo guardar la facturación'
-      });
+      handleSaveError(error);
     } finally {
       setLoading(false);
     }
@@ -524,7 +502,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
       });
 
     } catch (error) {
-      console.error('Error saving documents:', error);
+      console.error('Error saving documents:', error instanceof Error ? error.message : String(error));
       notification.error({
         message: 'Error al guardar documentos',
         description: error instanceof Error ? error.message : 'No se pudieron guardar los documentos'
@@ -536,8 +514,6 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
 
   const handlePrintOP = async (op: ProviderOrderProps) => {
     try {
-      console.log('Imprimiendo OP:', op.codigoOp, 'ID:', op.id);
-
       notification.info({
         message: 'Generando PDF',
         description: `Preparando impresión de ${op.codigoOp}...`
@@ -550,7 +526,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
         description: `La orden de proveedor ${op.codigoOp} se ha descargado correctamente`
       });
     } catch (error) {
-      console.error('Error al imprimir OP:', error);
+      console.error('Error al imprimir OP:', error instanceof Error ? error.message : String(error));
       notification.error({
         message: 'Error al generar PDF',
         description: `No se pudo generar el PDF de ${op.codigoOp}`
@@ -624,7 +600,6 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                     value={cartaCciUrl}
                     onChange={(fileUrl) => {
                       setCartaCciUrl(fileUrl);
-                      console.log('Carta CCI subida:', fileUrl);
                     }}
                   />
                 </Box>
@@ -641,7 +616,6 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                     value={cartaGarantiaUrl}
                     onChange={(fileUrl) => {
                       setCartaGarantiaUrl(fileUrl);
-                      console.log('Carta de Garantía subida:', fileUrl);
                     }}
                   />
                 </Box>
@@ -825,7 +799,6 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                                   <IconButton
                                     size="small"
                                     onClick={() => {
-                                      console.log('🔍 Refacturar button clicked for billing:', billing.id);
                                       handleOpenRefactorModal(billing);
                                     }}
                                     type="button"
@@ -1034,11 +1007,6 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                 >
                   <SimpleFileUpload
                     editable={modalMode !== 'view'}
-                    value={facturaArchivo}
-                    onChange={(fileUrl) => {
-                      setFacturaArchivo(fileUrl);
-                      form.setFieldsValue({ facturaArchivo: fileUrl });
-                    }}
                   />
                 </Form.Item>
               </Grid>
@@ -1069,11 +1037,6 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                 >
                   <SimpleFileUpload
                     editable={modalMode !== 'view'}
-                    value={grrArchivo}
-                    onChange={(fileUrl) => {
-                      setGrrArchivo(fileUrl);
-                      form.setFieldsValue({ grrArchivo: fileUrl });
-                    }}
                   />
                 </Form.Item>
               </Grid>
@@ -1110,7 +1073,6 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                   initialValue={0}
                 >
                   <SelectGeneric
-                    defaultValue={0}
                     size="large"
                     style={{ width: '100%' }}
                     disabled={modalMode === 'view'}
@@ -1132,7 +1094,6 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                   initialValue={0}
                 >
                   <SelectGeneric
-                    defaultValue={0}
                     size="large"
                     style={{ width: '100%' }}
                     disabled={modalMode === 'view'}
@@ -1193,12 +1154,6 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                     >
                       <SimpleFileUpload
                         editable={modalMode !== 'view'}
-                        value={form.getFieldValue('notaCreditoArchivo')}
-                        onChange={(fileUrl) => {
-                          if (modalMode !== 'view') {
-                            form.setFieldsValue({ notaCreditoArchivo: fileUrl });
-                          }
-                        }}
                       />
                     </Form.Item>
                   </Grid>
@@ -1455,7 +1410,13 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
             {/* Modal del formulario de facturación */}
             <Dialog
               open={modalOpen}
-              onClose={handleCloseModal}
+              onClose={(event, reason) => {
+                // Solo permitir cerrar con el botón, no con clic fuera o ESC
+                if (reason === 'backdropClick' || reason === 'escapeKeyDown') {
+                  return;
+                }
+                handleCloseModal();
+              }}
               maxWidth="md"
               fullWidth
               sx={{
@@ -1479,7 +1440,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                       />
                     );
                   } catch (error) {
-                    console.error('🔍 Error in BillingFormSection:', error);
+                    console.error('🔍 Error in BillingFormSection:', error instanceof Error ? error.message : String(error));
                     return <div>Error en el formulario</div>;
                   }
                 })()}
