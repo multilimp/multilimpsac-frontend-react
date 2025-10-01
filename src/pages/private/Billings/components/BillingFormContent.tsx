@@ -46,6 +46,7 @@ import { ProviderOrderProps } from '@/services/providerOrders/providerOrders';
 import { estadoOptions, ESTADOS, getEstadoByValue } from '@/utils/constants';
 import { getOpsByOrdenCompra } from '@/services/trackings/trackings.request';
 import { printOrdenProveedor } from '@/services/print/print.requests';
+import { patchSale } from '@/services/sales/sales.request';
 import ProviderOrdersTableSkeleton from './ProviderOrdersTableSkeleton';
 import ProviderOrderFormSkeleton from '@/components/ProviderOrderFormSkeleton';
 import { BillingProps, BillingData, BillingUpdateData } from '@/services/billings/billings.d';
@@ -401,12 +402,24 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
         return;
       }
 
-      // Aquí puedes implementar la lógica para guardar los documentos
-      // Por ejemplo, enviarlos al backend o guardarlos en el estado de la orden de compra
+      const documentData: Record<string, any> = {};
+
+      if (cartaCciUrl) {
+        documentData.cartaCci = cartaCciUrl;
+      }
+
+      if (cartaGarantiaUrl) {
+        documentData.cartaGarantia = cartaGarantiaUrl;
+      }
+
+      console.log('📄 Guardando documentos en orden de compra:', sale.id);
+      console.log('📦 Datos:', documentData);
+
+      await patchSale(sale.id, documentData);
 
       notification.success({
         message: 'Documentos guardados',
-        description: 'Los documentos se han guardado correctamente'
+        description: 'Los documentos se han guardado correctamente en la orden de compra'
       });
 
     } catch (error) {
@@ -418,7 +431,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
     } finally {
       setSavingDocuments(false);
     }
-  }, [cartaCciUrl, cartaGarantiaUrl]);
+  }, [cartaCciUrl, cartaGarantiaUrl, sale.id]);
 
   const handlePrintOP = async (op: ProviderOrderProps) => {
     try {
