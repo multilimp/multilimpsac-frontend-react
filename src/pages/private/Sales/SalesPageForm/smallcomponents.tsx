@@ -4,7 +4,7 @@ import { Search } from '@mui/icons-material';
 import { OverridableComponent } from '@mui/material/OverridableComponent';
 
 interface StepItemContentProps {
-  children: ReactNode;
+  children?: ReactNode;
   color?: string;
   headerLeft?: ReactNode;
   headerRight?: ReactNode;

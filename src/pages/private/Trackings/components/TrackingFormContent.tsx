@@ -499,44 +499,22 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
             showSearchButton={false}
             ResumeIcon={Business}
             color="#12b981"
-            headerLeft={`Fecha creación: ${formattedDate(sale.createdAt)}`}
-            headerRight={`Fecha actualización: ${formattedDate(sale.updatedAt)}`}
+            headerLeft={<Typography variant="body1" sx={{ fontWeight: 400, color: '#ffffff' }}>Fecha creación: {formattedDate(sale.createdAt)}</Typography>}
+            headerRight={<Typography variant="body1" sx={{ fontWeight: 400, color: '#ffffff' }}>Fecha actualización: {formattedDate(sale.updatedAt)}</Typography>}
             resumeContent={
               <Box>
                 <Typography variant="h5" sx={{ fontWeight: 600, color: '#ffffff' }}>
                   {sale.codigoVenta}
                 </Typography>
                 <Typography sx={{ fontWeight: 300, color: '#ffffff', opacity: 0.8, fontSize: '0.875rem' }}>
-                  Seguimiento de Orden de Compra
+                  {sale?.cliente?.razonSocial ?? '---'}
+                </Typography>
+                <Typography sx={{ fontWeight: 300, color: '#ffffff', opacity: 0.8, fontSize: '0.875rem' }}>
+                  {sale?.cliente?.ruc ?? '---'}
                 </Typography>
               </Box>
             }
           >
-            <Grid container spacing={2}>
-              <Grid size={{ xs: 12, md: 4 }}>
-                <Typography variant="body2" color="text.secondary">Monto de Venta</Typography>
-                <Typography variant="h6" sx={{ fontWeight: 600, color: '#10b981' }}>
-                  {formatCurrency(parseInt(sale.montoVenta || '0'))}
-                </Typography>
-              </Grid>
-              <Grid size={{ xs: 12, md: 4 }}>
-                <Typography variant="body2" color="text.secondary">Fecha Máxima de Entrega</Typography>
-                <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                  {formattedDate(sale.fechaMaxForm)}
-                </Typography>
-              </Grid>
-              <Grid size={{ xs: 12, md: 4 }}>
-                <Typography variant="body2" color="text.secondary">Estado Actual</Typography>
-                <Chip
-                  label="En Proceso"
-                  sx={{
-                    backgroundColor: '#3b82f6',
-                    color: 'white',
-                    fontWeight: 600
-                  }}
-                />
-              </Grid>
-            </Grid>
           </StepItemContent>
 
           {/* Cuadro de Datos del Cliente, Responsable de Recepción y Lugar de Entrega */}
@@ -746,6 +724,9 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                       <Typography sx={{ color: 'white', fontSize: '0.875rem', mr: 1 }}>
                         Fecha de creación: {formattedDate(op.createdAt)}
                       </Typography>
+                      <Typography sx={{ color: 'white', fontSize: '0.875rem' }}>
+                        Última actualización: {formattedDate(op.updatedAt)}
+                      </Typography>
                     </Box>
                   }
                 >
@@ -845,16 +826,6 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                                 <InventoryIcon sx={{ color: '#10b981', fontSize: 14, mr: 1 }} />
                                 Productos ({op.productos.length})
                               </Typography>
-                              <Chip
-                                label={`Total: ${formatCurrency(op.productos.reduce((sum, p) => sum + parseFloat(p.total || '0'), 0))}`}
-                                size="small"
-                                sx={{
-                                  bgcolor: '#dcfce7',
-                                  color: '#166534',
-                                  fontWeight: 600,
-                                  fontSize: '0.75rem'
-                                }}
-                              />
                             </Box>
 
                             <TableContainer sx={{
@@ -947,10 +918,9 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                                       <TableCell sx={{
                                         fontSize: '0.875rem',
                                         p: 1.5,
-                                        maxWidth: 200,
+                                        maxWidth: 500,
                                         overflow: 'hidden',
                                         textOverflow: 'ellipsis',
-                                        whiteSpace: 'nowrap'
                                       }}>
                                         {producto.descripcion || 'N/A'}
                                       </TableCell>
