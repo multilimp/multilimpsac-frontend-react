@@ -63,6 +63,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
   const [originalOCValues, setOriginalOCValues] = useState<Record<string, unknown>>({});
   const [changedOCFields, setChangedOCFields] = useState<Set<string>>(new Set());
   const [savingOC, setSavingOC] = useState(false);
+  const [customRetornoValues, setCustomRetornoValues] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
     loadProviderOrders();
@@ -90,12 +91,29 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
       const initialValues: { [key: string]: Record<string, unknown> } = {};
       ops.forEach(op => {
         const opKey = `op_${op.id}`;
+        let retornoValue: string | null = op.retornoMercaderia;
+        let customValue = '';
+
+        // Si el valor comienza con "OTROS:", extraer el texto personalizado
+        const retornoMercaderiaValue = op.retornoMercaderia;
+        if (retornoMercaderiaValue != null) {
+          const strValue = String(retornoMercaderiaValue);
+          if (strValue.startsWith('OTROS: ')) {
+            retornoValue = 'OTROS';
+            customValue = strValue.replace('OTROS: ', '');
+            setCustomRetornoValues(prev => ({
+              ...prev,
+              [op.id.toString()]: customValue
+            }));
+          }
+        }
+
         initialValues[opKey] = {
           tipoEntrega: op.tipoEntrega,
           estadoOp: op.estadoOp,
           fechaEntrega: op.fechaEntrega ? dayjs(op.fechaEntrega) : null,
           cargoOea: op.cargoOea,
-          retornoMercaderia: op.retornoMercaderia
+          retornoMercaderia: retornoValue
         };
       });
       setOriginalValues(initialValues);
@@ -1168,23 +1186,55 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                               }}>
                                 Retorno de Mercadería
                               </Typography>
-                              <Form.Item
-                                name={[`op_${op.id}`, 'retornoMercaderia']}
-                                initialValue={op.retornoMercaderia}
-                                style={{ marginBottom: 0 }}
-                              >
-                                <SelectGeneric
-                                  placeholder="Seleccionar retorno"
-                                  options={[
-                                    { value: 'NINGUNO', label: 'Ninguno' },
-                                    { value: 'ENTIDAD', label: 'Entidad' },
-                                    { value: 'TRANSPORTE', label: 'Transporte' },
-                                    { value: 'ALMACEN_LIMA', label: 'Almacén Lima' },
-                                    { value: 'ALMACEN_HUANCAYO', label: 'Almacén Huancayo' }
-                                  ]}
-                                  onChange={(value) => handleFieldChange(op.id.toString(), 'retornoMercaderia', value)}
-                                />
-                              </Form.Item>
+                              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                <Form.Item
+                                  name={[`op_${op.id}`, 'retornoMercaderia']}
+                                  initialValue={op.retornoMercaderia}
+                                  style={{ marginBottom: 0 }}
+                                >
+                                  <SelectGeneric
+                                    placeholder="Seleccionar retorno"
+                                    options={[
+                                      { value: 'NINGUNO', label: 'Ninguno' },
+                                      { value: 'ENTIDAD', label: 'Entidad' },
+                                      { value: 'TRANSPORTE', label: 'Transporte' },
+                                      { value: 'ALMACEN_LIMA', label: 'Almacén Lima' },
+                                      { value: 'ALMACEN_HUANCAYO', label: 'Almacén Huancayo' },
+                                      { value: 'OTROS', label: 'Otros' }
+                                    ]}
+                                    onChange={(value) => {
+                                      handleFieldChange(op.id.toString(), 'retornoMercaderia', value);
+                                      // Limpiar valor personalizado si no es "OTROS"
+                                      if (value !== 'OTROS') {
+                                        setCustomRetornoValues(prev => {
+                                          const newValues = { ...prev };
+                                          delete newValues[op.id.toString()];
+                                          return newValues;
+                                        });
+                                      }
+                                    }}
+                                  />
+                                </Form.Item>
+
+                                {/* Campo de texto personalizado cuando se selecciona "OTROS" */}
+                                {form.getFieldValue([`op_${op.id}`, 'retornoMercaderia']) === 'OTROS' && (
+                                  <Form.Item style={{ marginBottom: 0 }}>
+                                    <InputAntd
+                                      placeholder="Especificar otro tipo de retorno"
+                                      value={customRetornoValues[op.id.toString()] || ''}
+                                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                        const value = e.target.value;
+                                        setCustomRetornoValues(prev => ({
+                                          ...prev,
+                                          [op.id.toString()]: value
+                                        }));
+                                        // Actualizar el valor real que se guardará
+                                        handleFieldChange(op.id.toString(), 'retornoMercaderia', `OTROS: ${value}`);
+                                      }}
+                                    />
+                                  </Form.Item>
+                                )}
+                              </Box>
                             </Grid>
                           </Grid>
                         </Box>
