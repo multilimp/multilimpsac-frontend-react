@@ -109,7 +109,7 @@ const CargosEntregaModal: React.FC<CargosEntregaModalProps> = ({
                         style={{ width: '100%' }}
                         format="DD/MM/YYYY"
                         placeholder={['Fecha inicio', 'Fecha fin']}
-                        disabledDate={disabledDate}
+                        // disabledDate={disabledDate}
                         allowClear
                     />
                 </Form.Item>

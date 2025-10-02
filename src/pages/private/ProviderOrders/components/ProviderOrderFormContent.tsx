@@ -19,6 +19,7 @@ import {
   TableRow,
   IconButton,
   Switch,
+  Chip,
 } from '@mui/material';
 import InputAntd from '@/components/InputAntd';
 import SelectCompanies from '@/components/selects/SelectCompanies';
@@ -1050,27 +1051,76 @@ const calculateProductTotals = (form: any, fieldName: number) => {
                               </TableCell>
                             </TableRow>
                           ))}
-                          <TableRow>
-                            <TableCell colSpan={7} sx={{ textAlign: 'right' }}>
+                          <TableRow
+                            sx={{
+                              bgcolor: '#f8f9fa',
+                              borderTop: '2px solid #e9ecef',
+                              '& .MuiTableCell-root': {
+                                borderBottom: 'none',
+                                py: 2
+                              }
+                            }}
+                          >
+                            <TableCell colSpan={6} sx={{ textAlign: 'left', pr: 2 }}>
+                              <Stack direction="row" alignItems="center" spacing={2}>
+                                <Box
+                                  sx={{
+                                    width: 8,
+                                    height: 8,
+                                    borderRadius: '50%',
+                                    bgcolor: '#1890ff',
+                                    flexShrink: 0
+                                  }}
+                                />
+                                <Typography
+                                  variant="subtitle2"
+                                  fontWeight={600}
+                                  color="text.primary"
+                                  sx={{ fontSize: '0.875rem' }}
+                                >
+                                  Resumen de Productos
+                                </Typography>
+                                <Chip
+                                  label={`${form.getFieldValue('productos')?.length || 0} producto(s)`}
+                                  size="small"
+                                  variant="outlined"
+                                  sx={{
+                                    height: 24,
+                                    fontSize: '0.75rem',
+                                    fontWeight: 500,
+                                    color: '#1890ff',
+                                    borderColor: '#1890ff'
+                                  }}
+                                />
+                              </Stack>
+                            </TableCell>
+                            <TableCell sx={{ textAlign: 'center', px: 1 }}>
                               <Button
                                 onClick={() => add(getEmptyProductRecord())}
                                 startIcon={<Add />}
-                                variant="outlined"
+                                variant="contained"
                                 size="small"
                                 disabled={fromTreasury}
                                 sx={{
-                                  width: 'auto',
-                                  py: 1,
-                                  bgcolor: fromTreasury ? '#ccc' : '#189dff',
-                                  color: fromTreasury ? '#666' : 'white',
-                                  borderColor: fromTreasury ? '#ccc' : '#1890ff'
+                                  minWidth: 'auto',
+                                  px: 2,
+                                  py: 0.75,
+                                  fontSize: '0.75rem',
+                                  fontWeight: 600,
+                                  textTransform: 'none',
+                                  borderRadius: 1.5,
+                                  boxShadow: '0 2px 4px rgba(24, 144, 255, 0.2)',
+                                  '&:hover': {
+                                    boxShadow: '0 4px 8px rgba(24, 144, 255, 0.3)',
+                                    transform: 'translateY(-1px)'
+                                  },
+                                  transition: 'all 0.2s ease-in-out'
                                 }}
                               >
-                                Agregar Producto
+                                Agregar
                               </Button>
                             </TableCell>
-                            {/* Agregar label: Celda de pago total, bgcolor negra, color white */}
-                            <TableCell>
+                            <TableCell sx={{ textAlign: 'center', px: 2 }}>
                               <Form.Item noStyle shouldUpdate>
                                 {() => {
                                   const productos = form.getFieldValue('productos') || [];
@@ -1078,18 +1128,39 @@ const calculateProductTotals = (form: any, fieldName: number) => {
                                     sum + (Number(prod?.total) || 0), 0
                                   );
                                   return (
-
-                                    <Typography
-                                      variant="body2"
-                                      fontWeight={700}
-                                      color="primary"
-                                      sx={{ textAlign: 'center' }}
+                                    <Box
+                                      sx={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        gap: 0.5
+                                      }}
                                     >
-                                      S/ {total.toFixed(2)}
-                                    </Typography>
+                                      <Typography
+                                        variant="h6"
+                                        fontWeight={700}
+                                        color="primary.main"
+                                        sx={{
+                                          fontSize: '1.1rem',
+                                          textShadow: '0 1px 2px rgba(0,0,0,0.1)'
+                                        }}
+                                      >
+                                        S/ {total.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                      </Typography>
+                                      <Typography
+                                        variant="caption"
+                                        color="text.secondary"
+                                        sx={{ fontSize: '0.7rem', fontWeight: 500 }}
+                                      >
+                                        Total General
+                                      </Typography>
+                                    </Box>
                                   );
                                 }}
                               </Form.Item>
+                            </TableCell>
+                            <TableCell sx={{ textAlign: 'center' }}>
+                              {/* Espacio vacío para mantener alineación */}
                             </TableCell>
                           </TableRow>
                         </>
