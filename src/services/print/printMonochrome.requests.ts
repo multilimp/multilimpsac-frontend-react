@@ -480,3 +480,17 @@ export const printCargosEntregaMonochrome = async (fechaInicio: string, fechaFin
     throw new Error('Error al generar el reporte monocromatico de cargos de entrega');
   }
 };
+
+// Función para obtener datos JSON de cargos de entrega (para tabla)
+export const getCargosEntregaData = async (fechaInicio: string, fechaFin: string): Promise<CargosEntregaData> => {
+  try {
+    const response = await apiClient.get(`/print/cargos-entrega/data`, {
+      params: { fechaInicio, fechaFin }
+    });
+
+    return response.data.data;
+  } catch (error) {
+    console.error('Error al obtener datos de cargos de entrega:', error);
+    throw new Error('Error al obtener los datos de cargos de entrega');
+  }
+};

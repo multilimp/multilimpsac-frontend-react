@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Tabs, Button } from 'antd';
+import { Tabs, Button, DatePicker } from 'antd';
 import PageContent from '@/components/PageContent';
 import { SaleProps } from '@/services/sales/sales';
 import { ProviderOrderProps } from '@/services/providerOrders/providerOrders';
@@ -12,9 +12,9 @@ import { getAllOrderProviders } from '@/services/providerOrders/providerOrders.r
 import OpTable from './components/OpTable';
 import { notification } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { Box } from '@mui/material';
-import { Description } from '@mui/icons-material';
-import CargosEntregaModal from './components/CargosEntregaModal';
+import { Box, Typography } from '@mui/material';
+import CargosEntregaTable from '@/components/CargosEntregaTable';
+import dayjs from 'dayjs';
 
 const { TabPane } = Tabs;
 
@@ -23,11 +23,14 @@ const ProviderOrders = () => {
   const { sales, loadingSales } = useGlobalInformation();
   const [modal, setModal] = useState<ModalStateProps<SaleProps>>(null);
   const [activeTab, setActiveTab] = useState('oc');
-  const [isReportModalVisible, setIsReportModalVisible] = useState<boolean>(false);
 
   // Estados para el tab de OP
   const [loadingOps, setLoadingOps] = useState(false);
   const [ops, setOps] = useState<Array<ProviderOrderProps>>([]);
+
+  // Estados para el tab de Cargos de Entrega
+  const [fechaInicio, setFechaInicio] = useState(dayjs().startOf('month').format('YYYY-MM-DD'));
+  const [fechaFin, setFechaFin] = useState(dayjs().format('YYYY-MM-DD'));
 
   const loadOps = async () => {
     try {
@@ -56,14 +59,6 @@ const ProviderOrders = () => {
     navigate(`/provider-orders/${op.id}`);
   };
 
-  const handleOpenReportModal = () => {
-    setIsReportModalVisible(true);
-  };
-
-  const handleCloseReportModal = () => {
-    setIsReportModalVisible(false);
-  };
-
   return (
     <PageContent>
       <Tabs
@@ -73,16 +68,6 @@ const ProviderOrders = () => {
         style={{ marginBottom: 16 }}
       >
         <TabPane tab="Tabla de Órdenes de Compra" key="oc">
-          <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end' }}>
-            <Button
-              type="primary"
-              icon={<Description />}
-              onClick={handleOpenReportModal}
-              size="large"
-            >
-              Reporte de Cargos de Entrega
-            </Button>
-          </Box>
           <ProviderOrdersTable
             loading={loadingSales}
             data={sales}
@@ -91,22 +76,43 @@ const ProviderOrders = () => {
         </TabPane>
 
         <TabPane tab="Tabla OP" key="op">
-          <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end' }}>
-            <Button
-              type="primary"
-              icon={<Description />}
-              onClick={handleOpenReportModal}
-              size="large"
-            >
-              Reporte de Cargos de Entrega
-            </Button>
-          </Box>
-
           <OpTable
             loading={loadingOps}
             data={ops}
             onRowClick={handleOpRowClick}
             onReload={loadOps}
+          />
+        </TabPane>
+
+        <TabPane tab="Cargos de Entrega" key="cargos">
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              Seleccionar Período
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+              <Box>
+                <Typography variant="body2" sx={{ mb: 1 }}>Fecha Inicio</Typography>
+                <DatePicker
+                  value={dayjs(fechaInicio)}
+                  onChange={(date) => setFechaInicio(date?.format('YYYY-MM-DD') || fechaInicio)}
+                  format="DD/MM/YYYY"
+                  placeholder="Seleccionar fecha inicio"
+                />
+              </Box>
+              <Box>
+                <Typography variant="body2" sx={{ mb: 1 }}>Fecha Fin</Typography>
+                <DatePicker
+                  value={dayjs(fechaFin)}
+                  onChange={(date) => setFechaFin(date?.format('YYYY-MM-DD') || fechaFin)}
+                  format="DD/MM/YYYY"
+                  placeholder="Seleccionar fecha fin"
+                />
+              </Box>
+            </Box>
+          </Box>
+          <CargosEntregaTable
+            fechaInicio={fechaInicio}
+            fechaFin={fechaFin}
           />
         </TabPane>
       </Tabs>
@@ -117,11 +123,6 @@ const ProviderOrders = () => {
           data={modal.data!}
         />
       )}
-
-      <CargosEntregaModal
-        visible={isReportModalVisible}
-        onClose={handleCloseReportModal}
-      />
     </PageContent>
   );
 };
