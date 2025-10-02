@@ -19,6 +19,7 @@ import {
   Tooltip,
   Modal,
   Box as MuiBox,
+  Switch,
 } from '@mui/material';
 import {
   ArrowBack,
@@ -34,6 +35,7 @@ import {
   Settings as SettingsIcon,
   Schedule as ScheduleIcon,
   LocalShipping as LocalShippingIcon,
+  Check as CheckIcon,
 } from '@mui/icons-material';
 import { notification, Form } from 'antd';
 import TextArea from 'antd/lib/input/TextArea';
@@ -680,6 +682,11 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                       flexWrap: 'wrap',
                       justifyContent: 'flex-end'
                     }}>
+
+                      <Switch
+                        // checked={op.isCompleted}
+                        checkedIcon={<CheckIcon />} />
+
                       {/* Separador visual */}
                       <Box sx={{
                         width: '1px',

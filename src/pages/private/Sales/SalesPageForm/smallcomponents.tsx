@@ -51,7 +51,9 @@ export const StepItemContent = ({
           </Typography>
         </Stack>
 
-        <Stack bgcolor="#2f3a4b" color="#ffffff" p={2} direction="row" justifyContent="space-between" alignItems="center">
+        <Stack bgcolor="#2f3a4b" color="#ffffff" p={2} direction="row" justifyContent="space-between" alignItems="center" sx={{
+          ...(children ? {} : { borderBottomLeftRadius: 8, borderBottomRightRadius: 8 }),
+        }}>
           <Stack direction="row" spacing={2}>
             <Stack alignItems="center" justifyContent="center">
               <ResumeIcon sx={{ fontSize: 56, color }} />
@@ -94,14 +96,16 @@ export const StepItemContent = ({
         {footerContent}
       </Stack>
     ) : null}
-    <Box sx={
-      {
-        padding: 4,
-        bgcolor: 'white',
-        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
-        borderBottomLeftRadius: showFooter ? 0 : 16,
-        borderBottomRightRadius: showFooter ? 0 : 16,
-      }
-    }>{children}</Box>
+    {children && (
+      <Box sx={
+        {
+          padding: 4,
+          bgcolor: 'white',
+          boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+          borderBottomLeftRadius: showFooter ? 0 : 16,
+          borderBottomRightRadius: showFooter ? 0 : 16,
+        }
+      }>{children}</Box>
+    )}
   </Box>
 );
