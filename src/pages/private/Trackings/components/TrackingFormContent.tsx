@@ -17,6 +17,8 @@ import {
   TableRow,
   IconButton,
   Tooltip,
+  Modal,
+  Box as MuiBox,
 } from '@mui/material';
 import {
   ArrowBack,
@@ -29,8 +31,12 @@ import {
   Visibility as VisibilityIcon,
   Save as SaveIcon,
   Cancel as CancelIcon,
+  Settings as SettingsIcon,
+  Schedule as ScheduleIcon,
+  LocalShipping as LocalShippingIcon,
 } from '@mui/icons-material';
 import { notification, Form } from 'antd';
+import TextArea from 'antd/lib/input/TextArea';
 import dayjs from 'dayjs';
 import Grid from '@mui/material/Grid';
 import { SaleProps } from '@/services/sales/sales';
@@ -64,6 +70,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
   const [changedOCFields, setChangedOCFields] = useState<Set<string>>(new Set());
   const [savingOC, setSavingOC] = useState(false);
   const [customRetornoValues, setCustomRetornoValues] = useState<{ [key: string]: string }>({});
+  const [openModal, setOpenModal] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
     loadProviderOrders();
@@ -638,44 +645,93 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                   color="#3b82f6"
                   headerLeft={sale.empresa?.razonSocial || 'Empresa N/A'}
                   resumeContent={
-                    <Box>
-                      <Typography variant="h5" sx={{ fontWeight: 600, color: '#ffffff' }}>
-                        {op.codigoOp || `OP-${op.id}`}
-                      </Typography>
-                      <Typography sx={{ fontWeight: 300, color: '#ffffff', opacity: 0.8, fontSize: '0.875rem' }}>
-                        {op.proveedor?.razonSocial || 'Proveedor N/A'}
-                      </Typography>
+                    <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2 }}>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                        <Typography variant="h5" sx={{ fontWeight: 600, color: '#ffffff' }}>
+                          {op.codigoOp || `OP-${op.id}`}
+                        </Typography>
+                        <Typography sx={{ fontWeight: 500, color: '#ffffff', opacity: 0.8, fontSize: '0.875rem' }}>
+                          {op.proveedor?.razonSocial || 'Proveedor N/A'}
+                        </Typography>
+                        <Typography sx={{ fontWeight: 500, color: '#d1d5db', fontSize: '0.875rem' }}>
+                          RUC: {op.proveedor?.ruc || 'RUC N/A'}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ flexGrow: 1 }} />
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, alignItems: 'flex-start' }}>
+                        <Typography sx={{ fontWeight: 700, color: '#ffffff', fontSize: '0.875rem' }}>
+                          {op.contactoProveedor?.cargo || 'Contacto'}
+                        </Typography>
+                        <Typography sx={{ fontWeight: 500, color: '#d1d5db', fontSize: '0.875rem' }}>
+                          Nombre: {op.contactoProveedor?.nombre || 'N/A'}
+                        </Typography>
+                        <Typography sx={{ fontWeight: 500, color: '#d1d5db', fontSize: '0.875rem' }}>
+                          Teléfono: {op.contactoProveedor?.telefono || 'N/A'}
+                        </Typography>
+                      </Box>
                     </Box>
                   }
                   showSearchButton={false}
                   resumeButtons={
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <IconButton
-                        sx={{
-                          border: '1px solid',
-                          borderRadius: 1,
-                          color: 'white',
-                          '&:hover': {
-                            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                          }
-                        }}
-                        onClick={() => handleToggleContent(op.id.toString())}
-                      >
-                        <VisibilityIcon />
-                      </IconButton>
-                      <IconButton
-                        sx={{
-                          border: '1px solid',
-                          borderRadius: 1,
-                          color: 'white',
-                          '&:hover': {
-                            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                          }
-                        }}
-                        onClick={() => handlePrintOP(op)}
-                      >
-                        <PrintIcon />
-                      </IconButton>
+                    <Box sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1.5,
+                      flexWrap: 'wrap',
+                      justifyContent: 'flex-end'
+                    }}>
+                      {/* Separador visual */}
+                      <Box sx={{
+                        width: '1px',
+                        height: '24px',
+                        bgcolor: 'rgba(255, 255, 255, 0.3)',
+                        mx: 0.5
+                      }} />
+
+                      {/* Botones de acción rápida */}
+                      <Tooltip title="Ver/ocultar detalles">
+                        <IconButton
+                          size="small"
+                          sx={{
+                            border: '1px solid rgba(255, 255, 255, 0.3)',
+                            borderRadius: 1.5,
+                            color: 'white',
+                            width: 36,
+                            height: 36,
+                            '&:hover': {
+                              borderColor: 'rgba(255, 255, 255, 0.5)',
+                              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                              transform: 'scale(1.05)',
+                            },
+                            transition: 'all 0.2s ease-in-out',
+                          }}
+                          onClick={() => handleToggleContent(op.id.toString())}
+                        >
+                          <VisibilityIcon sx={{ fontSize: 18 }} />
+                        </IconButton>
+                      </Tooltip>
+
+                      <Tooltip title="Imprimir orden de proveedor">
+                        <IconButton
+                          size="small"
+                          sx={{
+                            border: '1px solid rgba(255, 255, 255, 0.3)',
+                            borderRadius: 1.5,
+                            color: 'white',
+                            width: 36,
+                            height: 36,
+                            '&:hover': {
+                              borderColor: 'rgba(255, 255, 255, 0.5)',
+                              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                              transform: 'scale(1.05)',
+                            },
+                            transition: 'all 0.2s ease-in-out',
+                          }}
+                          onClick={() => handlePrintOP(op)}
+                        >
+                          <PrintIcon sx={{ fontSize: 18 }} />
+                        </IconButton>
+                      </Tooltip>
                     </Box>
                   }
                   headerRight={
@@ -691,35 +747,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                       <Box sx={{ mb: 3 }}>
                         {/* Información del proveedor y cronograma de fechas en la misma fila */}
                         <Grid container spacing={3} sx={{ mb: 3 }}>
-                          {/* Información del proveedor - 50% */}
-                          <Grid size={{ xs: 12, md: 6 }}>
-                            <Box sx={{
-                              bgcolor: '#f8fafc',
-                              borderRadius: 2,
-                              p: 2.5,
-                              border: '1px solid #e2e8f0',
-                              height: '100%'
-                            }}>
-                              <Typography variant="body2" color="text.secondary" sx={{ mb: 1, fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase' }}>
-                                Información del Proveedor
-                              </Typography>
-                              <Typography variant="body1" sx={{ fontWeight: 600, mb: 1, fontSize: '1rem' }}>
-                                {op.proveedor?.razonSocial || 'N/A'}
-                              </Typography>
-                              <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5, fontSize: '0.875rem' }}>
-                                RUC: {op.proveedor?.ruc || 'N/A'}
-                              </Typography>
-                              <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5, fontSize: '0.875rem' }}>
-                                Contacto: {op.contactoProveedor?.nombre || 'N/A'}
-                              </Typography>
-                              <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>
-                                Teléfono: {op.contactoProveedor?.telefono || 'N/A'}
-                              </Typography>
-                            </Box>
-                          </Grid>
-
-                          {/* Cronograma de fechas - 50% */}
-                          <Grid size={{ xs: 12, md: 6 }}>
+                          <Grid size={{ xs: 12, md: 12 }}>
                             <Box sx={{
                               bgcolor: '#f8fafc',
                               borderRadius: 2,
@@ -732,12 +760,13 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                                 fontSize: '0.875rem',
                                 fontWeight: 600,
                                 textTransform: 'uppercase',
-                                textAlign: 'center'
+                                textAlign: 'left'
                               }}>
+                                <ScheduleIcon sx={{ color: '#3b82f6', fontSize: 14, mr: 1 }} />
                                 Cronograma de Fechas
                               </Typography>
                               <Grid container spacing={2}>
-                                <Grid size={{ xs: 6, md: 6 }}>
+                                <Grid size={{ xs: 6, md: 3 }}>
                                   <Box sx={{ textAlign: 'center' }}>
                                     <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem', mb: 0.5 }}>
                                       Fecha Máxima de Entrega
@@ -747,7 +776,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                                     </Typography>
                                   </Box>
                                 </Grid>
-                                <Grid size={{ xs: 6, md: 6 }}>
+                                <Grid size={{ xs: 6, md: 3 }}>
                                   <Box sx={{ textAlign: 'center' }}>
                                     <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem', mb: 0.5 }}>
                                       Recepción
@@ -757,7 +786,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                                     </Typography>
                                   </Box>
                                 </Grid>
-                                <Grid size={{ xs: 6, md: 6 }}>
+                                <Grid size={{ xs: 6, md: 3 }}>
                                   <Box sx={{ textAlign: 'center' }}>
                                     <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem', mb: 0.5 }}>
                                       Programada
@@ -767,7 +796,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                                     </Typography>
                                   </Box>
                                 </Grid>
-                                <Grid size={{ xs: 6, md: 6 }}>
+                                <Grid size={{ xs: 6, md: 3 }}>
                                   <Box sx={{ textAlign: 'center' }}>
                                     <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem', mb: 0.5 }}>
                                       Despacho
@@ -787,9 +816,9 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                       {op.productos && op.productos.length > 0 && (
                         <Grid size={12}>
                           <Box sx={{
-                            bgcolor: '#ffffff',
+                            bgcolor: '#f8fafc',
                             borderRadius: 2,
-                            p: 3,
+                            p: 2.5,
                             mb: 3,
                             border: '1px solid #e2e8f0',
                             boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
@@ -800,15 +829,13 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                               justifyContent: 'space-between',
                               mb: 2
                             }}>
-                              <Typography variant="h6" sx={{
+                              <Typography variant="body2" color="text.secondary" sx={{
+                                fontSize: '0.875rem',
                                 fontWeight: 600,
-                                color: '#1e293b',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 1,
-                                fontSize: '1.125rem'
+                                textTransform: 'uppercase',
+                                textAlign: 'left'
                               }}>
-                                <InventoryIcon sx={{ color: '#10b981', fontSize: 20 }} />
+                                <InventoryIcon sx={{ color: '#10b981', fontSize: 14, mr: 1 }} />
                                 Productos ({op.productos.length})
                               </Typography>
                               <Chip
@@ -818,7 +845,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                                   bgcolor: '#dcfce7',
                                   color: '#166534',
                                   fontWeight: 600,
-                                  fontSize: '0.875rem'
+                                  fontSize: '0.75rem'
                                 }}
                               />
                             </Box>
@@ -826,7 +853,8 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                             <TableContainer sx={{
                               borderRadius: 2,
                               border: '1px solid #e2e8f0',
-                              overflow: 'hidden'
+                              overflow: 'hidden',
+                              mt: 1
                             }}>
                               <Table size="small">
                                 <TableHead>
@@ -1236,6 +1264,56 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                                 )}
                               </Box>
                             </Grid>
+
+                            {/* Tercera fila: Nota de Observaciones */}
+                            <Grid size={{ xs: 12 }}>
+                              <Typography variant="body2" sx={{
+                                fontWeight: 600,
+                                mb: 1.5,
+                                color: '#374151',
+                                fontSize: '0.875rem',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.05em'
+                              }}>
+                                Nota de Observaciones
+                              </Typography>
+                              <Form.Item
+                                name={[`op_${op.id}`, 'notaObservaciones']}
+                                initialValue={op.notaObservaciones}
+                                style={{ marginBottom: 0 }}
+                              >
+                                <TextArea
+                                  placeholder="Ingrese observaciones adicionales"
+                                  rows={3}
+                                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleFieldChange(op.id.toString(), 'notaObservaciones', e.target.value)}
+                                />
+                              </Form.Item>
+                            </Grid>
+
+                            {/* Cuarta fila: Nota de Cobranzas */}
+                            <Grid size={{ xs: 12 }}>
+                              <Typography variant="body2" sx={{
+                                fontWeight: 600,
+                                mb: 1.5,
+                                color: '#374151',
+                                fontSize: '0.875rem',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.05em'
+                              }}>
+                                Nota de Cobranzas
+                              </Typography>
+                              <Form.Item
+                                name={[`op_${op.id}`, 'notaCobranzas']}
+                                initialValue={op.notaCobranzas}
+                                style={{ marginBottom: 0 }}
+                              >
+                                <TextArea
+                                  placeholder="Ingrese información de cobranzas"
+                                  rows={3}
+                                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleFieldChange(op.id.toString(), 'notaCobranzas', e.target.value)}
+                                />
+                              </Form.Item>
+                            </Grid>
                           </Grid>
                         </Box>
                       </Grid>
@@ -1277,9 +1355,9 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                 </Typography>
               </Box>
 
-              {/* Los 3 campos en una fila */}
+              {/* Los 4 campos en una fila */}
               <Grid container spacing={3}>
-                <Grid size={{ xs: 12, md: 4 }}>
+                <Grid size={{ xs: 12, md: 3 }}>
                   <Typography sx={{ color: 'white', mb: 1, fontSize: '0.875rem', fontWeight: 500 }}>
                     Fecha Entrega OC
                   </Typography>
@@ -1296,7 +1374,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                   </Form.Item>
                 </Grid>
 
-                <Grid size={{ xs: 12, md: 4 }}>
+                <Grid size={{ xs: 12, md: 3 }}>
                   <Typography sx={{ color: 'white', mb: 1, fontSize: '0.875rem', fontWeight: 500 }}>
                     Cargo de Entrega OC PERU COMPRAS
                   </Typography>
@@ -1311,7 +1389,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                   </Form.Item>
                 </Grid>
 
-                <Grid size={{ xs: 12, md: 4 }}>
+                <Grid size={{ xs: 12, md: 3 }}>
                   <Typography sx={{ color: 'white', mb: 1, fontSize: '0.875rem', fontWeight: 500 }}>
                     Fecha Perú Compras
                   </Typography>
@@ -1323,6 +1401,21 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                     <DatePickerAntd
                       placeholder="Seleccionar fecha"
                       onChange={(value) => handleOCFieldChange('fechaPeruCompras', value)}
+                    />
+                  </Form.Item>
+                </Grid>
+
+                <Grid size={{ xs: 12, md: 3 }}>
+                  <Typography sx={{ color: 'white', mb: 1, fontSize: '0.875rem', fontWeight: 500 }}>
+                    Carta de Ampliación
+                  </Typography>
+                  <Form.Item
+                    name="cartaAmpliacion"
+                    initialValue={sale.cartaAmpliacion}
+                  >
+                    <SimpleFileUpload
+                      onChange={(file) => handleOCFieldChange('cartaAmpliacion', file)}
+                      accept="application/pdf"
                     />
                   </Form.Item>
                 </Grid>
@@ -1401,6 +1494,152 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
           </Box>
         </Stack>
       </Form>
+
+      {/* Modal de Resumen de Transportes */}
+      <Modal
+        open={Object.values(openModal).some(Boolean)}
+        onClose={() => setOpenModal({})}
+        aria-labelledby="resumen-modal-title"
+        aria-describedby="resumen-modal-description"
+      >
+        <MuiBox sx={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '90%',
+          maxWidth: 800,
+          maxHeight: '90vh',
+          bgcolor: 'background.paper',
+          borderRadius: 2,
+          boxShadow: 24,
+          overflow: 'auto',
+        }}>
+          <Box sx={{ p: 4 }}>
+            <Typography id="resumen-modal-title" variant="h6" component="h2" sx={{ mb: 3 }}>
+              Resumen de Transportes - OP {ordenesProveedor.find(op => openModal[op.id.toString()])?.codigoOp || ''}
+            </Typography>
+
+            {(() => {
+              const currentOp = ordenesProveedor.find(op => openModal[op.id.toString()]);
+              if (!currentOp) return null;
+
+              return (
+                <Box>
+                  {/* Transportes Asignados Existentes */}
+                  {currentOp.transportesAsignados && currentOp.transportesAsignados.length > 0 ? (
+                    <Box sx={{ mb: 4 }}>
+                      <Typography variant="h6" sx={{ mb: 2, color: '#1e293b' }}>
+                        Transportes Asignados
+                      </Typography>
+                      <Grid container spacing={2}>
+                        {currentOp.transportesAsignados.map((transporteAsignado) => (
+                          <Grid size={{ xs: 12, md: 6 }} key={transporteAsignado.id}>
+                            <Box sx={{
+                              bgcolor: '#f8fafc',
+                              borderRadius: 2,
+                              p: 2.5,
+                              border: '1px solid #e2e8f0',
+                              boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+                              height: '100%'
+                            }}>
+                              <Typography variant="body2" color="text.secondary" sx={{
+                                mb: 1.5,
+                                fontSize: '0.875rem',
+                                fontWeight: 600,
+                                textTransform: 'uppercase',
+                                textAlign: 'left'
+                              }}>
+                                <LocalShippingIcon sx={{ color: '#10b981', fontSize: 14, mr: 1 }} />
+                                {transporteAsignado.transporte?.razonSocial || 'N/A'}
+                              </Typography>
+                              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                                  Código: {transporteAsignado.codigoTransporte}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                                  RUC: {transporteAsignado.transporte?.ruc || 'N/A'}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                                  Destino: {transporteAsignado.tipoDestino} - {transporteAsignado.direccion}
+                                </Typography>
+                                {transporteAsignado.montoFlete !== null && transporteAsignado.montoFlete !== undefined && (
+                                  <Typography variant="body2" sx={{ fontWeight: 600, color: '#10b981', fontSize: '0.75rem' }}>
+                                    Flete: {formatCurrency(parseFloat(String(transporteAsignado.montoFlete)))}
+                                  </Typography>
+                                )}
+                              </Box>
+                            </Box>
+                          </Grid>
+                        ))}
+                      </Grid>
+                    </Box>
+                  ) : (
+                    <Box sx={{ mb: 4, p: 3, bgcolor: '#f8fafc', borderRadius: 1, textAlign: 'center' }}>
+                      <Typography variant="body1" color="text.secondary">
+                        No hay transportes asignados para esta OP
+                      </Typography>
+                    </Box>
+                  )}
+
+                  {/* Formulario para Agregar Nuevo Transporte */}
+                  <Box>
+                    <Typography variant="h6" sx={{ mb: 2, color: '#1e293b' }}>
+                      Agregar Nuevo Transporte
+                    </Typography>
+                    <Grid container spacing={3}>
+                      <Grid size={{ xs: 12, md: 6 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 600, mb: 1.5, color: '#374151' }}>
+                          Número de Factura
+                        </Typography>
+                        <InputAntd
+                          placeholder="Ingrese número de factura"
+                        />
+                      </Grid>
+
+                      <Grid size={{ xs: 12, md: 6 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 600, mb: 1.5, color: '#374151' }}>
+                          Archivo de Factura
+                        </Typography>
+                        <SimpleFileUpload
+                          accept="application/pdf"
+                        />
+                      </Grid>
+
+                      <Grid size={{ xs: 12, md: 6 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 600, mb: 1.5, color: '#374151' }}>
+                          Guía de Remisión
+                        </Typography>
+                        <SimpleFileUpload
+                          accept="application/pdf"
+                        />
+                      </Grid>
+
+                      <Grid size={{ xs: 12, md: 6 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 600, mb: 1.5, color: '#374151' }}>
+                          Guía de Transporte
+                        </Typography>
+                        <SimpleFileUpload
+                          accept="application/pdf"
+                        />
+                      </Grid>
+                    </Grid>
+
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 3 }}>
+                      <Button onClick={() => setOpenModal({})} variant="outlined">
+                        Cancelar
+                      </Button>
+                      <Button variant="contained" sx={{ bgcolor: '#10b981', '&:hover': { bgcolor: '#059669' } }}>
+                        Agregar Transporte
+                      </Button>
+                    </Box>
+                  </Box>
+                </Box>
+              );
+            })()}
+          </Box>
+        </MuiBox>
+      </Modal>
     </Box>
   );
 };

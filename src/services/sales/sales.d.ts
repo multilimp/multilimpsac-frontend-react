@@ -46,6 +46,7 @@ export interface SaleProps {
   fechaProximaGestion?: string;
   cartaCci?: string;
   cartaGarantia?: string;
+  cartaAmpliacion?: string;
   etapaActual: string;
   estadoVenta: string;
   estadoActivo: boolean;
