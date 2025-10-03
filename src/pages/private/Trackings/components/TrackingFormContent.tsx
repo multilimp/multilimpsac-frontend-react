@@ -7,7 +7,6 @@ import {
   Card,
   CardContent,
   Button,
-  Chip,
   Divider,
   Table,
   TableBody,
@@ -36,6 +35,7 @@ import {
   Schedule as ScheduleIcon,
   LocalShipping as LocalShippingIcon,
   Check as CheckIcon,
+  Add as AddIcon,
 } from '@mui/icons-material';
 import { notification, Form } from 'antd';
 import TextArea from 'antd/lib/input/TextArea';
@@ -48,12 +48,18 @@ import { formatCurrency, formattedDate } from '@/utils/functions';
 import { StepItemContent } from '../../Sales/SalesPageForm/smallcomponents';
 import DatePickerAntd from '@/components/DatePickerAnt';
 import { getOrderProvider, patchOrderProvider } from '@/services/providerOrders/providerOrders.requests';
+import { createTransporteAsignado, updateTransporteAsignado, deleteTransporteAsignado } from '@/services/transporteAsignado/transporteAsignado.requests';
 import { updateOrdenCompra, getOrdenCompraByTrackingId } from '@/services/trackings/trackings.request';
 import { printOrdenProveedor } from '@/services/print/print.requests';
 import SimpleFileUpload from '@/components/SimpleFileUpload';
 import SelectGeneric from '@/components/selects/SelectGeneric';
 import InputAntd from '@/components/InputAntd';
 import ProviderOrderFormSkeleton from '@/components/ProviderOrderFormSkeleton';
+import { getTransports } from '@/services/transports/transports.request';
+import { getContactsByEntityType } from '@/services/contacts/contacts.requests';
+import { getAlmacenes } from '@/services/almacen/almacen.requests';
+import SelectContactsByTransport from '@/components/selects/SelectContactsByTransport';
+import SelectTransportButton from '@/components/SelectTransportButton';
 
 interface TrackingFormContentProps {
   sale: SaleProps;
@@ -73,11 +79,39 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
   const [savingOC, setSavingOC] = useState(false);
   const [customRetornoValues, setCustomRetornoValues] = useState<{ [key: string]: string }>({});
   const [openModal, setOpenModal] = useState<{ [key: string]: boolean }>({});
+  const [transporteModal, setTransporteModal] = useState<{
+    open: boolean;
+    mode: 'create' | 'edit';
+    opId: number | null;
+    transporteData: any;
+  }>({
+    open: false,
+    mode: 'create',
+    opId: null,
+    transporteData: null
+  });
+  const [transportCompanies, setTransportCompanies] = useState<any[]>([]);
+  const [transportContacts, setTransportContacts] = useState<any[]>([]);
+  const [almacenes, setAlmacenes] = useState<any[]>([]);
 
   useEffect(() => {
     loadProviderOrders();
     initializeOCValues();
+    loadTransportCompanies();
   }, [sale.id]);
+
+  const loadTransportCompanies = async () => {
+    try {
+      const [companies, almacenesData] = await Promise.all([
+        getTransports(),
+        getAlmacenes()
+      ]);
+      setTransportCompanies(companies);
+      setAlmacenes(almacenesData);
+    } catch (error) {
+      console.error('Error loading transport data:', error);
+    }
+  };
 
   const initializeOCValues = () => {
     const ocValues = {
@@ -98,10 +132,11 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
       setOrdenesProveedor(ops);
 
       const initialValues: { [key: string]: Record<string, unknown> } = {};
+      const newCustomRetornoValues: { [key: string]: string } = {};
+
       ops.forEach(op => {
         const opKey = `op_${op.id}`;
         let retornoValue: string | null = op.retornoMercaderia;
-        let customValue = '';
 
         // Si el valor comienza con "OTROS:", extraer el texto personalizado
         const retornoMercaderiaValue = op.retornoMercaderia;
@@ -109,11 +144,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
           const strValue = String(retornoMercaderiaValue);
           if (strValue.startsWith('OTROS: ')) {
             retornoValue = 'OTROS';
-            customValue = strValue.replace('OTROS: ', '');
-            setCustomRetornoValues(prev => ({
-              ...prev,
-              [op.id.toString()]: customValue
-            }));
+            newCustomRetornoValues[op.id.toString()] = strValue.replace('OTROS: ', '');
           }
         }
 
@@ -122,9 +153,13 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
           estadoOp: op.estadoOp,
           fechaEntrega: op.fechaEntrega ? dayjs(op.fechaEntrega) : null,
           cargoOea: op.cargoOea,
-          retornoMercaderia: retornoValue
+          retornoMercaderia: retornoValue,
+          notaObservaciones: op.notaObservaciones,
+          notaCobranzas: op.notaCobranzas
         };
       });
+
+      setCustomRetornoValues(newCustomRetornoValues);
       setOriginalValues(initialValues);
     } catch (error) {
       notification.error({
@@ -217,6 +252,74 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
     });
   };
 
+  const loadTransportContacts = async (transportId: number, existingContactId?: number) => {
+    try {
+      const contacts = await getContactsByEntityType('transporte', transportId);
+      setTransportContacts(contacts);
+
+      // Seleccionar contacto: existente si está disponible, sino destacado o primero
+      let contactoSeleccionado;
+      if (existingContactId && contacts.find(c => c.id === existingContactId)) {
+        contactoSeleccionado = contacts.find(c => c.id === existingContactId);
+      } else {
+        const contactoDestacado = contacts.find(contact => contact.usuarioDestacado);
+        contactoSeleccionado = contactoDestacado || contacts[0];
+      }
+
+      if (contactoSeleccionado) {
+        // Establecer el valor del formulario
+        form.setFieldsValue({
+          contactoId: contactoSeleccionado.id
+        });
+      }
+    } catch (error) {
+      console.error('Error loading transport contacts:', error);
+      setTransportContacts([]);
+    }
+  };
+
+  // Funciones CRUD para transportes asignados
+  const handleAddTransporte = (opId: number) => {
+    setTransporteModal({
+      open: true,
+      mode: 'create',
+      opId,
+      transporteData: null
+    });
+    setTransportContacts([]); // Limpiar contactos al abrir modal de creación
+  };
+
+  const handleEditTransporte = (transporteAsignado: any) => {
+    setTransporteModal({
+      open: true,
+      mode: 'edit',
+      opId: transporteAsignado.ordenProveedorId,
+      transporteData: transporteAsignado
+    });
+    // Cargar contactos del transporte seleccionado
+    if (transporteAsignado.transporte?.id) {
+      loadTransportContacts(transporteAsignado.transporte.id, transporteAsignado.contactoTransporte?.id);
+    }
+  };
+
+  const handleDeleteTransporte = async (transporteId: number) => {
+    try {
+      await deleteTransporteAsignado(transporteId);
+      notification.success({
+        message: 'Transporte eliminado',
+        description: 'El transporte asignado ha sido eliminado correctamente'
+      });
+      // Recargar los datos
+      loadProviderOrders();
+    } catch (error) {
+      console.error('Error al eliminar transporte:', error);
+      notification.error({
+        message: 'Error',
+        description: 'No se pudo eliminar el transporte asignado'
+      });
+    }
+  };
+
   const handleOCFieldChange = (fieldName: string, value: unknown) => {
     const originalValue = originalOCValues[fieldName];
 
@@ -271,6 +374,12 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
 
         if (fieldName === 'fechaEntrega' && value) {
           value = value.toISOString();
+        }
+
+        // Para retornoMercaderia, si es "OTROS", usar el valor personalizado
+        if (fieldName === 'retornoMercaderia' && value === 'OTROS') {
+          const customValue = customRetornoValues[opId];
+          value = customValue ? `OTROS: ${customValue}` : 'OTROS';
         }
 
         dataToSend[fieldName] = value;
@@ -743,8 +852,8 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                               border: '1px solid #e2e8f0',
                               height: '100%'
                             }}>
-                              <Typography variant="body2" color="text.secondary" sx={{
-                                mb: 2,
+                              <Typography variant="body1" color="text.secondary" sx={{
+                                mb: 1,
                                 fontSize: '0.875rem',
                                 fontWeight: 600,
                                 textTransform: 'uppercase',
@@ -759,7 +868,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                                     <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem', mb: 0.5 }}>
                                       Fecha Máxima de Entrega
                                     </Typography>
-                                    <Typography variant="body1" sx={{ fontWeight: 600, color: '#dc2626', fontSize: '1rem' }}>
+                                    <Typography variant="body1" sx={{ fontWeight: 600, fontSize: '1rem' }}>
                                       {formattedDate(sale.fechaMaxForm) || 'N/A'}
                                     </Typography>
                                   </Box>
@@ -767,7 +876,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                                 <Grid size={{ xs: 6, md: 3 }}>
                                   <Box sx={{ textAlign: 'center' }}>
                                     <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem', mb: 0.5 }}>
-                                      Recepción
+                                      Fecha Recepción
                                     </Typography>
                                     <Typography variant="body1" sx={{ fontWeight: 600, color: '#1e293b', fontSize: '1rem' }}>
                                       {formattedDate(op.fechaRecepcion) || 'N/A'}
@@ -777,9 +886,9 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                                 <Grid size={{ xs: 6, md: 3 }}>
                                   <Box sx={{ textAlign: 'center' }}>
                                     <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem', mb: 0.5 }}>
-                                      Programada
+                                      Fecha Programada
                                     </Typography>
-                                    <Typography variant="body1" sx={{ fontWeight: 600, color: '#7c3aed', fontSize: '1rem' }}>
+                                    <Typography variant="body1" sx={{ fontWeight: 600, fontSize: '1rem' }}>
                                       {formattedDate(op.fechaProgramada) || 'N/A'}
                                     </Typography>
                                   </Box>
@@ -787,7 +896,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                                 <Grid size={{ xs: 6, md: 3 }}>
                                   <Box sx={{ textAlign: 'center' }}>
                                     <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem', mb: 0.5 }}>
-                                      Despacho
+                                      Fecha Despacho
                                     </Typography>
                                     <Typography variant="body1" sx={{ fontWeight: 600, color: '#1e293b', fontSize: '1rem' }}>
                                       {formattedDate(op.fechaDespacho) || 'N/A'}
@@ -959,6 +1068,206 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                                         textAlign: 'right'
                                       }}>
                                         {formatCurrency(parseFloat(producto.total || '0'))}
+                                      </TableCell>
+                                    </TableRow>
+                                  ))}
+                                </TableBody>
+                              </Table>
+                            </TableContainer>
+                          </Box>
+                        </Grid>
+                      )}
+
+                      {/* Transportes Asignados de la OP */}
+                      {op.transportesAsignados && op.transportesAsignados.length > 0 && (
+                        <Grid size={12}>
+                          <Box sx={{
+                            bgcolor: '#f8fafc',
+                            borderRadius: 2,
+                            p: 2.5,
+                            mb: 3,
+                            border: '1px solid #e2e8f0',
+                            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
+                          }}>
+                            <Box sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              mb: 2
+                            }}>
+                              <Typography variant="body2" color="text.secondary" sx={{
+                                fontSize: '0.875rem',
+                                fontWeight: 600,
+                                textTransform: 'uppercase',
+                                textAlign: 'left'
+                              }}>
+                                <LocalShippingIcon sx={{ color: '#10b981', fontSize: 14, mr: 1 }} />
+                                Transportes Asignados ({op.transportesAsignados.length})
+                              </Typography>
+                              <Button
+                                variant="outlined"
+                                size="small"
+                                startIcon={<AddIcon />}
+                                onClick={() => handleAddTransporte(op.id)}
+                                sx={{
+                                  borderColor: '#10b981',
+                                  color: '#10b981',
+                                  '&:hover': {
+                                    borderColor: '#059669',
+                                    bgcolor: '#ecfdf5'
+                                  }
+                                }}
+                              >
+                                Agregar
+                              </Button>
+                            </Box>
+
+                            <TableContainer sx={{
+                              borderRadius: 2,
+                              border: '1px solid #e2e8f0',
+                              overflow: 'hidden',
+                              mt: 1
+                            }}>
+                              <Table size="small">
+                                <TableHead>
+                                  <TableRow sx={{ bgcolor: '#f8fafc' }}>
+                                    <TableCell sx={{
+                                      fontSize: '0.875rem',
+                                      fontWeight: 700,
+                                      color: '#374151',
+                                      p: 1.5,
+                                      borderBottom: '2px solid #e5e7eb'
+                                    }}>
+                                      Código
+                                    </TableCell>
+                                    <TableCell sx={{
+                                      fontSize: '0.875rem',
+                                      fontWeight: 700,
+                                      color: '#374151',
+                                      p: 1.5,
+                                      borderBottom: '2px solid #e5e7eb'
+                                    }}>
+                                      Razón Social
+                                    </TableCell>
+                                    <TableCell sx={{
+                                      fontSize: '0.875rem',
+                                      fontWeight: 700,
+                                      color: '#374151',
+                                      p: 1.5,
+                                      borderBottom: '2px solid #e5e7eb'
+                                    }}>
+                                      RUC
+                                    </TableCell>
+                                    <TableCell sx={{
+                                      fontSize: '0.875rem',
+                                      fontWeight: 700,
+                                      color: '#374151',
+                                      p: 1.5,
+                                      borderBottom: '2px solid #e5e7eb'
+                                    }}>
+                                      Destino
+                                    </TableCell>
+                                    <TableCell sx={{
+                                      fontSize: '0.875rem',
+                                      fontWeight: 700,
+                                      color: '#374151',
+                                      p: 1.5,
+                                      borderBottom: '2px solid #e5e7eb',
+                                      textAlign: 'right'
+                                    }}>
+                                      Flete
+                                    </TableCell>
+                                    <TableCell sx={{
+                                      fontSize: '0.875rem',
+                                      fontWeight: 700,
+                                      color: '#374151',
+                                      p: 1.5,
+                                      borderBottom: '2px solid #e5e7eb',
+                                      textAlign: 'center',
+                                      width: '120px'
+                                    }}>
+                                      Acciones
+                                    </TableCell>
+                                  </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                  {op.transportesAsignados.map((transporteAsignado, idx: number) => (
+                                    <TableRow key={transporteAsignado.id} sx={{
+                                      '&:nth-of-type(odd)': { bgcolor: '#fafafa' },
+                                      '&:hover': { bgcolor: '#f1f5f9' }
+                                    }}>
+                                      <TableCell sx={{
+                                        fontSize: '0.875rem',
+                                        p: 1.5,
+                                        fontWeight: 500,
+                                        color: '#1f2937'
+                                      }}>
+                                        {transporteAsignado.codigoTransporte}
+                                      </TableCell>
+                                      <TableCell sx={{
+                                        fontSize: '0.875rem',
+                                        p: 1.5,
+                                        fontWeight: 500,
+                                        color: '#1f2937'
+                                      }}>
+                                        {transporteAsignado.transporte?.razonSocial || 'N/A'}
+                                      </TableCell>
+                                      <TableCell sx={{
+                                        fontSize: '0.875rem',
+                                        p: 1.5,
+                                        color: '#6b7280'
+                                      }}>
+                                        {transporteAsignado.transporte?.ruc || 'N/A'}
+                                      </TableCell>
+                                      <TableCell sx={{
+                                        fontSize: '0.875rem',
+                                        p: 1.5,
+                                        color: '#6b7280'
+                                      }}>
+                                        {transporteAsignado.tipoDestino}
+                                      </TableCell>
+                                      <TableCell sx={{
+                                        fontSize: '0.875rem',
+                                        fontWeight: 600,
+                                        p: 1.5,
+                                        color: '#10b981',
+                                        textAlign: 'right'
+                                      }}>
+                                        {transporteAsignado.montoFlete !== null && transporteAsignado.montoFlete !== undefined
+                                          ? formatCurrency(parseFloat(String(transporteAsignado.montoFlete)))
+                                          : 'N/A'
+                                        }
+                                      </TableCell>
+                                      <TableCell sx={{
+                                        p: 1,
+                                        textAlign: 'center'
+                                      }}>
+                                        <Stack direction="row" spacing={1} justifyContent="center">
+                                          <Tooltip title="Editar transporte">
+                                            <IconButton
+                                              size="small"
+                                              sx={{
+                                                color: '#3b82f6',
+                                                '&:hover': { bgcolor: '#eff6ff' }
+                                              }}
+                                              onClick={() => handleEditTransporte(transporteAsignado)}
+                                            >
+                                              <EditIcon fontSize="small" />
+                                            </IconButton>
+                                          </Tooltip>
+                                          <Tooltip title="Eliminar transporte">
+                                            <IconButton
+                                              size="small"
+                                              sx={{
+                                                color: '#ef4444',
+                                                '&:hover': { bgcolor: '#fef2f2' }
+                                              }}
+                                              onClick={() => handleDeleteTransporte(transporteAsignado.id)}
+                                            >
+                                              <CancelIcon fontSize="small" />
+                                            </IconButton>
+                                          </Tooltip>
+                                        </Stack>
                                       </TableCell>
                                     </TableRow>
                                   ))}
@@ -1191,53 +1500,57 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                               }}>
                                 Retorno de Mercadería
                               </Typography>
-                              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                <Form.Item
-                                  name={[`op_${op.id}`, 'retornoMercaderia']}
-                                  initialValue={op.retornoMercaderia}
-                                  style={{ marginBottom: 0 }}
-                                >
-                                  <SelectGeneric
-                                    placeholder="Seleccionar retorno"
-                                    options={[
-                                      { value: 'NINGUNO', label: 'Ninguno' },
-                                      { value: 'ENTIDAD', label: 'Entidad' },
-                                      { value: 'TRANSPORTE', label: 'Transporte' },
-                                      { value: 'ALMACEN_LIMA', label: 'Almacén Lima' },
-                                      { value: 'ALMACEN_HUANCAYO', label: 'Almacén Huancayo' },
-                                      { value: 'OTROS', label: 'Otros' }
-                                    ]}
-                                    onChange={(value) => {
-                                      handleFieldChange(op.id.toString(), 'retornoMercaderia', value);
-                                      // Limpiar valor personalizado si no es "OTROS"
-                                      if (value !== 'OTROS') {
-                                        setCustomRetornoValues(prev => {
-                                          const newValues = { ...prev };
-                                          delete newValues[op.id.toString()];
-                                          return newValues;
-                                        });
-                                      }
-                                    }}
-                                  />
-                                </Form.Item>
-
-                                {/* Campo de texto personalizado cuando se selecciona "OTROS" */}
-                                {form.getFieldValue([`op_${op.id}`, 'retornoMercaderia']) === 'OTROS' && (
-                                  <Form.Item style={{ marginBottom: 0 }}>
-                                    <InputAntd
-                                      placeholder="Especificar otro tipo de retorno"
-                                      value={customRetornoValues[op.id.toString()] || ''}
-                                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                        const value = e.target.value;
-                                        setCustomRetornoValues(prev => ({
-                                          ...prev,
-                                          [op.id.toString()]: value
-                                        }));
-                                        // Actualizar el valor real que se guardará
-                                        handleFieldChange(op.id.toString(), 'retornoMercaderia', `OTROS: ${value}`);
+                              <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1, alignItems: 'flex-start' }}>
+                                <Box sx={{ flex: 2 }}>
+                                  <Form.Item
+                                    name={[`op_${op.id}`, 'retornoMercaderia']}
+                                    initialValue={op.retornoMercaderia}
+                                    style={{ marginBottom: 0 }}
+                                  >
+                                    <SelectGeneric
+                                      placeholder="Seleccionar retorno"
+                                      options={[
+                                        { value: 'NINGUNO', label: 'Ninguno' },
+                                        { value: 'ENTIDAD', label: 'Entidad' },
+                                        { value: 'TRANSPORTE', label: 'Transporte' },
+                                        { value: 'ALMACEN_LIMA', label: 'Almacén Lima' },
+                                        { value: 'ALMACEN_HUANCAYO', label: 'Almacén Huancayo' },
+                                        { value: 'OTROS', label: 'Otros' }
+                                      ]}
+                                      onChange={(value) => {
+                                        handleFieldChange(op.id.toString(), 'retornoMercaderia', value);
+                                        // Limpiar valor personalizado si no es "OTROS"
+                                        if (value !== 'OTROS') {
+                                          setCustomRetornoValues(prev => {
+                                            const newValues = { ...prev };
+                                            delete newValues[op.id.toString()];
+                                            return newValues;
+                                          });
+                                        }
                                       }}
                                     />
                                   </Form.Item>
+                                </Box>
+
+                                {/* Campo de texto personalizado cuando se selecciona "OTROS" */}
+                                {form.getFieldValue([`op_${op.id}`, 'retornoMercaderia']) === 'OTROS' && (
+                                  <Box sx={{ flex: 1 }}>
+                                    <Form.Item style={{ marginBottom: 0 }}>
+                                      <InputAntd
+                                        placeholder="Especificar otro tipo"
+                                        value={customRetornoValues[op.id.toString()] || ''}
+                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                          const value = e.target.value;
+                                          setCustomRetornoValues(prev => ({
+                                            ...prev,
+                                            [op.id.toString()]: value
+                                          }));
+                                          // Actualizar el valor real que se guardará
+                                          handleFieldChange(op.id.toString(), 'retornoMercaderia', `OTROS: ${value}`);
+                                        }}
+                                      />
+                                    </Form.Item>
+                                  </Box>
                                 )}
                               </Box>
                             </Grid>
@@ -1472,148 +1785,313 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
         </Stack>
       </Form>
 
-      {/* Modal de Resumen de Transportes */}
+
       <Modal
-        open={Object.values(openModal).some(Boolean)}
-        onClose={() => setOpenModal({})}
-        aria-labelledby="resumen-modal-title"
-        aria-describedby="resumen-modal-description"
+        open={transporteModal.open}
+        onClose={() => setTransporteModal({ open: false, mode: 'create', opId: null, transporteData: null })}
+        sx={{ overflow: 'auto' }}
       >
         <MuiBox sx={{
           position: 'absolute',
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          width: '90%',
-          maxWidth: 800,
+          width: { xs: '95%', sm: '800px' },
           maxHeight: '90vh',
-          bgcolor: 'background.paper',
-          borderRadius: 2,
-          boxShadow: 24,
           overflow: 'auto',
+          bgcolor: 'background.paper',
+          borderRadius: 3,
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+          border: '1px solid #e5e7eb',
+          p: 0,
         }}>
-          <Box sx={{ p: 4 }}>
-            <Typography id="resumen-modal-title" variant="h6" component="h2" sx={{ mb: 3 }}>
-              Resumen de Transportes - OP {ordenesProveedor.find(op => openModal[op.id.toString()])?.codigoOp || ''}
-            </Typography>
+          <Box sx={{
+            p: 4,
+            borderTopLeftRadius: 12,
+            borderTopRightRadius: 12,
+          }}>
+            <Box sx={{ position: 'relative', zIndex: 1 }}>
+              <Typography variant="h6" component="h2" sx={{
+                fontWeight: 700,
+                fontSize: '1.25rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2
+              }}>
+                <LocalShippingIcon sx={{ fontSize: 28 }} />
+                {transporteModal.mode === 'create' ? 'Agregar Transporte Asignado' : `Editar Transporte Asignado ${transporteModal.transporteData?.codigoTransporte}`}
+              </Typography>
+              <Typography variant="body2" sx={{
+                mt: 1,
+                opacity: 0.9,
+                fontSize: '0.875rem'
+              }}>
+                Complete la información del transporte para la orden de proveedor
+              </Typography>
+            </Box>
+          </Box>
 
-            {(() => {
-              const currentOp = ordenesProveedor.find(op => openModal[op.id.toString()]);
-              if (!currentOp) return null;
+          <Box sx={{ p: 5 }}>
+            <Form
+              layout="vertical"
+              onFinish={async (values) => {
+                try {
+                  const dataToSend = {
+                    ...values,
+                    ordenProveedorId: transporteModal.opId,
+                    contactoTransporteId: values.contactoId,
+                    ...(transporteModal.mode === 'edit' && { id: transporteModal.transporteData.id })
+                  };
 
-              return (
-                <Box>
-                  {/* Transportes Asignados Existentes */}
-                  {currentOp.transportesAsignados && currentOp.transportesAsignados.length > 0 ? (
-                    <Box sx={{ mb: 4 }}>
-                      <Typography variant="h6" sx={{ mb: 2, color: '#1e293b' }}>
-                        Transportes Asignados
-                      </Typography>
-                      <Grid container spacing={2}>
-                        {currentOp.transportesAsignados.map((transporteAsignado) => (
-                          <Grid size={{ xs: 12, md: 6 }} key={transporteAsignado.id}>
-                            <Box sx={{
-                              bgcolor: '#f8fafc',
-                              borderRadius: 2,
-                              p: 2.5,
-                              border: '1px solid #e2e8f0',
-                              boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-                              height: '100%'
-                            }}>
-                              <Typography variant="body2" color="text.secondary" sx={{
-                                mb: 1.5,
-                                fontSize: '0.875rem',
-                                fontWeight: 600,
-                                textTransform: 'uppercase',
-                                textAlign: 'left'
-                              }}>
-                                <LocalShippingIcon sx={{ color: '#10b981', fontSize: 14, mr: 1 }} />
-                                {transporteAsignado.transporte?.razonSocial || 'N/A'}
-                              </Typography>
-                              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
-                                  Código: {transporteAsignado.codigoTransporte}
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
-                                  RUC: {transporteAsignado.transporte?.ruc || 'N/A'}
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
-                                  Destino: {transporteAsignado.tipoDestino} - {transporteAsignado.direccion}
-                                </Typography>
-                                {transporteAsignado.montoFlete !== null && transporteAsignado.montoFlete !== undefined && (
-                                  <Typography variant="body2" sx={{ fontWeight: 600, color: '#10b981', fontSize: '0.75rem' }}>
-                                    Flete: {formatCurrency(parseFloat(String(transporteAsignado.montoFlete)))}
-                                  </Typography>
-                                )}
-                              </Box>
-                            </Box>
-                          </Grid>
-                        ))}
-                      </Grid>
-                    </Box>
-                  ) : (
-                    <Box sx={{ mb: 4, p: 3, bgcolor: '#f8fafc', borderRadius: 1, textAlign: 'center' }}>
-                      <Typography variant="body1" color="text.secondary">
-                        No hay transportes asignados para esta OP
-                      </Typography>
-                    </Box>
-                  )}
+                  delete dataToSend.contactoId;
 
-                  {/* Formulario para Agregar Nuevo Transporte */}
-                  <Box>
-                    <Typography variant="h6" sx={{ mb: 2, color: '#1e293b' }}>
-                      Agregar Nuevo Transporte
-                    </Typography>
-                    <Grid container spacing={3}>
-                      <Grid size={{ xs: 12, md: 6 }}>
-                        <Typography variant="body2" sx={{ fontWeight: 600, mb: 1.5, color: '#374151' }}>
-                          Número de Factura
+                  if (transporteModal.mode === 'create') {
+                    await createTransporteAsignado(dataToSend);
+                    notification.success({
+                      message: 'Transporte agregado',
+                      description: 'El transporte asignado ha sido agregado correctamente'
+                    });
+                  } else {
+                    await updateTransporteAsignado(transporteModal.transporteData.id, dataToSend);
+                    notification.success({
+                      message: 'Transporte actualizado',
+                      description: 'El transporte asignado ha sido actualizado correctamente'
+                    });
+                  }
+
+                  setTransporteModal({ open: false, mode: 'create', opId: null, transporteData: null });
+                  loadProviderOrders();
+                } catch (error) {
+                  console.error('Error al guardar transporte:', error);
+                  notification.error({
+                    message: 'Error',
+                    description: 'No se pudo guardar el transporte asignado'
+                  });
+                }
+              }}
+              initialValues={transporteModal.transporteData || {}}
+            >
+              <Grid container spacing={4}>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <Typography variant="body2" sx={{
+                    fontWeight: 600,
+                    mb: 2,
+                    color: '#374151',
+                    fontSize: '0.875rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em'
+                  }}>
+                    Empresa de Transporte
+                  </Typography>
+                  <Form.Item
+                    name="transporteId"
+                    rules={[{ required: true, message: 'La empresa es requerida' }]}
+                  >
+                    <SelectTransportButton
+                      onSelect={(transport) => {
+                        form.setFieldsValue({ transporteId: transport.id });
+                        // Limpiar el contacto seleccionado antes de cargar los nuevos
+                        form.setFieldsValue({ contactoId: undefined });
+                        loadTransportContacts(transport.id);
+                      }}
+                      selectedTransport={transportCompanies.find(tc => tc.id === form.getFieldValue('transporteId'))}
+                      placeholder="Seleccionar empresa de transporte"
+                    />
+                  </Form.Item>
+                </Grid>
+
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <Typography variant="body2" sx={{
+                    fontWeight: 600,
+                    mb: 2,
+                    color: '#374151',
+                    fontSize: '0.875rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em'
+                  }}>
+                    Contacto
+                  </Typography>
+                  <Form.Item
+                    name="contactoId"
+                    rules={[{ required: true, message: 'El contacto es requerido' }]}
+                  >
+                    <SelectContactsByTransport
+                      transportId={form.getFieldValue('transporteId')}
+                      contacts={transportContacts}
+                      loading={false}
+                      onContactCreated={() => {
+                        // Recargar contactos cuando se crea uno nuevo
+                        const transportId = form.getFieldValue('transporteId');
+                        if (transportId) {
+                          loadTransportContacts(transportId);
+                        }
+                      }}
+                      onChange={(value) => {
+                        form.setFieldsValue({ contactoId: value });
+                      }}
+                    />
+                  </Form.Item>
+                </Grid>
+
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <Typography variant="body2" sx={{
+                    fontWeight: 600,
+                    mb: 2,
+                    color: '#374151',
+                    fontSize: '0.875rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em'
+                  }}>
+                    Tipo de Destino
+                  </Typography>
+                  <Form.Item
+                    name="tipoDestino"
+                    rules={[{ required: true, message: 'El tipo de destino es requerido' }]}
+                  >
+                    <SelectGeneric
+                      placeholder="Seleccionar tipo"
+                      options={[
+                        { value: 'AGENCIA', label: 'Agencia' },
+                        { value: 'CLIENTE', label: 'Cliente' },
+                        { value: 'ALMACEN', label: 'Almacén' }
+                      ]}
+                    />
+                  </Form.Item>
+                </Grid>
+
+                <Form.Item shouldUpdate={(prevValues, currentValues) => prevValues.tipoDestino !== currentValues.tipoDestino}>
+                  {({ getFieldValue }) => {
+                    const tipoDestino = getFieldValue('tipoDestino');
+                    return tipoDestino === 'ALMACEN' ? (
+                      <Grid>
+                        <Typography variant="body2" sx={{
+                          fontWeight: 600,
+                          mb: 2,
+                          color: '#374151',
+                          fontSize: '0.875rem',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em'
+                        }}>
+                          Almacén
                         </Typography>
-                        <InputAntd
-                          placeholder="Ingrese número de factura"
-                        />
+                        <Form.Item
+                          name="almacenId"
+                          rules={[{ required: true, message: 'El almacén es requerido' }]}
+                        >
+                          <SelectGeneric
+                            placeholder="Seleccionar almacén"
+                            options={almacenes.map(almacen => ({
+                              value: almacen.id,
+                              label: almacen.nombre
+                            }))}
+                          />
+                        </Form.Item>
                       </Grid>
+                    ) : null;
+                  }}
+                </Form.Item>
 
-                      <Grid size={{ xs: 12, md: 6 }}>
-                        <Typography variant="body2" sx={{ fontWeight: 600, mb: 1.5, color: '#374151' }}>
-                          Archivo de Factura
-                        </Typography>
-                        <SimpleFileUpload
-                          accept="application/pdf"
-                        />
-                      </Grid>
+                {/* Nota de Transporte - Full width arriba */}
+                <Grid size={12}>
+                  <Typography variant="body2" sx={{
+                    fontWeight: 600,
+                    mb: 2,
+                    color: '#374151',
+                    fontSize: '0.875rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em'
+                  }}>
+                    Nota de Transporte
+                  </Typography>
+                  <Form.Item name="notaTransporte">
+                    <TextArea
+                      placeholder="Notas adicionales del transporte"
+                      rows={3}
+                    />
+                  </Form.Item>
+                </Grid>
 
-                      <Grid size={{ xs: 12, md: 6 }}>
-                        <Typography variant="body2" sx={{ fontWeight: 600, mb: 1.5, color: '#374151' }}>
-                          Guía de Remisión
-                        </Typography>
-                        <SimpleFileUpload
-                          accept="application/pdf"
-                        />
-                      </Grid>
+                {/* Archivo de Cotización y Monto Flete Cotizado en la misma fila */}
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <Typography variant="body2" sx={{
+                    fontWeight: 600,
+                    mb: 2,
+                    color: '#374151',
+                    fontSize: '0.875rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em'
+                  }}>
+                    Archivo de Cotización
+                  </Typography>
+                  <Form.Item name="archivoCotizacion">
+                    <SimpleFileUpload
+                      accept="application/pdf"
+                      value={form.getFieldValue('archivoCotizacion')}
+                      onChange={(file) => {
+                        form.setFieldsValue({ archivoCotizacion: file });
+                      }}
+                    />
+                  </Form.Item>
+                </Grid>
 
-                      <Grid size={{ xs: 12, md: 6 }}>
-                        <Typography variant="body2" sx={{ fontWeight: 600, mb: 1.5, color: '#374151' }}>
-                          Guía de Transporte
-                        </Typography>
-                        <SimpleFileUpload
-                          accept="application/pdf"
-                        />
-                      </Grid>
-                    </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <Typography variant="body2" sx={{
+                    fontWeight: 600,
+                    mb: 2,
+                    color: '#374151',
+                    fontSize: '0.875rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em'
+                  }}>
+                    Monto Flete Cotizado
+                  </Typography>
+                  <Form.Item
+                    name="montoFlete"
+                    rules={[{ required: true, message: 'El monto es requerido' }]}
+                  >
+                    <InputAntd
+                      type="number"
+                      placeholder="0.00"
+                    />
+                  </Form.Item>
+                </Grid>
+              </Grid>
 
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 3 }}>
-                      <Button onClick={() => setOpenModal({})} variant="outlined">
-                        Cancelar
-                      </Button>
-                      <Button variant="contained" sx={{ bgcolor: '#10b981', '&:hover': { bgcolor: '#059669' } }}>
-                        Agregar Transporte
-                      </Button>
-                    </Box>
-                  </Box>
-                </Box>
-              );
-            })()}
+              <Box sx={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                gap: 3,
+                mt: 5,
+                pt: 4,
+                borderTop: '2px solid #f3f4f6',
+                bgcolor: '#fafafa',
+                mx: -5,
+                mb: -5,
+                px: 5,
+                pb: 4,
+                borderBottomLeftRadius: 12,
+                borderBottomRightRadius: 12
+              }}>
+                <Button
+                  onClick={() => setTransporteModal({ open: false, mode: 'create', opId: null, transporteData: null })}
+                  variant="outlined"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  variant="contained"
+                  type="submit"
+                  sx={{
+                    px: 4,
+                    py: 2,
+                    fontWeight: 700,
+                    fontSize: '0.95rem',
+                  }}
+                >
+                  {transporteModal.mode === 'create' ? 'Agregar Transporte' : 'Actualizar Transporte'}
+                </Button>
+              </Box>
+            </Form>
           </Box>
         </MuiBox>
       </Modal>

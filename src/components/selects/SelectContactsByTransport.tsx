@@ -10,6 +10,8 @@ import { ContactTypeEnum } from '@/services/contacts/contacts.enum';
 interface SelectContactsByTransportProps extends SelectProps {
   label?: string;
   transportId?: number;
+  contacts?: any[]; // Prop opcional para pasar contactos externos
+  loading?: boolean; // Prop opcional para loading externo
   onContactCreated?: () => void;
   onChange?: (value: any, record?: any) => void;
 }
@@ -17,6 +19,8 @@ interface SelectContactsByTransportProps extends SelectProps {
 const SelectContactsByTransport = ({
   label,
   transportId,
+  contacts: externalContacts,
+  loading: externalLoading,
   onContactCreated,
   onChange,
   size = 'large',
@@ -24,10 +28,14 @@ const SelectContactsByTransport = ({
 }: SelectContactsByTransportProps) => {
   const [openContactsDrawer, setOpenContactsDrawer] = useState(false);
 
-  const { contacts, loadingContacts, obtainContacts } = useContactsByEntity(
+  // Usar contactos externos si se proporcionan, sino usar el hook
+  const { contacts: hookContacts, loadingContacts: hookLoading, obtainContacts } = useContactsByEntity(
     'transporte',
     transportId || 0
   );
+
+  const contacts = externalContacts || hookContacts;
+  const loadingContacts = externalLoading !== undefined ? externalLoading : hookLoading;
 
   const handleContactCreated = () => {
     obtainContacts();

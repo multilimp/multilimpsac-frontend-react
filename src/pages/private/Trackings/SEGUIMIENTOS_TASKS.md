@@ -3,15 +3,15 @@
 ## 📋 Lista de Tareas Pendientes
 
 ### Campos y Funcionalidades Generales
-- [ ] **Nota de observaciones** - Agregar campo/sección para observaciones generales
-- [ ] **Nota de cobranzas** - Implementar campo de notas específico para cobranzas
+- [x] **Nota de observaciones** - Agregar campo/sección para observaciones generales
+- [x] **Nota de cobranzas** - Implementar campo de notas específico para cobranzas
 
 ### Retorno de Mercadería
-- [ ] **Añadir otro valor en retorno de mercadería** - Agregar opción adicional en el campo de retorno
+- [x] **Añadir otro valor en retorno de mercadería** - Agregar opción adicional en el campo de retorno
 
 ### Documentos y Cartas
-- [ ] **Agregar carta de ampliación** - Implementar campo para subir carta de ampliación
-- [ ] **Carta de ampliación** - Validar y configurar funcionalidad completa
+- [x] **Agregar carta de ampliación** - Implementar campo para subir carta de ampliación
+- [x] **Carta de ampliación** - Validar y configurar funcionalidad completa
 
 ### Transportes
 - [ ] **Añadir la vista de transportes** - Crear/mejorar vista de gestión de transportes
