@@ -48,7 +48,7 @@ const PrivateLayout = () => {
           <Outlet />
         </Box>
       </Box>
-      <ChatbotButton />
+      {/* <ChatbotButton /> */}
       {/* <NotificacionesPagosUrgentes /> */}
     </Box>
   );
