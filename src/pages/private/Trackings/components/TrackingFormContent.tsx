@@ -175,6 +175,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
   } | null>(null);
   const [changedTransporteFields, setChangedTransporteFields] = useState<Set<string>>(new Set());
   const [savingTransporte, setSavingTransporte] = useState(false);
+  const [updatingCompletionOp, setUpdatingCompletionOp] = useState<number | null>(null);
   const [transportePaymentsState, setTransportePaymentsState] = useState<TransportePaymentsState>(createDefaultPaymentsState);
   const [originalTransportePaymentsState, setOriginalTransportePaymentsState] = useState<TransportePaymentsState | null>(null);
   const [transportePaymentsChanged, setTransportePaymentsChanged] = useState(false);
@@ -450,6 +451,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
       fechaEntregaOC: sale.fechaEntregaOc ? dayjs(sale.fechaEntregaOc) : null,
       documentoPeruCompras: sale.documentoPeruCompras || null,
       fechaPeruCompras: sale.fechaPeruCompras ? dayjs(sale.fechaPeruCompras) : null,
+      cartaAmpliacion: sale.cartaAmpliacion || null,
     };
     setOriginalOCValues(ocValues);
 
@@ -486,7 +488,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
           fechaEntrega: op.fechaEntrega ? dayjs(op.fechaEntrega) : null,
           cargoOea: op.cargoOea,
           retornoMercaderia: retornoValue,
-          notaObservaciones: op.notaObservaciones,
+          observaciones: op.observaciones,
           notaCobranzas: op.notaCobranzas
         };
       });
@@ -557,6 +559,26 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
         message: 'Error al generar PDF',
         description: `No se pudo generar el PDF de ${op.codigoOp}`
       });
+    }
+  };
+
+  const handleToggleOpCompleted = async (opId: number, value: boolean) => {
+    setUpdatingCompletionOp(opId);
+    try {
+      const updated = await patchOrderProvider(opId, { isCompleted: value });
+      setOrdenesProveedor(prev => prev.map(op => (op.id === opId ? { ...op, isCompleted: updated.isCompleted } : op)));
+      notification.success({
+        message: value ? 'OP completada' : 'OP marcada como pendiente',
+        description: value ? 'La orden de proveedor fue marcada como completada.' : 'La orden de proveedor vuelve a estado pendiente.'
+      });
+    } catch (error) {
+      console.error('Error al actualizar estado de OP:', error);
+      notification.error({
+        message: 'Error al actualizar',
+        description: 'No se pudo actualizar el estado de la orden de proveedor'
+      });
+    } finally {
+      setUpdatingCompletionOp(null);
     }
   };
 
@@ -1078,7 +1100,10 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                     }}>
 
                       <Switch
-                        // checked={op.isCompleted}
+                        checked={Boolean(op.isCompleted)}
+                        onChange={(event) => handleToggleOpCompleted(op.id, event.target.checked)}
+                        disabled={updatingCompletionOp === op.id}
+                        color="success"
                         checkedIcon={<CheckIcon />} />
 
                       {/* Separador visual */}
@@ -1857,7 +1882,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                               </Box>
                             </Grid>
 
-                            {/* Tercera fila: Nota de Observaciones */}
+                            {/* Tercera fila: Observaciones */}
                             <Grid size={{ xs: 12 }}>
                               <Typography variant="body2" sx={{
                                 fontWeight: 600,
@@ -1867,17 +1892,17 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                                 textTransform: 'uppercase',
                                 letterSpacing: '0.05em'
                               }}>
-                                Nota de Observaciones
+                                Observaciones
                               </Typography>
                               <Form.Item
-                                name={[`op_${op.id}`, 'notaObservaciones']}
-                                initialValue={op.notaObservaciones}
+                                name={[`op_${op.id}`, 'observaciones']}
+                                initialValue={op.observaciones}
                                 style={{ marginBottom: 0 }}
                               >
                                 <TextArea
                                   placeholder="Ingrese observaciones adicionales"
                                   rows={3}
-                                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleFieldChange(op.id.toString(), 'notaObservaciones', e.target.value)}
+                                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleFieldChange(op.id.toString(), 'observaciones', e.target.value)}
                                 />
                               </Form.Item>
                             </Grid>

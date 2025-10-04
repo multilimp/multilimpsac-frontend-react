@@ -14,16 +14,16 @@
 - [x] **Carta de ampliación** - Validar y configurar funcionalidad completa
 
 ### Transportes
-- [ ] **Añadir la vista de transportes** - Crear/mejorar vista de gestión de transportes
-- [ ] **Número de factura (texto y archivo)** - Sección de transportes
-  - [ ] Campo de texto para número de factura
-  - [ ] Campo de archivo para subir factura
-- [ ] **Guía de remisión (documento)** - Agregar campo para documento de guía de remisión
-- [ ] **Guía de transporte** - Implementar campo/funcionalidad
+- [x] **Añadir la vista de transportes** - Crear/mejorar vista de gestión de transportes
+- [x] **Número de factura (texto y archivo)** - Sección de transportes
+  - [x] Campo de texto para número de factura
+  - [x] Campo de archivo para subir factura
+- [x] **Guía de remisión (documento)** - Agregar campo para documento de guía de remisión
+- [x] **Guía de transporte** - Implementar campo/funcionalidad
 
 ### Fechas
-- [ ] **Fecha de recepción** - Validar que no sea menor a la fecha actual (hoy)
-- [ ] **Monto y fecha** - Implementar campos de monto asociado con fecha
+- [x] **Fecha de recepción** - Validar que no sea menor a la fecha actual (hoy)
+- [x] **Monto y fecha** - Implementar campos de monto asociado con fecha
 
 ---
 
