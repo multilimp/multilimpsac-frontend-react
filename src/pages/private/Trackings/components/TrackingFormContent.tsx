@@ -126,6 +126,8 @@ const mapPaymentItemsToPayload = (payments: TransportePaymentItem[]) => payments
   estadoPago: payment.status
 }));
 
+const scheduleFields = ['fechaRecepcion', 'fechaProgramada', 'fechaDespacho'] as const;
+
 const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
@@ -135,6 +137,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
   const [originalValues, setOriginalValues] = useState<{ [key: string]: Record<string, unknown> }>({});
   const [changedFields, setChangedFields] = useState<{ [key: string]: Set<string> }>({});
   const [savingOP, setSavingOP] = useState<string | null>(null);
+  const [savingCronograma, setSavingCronograma] = useState<string | null>(null);
   const [originalOCValues, setOriginalOCValues] = useState<Record<string, unknown>>({});
   const [changedOCFields, setChangedOCFields] = useState<Set<string>>(new Set());
   const [savingOC, setSavingOC] = useState(false);
@@ -448,6 +451,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
 
   const initializeOCValues = () => {
     const ocValues = {
+      fechaMaxForm: sale.fechaMaxForm ? dayjs(sale.fechaMaxForm) : null,
       fechaEntregaOC: sale.fechaEntregaOc ? dayjs(sale.fechaEntregaOc) : null,
       documentoPeruCompras: sale.documentoPeruCompras || null,
       fechaPeruCompras: sale.fechaPeruCompras ? dayjs(sale.fechaPeruCompras) : null,
@@ -486,6 +490,9 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
           tipoEntrega: op.tipoEntrega,
           estadoOp: op.estadoOp,
           fechaEntrega: op.fechaEntrega ? dayjs(op.fechaEntrega) : null,
+          fechaRecepcion: op.fechaRecepcion ? dayjs(op.fechaRecepcion) : null,
+          fechaProgramada: op.fechaProgramada ? dayjs(op.fechaProgramada) : null,
+          fechaDespacho: op.fechaDespacho ? dayjs(op.fechaDespacho) : null,
           cargoOea: op.cargoOea,
           retornoMercaderia: retornoValue,
           observaciones: op.observaciones,
@@ -582,11 +589,44 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
     }
   };
 
+  const serializeDateValue = (value: unknown) => {
+    if (!value) {
+      return null;
+    }
+
+    if (typeof value === 'object' && value !== null && 'toISOString' in value) {
+      return (value as dayjs.Dayjs).toISOString();
+    }
+
+    if (typeof value === 'string') {
+      return value;
+    }
+
+    return null;
+  };
+
   const handleFieldChange = (opId: string, fieldName: string, value: unknown) => {
     const opKey = `op_${opId}`;
     const originalValue = originalValues[opKey]?.[fieldName];
 
-    const isChanged = JSON.stringify(originalValue) !== JSON.stringify(value);
+    let isChanged;
+
+    if (
+      fieldName === 'fechaEntrega' ||
+      fieldName === 'fechaRecepcion' ||
+      fieldName === 'fechaProgramada' ||
+      fieldName === 'fechaDespacho'
+    ) {
+      const originalDateStr = originalValue && typeof originalValue === 'object' && 'toISOString' in originalValue
+        ? (originalValue as dayjs.Dayjs).toISOString()
+        : originalValue ?? null;
+      const currentDateStr = value && typeof value === 'object' && 'toISOString' in value
+        ? (value as dayjs.Dayjs).toISOString()
+        : value ?? null;
+      isChanged = originalDateStr !== currentDateStr;
+    } else {
+      isChanged = JSON.stringify(originalValue) !== JSON.stringify(value);
+    }
 
     setChangedFields(prev => {
       const newChangedFields = { ...prev };
@@ -606,6 +646,161 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
 
       return newChangedFields;
     });
+  };
+
+  const getCronogramaChangesCount = (opId: number) => {
+    const opChanges = changedFields[opId.toString()];
+    let count = 0;
+
+    scheduleFields.forEach(field => {
+      if (opChanges?.has(field)) {
+        count += 1;
+      }
+    });
+
+    if (changedOCFields.has('fechaMaxForm')) {
+      count += 1;
+    }
+
+    return count;
+  };
+
+  const hasCronogramaChanges = (opId: number) => getCronogramaChangesCount(opId) > 0;
+
+  const saveCronograma = async (opId: number) => {
+    if (!hasCronogramaChanges(opId)) {
+      notification.info({
+        message: 'Sin cambios',
+        description: 'No hay cambios en el cronograma para guardar'
+      });
+      return;
+    }
+
+    const opKey = `op_${opId}`;
+    const currentValues = form.getFieldValue(opKey) || {};
+    const opChangedSet = new Set(changedFields[opId.toString()] || []);
+
+    setSavingCronograma(opId.toString());
+
+    try {
+      const schedulePayload: Record<string, unknown> = {};
+
+      scheduleFields.forEach(field => {
+        if (opChangedSet.has(field)) {
+          const fieldValue = currentValues[field];
+          schedulePayload[field] = serializeDateValue(fieldValue);
+        }
+      });
+
+      const requests: Promise<unknown>[] = [];
+
+      if (Object.keys(schedulePayload).length > 0) {
+        requests.push(patchOrderProvider(opId, schedulePayload));
+      }
+
+      let fechaMaxFormValue: string | null = null;
+      if (changedOCFields.has('fechaMaxForm')) {
+        const ocValue = form.getFieldValue('fechaMaxForm');
+        fechaMaxFormValue = serializeDateValue(ocValue);
+        requests.push(updateOrdenCompra(sale.id, { fechaMaxForm: fechaMaxFormValue }));
+      }
+
+      if (requests.length === 0) {
+        notification.info({
+          message: 'Sin cambios',
+          description: 'No hay cambios en el cronograma para guardar'
+        });
+        return;
+      }
+
+      await Promise.all(requests);
+
+      notification.success({
+        message: 'Cronograma actualizado',
+        description: 'Las fechas del cronograma se guardaron correctamente'
+      });
+
+      setChangedFields(prev => {
+        const newChanged = { ...prev };
+        const opKeyString = opId.toString();
+        const updatedSet = new Set(newChanged[opKeyString] || []);
+        scheduleFields.forEach(field => updatedSet.delete(field));
+
+        if (updatedSet.size === 0) {
+          delete newChanged[opKeyString];
+        } else {
+          newChanged[opKeyString] = updatedSet;
+        }
+
+        return newChanged;
+      });
+
+      setOriginalValues(prev => {
+        const next = { ...prev };
+        const opKeyString = `op_${opId}`;
+        const existing = { ...(next[opKeyString] || {}) };
+
+        scheduleFields.forEach(field => {
+          const fieldValue = form.getFieldValue([opKeyString, field]);
+          if (fieldValue && typeof fieldValue === 'object' && 'clone' in fieldValue) {
+            existing[field] = (fieldValue as dayjs.Dayjs).clone();
+          } else {
+            existing[field] = fieldValue;
+          }
+        });
+
+        next[opKeyString] = existing;
+        return next;
+      });
+
+      if (changedOCFields.has('fechaMaxForm')) {
+        setChangedOCFields(prev => {
+          if (!prev.has('fechaMaxForm')) {
+            return prev;
+          }
+          const next = new Set(prev);
+          next.delete('fechaMaxForm');
+          return next;
+        });
+
+        const currentFechaMaxForm = form.getFieldValue('fechaMaxForm');
+        setOriginalOCValues(prev => ({
+          ...prev,
+          fechaMaxForm: currentFechaMaxForm && typeof currentFechaMaxForm === 'object' && 'clone' in currentFechaMaxForm
+            ? (currentFechaMaxForm as dayjs.Dayjs).clone()
+            : currentFechaMaxForm
+        }));
+
+        sale.fechaMaxForm = fechaMaxFormValue ?? '';
+      }
+
+      setOrdenesProveedor(prev => prev.map(op => {
+        if (op.id !== opId) {
+          return op;
+        }
+
+        const updatedFields: Record<string, unknown> = {};
+        scheduleFields.forEach(field => {
+          if (opChangedSet.has(field)) {
+            const fieldValue = form.getFieldValue([`op_${opId}`, field]);
+            updatedFields[field] = serializeDateValue(fieldValue);
+          }
+        });
+
+        return {
+          ...op,
+          ...updatedFields
+        };
+      }));
+    } catch (error) {
+      console.error('Error al guardar cronograma:', error);
+      notification.error({
+        message: 'Error al guardar',
+        description: 'No se pudieron guardar las fechas del cronograma'
+      });
+    } finally {
+      setSavingCronograma(null);
+    }
   };
 
   const loadTransportContacts = async (transportId: number, existingContactId?: number) => {
@@ -654,7 +849,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
 
     // Comparar valores, teniendo en cuenta que dayjs objects requieren comparación especial
     let isChanged = false;
-    if (fieldName === 'fechaEntregaOC' || fieldName === 'fechaPeruCompras') {
+    if (fieldName === 'fechaEntregaOC' || fieldName === 'fechaPeruCompras' || fieldName === 'fechaMaxForm') {
       // Para campos de fecha, comparar como string ISO
       const originalDateStr = originalValue && typeof originalValue === 'object' && 'toISOString' in originalValue
         ? (originalValue as dayjs.Dayjs).toISOString()
@@ -701,7 +896,15 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
       changedFieldsForOP.forEach(fieldName => {
         let value = currentValues[fieldName];
 
-        if (fieldName === 'fechaEntrega' && value) {
+        if (
+          (fieldName === 'fechaEntrega' ||
+            fieldName === 'fechaRecepcion' ||
+            fieldName === 'fechaProgramada' ||
+            fieldName === 'fechaDespacho') &&
+          value &&
+          typeof value === 'object' &&
+          'toISOString' in value
+        ) {
           value = value.toISOString();
         }
 
@@ -779,17 +982,20 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
       changedOCFields.forEach(fieldName => {
         let value = currentValues[fieldName];
 
-        if (fieldName === 'fechaEntregaOC' && value) {
-          value = value.toISOString();
-        }
-        if (fieldName === 'fechaPeruCompras' && value) {
+        if (
+          (fieldName === 'fechaEntregaOC' || fieldName === 'fechaPeruCompras' || fieldName === 'fechaMaxForm') &&
+          value &&
+          typeof value === 'object' &&
+          'toISOString' in value
+        ) {
           value = value.toISOString();
         }
 
         // Mapear nombres de campos del frontend al backend
         const fieldMapping: Record<string, string> = {
           fechaEntregaOC: 'fechaEntregaOc',
-          fechaPeruCompras: 'fechaPeruCompras'
+          fechaPeruCompras: 'fechaPeruCompras',
+          fechaMaxForm: 'fechaMaxForm'
         };
 
         dataToSend[fieldMapping[fieldName] || fieldName] = value;
@@ -840,17 +1046,20 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
         changedOCFields.forEach(fieldName => {
           let value = values[fieldName];
 
-          if (fieldName === 'fechaEntregaOC' && value && typeof value === 'object' && 'toISOString' in value) {
-            value = (value as dayjs.Dayjs).toISOString();
-          }
-          if (fieldName === 'fechaPeruCompras' && value && typeof value === 'object' && 'toISOString' in value) {
+          if (
+            (fieldName === 'fechaEntregaOC' || fieldName === 'fechaPeruCompras' || fieldName === 'fechaMaxForm') &&
+            value &&
+            typeof value === 'object' &&
+            'toISOString' in value
+          ) {
             value = (value as dayjs.Dayjs).toISOString();
           }
 
           // Mapear nombres de campos del frontend al backend
           const fieldMapping: Record<string, string> = {
             fechaEntregaOC: 'fechaEntregaOc',
-            fechaPeruCompras: 'fechaPeruCompras'
+            fechaPeruCompras: 'fechaPeruCompras',
+            fechaMaxForm: 'fechaMaxForm'
           };
 
           ocData[fieldMapping[fieldName] || fieldName] = value;
@@ -873,7 +1082,15 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
           changedFieldsForOP.forEach(fieldName => {
             let value = opValues[fieldName];
 
-            if (fieldName === 'fechaEntrega' && value && typeof value === 'object' && 'toISOString' in value) {
+            if (
+              (fieldName === 'fechaEntrega' ||
+                fieldName === 'fechaRecepcion' ||
+                fieldName === 'fechaProgramada' ||
+                fieldName === 'fechaDespacho') &&
+              value &&
+              typeof value === 'object' &&
+              'toISOString' in value
+            ) {
               value = (value as dayjs.Dayjs).toISOString();
             }
 
@@ -1055,889 +1272,957 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                   Órdenes de Proveedor ({ordenesProveedor.length})
                 </Typography>
               </Box>
-              {ordenesProveedor.map((op, index) => (
-                <StepItemContent
-                  key={op.id}
-                  showHeader
-                  ResumeIcon={AssignmentIcon}
-                  color="#3b82f6"
-                  headerLeft={sale.empresa?.razonSocial || 'Empresa N/A'}
-                  resumeContent={
-                    <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2 }}>
-                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                        <Typography variant="h5" sx={{ fontWeight: 600, color: '#ffffff' }}>
-                          {op.codigoOp || `OP-${op.id}`}
-                        </Typography>
-                        <Typography sx={{ fontWeight: 500, color: '#ffffff', opacity: 0.8, fontSize: '0.875rem' }}>
-                          {op.proveedor?.razonSocial || 'Proveedor N/A'}
-                        </Typography>
-                        <Typography sx={{ fontWeight: 500, color: '#d1d5db', fontSize: '0.875rem' }}>
-                          RUC: {op.proveedor?.ruc || 'RUC N/A'}
-                        </Typography>
-                      </Box>
-                      <Box sx={{ flexGrow: 1 }} />
-                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, alignItems: 'flex-start' }}>
-                        <Typography sx={{ fontWeight: 700, color: '#ffffff', fontSize: '0.875rem' }}>
-                          {op.contactoProveedor?.cargo || 'Contacto'}
-                        </Typography>
-                        <Typography sx={{ fontWeight: 500, color: '#d1d5db', fontSize: '0.875rem' }}>
-                          Nombre: {op.contactoProveedor?.nombre || 'N/A'}
-                        </Typography>
-                        <Typography sx={{ fontWeight: 500, color: '#d1d5db', fontSize: '0.875rem' }}>
-                          Teléfono: {op.contactoProveedor?.telefono || 'N/A'}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  }
-                  showSearchButton={false}
-                  resumeButtons={
-                    <Box sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1.5,
-                      flexWrap: 'wrap',
-                      justifyContent: 'flex-end'
-                    }}>
+              {ordenesProveedor.map((op, index) => {
+                const cronogramaChangesCount = getCronogramaChangesCount(op.id);
+                const isSavingCronograma = savingCronograma === op.id.toString();
+                const cronogramaDisabled = cronogramaChangesCount === 0 || isSavingCronograma;
 
-                      <Switch
-                        checked={Boolean(op.isCompleted)}
-                        onChange={(event) => handleToggleOpCompleted(op.id, event.target.checked)}
-                        disabled={updatingCompletionOp === op.id}
-                        color="success"
-                        checkedIcon={<CheckIcon />} />
-
-                      {/* Separador visual */}
+                return (
+                  <StepItemContent
+                    key={op.id}
+                    showHeader
+                    ResumeIcon={AssignmentIcon}
+                    color="#3b82f6"
+                    headerLeft={sale.empresa?.razonSocial || 'Empresa N/A'}
+                    resumeContent={
+                      <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2 }}>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                          <Typography variant="h5" sx={{ fontWeight: 600, color: '#ffffff' }}>
+                            {op.codigoOp || `OP-${op.id}`}
+                          </Typography>
+                          <Typography sx={{ fontWeight: 500, color: '#ffffff', opacity: 0.8, fontSize: '0.875rem' }}>
+                            {op.proveedor?.razonSocial || 'Proveedor N/A'}
+                          </Typography>
+                          <Typography sx={{ fontWeight: 500, color: '#d1d5db', fontSize: '0.875rem' }}>
+                            RUC: {op.proveedor?.ruc || 'RUC N/A'}
+                          </Typography>
+                        </Box>
+                        <Box sx={{ flexGrow: 1 }} />
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, alignItems: 'flex-start' }}>
+                          <Typography sx={{ fontWeight: 700, color: '#ffffff', fontSize: '0.875rem' }}>
+                            {op.contactoProveedor?.cargo || 'Contacto'}
+                          </Typography>
+                          <Typography sx={{ fontWeight: 500, color: '#d1d5db', fontSize: '0.875rem' }}>
+                            Nombre: {op.contactoProveedor?.nombre || 'N/A'}
+                          </Typography>
+                          <Typography sx={{ fontWeight: 500, color: '#d1d5db', fontSize: '0.875rem' }}>
+                            Teléfono: {op.contactoProveedor?.telefono || 'N/A'}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    }
+                    showSearchButton={false}
+                    resumeButtons={
                       <Box sx={{
-                        width: '1px',
-                        height: '24px',
-                        bgcolor: 'rgba(255, 255, 255, 0.3)',
-                        mx: 0.5
-                      }} />
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1.5,
+                        flexWrap: 'wrap',
+                        justifyContent: 'flex-end'
+                      }}>
 
-                      {/* Botones de acción rápida */}
-                      <Tooltip title="Ver/ocultar detalles">
-                        <IconButton
-                          size="small"
-                          sx={{
-                            border: '1px solid rgba(255, 255, 255, 0.3)',
-                            borderRadius: 1.5,
-                            color: 'white',
-                            width: 36,
-                            height: 36,
-                            '&:hover': {
-                              borderColor: 'rgba(255, 255, 255, 0.5)',
-                              backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                              transform: 'scale(1.05)',
-                            },
-                            transition: 'all 0.2s ease-in-out',
-                          }}
-                          onClick={() => handleToggleContent(op.id.toString())}
-                        >
-                          <VisibilityIcon sx={{ fontSize: 18 }} />
-                        </IconButton>
-                      </Tooltip>
-                      {/* btn de edicio */}
-                      <Tooltip title="Editar orden de proveedor">
-                        <IconButton
-                          size="small"
-                          sx={{
-                            border: '1px solid rgba(255, 255, 255, 0.3)',
-                            borderRadius: 1.5,
-                            color: 'white',
-                            width: 36,
-                            height: 36,
-                            '&:hover': {
-                              borderColor: 'rgba(255, 255, 255, 0.5)',
-                              backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                              transform: 'scale(1.05)',
-                            },
-                            transition: 'all 0.2s ease-in-out',
-                          }}
-                          onClick={() => window.open(`/provider-orders/${op.id}`, '_blank')}
-                        >
-                          <EditIcon sx={{ fontSize: 18 }} />
-                        </IconButton>
-                      </Tooltip>
+                        <Switch
+                          checked={Boolean(op.isCompleted)}
+                          onChange={(event) => handleToggleOpCompleted(op.id, event.target.checked)}
+                          disabled={updatingCompletionOp === op.id}
+                          color="success"
+                          checkedIcon={<CheckIcon />} />
 
-                      {/* btn de impresion */}
-                      <Tooltip title="Imprimir orden de proveedor">
-                        <IconButton
-                          size="small"
-                          sx={{
-                            border: '1px solid rgba(255, 255, 255, 0.3)',
-                            borderRadius: 1.5,
-                            color: 'white',
-                            width: 36,
-                            height: 36,
-                            '&:hover': {
-                              borderColor: 'rgba(255, 255, 255, 0.5)',
-                              backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                              transform: 'scale(1.05)',
-                            },
-                            transition: 'all 0.2s ease-in-out',
-                          }}
-                          onClick={() => handlePrintOP(op)}
-                        >
-                          <PrintIcon sx={{ fontSize: 18 }} />
-                        </IconButton>
-                      </Tooltip>
-                    </Box>
-                  }
-                  headerRight={
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Typography sx={{ color: 'white', fontSize: '0.875rem', mr: 1 }}>
-                        Fecha de creación: {formattedDate(op.createdAt)}
-                      </Typography>
-                      <Typography sx={{ color: 'white', fontSize: '0.875rem' }}>
-                        Última actualización: {formattedDate(op.updatedAt)}
-                      </Typography>
-                    </Box>
-                  }
-                >
-                  {expandedContent[op.id.toString()] && (
-                    <>
-                      <Box sx={{ mb: 3 }}>
-                        {/* Información del proveedor y cronograma de fechas en la misma fila */}
-                        <Grid container spacing={3} sx={{ mb: 3 }}>
-                          <Grid size={{ xs: 12, md: 12 }}>
+                        {/* Separador visual */}
+                        <Box sx={{
+                          width: '1px',
+                          height: '24px',
+                          bgcolor: 'rgba(255, 255, 255, 0.3)',
+                          mx: 0.5
+                        }} />
+
+                        {/* Botones de acción rápida */}
+                        <Tooltip title="Ver/ocultar detalles">
+                          <IconButton
+                            size="small"
+                            sx={{
+                              border: '1px solid rgba(255, 255, 255, 0.3)',
+                              borderRadius: 1.5,
+                              color: 'white',
+                              width: 36,
+                              height: 36,
+                              '&:hover': {
+                                borderColor: 'rgba(255, 255, 255, 0.5)',
+                                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                transform: 'scale(1.05)',
+                              },
+                              transition: 'all 0.2s ease-in-out',
+                            }}
+                            onClick={() => handleToggleContent(op.id.toString())}
+                          >
+                            <VisibilityIcon sx={{ fontSize: 18 }} />
+                          </IconButton>
+                        </Tooltip>
+                        {/* btn de edicio */}
+                        <Tooltip title="Editar orden de proveedor">
+                          <IconButton
+                            size="small"
+                            sx={{
+                              border: '1px solid rgba(255, 255, 255, 0.3)',
+                              borderRadius: 1.5,
+                              color: 'white',
+                              width: 36,
+                              height: 36,
+                              '&:hover': {
+                                borderColor: 'rgba(255, 255, 255, 0.5)',
+                                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                transform: 'scale(1.05)',
+                              },
+                              transition: 'all 0.2s ease-in-out',
+                            }}
+                            onClick={() => window.open(`/provider-orders/${op.id}`, '_blank')}
+                          >
+                            <EditIcon sx={{ fontSize: 18 }} />
+                          </IconButton>
+                        </Tooltip>
+
+                        {/* btn de impresion */}
+                        <Tooltip title="Imprimir orden de proveedor">
+                          <IconButton
+                            size="small"
+                            sx={{
+                              border: '1px solid rgba(255, 255, 255, 0.3)',
+                              borderRadius: 1.5,
+                              color: 'white',
+                              width: 36,
+                              height: 36,
+                              '&:hover': {
+                                borderColor: 'rgba(255, 255, 255, 0.5)',
+                                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                transform: 'scale(1.05)',
+                              },
+                              transition: 'all 0.2s ease-in-out',
+                            }}
+                            onClick={() => handlePrintOP(op)}
+                          >
+                            <PrintIcon sx={{ fontSize: 18 }} />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
+                    }
+                    headerRight={
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography sx={{ color: 'white', fontSize: '0.875rem', mr: 1 }}>
+                          Fecha de creación: {formattedDate(op.createdAt)}
+                        </Typography>
+                        <Typography sx={{ color: 'white', fontSize: '0.875rem' }}>
+                          Última actualización: {formattedDate(op.updatedAt)}
+                        </Typography>
+                      </Box>
+                    }
+                  >
+                    {expandedContent[op.id.toString()] && (
+                      <>
+                        <Box sx={{ mb: 3 }}>
+                          {/* Información del proveedor y cronograma de fechas en la misma fila */}
+                          <Grid container spacing={3} sx={{ mb: 3 }}>
+                            <Grid size={{ xs: 12, md: 12 }}>
+                              <Box sx={{
+                                bgcolor: '#f8fafc',
+                                borderRadius: 2,
+                                p: 2.5,
+                                border: '1px solid #e2e8f0',
+                                height: '100%'
+                              }}>
+                                <Box sx={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'space-between',
+                                  mb: 1
+                                }}>
+                                  <Typography variant="body1" color="text.secondary" sx={{
+                                    fontSize: '0.875rem',
+                                    fontWeight: 600,
+                                    textTransform: 'uppercase',
+                                    textAlign: 'left',
+                                    display: 'flex',
+                                    alignItems: 'center'
+                                  }}>
+                                    <ScheduleIcon sx={{ color: '#3b82f6', fontSize: 14, mr: 1 }} />
+                                    Cronograma de Fechas
+                                  </Typography>
+                                  <Button
+                                    size="small"
+                                    variant="contained"
+                                    onClick={() => saveCronograma(op.id)}
+                                    disabled={cronogramaDisabled}
+                                    sx={{
+                                      bgcolor: '#3b82f6',
+                                      '&:hover': {
+                                        bgcolor: '#2563eb'
+                                      },
+                                      '&:disabled': {
+                                        bgcolor: '#cbd5f5',
+                                        color: '#1e3a8a'
+                                      },
+                                      fontSize: '0.75rem',
+                                      px: 2,
+                                      py: 0.5,
+                                      textTransform: 'none'
+                                    }}
+                                  >
+                                    {isSavingCronograma
+                                      ? 'Guardando...'
+                                      : cronogramaChangesCount > 0
+                                        ? `Guardar cronograma (${cronogramaChangesCount})`
+                                        : 'Guardar cronograma'}
+                                  </Button>
+                                </Box>
+                                <Grid container spacing={2}>
+                                  <Grid size={{ xs: 6, md: 3 }}>
+                                    <Box sx={{ textAlign: 'center' }}>
+                                      <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem', mb: 0.5 }}>
+                                        Fecha Máxima de Entrega
+                                      </Typography>
+                                      <Form.Item
+                                        name="fechaMaxForm"
+                                        initialValue={sale.fechaMaxForm ? dayjs(sale.fechaMaxForm) : null}
+                                        style={{ marginBottom: 0 }}
+                                      >
+                                        <DatePickerAntd
+                                          placeholder="Seleccionar fecha"
+                                          onChange={(value) => handleOCFieldChange('fechaMaxForm', value)}
+                                        />
+                                      </Form.Item>
+                                    </Box>
+                                  </Grid>
+                                  <Grid size={{ xs: 6, md: 3 }}>
+                                    <Box sx={{ textAlign: 'center' }}>
+                                      <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem', mb: 0.5 }}>
+                                        Fecha Recepción
+                                      </Typography>
+                                      <Form.Item
+                                        name={[`op_${op.id}`, 'fechaRecepcion']}
+                                        initialValue={op.fechaRecepcion ? dayjs(op.fechaRecepcion) : null}
+                                        style={{ marginBottom: 0 }}
+                                      >
+                                        <DatePickerAntd
+                                          placeholder="Seleccionar fecha"
+                                          onChange={(value) => handleFieldChange(op.id.toString(), 'fechaRecepcion', value)}
+                                        />
+                                      </Form.Item>
+                                    </Box>
+                                  </Grid>
+                                  <Grid size={{ xs: 6, md: 3 }}>
+                                    <Box sx={{ textAlign: 'center' }}>
+                                      <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem', mb: 0.5 }}>
+                                        Fecha Programada
+                                      </Typography>
+                                      <Form.Item
+                                        name={[`op_${op.id}`, 'fechaProgramada']}
+                                        initialValue={op.fechaProgramada ? dayjs(op.fechaProgramada) : null}
+                                        style={{ marginBottom: 0 }}
+                                      >
+                                        <DatePickerAntd
+                                          placeholder="Seleccionar fecha"
+                                          onChange={(value) => handleFieldChange(op.id.toString(), 'fechaProgramada', value)}
+                                        />
+                                      </Form.Item>
+                                    </Box>
+                                  </Grid>
+                                  <Grid size={{ xs: 6, md: 3 }}>
+                                    <Box sx={{ textAlign: 'center' }}>
+                                      <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem', mb: 0.5 }}>
+                                        Fecha Despacho
+                                      </Typography>
+                                      <Form.Item
+                                        name={[`op_${op.id}`, 'fechaDespacho']}
+                                        initialValue={op.fechaDespacho ? dayjs(op.fechaDespacho) : null}
+                                        style={{ marginBottom: 0 }}
+                                      >
+                                        <DatePickerAntd
+                                          placeholder="Seleccionar fecha"
+                                          onChange={(value) => handleFieldChange(op.id.toString(), 'fechaDespacho', value)}
+                                        />
+                                      </Form.Item>
+                                    </Box>
+                                  </Grid>
+                                </Grid>
+                              </Box>
+                            </Grid>
+                          </Grid>
+                        </Box>
+
+                        {/* Productos de la OP */}
+                        {op.productos && op.productos.length > 0 && (
+                          <Grid size={12}>
                             <Box sx={{
                               bgcolor: '#f8fafc',
                               borderRadius: 2,
                               p: 2.5,
+                              mb: 3,
                               border: '1px solid #e2e8f0',
-                              height: '100%'
+                              boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
                             }}>
-                              <Typography variant="body1" color="text.secondary" sx={{
-                                mb: 1,
-                                fontSize: '0.875rem',
-                                fontWeight: 600,
-                                textTransform: 'uppercase',
-                                textAlign: 'left'
+                              <Box sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                mb: 2
                               }}>
-                                <ScheduleIcon sx={{ color: '#3b82f6', fontSize: 14, mr: 1 }} />
-                                Cronograma de Fechas
-                              </Typography>
-                              <Grid container spacing={2}>
-                                <Grid size={{ xs: 6, md: 3 }}>
-                                  <Box sx={{ textAlign: 'center' }}>
-                                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem', mb: 0.5 }}>
-                                      Fecha Máxima de Entrega
-                                    </Typography>
-                                    <Typography variant="body1" sx={{ fontWeight: 600, fontSize: '1rem' }}>
-                                      {formattedDate(sale.fechaMaxForm) || 'N/A'}
-                                    </Typography>
-                                  </Box>
-                                </Grid>
-                                <Grid size={{ xs: 6, md: 3 }}>
-                                  <Box sx={{ textAlign: 'center' }}>
-                                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem', mb: 0.5 }}>
-                                      Fecha Recepción
-                                    </Typography>
-                                    <Typography variant="body1" sx={{ fontWeight: 600, color: '#1e293b', fontSize: '1rem' }}>
-                                      {formattedDate(op.fechaRecepcion) || 'N/A'}
-                                    </Typography>
-                                  </Box>
-                                </Grid>
-                                <Grid size={{ xs: 6, md: 3 }}>
-                                  <Box sx={{ textAlign: 'center' }}>
-                                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem', mb: 0.5 }}>
-                                      Fecha Programada
-                                    </Typography>
-                                    <Typography variant="body1" sx={{ fontWeight: 600, fontSize: '1rem' }}>
-                                      {formattedDate(op.fechaProgramada) || 'N/A'}
-                                    </Typography>
-                                  </Box>
-                                </Grid>
-                                <Grid size={{ xs: 6, md: 3 }}>
-                                  <Box sx={{ textAlign: 'center' }}>
-                                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem', mb: 0.5 }}>
-                                      Fecha Despacho
-                                    </Typography>
-                                    <Typography variant="body1" sx={{ fontWeight: 600, color: '#1e293b', fontSize: '1rem' }}>
-                                      {formattedDate(op.fechaDespacho) || 'N/A'}
-                                    </Typography>
-                                  </Box>
-                                </Grid>
-                              </Grid>
-                            </Box>
-                          </Grid>
-                        </Grid>
-                      </Box>
+                                <Typography variant="body2" color="text.secondary" sx={{
+                                  fontSize: '0.875rem',
+                                  fontWeight: 600,
+                                  textTransform: 'uppercase',
+                                  textAlign: 'left'
+                                }}>
+                                  <InventoryIcon sx={{ color: '#10b981', fontSize: 14, mr: 1 }} />
+                                  Productos ({op.productos.length})
+                                </Typography>
+                              </Box>
 
-                      {/* Productos de la OP */}
-                      {op.productos && op.productos.length > 0 && (
-                        <Grid size={12}>
-                          <Box sx={{
-                            bgcolor: '#f8fafc',
-                            borderRadius: 2,
-                            p: 2.5,
-                            mb: 3,
-                            border: '1px solid #e2e8f0',
-                            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
-                          }}>
-                            <Box sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'space-between',
-                              mb: 2
-                            }}>
-                              <Typography variant="body2" color="text.secondary" sx={{
-                                fontSize: '0.875rem',
-                                fontWeight: 600,
-                                textTransform: 'uppercase',
-                                textAlign: 'left'
+                              <TableContainer sx={{
+                                borderRadius: 2,
+                                border: '1px solid #e2e8f0',
+                                overflow: 'hidden',
+                                mt: 1
                               }}>
-                                <InventoryIcon sx={{ color: '#10b981', fontSize: 14, mr: 1 }} />
-                                Productos ({op.productos.length})
-                              </Typography>
-                            </Box>
-
-                            <TableContainer sx={{
-                              borderRadius: 2,
-                              border: '1px solid #e2e8f0',
-                              overflow: 'hidden',
-                              mt: 1
-                            }}>
-                              <Table size="small">
-                                <TableHead>
-                                  <TableRow sx={{ bgcolor: '#f8fafc' }}>
-                                    <TableCell sx={{
-                                      fontSize: '0.875rem',
-                                      fontWeight: 700,
-                                      color: '#374151',
-                                      p: 1.5,
-                                      borderBottom: '2px solid #e5e7eb'
-                                    }}>
-                                      Código
-                                    </TableCell>
-                                    <TableCell sx={{
-                                      fontSize: '0.875rem',
-                                      fontWeight: 700,
-                                      color: '#374151',
-                                      p: 1.5,
-                                      borderBottom: '2px solid #e5e7eb'
-                                    }}>
-                                      Descripción
-                                    </TableCell>
-                                    <TableCell sx={{
-                                      fontSize: '0.875rem',
-                                      fontWeight: 700,
-                                      color: '#374151',
-                                      p: 1.5,
-                                      borderBottom: '2px solid #e5e7eb',
-                                      textAlign: 'center'
-                                    }}>
-                                      U.Medida
-                                    </TableCell>
-                                    <TableCell sx={{
-                                      fontSize: '0.875rem',
-                                      fontWeight: 700,
-                                      color: '#374151',
-                                      p: 1.5,
-                                      borderBottom: '2px solid #e5e7eb',
-                                      textAlign: 'center'
-                                    }}>
-                                      Cantidad
-                                    </TableCell>
-                                    <TableCell sx={{
-                                      fontSize: '0.875rem',
-                                      fontWeight: 700,
-                                      color: '#374151',
-                                      p: 1.5,
-                                      borderBottom: '2px solid #e5e7eb',
-                                      textAlign: 'right'
-                                    }}>
-                                      P. Unitario
-                                    </TableCell>
-                                    <TableCell sx={{
-                                      fontSize: '0.875rem',
-                                      fontWeight: 700,
-                                      color: '#374151',
-                                      p: 1.5,
-                                      borderBottom: '2px solid #e5e7eb',
-                                      textAlign: 'right'
-                                    }}>
-                                      Total
-                                    </TableCell>
-                                  </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                  {op.productos.map((producto, idx: number) => (
-                                    <TableRow
-                                      key={idx}
-                                      sx={{
-                                        '&:nth-of-type(odd)': { bgcolor: '#f9fafb' },
-                                        '&:hover': { bgcolor: '#f3f4f6' },
-                                        transition: 'background-color 0.2s ease'
-                                      }}
-                                    >
+                                <Table size="small">
+                                  <TableHead>
+                                    <TableRow sx={{ bgcolor: '#f8fafc' }}>
                                       <TableCell sx={{
                                         fontSize: '0.875rem',
+                                        fontWeight: 700,
+                                        color: '#374151',
                                         p: 1.5,
-                                        fontWeight: 600,
-                                        color: '#1f2937'
+                                        borderBottom: '2px solid #e5e7eb'
                                       }}>
-                                        {producto.codigo || 'N/A'}
-                                      </TableCell>
-                                      <TableCell sx={{
-                                        fontSize: '0.875rem',
-                                        p: 1.5,
-                                        maxWidth: 500,
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                      }}>
-                                        {producto.descripcion || 'N/A'}
-                                      </TableCell>
-                                      <TableCell sx={{
-                                        fontSize: '0.875rem',
-                                        p: 1.5,
-                                        textAlign: 'center',
-                                        fontWeight: 500,
-                                        color: '#6b7280'
-                                      }}>
-                                        {producto.unidadMedida || 'N/A'}
-                                      </TableCell>
-                                      <TableCell sx={{
-                                        fontSize: '0.875rem',
-                                        p: 1.5,
-                                        textAlign: 'center',
-                                        fontWeight: 600,
-                                        color: '#1f2937'
-                                      }}>
-                                        {producto.cantidad || 'N/A'}
-                                      </TableCell>
-                                      <TableCell sx={{
-                                        fontSize: '0.875rem',
-                                        p: 1.5,
-                                        textAlign: 'right',
-                                        fontWeight: 500,
-                                        color: '#6b7280'
-                                      }}>
-                                        {formatCurrency(parseFloat(producto.precioUnitario || '0'))}
+                                        Código
                                       </TableCell>
                                       <TableCell sx={{
                                         fontSize: '0.875rem',
                                         fontWeight: 700,
+                                        color: '#374151',
                                         p: 1.5,
-                                        color: '#10b981',
+                                        borderBottom: '2px solid #e5e7eb'
+                                      }}>
+                                        Descripción
+                                      </TableCell>
+                                      <TableCell sx={{
+                                        fontSize: '0.875rem',
+                                        fontWeight: 700,
+                                        color: '#374151',
+                                        p: 1.5,
+                                        borderBottom: '2px solid #e5e7eb',
+                                        textAlign: 'center'
+                                      }}>
+                                        U.Medida
+                                      </TableCell>
+                                      <TableCell sx={{
+                                        fontSize: '0.875rem',
+                                        fontWeight: 700,
+                                        color: '#374151',
+                                        p: 1.5,
+                                        borderBottom: '2px solid #e5e7eb',
+                                        textAlign: 'center'
+                                      }}>
+                                        Cantidad
+                                      </TableCell>
+                                      <TableCell sx={{
+                                        fontSize: '0.875rem',
+                                        fontWeight: 700,
+                                        color: '#374151',
+                                        p: 1.5,
+                                        borderBottom: '2px solid #e5e7eb',
                                         textAlign: 'right'
                                       }}>
-                                        {formatCurrency(parseFloat(producto.total || '0'))}
+                                        P. Unitario
+                                      </TableCell>
+                                      <TableCell sx={{
+                                        fontSize: '0.875rem',
+                                        fontWeight: 700,
+                                        color: '#374151',
+                                        p: 1.5,
+                                        borderBottom: '2px solid #e5e7eb',
+                                        textAlign: 'right'
+                                      }}>
+                                        Total
                                       </TableCell>
                                     </TableRow>
-                                  ))}
-                                </TableBody>
-                              </Table>
-                            </TableContainer>
-                          </Box>
-                        </Grid>
-                      )}
+                                  </TableHead>
+                                  <TableBody>
+                                    {op.productos.map((producto, idx: number) => (
+                                      <TableRow
+                                        key={idx}
+                                        sx={{
+                                          '&:nth-of-type(odd)': { bgcolor: '#f9fafb' },
+                                          '&:hover': { bgcolor: '#f3f4f6' },
+                                          transition: 'background-color 0.2s ease'
+                                        }}
+                                      >
+                                        <TableCell sx={{
+                                          fontSize: '0.875rem',
+                                          p: 1.5,
+                                          fontWeight: 600,
+                                          color: '#1f2937'
+                                        }}>
+                                          {producto.codigo || 'N/A'}
+                                        </TableCell>
+                                        <TableCell sx={{
+                                          fontSize: '0.875rem',
+                                          p: 1.5,
+                                          maxWidth: 500,
+                                          overflow: 'hidden',
+                                          textOverflow: 'ellipsis',
+                                        }}>
+                                          {producto.descripcion || 'N/A'}
+                                        </TableCell>
+                                        <TableCell sx={{
+                                          fontSize: '0.875rem',
+                                          p: 1.5,
+                                          textAlign: 'center',
+                                          fontWeight: 500,
+                                          color: '#6b7280'
+                                        }}>
+                                          {producto.unidadMedida || 'N/A'}
+                                        </TableCell>
+                                        <TableCell sx={{
+                                          fontSize: '0.875rem',
+                                          p: 1.5,
+                                          textAlign: 'center',
+                                          fontWeight: 600,
+                                          color: '#1f2937'
+                                        }}>
+                                          {producto.cantidad || 'N/A'}
+                                        </TableCell>
+                                        <TableCell sx={{
+                                          fontSize: '0.875rem',
+                                          p: 1.5,
+                                          textAlign: 'right',
+                                          fontWeight: 500,
+                                          color: '#6b7280'
+                                        }}>
+                                          {formatCurrency(parseFloat(producto.precioUnitario || '0'))}
+                                        </TableCell>
+                                        <TableCell sx={{
+                                          fontSize: '0.875rem',
+                                          fontWeight: 700,
+                                          p: 1.5,
+                                          color: '#10b981',
+                                          textAlign: 'right'
+                                        }}>
+                                          {formatCurrency(parseFloat(producto.total || '0'))}
+                                        </TableCell>
+                                      </TableRow>
+                                    ))}
+                                  </TableBody>
+                                </Table>
+                              </TableContainer>
+                            </Box>
+                          </Grid>
+                        )}
 
-                      {/* Transportes Asignados de la OP */}
-                      {op.transportesAsignados && op.transportesAsignados.length > 0 && (
+                        {/* Transportes Asignados de la OP */}
+                        {op.transportesAsignados && op.transportesAsignados.length > 0 && (
+                          <Grid size={12}>
+                            <Box sx={{
+                              bgcolor: '#f8fafc',
+                              borderRadius: 2,
+                              p: 2.5,
+                              mb: 3,
+                              border: '1px solid #e2e8f0',
+                              boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
+                            }}>
+                              <Box sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                mb: 2
+                              }}>
+                                <Typography variant="body2" color="text.secondary" sx={{
+                                  fontSize: '0.875rem',
+                                  fontWeight: 600,
+                                  textTransform: 'uppercase',
+                                  textAlign: 'left'
+                                }}>
+                                  <LocalShippingIcon sx={{ color: '#10b981', fontSize: 14, mr: 1 }} />
+                                  Transportes Asignados ({op.transportesAsignados.length})
+                                </Typography>
+                              </Box>
+
+                              <TableContainer sx={{
+                                borderRadius: 2,
+                                border: '1px solid #e2e8f0',
+                                overflow: 'hidden',
+                                mt: 1
+                              }}>
+                                <Table size="small">
+                                  <TableHead>
+                                    <TableRow sx={{ bgcolor: '#f8fafc' }}>
+                                      <TableCell sx={{
+                                        fontSize: '0.875rem',
+                                        fontWeight: 700,
+                                        color: '#374151',
+                                        p: 1.5,
+                                        borderBottom: '2px solid #e5e7eb'
+                                      }}>
+                                        Código
+                                      </TableCell>
+                                      <TableCell sx={{
+                                        fontSize: '0.875rem',
+                                        fontWeight: 700,
+                                        color: '#374151',
+                                        p: 1.5,
+                                        borderBottom: '2px solid #e5e7eb'
+                                      }}>
+                                        Razón Social
+                                      </TableCell>
+                                      <TableCell sx={{
+                                        fontSize: '0.875rem',
+                                        fontWeight: 700,
+                                        color: '#374151',
+                                        p: 1.5,
+                                        borderBottom: '2px solid #e5e7eb'
+                                      }}>
+                                        RUC
+                                      </TableCell>
+                                      <TableCell sx={{
+                                        fontSize: '0.875rem',
+                                        fontWeight: 700,
+                                        color: '#374151',
+                                        p: 1.5,
+                                        borderBottom: '2px solid #e5e7eb'
+                                      }}>
+                                        Destino
+                                      </TableCell>
+                                      <TableCell sx={{
+                                        fontSize: '0.875rem',
+                                        fontWeight: 700,
+                                        color: '#374151',
+                                        p: 1.5,
+                                        borderBottom: '2px solid #e5e7eb',
+                                        textAlign: 'right'
+                                      }}>
+                                        Flete
+                                      </TableCell>
+                                      <TableCell sx={{
+                                        fontSize: '0.875rem',
+                                        fontWeight: 700,
+                                        color: '#374151',
+                                        p: 1.5,
+                                        borderBottom: '2px solid #e5e7eb',
+                                        textAlign: 'center',
+                                        width: '120px'
+                                      }}>
+                                        Acciones
+                                      </TableCell>
+                                    </TableRow>
+                                  </TableHead>
+                                  <TableBody>
+                                    {op.transportesAsignados.map((transporteAsignado, idx: number) => (
+                                      <TableRow key={transporteAsignado.id} sx={{
+                                        '&:nth-of-type(odd)': { bgcolor: '#fafafa' },
+                                        '&:hover': { bgcolor: '#f1f5f9' }
+                                      }}>
+                                        <TableCell sx={{
+                                          fontSize: '0.875rem',
+                                          p: 1.5,
+                                          fontWeight: 500,
+                                          color: '#1f2937'
+                                        }}>
+                                          {transporteAsignado.codigoTransporte}
+                                        </TableCell>
+                                        <TableCell sx={{
+                                          fontSize: '0.875rem',
+                                          p: 1.5,
+                                          fontWeight: 500,
+                                          color: '#1f2937'
+                                        }}>
+                                          {transporteAsignado.transporte?.razonSocial || 'N/A'}
+                                        </TableCell>
+                                        <TableCell sx={{
+                                          fontSize: '0.875rem',
+                                          p: 1.5,
+                                          color: '#6b7280'
+                                        }}>
+                                          {transporteAsignado.transporte?.ruc || 'N/A'}
+                                        </TableCell>
+                                        <TableCell sx={{
+                                          fontSize: '0.875rem',
+                                          p: 1.5,
+                                          color: '#6b7280'
+                                        }}>
+                                          {transporteAsignado.tipoDestino}
+                                        </TableCell>
+                                        <TableCell sx={{
+                                          fontSize: '0.875rem',
+                                          fontWeight: 600,
+                                          p: 1.5,
+                                          color: '#10b981',
+                                          textAlign: 'right'
+                                        }}>
+                                          {transporteAsignado.montoFlete !== null && transporteAsignado.montoFlete !== undefined
+                                            ? formatCurrency(parseFloat(String(transporteAsignado.montoFlete)))
+                                            : 'N/A'
+                                          }
+                                        </TableCell>
+                                        <TableCell sx={{
+                                          p: 1,
+                                          textAlign: 'center'
+                                        }}>
+                                          <Stack direction="row" spacing={1} justifyContent="center">
+                                            <Tooltip title="Ver transporte">
+                                              <IconButton
+                                                size="small"
+                                                sx={{
+                                                  color: '#10b981',
+                                                  '&:hover': { bgcolor: '#f0fdf4' }
+                                                }}
+                                                onClick={() => handleViewTransporte(transporteAsignado)}
+                                              >
+                                                <VisibilityIcon fontSize="small" />
+                                              </IconButton>
+                                            </Tooltip>
+                                          </Stack>
+                                        </TableCell>
+                                      </TableRow>
+                                    ))}
+                                  </TableBody>
+                                </Table>
+                              </TableContainer>
+                            </Box>
+                          </Grid>
+                        )}
+
+                        {/* FORMULARIO DE SEGUIMIENTO PARA CADA OP */}
                         <Grid size={12}>
                           <Box sx={{
-                            bgcolor: '#f8fafc',
-                            borderRadius: 2,
-                            p: 2.5,
-                            mb: 3,
+                            bgcolor: '#ffffff',
+                            borderRadius: 3,
+                            p: 4,
+                            mt: 3,
                             border: '1px solid #e2e8f0',
-                            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
+                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
                           }}>
+                            {/* Header del formulario */}
                             <Box sx={{
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'space-between',
-                              mb: 2
+                              mb: 3,
+                              pb: 2,
+                              borderBottom: '2px solid #f1f5f9'
                             }}>
-                              <Typography variant="body2" color="text.secondary" sx={{
-                                fontSize: '0.875rem',
-                                fontWeight: 600,
-                                textTransform: 'uppercase',
-                                textAlign: 'left'
-                              }}>
-                                <LocalShippingIcon sx={{ color: '#10b981', fontSize: 14, mr: 1 }} />
-                                Transportes Asignados ({op.transportesAsignados.length})
-                              </Typography>
-                            </Box>
-
-                            <TableContainer sx={{
-                              borderRadius: 2,
-                              border: '1px solid #e2e8f0',
-                              overflow: 'hidden',
-                              mt: 1
-                            }}>
-                              <Table size="small">
-                                <TableHead>
-                                  <TableRow sx={{ bgcolor: '#f8fafc' }}>
-                                    <TableCell sx={{
-                                      fontSize: '0.875rem',
-                                      fontWeight: 700,
-                                      color: '#374151',
-                                      p: 1.5,
-                                      borderBottom: '2px solid #e5e7eb'
-                                    }}>
-                                      Código
-                                    </TableCell>
-                                    <TableCell sx={{
-                                      fontSize: '0.875rem',
-                                      fontWeight: 700,
-                                      color: '#374151',
-                                      p: 1.5,
-                                      borderBottom: '2px solid #e5e7eb'
-                                    }}>
-                                      Razón Social
-                                    </TableCell>
-                                    <TableCell sx={{
-                                      fontSize: '0.875rem',
-                                      fontWeight: 700,
-                                      color: '#374151',
-                                      p: 1.5,
-                                      borderBottom: '2px solid #e5e7eb'
-                                    }}>
-                                      RUC
-                                    </TableCell>
-                                    <TableCell sx={{
-                                      fontSize: '0.875rem',
-                                      fontWeight: 700,
-                                      color: '#374151',
-                                      p: 1.5,
-                                      borderBottom: '2px solid #e5e7eb'
-                                    }}>
-                                      Destino
-                                    </TableCell>
-                                    <TableCell sx={{
-                                      fontSize: '0.875rem',
-                                      fontWeight: 700,
-                                      color: '#374151',
-                                      p: 1.5,
-                                      borderBottom: '2px solid #e5e7eb',
-                                      textAlign: 'right'
-                                    }}>
-                                      Flete
-                                    </TableCell>
-                                    <TableCell sx={{
-                                      fontSize: '0.875rem',
-                                      fontWeight: 700,
-                                      color: '#374151',
-                                      p: 1.5,
-                                      borderBottom: '2px solid #e5e7eb',
-                                      textAlign: 'center',
-                                      width: '120px'
-                                    }}>
-                                      Acciones
-                                    </TableCell>
-                                  </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                  {op.transportesAsignados.map((transporteAsignado, idx: number) => (
-                                    <TableRow key={transporteAsignado.id} sx={{
-                                      '&:nth-of-type(odd)': { bgcolor: '#fafafa' },
-                                      '&:hover': { bgcolor: '#f1f5f9' }
-                                    }}>
-                                      <TableCell sx={{
-                                        fontSize: '0.875rem',
-                                        p: 1.5,
-                                        fontWeight: 500,
-                                        color: '#1f2937'
-                                      }}>
-                                        {transporteAsignado.codigoTransporte}
-                                      </TableCell>
-                                      <TableCell sx={{
-                                        fontSize: '0.875rem',
-                                        p: 1.5,
-                                        fontWeight: 500,
-                                        color: '#1f2937'
-                                      }}>
-                                        {transporteAsignado.transporte?.razonSocial || 'N/A'}
-                                      </TableCell>
-                                      <TableCell sx={{
-                                        fontSize: '0.875rem',
-                                        p: 1.5,
-                                        color: '#6b7280'
-                                      }}>
-                                        {transporteAsignado.transporte?.ruc || 'N/A'}
-                                      </TableCell>
-                                      <TableCell sx={{
-                                        fontSize: '0.875rem',
-                                        p: 1.5,
-                                        color: '#6b7280'
-                                      }}>
-                                        {transporteAsignado.tipoDestino}
-                                      </TableCell>
-                                      <TableCell sx={{
-                                        fontSize: '0.875rem',
-                                        fontWeight: 600,
-                                        p: 1.5,
-                                        color: '#10b981',
-                                        textAlign: 'right'
-                                      }}>
-                                        {transporteAsignado.montoFlete !== null && transporteAsignado.montoFlete !== undefined
-                                          ? formatCurrency(parseFloat(String(transporteAsignado.montoFlete)))
-                                          : 'N/A'
-                                        }
-                                      </TableCell>
-                                      <TableCell sx={{
-                                        p: 1,
-                                        textAlign: 'center'
-                                      }}>
-                                        <Stack direction="row" spacing={1} justifyContent="center">
-                                          <Tooltip title="Ver transporte">
-                                            <IconButton
-                                              size="small"
-                                              sx={{
-                                                color: '#10b981',
-                                                '&:hover': { bgcolor: '#f0fdf4' }
-                                              }}
-                                              onClick={() => handleViewTransporte(transporteAsignado)}
-                                            >
-                                              <VisibilityIcon fontSize="small" />
-                                            </IconButton>
-                                          </Tooltip>
-                                        </Stack>
-                                      </TableCell>
-                                    </TableRow>
-                                  ))}
-                                </TableBody>
-                              </Table>
-                            </TableContainer>
-                          </Box>
-                        </Grid>
-                      )}
-
-                      {/* FORMULARIO DE SEGUIMIENTO PARA CADA OP */}
-                      <Grid size={12}>
-                        <Box sx={{
-                          bgcolor: '#ffffff',
-                          borderRadius: 3,
-                          p: 4,
-                          mt: 3,
-                          border: '1px solid #e2e8f0',
-                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
-                        }}>
-                          {/* Header del formulario */}
-                          <Box sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            mb: 3,
-                            pb: 2,
-                            borderBottom: '2px solid #f1f5f9'
-                          }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                              <Box sx={{
-                                bgcolor: '#10b981',
-                                borderRadius: '50%',
-                                p: 1,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center'
-                              }}>
-                                <EditIcon sx={{ color: 'white', fontSize: 20 }} />
-                              </Box>
-                              <Box>
-                                <Typography variant="h6" sx={{
-                                  fontWeight: 700,
-                                  color: '#1e293b',
-                                  mb: 0.5,
-                                  fontSize: '1.125rem'
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                <Box sx={{
+                                  bgcolor: '#10b981',
+                                  borderRadius: '50%',
+                                  p: 1,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center'
                                 }}>
-                                  Formulario de Seguimiento
-                                </Typography>
-                                <Typography variant="body2" sx={{
-                                  color: '#6b7280',
-                                  fontWeight: 500,
-                                  fontSize: '0.875rem'
-                                }}>
-                                  OP {index + 1} - {op.codigoOp || `OP-${op.id}`}
-                                </Typography>
+                                  <EditIcon sx={{ color: 'white', fontSize: 20 }} />
+                                </Box>
+                                <Box>
+                                  <Typography variant="h6" sx={{
+                                    fontWeight: 700,
+                                    color: '#1e293b',
+                                    mb: 0.5,
+                                    fontSize: '1.125rem'
+                                  }}>
+                                    Formulario de Seguimiento
+                                  </Typography>
+                                  <Typography variant="body2" sx={{
+                                    color: '#6b7280',
+                                    fontWeight: 500,
+                                    fontSize: '0.875rem'
+                                  }}>
+                                    OP {index + 1} - {op.codigoOp || `OP-${op.id}`}
+                                  </Typography>
+                                </Box>
                               </Box>
-                            </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                              {changedFields[op.id.toString()] && changedFields[op.id.toString()].size > 0 && (
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                  <Tooltip title={`Guardar ${changedFields[op.id.toString()].size} cambios`}>
-                                    <Button
-                                      variant="contained"
-                                      size="small"
-                                      onClick={() => saveOPChanges(op.id.toString())}
-                                      disabled={savingOP === op.id.toString()}
-                                      startIcon={<SaveIcon />}
-                                      sx={{
-                                        bgcolor: '#10b981',
-                                        '&:hover': {
-                                          bgcolor: '#059669'
-                                        },
-                                        '&:disabled': {
-                                          bgcolor: '#6b7280'
-                                        },
-                                        fontSize: '0.75rem',
-                                        px: 2,
-                                        py: 0.5,
-                                        minWidth: 'auto'
-                                      }}
-                                    >
-                                      {savingOP === op.id.toString() ? 'Guardando...' : `Guardar (${changedFields[op.id.toString()].size})`}
-                                    </Button>
-                                  </Tooltip>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                {changedFields[op.id.toString()] && changedFields[op.id.toString()].size > 0 && (
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <Tooltip title={`Guardar ${changedFields[op.id.toString()].size} cambios`}>
+                                      <Button
+                                        variant="contained"
+                                        size="small"
+                                        onClick={() => saveOPChanges(op.id.toString())}
+                                        disabled={savingOP === op.id.toString()}
+                                        startIcon={<SaveIcon />}
+                                        sx={{
+                                          bgcolor: '#10b981',
+                                          '&:hover': {
+                                            bgcolor: '#059669'
+                                          },
+                                          '&:disabled': {
+                                            bgcolor: '#6b7280'
+                                          },
+                                          fontSize: '0.75rem',
+                                          px: 2,
+                                          py: 0.5,
+                                          minWidth: 'auto'
+                                        }}
+                                      >
+                                        {savingOP === op.id.toString() ? 'Guardando...' : `Guardar (${changedFields[op.id.toString()].size})`}
+                                      </Button>
+                                    </Tooltip>
 
-                                  <Tooltip title="Cancelar cambios">
-                                    <Button
-                                      variant="outlined"
-                                      size="small"
-                                      onClick={() => cancelOPChanges(op.id.toString())}
-                                      disabled={savingOP === op.id.toString()}
-                                      sx={{
-                                        borderColor: '#d1d5db',
-                                        color: '#6b7280',
-                                        minWidth: 'auto',
-                                        px: 1,
-                                        py: 0.5,
-                                        '&:hover': {
-                                          borderColor: '#9ca3af',
-                                          backgroundColor: alpha('#f3f4f6', 0.5),
-                                        },
-                                        '&:disabled': {
+                                    <Tooltip title="Cancelar cambios">
+                                      <Button
+                                        variant="outlined"
+                                        size="small"
+                                        onClick={() => cancelOPChanges(op.id.toString())}
+                                        disabled={savingOP === op.id.toString()}
+                                        sx={{
                                           borderColor: '#d1d5db',
-                                          color: '#9ca3af'
-                                        }
-                                      }}
-                                    >
-                                      <CancelIcon sx={{ fontSize: 16 }} />
-                                    </Button>
-                                  </Tooltip>
-                                </Box>
-                              )}
+                                          color: '#6b7280',
+                                          minWidth: 'auto',
+                                          px: 1,
+                                          py: 0.5,
+                                          '&:hover': {
+                                            borderColor: '#9ca3af',
+                                            backgroundColor: alpha('#f3f4f6', 0.5),
+                                          },
+                                          '&:disabled': {
+                                            borderColor: '#d1d5db',
+                                            color: '#9ca3af'
+                                          }
+                                        }}
+                                      >
+                                        <CancelIcon sx={{ fontSize: 16 }} />
+                                      </Button>
+                                    </Tooltip>
+                                  </Box>
+                                )}
+                              </Box>
                             </Box>
-                          </Box>
 
-                          {/* Campos del formulario */}
-                          <Grid container spacing={3}>
-                            {/* Primera fila: Tipo de Entrega, Estado OP, Fecha Entrega */}
-                            <Grid size={{ xs: 12, md: 4 }}>
-                              <Typography variant="body2" sx={{
-                                fontWeight: 600,
-                                mb: 1.5,
-                                color: '#374151',
-                                fontSize: '0.875rem',
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.05em'
-                              }}>
-                                Tipo de Entrega
-                              </Typography>
-                              <Form.Item
-                                name={[`op_${op.id}`, 'tipoEntrega']}
-                                initialValue={op.tipoEntrega}
-                                style={{ marginBottom: 0 }}
-                              >
-                                <SelectGeneric
-                                  placeholder="Seleccionar tipo"
-                                  options={[
-                                    { value: 'PARCIAL', label: 'Parcial' },
-                                    { value: 'TOTAL', label: 'Total' }
-                                  ]}
-                                  onChange={(value) => handleFieldChange(op.id.toString(), 'tipoEntrega', value)}
-                                />
-                              </Form.Item>
-                            </Grid>
+                            {/* Campos del formulario */}
+                            <Grid container spacing={3}>
+                              {/* Primera fila: Tipo de Entrega, Estado OP, Fecha Entrega */}
+                              <Grid size={{ xs: 12, md: 4 }}>
+                                <Typography variant="body2" sx={{
+                                  fontWeight: 600,
+                                  mb: 1.5,
+                                  color: '#374151',
+                                  fontSize: '0.875rem',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.05em'
+                                }}>
+                                  Tipo de Entrega
+                                </Typography>
+                                <Form.Item
+                                  name={[`op_${op.id}`, 'tipoEntrega']}
+                                  initialValue={op.tipoEntrega}
+                                  style={{ marginBottom: 0 }}
+                                >
+                                  <SelectGeneric
+                                    placeholder="Seleccionar tipo"
+                                    options={[
+                                      { value: 'PARCIAL', label: 'Parcial' },
+                                      { value: 'TOTAL', label: 'Total' }
+                                    ]}
+                                    onChange={(value) => handleFieldChange(op.id.toString(), 'tipoEntrega', value)}
+                                  />
+                                </Form.Item>
+                              </Grid>
 
-                            <Grid size={{ xs: 12, md: 4 }}>
-                              <Typography variant="body2" sx={{
-                                fontWeight: 600,
-                                mb: 1.5,
-                                color: '#374151',
-                                fontSize: '0.875rem',
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.05em'
-                              }}>
-                                Estado OP
-                              </Typography>
-                              <Form.Item
-                                name={[`op_${op.id}`, 'estadoOp']}
-                                initialValue={op.estadoOp}
-                                style={{ marginBottom: 0 }}
-                              >
-                                <SelectGeneric
-                                  placeholder="Seleccionar estado"
-                                  options={[
-                                    { value: 'RECHAZADO', label: 'Rechazado' },
-                                    { value: 'CONFORME', label: 'Conforme' },
-                                    { value: 'OBSERVADO', label: 'Observado' }
-                                  ]}
-                                  onChange={(value) => handleFieldChange(op.id.toString(), 'estadoOp', value)}
-                                />
-                              </Form.Item>
-                            </Grid>
+                              <Grid size={{ xs: 12, md: 4 }}>
+                                <Typography variant="body2" sx={{
+                                  fontWeight: 600,
+                                  mb: 1.5,
+                                  color: '#374151',
+                                  fontSize: '0.875rem',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.05em'
+                                }}>
+                                  Estado OP
+                                </Typography>
+                                <Form.Item
+                                  name={[`op_${op.id}`, 'estadoOp']}
+                                  initialValue={op.estadoOp}
+                                  style={{ marginBottom: 0 }}
+                                >
+                                  <SelectGeneric
+                                    placeholder="Seleccionar estado"
+                                    options={[
+                                      { value: 'RECHAZADO', label: 'Rechazado' },
+                                      { value: 'CONFORME', label: 'Conforme' },
+                                      { value: 'OBSERVADO', label: 'Observado' }
+                                    ]}
+                                    onChange={(value) => handleFieldChange(op.id.toString(), 'estadoOp', value)}
+                                  />
+                                </Form.Item>
+                              </Grid>
 
-                            <Grid size={{ xs: 12, md: 4 }}>
-                              <Typography variant="body2" sx={{
-                                fontWeight: 600,
-                                mb: 1.5,
-                                color: '#374151',
-                                fontSize: '0.875rem',
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.05em'
-                              }}>
-                                Fecha de Entrega
-                              </Typography>
-                              <Form.Item
-                                name={[`op_${op.id}`, 'fechaEntrega']}
-                                initialValue={op.fechaEntrega ? dayjs(op.fechaEntrega) : null}
-                                style={{ marginBottom: 0 }}
-                              >
-                                <DatePickerAntd
-                                  placeholder="Seleccionar fecha"
-                                  onChange={(value) => handleFieldChange(op.id.toString(), 'fechaEntrega', value)}
-                                />
-                              </Form.Item>
-                            </Grid>
+                              <Grid size={{ xs: 12, md: 4 }}>
+                                <Typography variant="body2" sx={{
+                                  fontWeight: 600,
+                                  mb: 1.5,
+                                  color: '#374151',
+                                  fontSize: '0.875rem',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.05em'
+                                }}>
+                                  Fecha de Entrega
+                                </Typography>
+                                <Form.Item
+                                  name={[`op_${op.id}`, 'fechaEntrega']}
+                                  initialValue={op.fechaEntrega ? dayjs(op.fechaEntrega) : null}
+                                  style={{ marginBottom: 0 }}
+                                >
+                                  <DatePickerAntd
+                                    placeholder="Seleccionar fecha"
+                                    onChange={(value) => handleFieldChange(op.id.toString(), 'fechaEntrega', value)}
+                                  />
+                                </Form.Item>
+                              </Grid>
 
-                            {/* Segunda fila: Cargo OEA, Retorno de Mercadería */}
-                            <Grid size={{ xs: 12, md: 6 }}>
-                              <Typography variant="body2" sx={{
-                                fontWeight: 600,
-                                mb: 1.5,
-                                color: '#374151',
-                                fontSize: '0.875rem',
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.05em'
-                              }}>
-                                Cargo OEA
-                              </Typography>
-                              <Form.Item
-                                name={[`op_${op.id}`, 'cargoOea']}
-                                initialValue={op.cargoOea}
-                                style={{ marginBottom: 0 }}
-                              >
-                                <InputAntd
-                                  placeholder="Ingrese cargo OEA"
-                                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFieldChange(op.id.toString(), 'cargoOea', e.target.value)}
-                                />
-                              </Form.Item>
-                            </Grid>
+                              {/* Segunda fila: Cargo OEA, Retorno de Mercadería */}
+                              <Grid size={{ xs: 12, md: 6 }}>
+                                <Typography variant="body2" sx={{
+                                  fontWeight: 600,
+                                  mb: 1.5,
+                                  color: '#374151',
+                                  fontSize: '0.875rem',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.05em'
+                                }}>
+                                  Cargo OEA
+                                </Typography>
+                                <Form.Item
+                                  name={[`op_${op.id}`, 'cargoOea']}
+                                  initialValue={op.cargoOea}
+                                  style={{ marginBottom: 0 }}
+                                >
+                                  <InputAntd
+                                    placeholder="Ingrese cargo OEA"
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFieldChange(op.id.toString(), 'cargoOea', e.target.value)}
+                                  />
+                                </Form.Item>
+                              </Grid>
 
-                            <Grid size={{ xs: 12, md: 6 }}>
-                              <Typography variant="body2" sx={{
-                                fontWeight: 600,
-                                mb: 1.5,
-                                color: '#374151',
-                                fontSize: '0.875rem',
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.05em'
-                              }}>
-                                Retorno de Mercadería
-                              </Typography>
-                              <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1, alignItems: 'flex-start' }}>
-                                <Box sx={{ flex: 2 }}>
-                                  <Form.Item
-                                    name={[`op_${op.id}`, 'retornoMercaderia']}
-                                    initialValue={op.retornoMercaderia}
-                                    style={{ marginBottom: 0 }}
-                                  >
-                                    <SelectGeneric
-                                      placeholder="Seleccionar retorno"
-                                      options={[
-                                        { value: 'NINGUNO', label: 'Ninguno' },
-                                        { value: 'ENTIDAD', label: 'Entidad' },
-                                        { value: 'TRANSPORTE', label: 'Transporte' },
-                                        { value: 'ALMACEN_LIMA', label: 'Almacén Lima' },
-                                        { value: 'ALMACEN_HUANCAYO', label: 'Almacén Huancayo' },
-                                        { value: 'OTROS', label: 'Otros' }
-                                      ]}
-                                      onChange={(value) => {
-                                        handleFieldChange(op.id.toString(), 'retornoMercaderia', value);
-                                        // Limpiar valor personalizado si no es "OTROS"
-                                        if (value !== 'OTROS') {
-                                          setCustomRetornoValues(prev => {
-                                            const newValues = { ...prev };
-                                            delete newValues[op.id.toString()];
-                                            return newValues;
-                                          });
-                                        }
-                                      }}
-                                    />
-                                  </Form.Item>
-                                </Box>
-
-                                {/* Campo de texto personalizado cuando se selecciona "OTROS" */}
-                                {form.getFieldValue([`op_${op.id}`, 'retornoMercaderia']) === 'OTROS' && (
-                                  <Box sx={{ flex: 1 }}>
-                                    <Form.Item style={{ marginBottom: 0 }}>
-                                      <InputAntd
-                                        placeholder="Especificar otro tipo"
-                                        value={customRetornoValues[op.id.toString()] || ''}
-                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                          const value = e.target.value;
-                                          setCustomRetornoValues(prev => ({
-                                            ...prev,
-                                            [op.id.toString()]: value
-                                          }));
-                                          // Actualizar el valor real que se guardará
-                                          handleFieldChange(op.id.toString(), 'retornoMercaderia', `OTROS: ${value}`);
+                              <Grid size={{ xs: 12, md: 6 }}>
+                                <Typography variant="body2" sx={{
+                                  fontWeight: 600,
+                                  mb: 1.5,
+                                  color: '#374151',
+                                  fontSize: '0.875rem',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.05em'
+                                }}>
+                                  Retorno de Mercadería
+                                </Typography>
+                                <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1, alignItems: 'flex-start' }}>
+                                  <Box sx={{ flex: 2 }}>
+                                    <Form.Item
+                                      name={[`op_${op.id}`, 'retornoMercaderia']}
+                                      initialValue={op.retornoMercaderia}
+                                      style={{ marginBottom: 0 }}
+                                    >
+                                      <SelectGeneric
+                                        placeholder="Seleccionar retorno"
+                                        options={[
+                                          { value: 'NINGUNO', label: 'Ninguno' },
+                                          { value: 'ENTIDAD', label: 'Entidad' },
+                                          { value: 'TRANSPORTE', label: 'Transporte' },
+                                          { value: 'ALMACEN_LIMA', label: 'Almacén Lima' },
+                                          { value: 'ALMACEN_HUANCAYO', label: 'Almacén Huancayo' },
+                                          { value: 'OTROS', label: 'Otros' }
+                                        ]}
+                                        onChange={(value) => {
+                                          handleFieldChange(op.id.toString(), 'retornoMercaderia', value);
+                                          // Limpiar valor personalizado si no es "OTROS"
+                                          if (value !== 'OTROS') {
+                                            setCustomRetornoValues(prev => {
+                                              const newValues = { ...prev };
+                                              delete newValues[op.id.toString()];
+                                              return newValues;
+                                            });
+                                          }
                                         }}
                                       />
                                     </Form.Item>
                                   </Box>
-                                )}
-                              </Box>
-                            </Grid>
 
-                            {/* Tercera fila: Observaciones */}
-                            <Grid size={{ xs: 12 }}>
-                              <Typography variant="body2" sx={{
-                                fontWeight: 600,
-                                mb: 1.5,
-                                color: '#374151',
-                                fontSize: '0.875rem',
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.05em'
-                              }}>
-                                Observaciones
-                              </Typography>
-                              <Form.Item
-                                name={[`op_${op.id}`, 'observaciones']}
-                                initialValue={op.observaciones}
-                                style={{ marginBottom: 0 }}
-                              >
-                                <TextArea
-                                  placeholder="Ingrese observaciones adicionales"
-                                  rows={3}
-                                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleFieldChange(op.id.toString(), 'observaciones', e.target.value)}
-                                />
-                              </Form.Item>
-                            </Grid>
+                                  {/* Campo de texto personalizado cuando se selecciona "OTROS" */}
+                                  {form.getFieldValue([`op_${op.id}`, 'retornoMercaderia']) === 'OTROS' && (
+                                    <Box sx={{ flex: 1 }}>
+                                      <Form.Item style={{ marginBottom: 0 }}>
+                                        <InputAntd
+                                          placeholder="Especificar otro tipo"
+                                          value={customRetornoValues[op.id.toString()] || ''}
+                                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                            const value = e.target.value;
+                                            setCustomRetornoValues(prev => ({
+                                              ...prev,
+                                              [op.id.toString()]: value
+                                            }));
+                                            // Actualizar el valor real que se guardará
+                                            handleFieldChange(op.id.toString(), 'retornoMercaderia', `OTROS: ${value}`);
+                                          }}
+                                        />
+                                      </Form.Item>
+                                    </Box>
+                                  )}
+                                </Box>
+                              </Grid>
 
-                            {/* Cuarta fila: Nota de Cobranzas */}
-                            <Grid size={{ xs: 12 }}>
-                              <Typography variant="body2" sx={{
-                                fontWeight: 600,
-                                mb: 1.5,
-                                color: '#374151',
-                                fontSize: '0.875rem',
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.05em'
-                              }}>
-                                Nota de Cobranzas
-                              </Typography>
-                              <Form.Item
-                                name={[`op_${op.id}`, 'notaCobranzas']}
-                                initialValue={op.notaCobranzas}
-                                style={{ marginBottom: 0 }}
-                              >
-                                <TextArea
-                                  placeholder="Ingrese información de cobranzas"
-                                  rows={3}
-                                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleFieldChange(op.id.toString(), 'notaCobranzas', e.target.value)}
-                                />
-                              </Form.Item>
+                              {/* Tercera fila: Observaciones */}
+                              <Grid size={{ xs: 12 }}>
+                                <Typography variant="body2" sx={{
+                                  fontWeight: 600,
+                                  mb: 1.5,
+                                  color: '#374151',
+                                  fontSize: '0.875rem',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.05em'
+                                }}>
+                                  Observaciones
+                                </Typography>
+                                <Form.Item
+                                  name={[`op_${op.id}`, 'observaciones']}
+                                  initialValue={op.observaciones}
+                                  style={{ marginBottom: 0 }}
+                                >
+                                  <TextArea
+                                    placeholder="Ingrese observaciones adicionales"
+                                    rows={3}
+                                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleFieldChange(op.id.toString(), 'observaciones', e.target.value)}
+                                  />
+                                </Form.Item>
+                              </Grid>
+
+                              {/* Cuarta fila: Nota de Cobranzas */}
+                              <Grid size={{ xs: 12 }}>
+                                <Typography variant="body2" sx={{
+                                  fontWeight: 600,
+                                  mb: 1.5,
+                                  color: '#374151',
+                                  fontSize: '0.875rem',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.05em'
+                                }}>
+                                  Nota de Cobranzas
+                                </Typography>
+                                <Form.Item
+                                  name={[`op_${op.id}`, 'notaCobranzas']}
+                                  initialValue={op.notaCobranzas}
+                                  style={{ marginBottom: 0 }}
+                                >
+                                  <TextArea
+                                    placeholder="Ingrese información de cobranzas"
+                                    rows={3}
+                                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleFieldChange(op.id.toString(), 'notaCobranzas', e.target.value)}
+                                  />
+                                </Form.Item>
+                              </Grid>
                             </Grid>
-                          </Grid>
-                        </Box>
-                      </Grid>
-                    </>
-                  )}
-                </StepItemContent>
-              ))}
+                          </Box>
+                        </Grid>
+                      </>
+                    )}
+                  </StepItemContent>
+                );
+              })}
             </Stack>
           )}
 

@@ -82,6 +82,21 @@ const getEmptyProductRecord = (): ProductRecord => ({
 
 const requiredField = { required: true, message: 'Requerido' };
 
+const validateReceptionDate = (_: unknown, value: dayjs.Dayjs | null) => {
+  if (!value) {
+    return Promise.resolve();
+  }
+
+  if (value.startOf('day').isBefore(dayjs().startOf('day'))) {
+    return Promise.reject(new Error('La fecha de recepción no puede ser menor a hoy'));
+  }
+
+  return Promise.resolve();
+};
+
+const disablePastReceptionDate = (current: dayjs.Dayjs) =>
+  !!current && current.startOf('day').isBefore(dayjs().startOf('day'));
+
 // Función para calcular automáticamente cantidad total y total del producto
 const calculateProductTotals = (form: any, fieldName: number) => {
   setTimeout(() => {
@@ -702,8 +717,15 @@ const calculateProductTotals = (form: any, fieldName: number) => {
           >
             <Grid container columnSpacing={2}>
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <Form.Item name="fechaRecepcion">
-                  <DatePickerAntd label="Fecha de recepción" disabled={fromTreasury} />
+                <Form.Item
+                  name="fechaRecepcion"
+                  rules={fromTreasury ? [] : [{ validator: validateReceptionDate }]}
+                >
+                  <DatePickerAntd
+                    label="Fecha de recepción"
+                    disabled={fromTreasury}
+                    disabledDate={disablePastReceptionDate}
+                  />
                 </Form.Item>
               </Grid>
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
