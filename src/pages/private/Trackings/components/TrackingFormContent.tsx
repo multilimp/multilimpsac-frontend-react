@@ -19,6 +19,8 @@ import {
   Modal,
   Box as MuiBox,
   Switch,
+  Tabs,
+  Tab,
 } from '@mui/material';
 import {
   ArrowBack,
@@ -35,11 +37,12 @@ import {
   Schedule as ScheduleIcon,
   LocalShipping as LocalShippingIcon,
   Check as CheckIcon,
-  Add as AddIcon,
+  GetApp as DownloadIcon,
+  Payment as PaymentIcon,
 } from '@mui/icons-material';
-import { notification, Form } from 'antd';
+import { notification, Form, Input } from 'antd';
 import TextArea from 'antd/lib/input/TextArea';
-import dayjs from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 import Grid from '@mui/material/Grid';
 import { SaleProps } from '@/services/sales/sales';
 import { ProviderOrderProps } from '@/services/providerOrders/providerOrders';
@@ -48,7 +51,7 @@ import { formatCurrency, formattedDate } from '@/utils/functions';
 import { StepItemContent } from '../../Sales/SalesPageForm/smallcomponents';
 import DatePickerAntd from '@/components/DatePickerAnt';
 import { getOrderProvider, patchOrderProvider } from '@/services/providerOrders/providerOrders.requests';
-import { createTransporteAsignado, updateTransporteAsignado, deleteTransporteAsignado } from '@/services/transporteAsignado/transporteAsignado.requests';
+import { createTransporteAsignado, updateTransporteAsignado } from '@/services/transporteAsignado/transporteAsignado.requests';
 import { updateOrdenCompra, getOrdenCompraByTrackingId } from '@/services/trackings/trackings.request';
 import { printOrdenProveedor } from '@/services/print/print.requests';
 import SimpleFileUpload from '@/components/SimpleFileUpload';
@@ -60,10 +63,68 @@ import { getContactsByEntityType } from '@/services/contacts/contacts.requests';
 import { getAlmacenes } from '@/services/almacen/almacen.requests';
 import SelectContactsByTransport from '@/components/selects/SelectContactsByTransport';
 import SelectTransportButton from '@/components/SelectTransportButton';
+import PagosModal from '@/components/PagosModal';
+import InputNumberAntd from '@/components/InputNumberAntd';
+import PaymentsList from '@/components/PaymentsList';
+import { updatePayments } from '@/services/payments/payments.service';
 
 interface TrackingFormContentProps {
   sale: SaleProps;
 }
+
+type TransportePaymentItem = {
+  date: Dayjs | null;
+  bank: string;
+  description: string;
+  file: string | null;
+  amount: string;
+  status: boolean;
+};
+
+interface TransportePaymentsState {
+  tipoPago: string;
+  notaPago: string;
+  payments: TransportePaymentItem[];
+}
+
+const createDefaultPaymentsState = (): TransportePaymentsState => ({
+  tipoPago: 'PENDIENTE',
+  notaPago: '',
+  payments: []
+});
+
+const mapPagosToPaymentItems = (pagos: any[]): TransportePaymentItem[] => {
+  if (!Array.isArray(pagos)) {
+    return [];
+  }
+
+  return pagos.map((pago: any) => ({
+    date: pago?.fechaPago ? dayjs(pago.fechaPago) : null,
+    bank: pago?.bancoPago || '',
+    description: pago?.descripcionPago || '',
+    file: pago?.archivoPago || null,
+    amount: pago?.montoPago != null ? String(pago.montoPago) : '',
+    status: Boolean(pago?.estadoPago)
+  }));
+};
+
+const clonePaymentsState = (state: TransportePaymentsState): TransportePaymentsState => ({
+  tipoPago: state.tipoPago,
+  notaPago: state.notaPago,
+  payments: state.payments.map(payment => ({
+    ...payment,
+    date: payment.date ? payment.date.clone() : null
+  }))
+});
+
+const mapPaymentItemsToPayload = (payments: TransportePaymentItem[]) => payments.map(payment => ({
+  fechaPago: payment.date ? payment.date.toDate() : null,
+  bancoPago: payment.bank,
+  descripcionPago: payment.description,
+  archivoPago: payment.file,
+  montoPago: payment.amount ? Number(payment.amount) : 0,
+  estadoPago: payment.status
+}));
 
 const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
   const [form] = Form.useForm();
@@ -81,7 +142,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
   const [openModal, setOpenModal] = useState<{ [key: string]: boolean }>({});
   const [transporteModal, setTransporteModal] = useState<{
     open: boolean;
-    mode: 'create' | 'edit';
+    mode: 'create' | 'view';
     opId: number | null;
     transporteData: any;
   }>({
@@ -93,12 +154,66 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
   const [transportCompanies, setTransportCompanies] = useState<any[]>([]);
   const [transportContacts, setTransportContacts] = useState<any[]>([]);
   const [almacenes, setAlmacenes] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState(0);
+  const [pagosModalData, setPagosModalData] = useState<{ open: boolean; entidad: any | null }>({
+    open: false,
+    entidad: null
+  });
+  const [transporteFormData, setTransporteFormData] = useState({
+    montoFletePagado: 0,
+    numeroFactura: '',
+    archivoFactura: null as string | null,
+    guiaRemision: null as string | null,
+    guiaTransporte: null as string | null,
+  });
+  const [originalTransporteValues, setOriginalTransporteValues] = useState<{
+    montoFletePagado: number;
+    numeroFactura: string;
+    archivoFactura: string | null;
+    guiaRemision: string | null;
+    guiaTransporte: string | null;
+  } | null>(null);
+  const [changedTransporteFields, setChangedTransporteFields] = useState<Set<string>>(new Set());
+  const [savingTransporte, setSavingTransporte] = useState(false);
+  const [transportePaymentsState, setTransportePaymentsState] = useState<TransportePaymentsState>(createDefaultPaymentsState);
+  const [originalTransportePaymentsState, setOriginalTransportePaymentsState] = useState<TransportePaymentsState | null>(null);
+  const [transportePaymentsChanged, setTransportePaymentsChanged] = useState(false);
+  const [savingTransportePayments, setSavingTransportePayments] = useState(false);
 
   useEffect(() => {
     loadProviderOrders();
     initializeOCValues();
     loadTransportCompanies();
   }, [sale.id]);
+
+  useEffect(() => {
+    if (transporteModal.transporteData) {
+      const initialValues = {
+        montoFletePagado: transporteModal.transporteData.montoFletePagado || 0,
+        numeroFactura: transporteModal.transporteData.numeroFactura || '',
+        archivoFactura: transporteModal.transporteData.archivoFactura || null,
+        guiaRemision: transporteModal.transporteData.guiaRemision || null,
+        guiaTransporte: transporteModal.transporteData.guiaTransporte || null,
+      };
+      setTransporteFormData(initialValues);
+      setOriginalTransporteValues(initialValues);
+      setChangedTransporteFields(new Set());
+
+      const basePaymentsState: TransportePaymentsState = {
+        tipoPago: transporteModal.transporteData.estadoPago || 'PENDIENTE',
+        notaPago: transporteModal.transporteData.notaPago || '',
+        payments: mapPagosToPaymentItems(transporteModal.transporteData.pagos || [])
+      };
+
+      setTransportePaymentsState(clonePaymentsState(basePaymentsState));
+      setOriginalTransportePaymentsState(clonePaymentsState(basePaymentsState));
+      setTransportePaymentsChanged(false);
+    } else {
+      setTransportePaymentsState(createDefaultPaymentsState());
+      setOriginalTransportePaymentsState(null);
+      setTransportePaymentsChanged(false);
+    }
+  }, [transporteModal.transporteData]);
 
   const loadTransportCompanies = async () => {
     try {
@@ -110,6 +225,223 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
       setAlmacenes(almacenesData);
     } catch (error) {
       console.error('Error loading transport data:', error);
+    }
+  };
+
+  const updateTransporteField = (field: string, value: any) => {
+    setTransporteFormData(prev => ({ ...prev, [field]: value }));
+
+    // Detectar cambios
+    if (originalTransporteValues) {
+      const originalValue = originalTransporteValues[field as keyof typeof originalTransporteValues];
+      const hasChanged = value !== originalValue;
+
+      setChangedTransporteFields(prev => {
+        const newSet = new Set(prev);
+        if (hasChanged) {
+          newSet.add(field);
+        } else {
+          newSet.delete(field);
+        }
+        return newSet;
+      });
+    }
+  };
+
+  const cancelTransporteChanges = () => {
+    if (originalTransporteValues) {
+      setTransporteFormData(originalTransporteValues);
+      setChangedTransporteFields(new Set());
+    }
+  };
+
+  const updateTransportePayments = (updater: (prev: TransportePaymentsState) => TransportePaymentsState) => {
+    setTransportePaymentsState(prev => {
+      const next = updater(prev);
+      if (originalTransportePaymentsState) {
+        const isChanged =
+          next.tipoPago !== originalTransportePaymentsState.tipoPago ||
+          next.notaPago !== originalTransportePaymentsState.notaPago;
+        setTransportePaymentsChanged(isChanged);
+      } else {
+        setTransportePaymentsChanged(Boolean(next.tipoPago) || Boolean(next.notaPago));
+      }
+      return next;
+    });
+  };
+
+  const handleTransporteTipoPagoChange = (value: string) => {
+    updateTransportePayments(prev => ({
+      ...prev,
+      tipoPago: value
+    }));
+  };
+
+  const handleTransporteNotaPagoChange = (value: string) => {
+    updateTransportePayments(prev => ({
+      ...prev,
+      notaPago: value
+    }));
+  };
+
+  const cancelTransportePaymentsChanges = () => {
+    if (!originalTransportePaymentsState) {
+      return;
+    }
+    setTransportePaymentsState(clonePaymentsState(originalTransportePaymentsState));
+    setTransportePaymentsChanged(false);
+  };
+
+  const handleSaveTransportePayments = async () => {
+    const transporteId = transporteModal.transporteData?.id;
+    const currentOpId = transporteModal.opId;
+
+    if (!transporteId || !transportePaymentsChanged) {
+      return;
+    }
+
+    setSavingTransportePayments(true);
+    try {
+      const sanitizedNotaPago = transportePaymentsState.notaPago?.trim() || '';
+      const payloadPayments = mapPaymentItemsToPayload(transportePaymentsState.payments);
+
+      const response = await updatePayments({
+        entityType: 'transporteAsignado',
+        entityId: transporteId,
+        payments: payloadPayments,
+        tipoPago: transportePaymentsState.tipoPago,
+        notaPago: sanitizedNotaPago
+      });
+
+      notification.success({
+        message: 'Pagos actualizados',
+        description: 'Se actualizaron los datos de tesorería del transporte'
+      });
+
+      const updatedPaymentsItems = mapPagosToPaymentItems(response?.payments || transporteModal.transporteData?.pagos || []);
+      const nextPaymentsState: TransportePaymentsState = {
+        tipoPago: response?.tipoPago ?? transportePaymentsState.tipoPago,
+        notaPago: response?.notaPago ?? sanitizedNotaPago,
+        payments: updatedPaymentsItems
+      };
+
+      setTransportePaymentsState(clonePaymentsState(nextPaymentsState));
+      setOriginalTransportePaymentsState(clonePaymentsState(nextPaymentsState));
+      setTransportePaymentsChanged(false);
+
+      setTransporteModal(prev => {
+        if (!prev.open || !prev.transporteData) {
+          return prev;
+        }
+
+        const nextTransporteData = {
+          ...prev.transporteData,
+          estadoPago: nextPaymentsState.tipoPago,
+          notaPago: nextPaymentsState.notaPago,
+          pagos: response?.payments ?? prev.transporteData.pagos
+        };
+
+        return {
+          ...prev,
+          transporteData: nextTransporteData
+        };
+      });
+
+      setOrdenesProveedor(prev => prev.map(op => {
+        if (!currentOpId || op.id !== currentOpId) {
+          return op;
+        }
+
+        return {
+          ...op,
+          transportesAsignados: op.transportesAsignados.map(transporte => {
+            if (transporte.id !== transporteId) {
+              return transporte;
+            }
+
+            return {
+              ...transporte,
+              estadoPago: nextPaymentsState.tipoPago,
+              notaPago: nextPaymentsState.notaPago,
+              pagos: response?.payments ?? transporte.pagos
+            };
+          })
+        };
+      }));
+    } catch (error) {
+      console.error('Error saving transporte payments:', error);
+      notification.error({
+        message: 'Error',
+        description: 'No se pudieron actualizar los pagos del transporte'
+      });
+    } finally {
+      setSavingTransportePayments(false);
+    }
+  };
+
+  const handleSaveTransporte = async () => {
+    const currentTransporte = transporteModal.transporteData;
+    const currentOpId = transporteModal.opId;
+    if (!currentTransporte?.id || changedTransporteFields.size === 0) return;
+
+    setSavingTransporte(true);
+    try {
+      const data: Record<string, any> = {};
+      changedTransporteFields.forEach(field => {
+        data[field] = transporteFormData[field as keyof typeof transporteFormData];
+      });
+
+      const updatedTransporte = await updateTransporteAsignado(currentTransporte.id, data);
+      const mergedTransporte = {
+        ...currentTransporte,
+        ...updatedTransporte,
+      };
+      const montoFletePagadoValue = mergedTransporte.montoFletePagado != null ? Number(mergedTransporte.montoFletePagado) : 0;
+      const normalizedValues = {
+        montoFletePagado: Number.isNaN(montoFletePagadoValue) ? 0 : montoFletePagadoValue,
+        numeroFactura: mergedTransporte.numeroFactura || '',
+        archivoFactura: mergedTransporte.archivoFactura ?? null,
+        guiaRemision: mergedTransporte.guiaRemision ?? null,
+        guiaTransporte: mergedTransporte.guiaTransporte ?? null,
+      };
+
+      notification.success({
+        message: 'Éxito',
+        description: 'Datos de transporte guardados correctamente',
+      });
+
+      setTransporteFormData(normalizedValues);
+      setOriginalTransporteValues(normalizedValues);
+      setChangedTransporteFields(new Set());
+
+      setTransporteModal(prev => {
+        if (!prev.open) return prev;
+        return {
+          ...prev,
+          transporteData: mergedTransporte,
+        };
+      });
+
+      const transporteId = mergedTransporte.id ?? currentTransporte.id;
+      setOrdenesProveedor(prev => prev.map(op => {
+        if (!currentOpId || op.id !== currentOpId) {
+          return op;
+        }
+        return {
+          ...op,
+          transportesAsignados: op.transportesAsignados.map(transporte =>
+            transporte.id === transporteId ? { ...transporte, ...mergedTransporte } : transporte
+          )
+        };
+      }));
+    } catch (error) {
+      console.error('Error saving transporte:', error);
+      notification.error({
+        message: 'Error',
+        description: 'No se pudieron guardar los datos de transporte',
+      });
+    } finally {
+      setSavingTransporte(false);
     }
   };
 
@@ -161,6 +493,8 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
 
       setCustomRetornoValues(newCustomRetornoValues);
       setOriginalValues(initialValues);
+      form.setFieldsValue(initialValues);
+      setChangedFields({});
     } catch (error) {
       notification.error({
         message: 'Error al cargar órdenes de proveedor',
@@ -278,45 +612,18 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
     }
   };
 
-  // Funciones CRUD para transportes asignados
-  const handleAddTransporte = (opId: number) => {
-    setTransporteModal({
-      open: true,
-      mode: 'create',
-      opId,
-      transporteData: null
-    });
-    setTransportContacts([]); // Limpiar contactos al abrir modal de creación
-  };
 
-  const handleEditTransporte = (transporteAsignado: any) => {
+
+  const handleViewTransporte = (transporteAsignado: any) => {
     setTransporteModal({
       open: true,
-      mode: 'edit',
+      mode: 'view',
       opId: transporteAsignado.ordenProveedorId,
       transporteData: transporteAsignado
     });
-    // Cargar contactos del transporte seleccionado
+    // Cargar contactos del transporte seleccionado para vista
     if (transporteAsignado.transporte?.id) {
       loadTransportContacts(transporteAsignado.transporte.id, transporteAsignado.contactoTransporte?.id);
-    }
-  };
-
-  const handleDeleteTransporte = async (transporteId: number) => {
-    try {
-      await deleteTransporteAsignado(transporteId);
-      notification.success({
-        message: 'Transporte eliminado',
-        description: 'El transporte asignado ha sido eliminado correctamente'
-      });
-      // Recargar los datos
-      loadProviderOrders();
-    } catch (error) {
-      console.error('Error al eliminar transporte:', error);
-      notification.error({
-        message: 'Error',
-        description: 'No se pudo eliminar el transporte asignado'
-      });
     }
   };
 
@@ -804,7 +1111,30 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                           <VisibilityIcon sx={{ fontSize: 18 }} />
                         </IconButton>
                       </Tooltip>
+                      {/* btn de edicio */}
+                      <Tooltip title="Editar orden de proveedor">
+                        <IconButton
+                          size="small"
+                          sx={{
+                            border: '1px solid rgba(255, 255, 255, 0.3)',
+                            borderRadius: 1.5,
+                            color: 'white',
+                            width: 36,
+                            height: 36,
+                            '&:hover': {
+                              borderColor: 'rgba(255, 255, 255, 0.5)',
+                              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                              transform: 'scale(1.05)',
+                            },
+                            transition: 'all 0.2s ease-in-out',
+                          }}
+                          onClick={() => window.open(`/provider-orders/${op.id}`, '_blank')}
+                        >
+                          <EditIcon sx={{ fontSize: 18 }} />
+                        </IconButton>
+                      </Tooltip>
 
+                      {/* btn de impresion */}
                       <Tooltip title="Imprimir orden de proveedor">
                         <IconButton
                           size="small"
@@ -1104,22 +1434,6 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                                 <LocalShippingIcon sx={{ color: '#10b981', fontSize: 14, mr: 1 }} />
                                 Transportes Asignados ({op.transportesAsignados.length})
                               </Typography>
-                              <Button
-                                variant="outlined"
-                                size="small"
-                                startIcon={<AddIcon />}
-                                onClick={() => handleAddTransporte(op.id)}
-                                sx={{
-                                  borderColor: '#10b981',
-                                  color: '#10b981',
-                                  '&:hover': {
-                                    borderColor: '#059669',
-                                    bgcolor: '#ecfdf5'
-                                  }
-                                }}
-                              >
-                                Agregar
-                              </Button>
                             </Box>
 
                             <TableContainer sx={{
@@ -1243,28 +1557,16 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                                         textAlign: 'center'
                                       }}>
                                         <Stack direction="row" spacing={1} justifyContent="center">
-                                          <Tooltip title="Editar transporte">
+                                          <Tooltip title="Ver transporte">
                                             <IconButton
                                               size="small"
                                               sx={{
-                                                color: '#3b82f6',
-                                                '&:hover': { bgcolor: '#eff6ff' }
+                                                color: '#10b981',
+                                                '&:hover': { bgcolor: '#f0fdf4' }
                                               }}
-                                              onClick={() => handleEditTransporte(transporteAsignado)}
+                                              onClick={() => handleViewTransporte(transporteAsignado)}
                                             >
-                                              <EditIcon fontSize="small" />
-                                            </IconButton>
-                                          </Tooltip>
-                                          <Tooltip title="Eliminar transporte">
-                                            <IconButton
-                                              size="small"
-                                              sx={{
-                                                color: '#ef4444',
-                                                '&:hover': { bgcolor: '#fef2f2' }
-                                              }}
-                                              onClick={() => handleDeleteTransporte(transporteAsignado.id)}
-                                            >
-                                              <CancelIcon fontSize="small" />
+                                              <VisibilityIcon fontSize="small" />
                                             </IconButton>
                                           </Tooltip>
                                         </Stack>
@@ -1796,174 +2098,223 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          width: { xs: '95%', sm: '800px' },
+          width: { xs: '95%', sm: '1000px' },
           maxHeight: '90vh',
           overflow: 'auto',
           bgcolor: 'background.paper',
-          borderRadius: 3,
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+          borderRadius: 4,
+          boxShadow: '0 32px 64px -12px rgba(0, 0, 0, 0.35)',
           border: '1px solid #e5e7eb',
           p: 0,
         }}>
+          {/* Header del Modal */}
           <Box sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
             p: 4,
-            borderTopLeftRadius: 12,
-            borderTopRightRadius: 12,
+            pb: 3,
+            borderBottom: '1px solid #e5e7eb',
+            borderRadius: '12px 12px 0 0'
           }}>
-            <Box sx={{ position: 'relative', zIndex: 1 }}>
-              <Typography variant="h6" component="h2" sx={{
-                fontWeight: 700,
-                fontSize: '1.25rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 2
-              }}>
-                <LocalShippingIcon sx={{ fontSize: 28 }} />
-                {transporteModal.mode === 'create' ? 'Agregar Transporte Asignado' : `Editar Transporte Asignado ${transporteModal.transporteData?.codigoTransporte}`}
-              </Typography>
-              <Typography variant="body2" sx={{
-                mt: 1,
-                opacity: 0.9,
-                fontSize: '0.875rem'
-              }}>
-                Complete la información del transporte para la orden de proveedor
-              </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <LocalShippingIcon sx={{ fontSize: 32, color: 'black' }} />
+              <Box>
+                <Typography variant="h5" sx={{ fontWeight: 600, mb: 0.5 }}>
+                  Detalles de Transporte
+                </Typography>
+                <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                  Información completa del servicio de transporte asignado
+                </Typography>
+              </Box>
             </Box>
-          </Box>
-
-          <Box sx={{ p: 5 }}>
-            <Form
-              layout="vertical"
-              onFinish={async (values) => {
-                try {
-                  const dataToSend = {
-                    ...values,
-                    ordenProveedorId: transporteModal.opId,
-                    contactoTransporteId: values.contactoId,
-                    ...(transporteModal.mode === 'edit' && { id: transporteModal.transporteData.id })
-                  };
-
-                  delete dataToSend.contactoId;
-
-                  if (transporteModal.mode === 'create') {
-                    await createTransporteAsignado(dataToSend);
-                    notification.success({
-                      message: 'Transporte agregado',
-                      description: 'El transporte asignado ha sido agregado correctamente'
-                    });
-                  } else {
-                    await updateTransporteAsignado(transporteModal.transporteData.id, dataToSend);
-                    notification.success({
-                      message: 'Transporte actualizado',
-                      description: 'El transporte asignado ha sido actualizado correctamente'
-                    });
-                  }
-
-                  setTransporteModal({ open: false, mode: 'create', opId: null, transporteData: null });
-                  loadProviderOrders();
-                } catch (error) {
-                  console.error('Error al guardar transporte:', error);
-                  notification.error({
-                    message: 'Error',
-                    description: 'No se pudo guardar el transporte asignado'
-                  });
+            <IconButton
+              onClick={() => setTransporteModal({ open: false, mode: 'create', opId: null, transporteData: null })}
+              sx={{
+                color: 'white',
+                '&:hover': {
+                  bgcolor: 'rgba(255, 255, 255, 0.1)',
                 }
               }}
-              initialValues={transporteModal.transporteData || {}}
             >
-              <Grid container spacing={4}>
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <Typography variant="body2" sx={{
-                    fontWeight: 600,
-                    mb: 2,
-                    color: '#374151',
-                    fontSize: '0.875rem',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em'
-                  }}>
-                    Empresa de Transporte
-                  </Typography>
-                  <Form.Item
-                    name="transporteId"
-                    rules={[{ required: true, message: 'La empresa es requerida' }]}
-                  >
-                    <SelectTransportButton
-                      onSelect={(transport) => {
-                        form.setFieldsValue({ transporteId: transport.id });
-                        // Limpiar el contacto seleccionado antes de cargar los nuevos
-                        form.setFieldsValue({ contactoId: undefined });
-                        loadTransportContacts(transport.id);
-                      }}
-                      selectedTransport={transportCompanies.find(tc => tc.id === form.getFieldValue('transporteId'))}
-                      placeholder="Seleccionar empresa de transporte"
-                    />
-                  </Form.Item>
-                </Grid>
+              <CancelIcon />
+            </IconButton>
+          </Box>
 
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <Typography variant="body2" sx={{
-                    fontWeight: 600,
-                    mb: 2,
-                    color: '#374151',
-                    fontSize: '0.875rem',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em'
-                  }}>
-                    Contacto
-                  </Typography>
-                  <Form.Item
-                    name="contactoId"
-                    rules={[{ required: true, message: 'El contacto es requerido' }]}
-                  >
-                    <SelectContactsByTransport
-                      transportId={form.getFieldValue('transporteId')}
-                      contacts={transportContacts}
-                      loading={false}
-                      onContactCreated={() => {
-                        // Recargar contactos cuando se crea uno nuevo
-                        const transportId = form.getFieldValue('transporteId');
-                        if (transportId) {
-                          loadTransportContacts(transportId);
-                        }
-                      }}
-                      onChange={(value) => {
-                        form.setFieldsValue({ contactoId: value });
-                      }}
-                    />
-                  </Form.Item>
-                </Grid>
+          <Box sx={{ p: 4 }}>
+            {/* Pestañas mejoradas */}
+            <Box sx={{
+              borderBottom: 1,
+              borderColor: 'divider',
+              mb: 4,
+              '& .MuiTabs-root': {
+                minHeight: 48,
+              },
+              '& .MuiTab-root': {
+                minHeight: 48,
+                textTransform: 'none',
+                fontSize: '0.95rem',
+                fontWeight: 500,
+                minWidth: 120,
+                '&.Mui-selected': {
+                  color: '#667eea',
+                  fontWeight: 600,
+                }
+              },
+              '& .MuiTabs-indicator': {
+                height: 3,
+                borderRadius: '3px 3px 0 0',
+                bgcolor: '#667eea',
+              }
+            }}>
+              <Tabs value={activeTab} onChange={(event, newValue) => setActiveTab(newValue)}>
+                <Tab
+                  icon={<Business sx={{ fontSize: 20 }} />}
+                  iconPosition="start"
+                  label="Información Básica"
+                />
+                <Tab
+                  icon={<SettingsIcon sx={{ fontSize: 20 }} />}
+                  iconPosition="start"
+                  label="Información Avanzada"
+                />
+                <Tab
+                  icon={<PaymentIcon sx={{ fontSize: 20 }} />}
+                  iconPosition="start"
+                  label="Pagos"
+                />
+              </Tabs>
+            </Box>
 
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <Typography variant="body2" sx={{
-                    fontWeight: 600,
-                    mb: 2,
-                    color: '#374151',
-                    fontSize: '0.875rem',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em'
-                  }}>
-                    Tipo de Destino
-                  </Typography>
-                  <Form.Item
-                    name="tipoDestino"
-                    rules={[{ required: true, message: 'El tipo de destino es requerido' }]}
-                  >
-                    <SelectGeneric
-                      placeholder="Seleccionar tipo"
-                      options={[
-                        { value: 'AGENCIA', label: 'Agencia' },
-                        { value: 'CLIENTE', label: 'Cliente' },
-                        { value: 'ALMACEN', label: 'Almacén' }
-                      ]}
-                    />
-                  </Form.Item>
-                </Grid>
+            {/* Tab Panel: Información Básica */}
+            {activeTab === 0 && (
+              <Box>
+                <Grid container spacing={4}>
+                  {/* Empresa de Transporte */}
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <Typography variant="body2" sx={{
+                      fontWeight: 600,
+                      mb: 2,
+                      color: '#374151',
+                      fontSize: '0.875rem',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em'
+                    }}>
+                      Empresa de Transporte
+                    </Typography>
+                    <Box sx={{
+                      p: 2,
+                      bgcolor: '#f8fafc',
+                      borderRadius: 1,
+                      border: '1px solid #e2e8f0'
+                    }}>
+                      <Typography variant="body1" sx={{ fontWeight: 600, color: '#1f2937' }}>
+                        {transporteModal.transporteData?.transporte?.razonSocial || 'N/A'}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: '#6b7280', mt: 0.5 }}>
+                        RUC: {transporteModal.transporteData?.transporte?.ruc || 'N/A'}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: '#6b7280', fontSize: '0.875rem' }}>
+                        {transporteModal.transporteData?.transporte?.departamento || 'N/A'} - {transporteModal.transporteData?.transporte?.provincia || 'N/A'} - {transporteModal.transporteData?.transporte?.distrito || 'N/A'}
+                      </Typography>
+                    </Box>
+                  </Grid>
 
-                <Form.Item shouldUpdate={(prevValues, currentValues) => prevValues.tipoDestino !== currentValues.tipoDestino}>
-                  {({ getFieldValue }) => {
-                    const tipoDestino = getFieldValue('tipoDestino');
-                    return tipoDestino === 'ALMACEN' ? (
-                      <Grid>
+                  {/* Contacto */}
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <Typography variant="body2" sx={{
+                      fontWeight: 600,
+                      mb: 2,
+                      color: '#374151',
+                      fontSize: '0.875rem',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em'
+                    }}>
+                      Contacto
+                    </Typography>
+                    <Box sx={{
+                      p: 2,
+                      bgcolor: '#f8fafc',
+                      borderRadius: 1,
+                      border: '1px solid #e2e8f0'
+                    }}>
+                      <Typography variant="body1" sx={{ fontWeight: 600, color: '#1f2937' }}>
+                        {transporteModal.transporteData?.contactoTransporte?.nombre || 'N/A'}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: '#6b7280', mt: 0.5 }}>
+                        Cargo: {transporteModal.transporteData?.contactoTransporte?.cargo || 'N/A'}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: '#6b7280', fontSize: '0.875rem' }}>
+                        Teléfono: {transporteModal.transporteData?.contactoTransporte?.telefono || 'N/A'}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: '#6b7280', fontSize: '0.875rem' }}>
+                        Email: {transporteModal.transporteData?.contactoTransporte?.email || 'N/A'}
+                      </Typography>
+                    </Box>
+                  </Grid>
+
+                  {/* Tipo de Destino */}
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <Typography variant="body2" sx={{
+                      fontWeight: 600,
+                      mb: 2,
+                      color: '#374151',
+                      fontSize: '0.875rem',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em'
+                    }}>
+                      Tipo de Destino
+                    </Typography>
+                    <Box sx={{
+                      p: 2,
+                      bgcolor: '#f8fafc',
+                      borderRadius: 1,
+                      border: '1px solid #e2e8f0'
+                    }}>
+                      <Typography variant="body1" sx={{ fontWeight: 600, color: '#1f2937' }}>
+                        {transporteModal.transporteData?.tipoDestino === 'AGENCIA' ? 'Agencia' :
+                          transporteModal.transporteData?.tipoDestino === 'CLIENTE' ? 'Cliente' :
+                            transporteModal.transporteData?.tipoDestino === 'ALMACEN' ? 'Almacén' : 'N/A'}
+                      </Typography>
+                    </Box>
+                  </Grid>
+
+                  {/* Almacén (solo si tipoDestino es ALMACEN) */}
+                  {transporteModal.transporteData?.tipoDestino === 'ALMACEN' && (
+                    <Grid size={{ xs: 12, md: 6 }}>
+                      <Typography variant="body2" sx={{
+                        fontWeight: 600,
+                        mb: 2,
+                        color: '#374151',
+                        fontSize: '0.875rem',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em'
+                      }}>
+                        Almacén
+                      </Typography>
+                      <Box sx={{
+                        p: 2,
+                        bgcolor: '#f8fafc',
+                        borderRadius: 1,
+                        border: '1px solid #e2e8f0'
+                      }}>
+                        <Typography variant="body1" sx={{ fontWeight: 600, color: '#1f2937' }}>
+                          {almacenes.find(a => a.id === transporteModal.transporteData?.almacenId)?.nombre || 'N/A'}
+                        </Typography>
+                      </Box>
+                    </Grid>
+                  )}
+                  <Grid size={{ xs: 12 }}>
+                    <Box sx={{
+                      display: 'flex',
+                      gap: 3,
+                      flexWrap: 'nowrap',
+                      overflowX: 'auto'
+                    }}>
+                      <Box sx={{
+                        minWidth: 260,
+                        flex: '1 1 50%'
+                      }}>
                         <Typography variant="body2" sx={{
                           fontWeight: 600,
                           mb: 2,
@@ -1972,126 +2323,365 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                           textTransform: 'uppercase',
                           letterSpacing: '0.05em'
                         }}>
-                          Almacén
+                          Archivo de Cotización
                         </Typography>
-                        <Form.Item
-                          name="almacenId"
-                          rules={[{ required: true, message: 'El almacén es requerido' }]}
-                        >
-                          <SelectGeneric
-                            placeholder="Seleccionar almacén"
-                            options={almacenes.map(almacen => ({
-                              value: almacen.id,
-                              label: almacen.nombre
-                            }))}
-                          />
-                        </Form.Item>
-                      </Grid>
-                    ) : null;
-                  }}
-                </Form.Item>
-
-                {/* Nota de Transporte - Full width arriba */}
-                <Grid size={12}>
-                  <Typography variant="body2" sx={{
-                    fontWeight: 600,
-                    mb: 2,
-                    color: '#374151',
-                    fontSize: '0.875rem',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em'
-                  }}>
-                    Nota de Transporte
-                  </Typography>
-                  <Form.Item name="notaTransporte">
-                    <TextArea
-                      placeholder="Notas adicionales del transporte"
-                      rows={3}
-                    />
-                  </Form.Item>
+                        <Box sx={{
+                          p: 2,
+                          bgcolor: '#f8fafc',
+                          borderRadius: 1,
+                          border: '1px solid #e2e8f0'
+                        }}>
+                          {transporteModal.transporteData?.archivoCotizacion ? (
+                            <Button
+                              variant="outlined"
+                              startIcon={<DownloadIcon />}
+                              onClick={() => window.open(transporteModal.transporteData.archivoCotizacion, '_blank')}
+                              sx={{
+                                borderColor: '#10b981',
+                                color: '#10b981',
+                                '&:hover': {
+                                  borderColor: '#059669',
+                                  bgcolor: 'rgba(16, 185, 129, 0.04)',
+                                }
+                              }}
+                            >
+                              Ver Archivo
+                            </Button>
+                          ) : (
+                            <Typography variant="body1" sx={{ color: '#6b7280' }}>
+                              Sin archivo de cotización
+                            </Typography>
+                          )}
+                        </Box>
+                      </Box>
+                      <Box sx={{
+                        minWidth: 260,
+                        flex: '1 1 50%'
+                      }}>
+                        <Typography variant="body2" sx={{
+                          fontWeight: 600,
+                          mb: 2,
+                          color: '#374151',
+                          fontSize: '0.875rem',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em'
+                        }}>
+                          Flete Cotizado
+                        </Typography>
+                        <Box sx={{
+                          p: 2,
+                          bgcolor: '#f8fafc',
+                          borderRadius: 1,
+                          border: '1px solid #e2e8f0'
+                        }}>
+                          <Typography variant="body1" sx={{ fontWeight: 600, color: '#10b981', fontSize: '1.1rem' }}>
+                            {transporteModal.transporteData?.montoFlete ? formatCurrency(parseFloat(String(transporteModal.transporteData.montoFlete))) : 'N/A'}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </Box>
+                  </Grid>
                 </Grid>
-
-                {/* Archivo de Cotización y Monto Flete Cotizado en la misma fila */}
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <Typography variant="body2" sx={{
-                    fontWeight: 600,
-                    mb: 2,
-                    color: '#374151',
-                    fontSize: '0.875rem',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em'
-                  }}>
-                    Archivo de Cotización
-                  </Typography>
-                  <Form.Item name="archivoCotizacion">
-                    <SimpleFileUpload
-                      accept="application/pdf"
-                      value={form.getFieldValue('archivoCotizacion')}
-                      onChange={(file) => {
-                        form.setFieldsValue({ archivoCotizacion: file });
-                      }}
-                    />
-                  </Form.Item>
-                </Grid>
-
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <Typography variant="body2" sx={{
-                    fontWeight: 600,
-                    mb: 2,
-                    color: '#374151',
-                    fontSize: '0.875rem',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em'
-                  }}>
-                    Monto Flete Cotizado
-                  </Typography>
-                  <Form.Item
-                    name="montoFlete"
-                    rules={[{ required: true, message: 'El monto es requerido' }]}
-                  >
-                    <InputAntd
-                      type="number"
-                      placeholder="0.00"
-                    />
-                  </Form.Item>
-                </Grid>
-              </Grid>
-
-              <Box sx={{
-                display: 'flex',
-                justifyContent: 'flex-end',
-                gap: 3,
-                mt: 5,
-                pt: 4,
-                borderTop: '2px solid #f3f4f6',
-                bgcolor: '#fafafa',
-                mx: -5,
-                mb: -5,
-                px: 5,
-                pb: 4,
-                borderBottomLeftRadius: 12,
-                borderBottomRightRadius: 12
-              }}>
-                <Button
-                  onClick={() => setTransporteModal({ open: false, mode: 'create', opId: null, transporteData: null })}
-                  variant="outlined"
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  variant="contained"
-                  type="submit"
-                  sx={{
-                    px: 4,
-                    py: 2,
-                    fontWeight: 700,
-                    fontSize: '0.95rem',
-                  }}
-                >
-                  {transporteModal.mode === 'create' ? 'Agregar Transporte' : 'Actualizar Transporte'}
-                </Button>
               </Box>
-            </Form>
+            )}
+            {activeTab === 1 && (
+              <Box>
+                {/* Sección de Costos */}
+                <Box sx={{ mb: 4 }}>
+                  <Typography variant="h6" sx={{
+                    fontWeight: 600,
+                    mb: 3,
+                    color: '#1f2937',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1.5,
+                    '&::before': {
+                      content: '""',
+                      width: 4,
+                      height: 20,
+                      bgcolor: '#667eea',
+                      borderRadius: 2,
+                    }
+                  }}>
+                    💰 Información de Costos
+                  </Typography>
+                  <Box sx={{
+                    display: 'flex',
+                    flexDirection: { xs: 'column', md: 'row' },
+                    gap: 3,
+                    bgcolor: '#f9fafb',
+                    borderRadius: 2,
+                    border: '1px solid #f3f4f6'
+                  }}>
+                    <Box sx={{ flex: 1 }}>
+                      <Box sx={{
+                        p: 2,
+                        borderRadius: 1,
+                        transition: 'all 0.2s ease',
+                      }}>
+                        <Typography variant="body2" sx={{
+                          fontWeight: 600,
+                          mb: 1,
+                          color: '#6b7280',
+                          fontSize: '0.875rem',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1,
+                        }}>
+                          Flete Cotizado
+                        </Typography>
+                        <InputNumberAntd
+                          isCurrency
+                          disabled
+                          value={transporteModal.transporteData?.montoFlete || 0}
+                        />
+                      </Box>
+                    </Box>
+                    <Box sx={{ flex: 1 }}>
+                      <Box sx={{
+                        p: 2,
+                        borderRadius: 1,
+                        transition: 'all 0.2s ease',
+                      }}>
+                        <Typography variant="body2" sx={{
+                          fontWeight: 600,
+                          mb: 1,
+                          color: '#6b7280',
+                          fontSize: '0.875rem',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1,
+                        }}>
+                          Flete Pagado
+                        </Typography>
+                        <InputNumberAntd
+                          isCurrency
+                          value={transporteFormData.montoFletePagado}
+                          onChange={(value) => updateTransporteField('montoFletePagado', Number(value) || 0)}
+                        />
+                      </Box>
+                    </Box>
+                  </Box>
+                </Box>
+
+                {/* Sección de Documentos */}
+                <Box>
+                  <Typography variant="h6" sx={{
+                    fontWeight: 600,
+                    mb: 3,
+                    color: '#1f2937',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1.5,
+                    '&::before': {
+                      content: '""',
+                      width: 4,
+                      height: 20,
+                      bgcolor: '#667eea',
+                      borderRadius: 2,
+                    }
+                  }}>
+                    📄 Documentos y Facturación
+                  </Typography>
+                  <Box sx={{
+                    display: 'flex',
+                    flexDirection: { xs: 'column', md: 'row' },
+                    flexWrap: 'wrap',
+                    gap: 3,
+                    bgcolor: '#f9fafb',
+                    borderRadius: 2,
+                    border: '1px solid #f3f4f6'
+                  }}>
+                    <Box sx={{
+                      p: 3,
+                      flex: { xs: '1 1 100%', md: '1 1 calc(50% - 24px)' },
+                      minWidth: { xs: '100%', md: 'calc(50% - 24px)' }
+                    }}>
+                      <Typography variant="body2" sx={{
+                        fontWeight: 600,
+                        mb: 2,
+                        color: '#374151',
+                        fontSize: '0.875rem',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                      }}>
+                        📋 Número de Factura
+                      </Typography>
+                      <InputAntd
+                        placeholder="Ingrese número de factura"
+                        value={transporteFormData.numeroFactura}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateTransporteField('numeroFactura', e.target.value)}
+                      />
+                    </Box>
+                    <Box sx={{
+                      p: 3,
+                      flex: { xs: '1 1 100%', md: '1 1 calc(50% - 24px)' },
+                      minWidth: { xs: '100%', md: 'calc(50% - 24px)' }
+                    }}>
+                      <Typography variant="body2" sx={{
+                        fontWeight: 600,
+                        mb: 2,
+                        color: '#374151',
+                        fontSize: '0.875rem',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                      }}>
+                        📄 Archivo de Factura
+                      </Typography>
+                      <SimpleFileUpload
+                        value={transporteFormData.archivoFactura}
+                        onChange={(file) => updateTransporteField('archivoFactura', file)}
+                        accept="application/pdf"
+                      />
+                    </Box>
+                    <Box sx={{
+                      p: 3,
+                      flex: { xs: '1 1 100%', md: '1 1 calc(50% - 24px)' },
+                      minWidth: { xs: '100%', md: 'calc(50% - 24px)' }
+                    }}>
+                      <Typography variant="body2" sx={{
+                        fontWeight: 600,
+                        mb: 2,
+                        color: '#374151',
+                        fontSize: '0.875rem',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                      }}>
+                        🚛 Guía de Remisión
+                      </Typography>
+                      <SimpleFileUpload
+                        value={transporteFormData.guiaRemision}
+                        onChange={(file) => updateTransporteField('guiaRemision', file)}
+                        accept="application/pdf"
+                      />
+                    </Box>
+                    <Box sx={{
+                      p: 3,
+                      flex: { xs: '1 1 100%', md: '1 1 calc(50% - 24px)' },
+                      minWidth: { xs: '100%', md: 'calc(50% - 24px)' }
+                    }}>
+                      <Typography variant="body2" sx={{
+                        fontWeight: 600,
+                        mb: 2,
+                        color: '#374151',
+                        fontSize: '0.875rem',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                      }}>
+                        📦 Guía de Transporte
+                      </Typography>
+                      <SimpleFileUpload
+                        value={transporteFormData.guiaTransporte}
+                        onChange={(file) => updateTransporteField('guiaTransporte', file)}
+                        accept="application/pdf"
+                      />
+                    </Box>
+                  </Box>
+                  {/* Submit form */}
+                  <Box sx={{ mt: 2, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+                    {changedTransporteFields.size > 0 && (
+                      <Button
+                        variant="outlined"
+                        onClick={cancelTransporteChanges}
+                        disabled={savingTransporte}
+                        sx={{
+                          borderColor: '#d1d5db',
+                          color: '#6b7280',
+                          '&:hover': {
+                            borderColor: '#9ca3af',
+                            backgroundColor: 'rgba(243, 244, 246, 0.5)',
+                          }
+                        }}
+                      >
+                        Cancelar
+                      </Button>
+                    )}
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={handleSaveTransporte}
+                      disabled={savingTransporte || changedTransporteFields.size === 0}
+                      sx={{
+                        bgcolor: '#10b981',
+                        '&:hover': {
+                          bgcolor: '#059669'
+                        },
+                        '&:disabled': {
+                          bgcolor: '#6b7280'
+                        }
+                      }}
+                    >
+                      {savingTransporte ? 'Guardando...' : 'Guardar Cambios'}
+                    </Button>
+                  </Box>
+                </Box>
+              </Box>
+            )}
+            {activeTab === 2 && (
+              <Box>
+                <PaymentsList
+                  title="Pagos del Transporte"
+                  payments={transportePaymentsState.payments}
+                  tipoPago={transportePaymentsState.tipoPago}
+                  notaPago={transportePaymentsState.notaPago}
+                  mode="readonly"
+                  montoTotal={transporteModal.transporteData?.montoFlete ? Number(transporteModal.transporteData.montoFlete) : 0}
+                  onTipoPagoChange={handleTransporteTipoPagoChange}
+                  onNotaPagoChange={handleTransporteNotaPagoChange}
+                />
+                <Box sx={{ mt: 2, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+                  {transportePaymentsChanged && (
+                    <Button
+                      variant="outlined"
+                      onClick={cancelTransportePaymentsChanges}
+                      disabled={savingTransportePayments}
+                      sx={{
+                        borderColor: '#d1d5db',
+                        color: '#6b7280',
+                        '&:hover': {
+                          borderColor: '#9ca3af',
+                          backgroundColor: 'rgba(243, 244, 246, 0.5)'
+                        }
+                      }}
+                    >
+                      Cancelar
+                    </Button>
+                  )}
+                  <Button
+                    variant="contained"
+                    onClick={handleSaveTransportePayments}
+                    disabled={!transportePaymentsChanged || savingTransportePayments}
+                    sx={{
+                      bgcolor: '#10b981',
+                      '&:hover': {
+                        bgcolor: '#059669'
+                      },
+                      '&:disabled': {
+                        bgcolor: '#6b7280'
+                      }
+                    }}
+                  >
+                    {savingTransportePayments ? 'Guardando...' : 'Guardar Pagos'}
+                  </Button>
+                </Box>
+              </Box>
+            )}
           </Box>
         </MuiBox>
       </Modal>

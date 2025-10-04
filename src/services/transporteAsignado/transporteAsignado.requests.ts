@@ -14,16 +14,16 @@ export interface TransporteAsignadoProps {
     notaTransporte: string;
     cotizacionTransporte: string;
     notaPago: string;
-    estadoPago: null;
-    montoFlete: null;
-    grt: null;
+    estadoPago: string | null;
+    montoFlete: number | null;
+    grt: string | null;
     almacenId: number | null;
     createdAt: string;
     updatedAt: string;
     transporte: any;
     contactoTransporte: any;
     almacen?: any;
-    pagos: [];
+    pagos: any[];
 }
 
 export const getTransportesAsignados = async (ordenProveedorId: number): Promise<TransporteAsignadoProps[]> => {
