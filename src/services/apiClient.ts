@@ -27,4 +27,15 @@ const interceptor = async (config: InternalAxiosRequestConfig<any>) => {
 
 apiClient.interceptors.request.use(interceptor);
 
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      StorageService.delete(STORAGE_KEY);
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default apiClient;
