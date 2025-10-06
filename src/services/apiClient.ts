@@ -21,7 +21,7 @@ const interceptor = async (config: InternalAxiosRequestConfig<any>) => {
   if (config.headers) {
     (config.headers as Record<string, string>)['Authorization'] = token;
   }
-  
+
   return config;
 };
 
