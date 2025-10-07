@@ -1,14 +1,116 @@
-import React from 'react';
-import { Grid, Typography, Box, Paper } from '@mui/material';
+import { useState } from 'react';
+import { Grid, Typography, Box, Card, CardContent } from '@mui/material';
+import { Select, Form, Button as AntButton } from 'antd';
+import { BarChart, TrendingUp, LocalShipping, Star } from '@mui/icons-material';
 import PageContent from '@/components/PageContent';
-import KPICards from './components/KPICards';
-import SalesChart from './components/SalesChart';
-import TrendChart from './components/TrendChart';
-import ClientDistributionChart from './components/ClientDistributionChart';
-import ProviderPerformanceChart from './components/ProviderPerformanceChart';
-import { BarChart } from '@mui/icons-material';
+import DatePickerAnt from '@/components/DatePickerAnt';
+import dayjs from 'dayjs';
+
+const { Option } = Select;
+
+type ReportType = 'ventas' | 'cobranza' | 'entregas-oc' | 'ranking';
 
 const Reports = () => {
+  const [reportType, setReportType] = useState<ReportType>('ventas');
+  const [startDate, setStartDate] = useState<any>(dayjs().startOf('month'));
+  const [endDate, setEndDate] = useState<any>(dayjs().endOf('month'));
+  const [form] = Form.useForm();
+
+  const reportOptions = [
+    { value: 'ventas', label: 'Ventas', icon: <TrendingUp /> },
+    { value: 'cobranza', label: 'Cobranza', icon: <BarChart /> },
+    { value: 'entregas-oc', label: 'Entregas OC', icon: <LocalShipping /> },
+    { value: 'ranking', label: 'Ranking', icon: <Star /> },
+  ];
+
+  const handleGenerateReport = () => {
+    // Aquí irá la lógica para generar el reporte
+    console.log('Generando reporte:', {
+      type: reportType,
+      startDate: startDate?.format('YYYY-MM-DD'),
+      endDate: endDate?.format('YYYY-MM-DD'),
+    });
+  };
+
+  const renderReportContent = () => {
+    switch (reportType) {
+      case 'ventas':
+        return (
+          <Box>
+            <Typography variant="h5" gutterBottom>
+              Reporte de Ventas
+            </Typography>
+            <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
+              Análisis de ventas del período seleccionado
+            </Typography>
+            {/* Aquí irán los gráficos de ventas */}
+            <Box sx={{ height: 400, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px dashed #ddd', borderRadius: 2 }}>
+              <Typography variant="h6" color="textSecondary">
+                Gráficos de Ventas - Próximamente
+              </Typography>
+            </Box>
+          </Box>
+        );
+
+      case 'cobranza':
+        return (
+          <Box>
+            <Typography variant="h5" gutterBottom>
+              Reporte de Cobranza
+            </Typography>
+            <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
+              Estado de cobranza y pagos pendientes
+            </Typography>
+            {/* Aquí irán los gráficos de cobranza */}
+            <Box sx={{ height: 400, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px dashed #ddd', borderRadius: 2 }}>
+              <Typography variant="h6" color="textSecondary">
+                Gráficos de Cobranza - Próximamente
+              </Typography>
+            </Box>
+          </Box>
+        );
+
+      case 'entregas-oc':
+        return (
+          <Box>
+            <Typography variant="h5" gutterBottom>
+              Reporte de Entregas OC
+            </Typography>
+            <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
+              Seguimiento de órdenes de compra y entregas
+            </Typography>
+            {/* Aquí irán los gráficos de entregas OC */}
+            <Box sx={{ height: 400, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px dashed #ddd', borderRadius: 2 }}>
+              <Typography variant="h6" color="textSecondary">
+                Gráficos de Entregas OC - Próximamente
+              </Typography>
+            </Box>
+          </Box>
+        );
+
+      case 'ranking':
+        return (
+          <Box>
+            <Typography variant="h5" gutterBottom>
+              Reporte de Ranking
+            </Typography>
+            <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
+              Ranking de productos, clientes y proveedores
+            </Typography>
+            {/* Aquí irán los gráficos de ranking */}
+            <Box sx={{ height: 400, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px dashed #ddd', borderRadius: 2 }}>
+              <Typography variant="h6" color="textSecondary">
+                Gráficos de Ranking - Próximamente
+              </Typography>
+            </Box>
+          </Box>
+        );
+
+      default:
+        return null;
+    }
+  };
+
   return (
     <PageContent>
       <Box sx={{ mb: 4 }}>
@@ -23,76 +125,101 @@ const Reports = () => {
         </Typography>
       </Box>
 
-      {/* KPIs Section */}
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h5" component="h2" sx={{ mb: 3, fontWeight: 'medium' }}>
-          Métricas Clave
-        </Typography>
-        <KPICards />
+      <Box sx={{ display: 'flex', gap: 3 }}>
+        {/* Columna Izquierda - Filtros (25% sticky) */}
+        <Box sx={{ flex: '0 0 25%', minWidth: 300 }}>
+          <Box sx={{
+            position: 'sticky',
+            top: 20,
+            height: 'fit-content'
+          }}>
+            <Card sx={{ borderRadius: 2, boxShadow: 2 }}>
+              <CardContent>
+                <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+                  Filtros de Reporte
+                </Typography>
+
+                <Form form={form} layout="vertical" onFinish={handleGenerateReport}>
+                  <Form.Item
+                    label="Tipo de Reporte"
+                    name="reportType"
+                    rules={[{ required: true, message: 'Seleccione un tipo de reporte' }]}
+                    initialValue={reportType}
+                  >
+                    <Select
+                      size="large"
+                      placeholder="Seleccione tipo de reporte"
+                      onChange={(value) => setReportType(value as ReportType)}
+                      style={{ width: '100%' }}
+                    >
+                      {reportOptions.map(option => (
+                        <Option key={option.value} value={option.value}>
+                          <Box display="flex" alignItems="center">
+                            {option.icon}
+                            <Typography sx={{ ml: 1 }}>{option.label}</Typography>
+                          </Box>
+                        </Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+
+                  <Box sx={{ display: 'flex', gap: 2 }}>
+                    <Form.Item
+                      label="Fecha de Inicio"
+                      name="startDate"
+                      rules={[{ required: true, message: 'Seleccione fecha de inicio' }]}
+                      style={{ flex: 1 }}
+                    >
+                      <DatePickerAnt
+                        value={startDate}
+                        onChange={(date) => setStartDate(date)}
+                      />
+                    </Form.Item>
+
+                    <Form.Item
+                      label="Fecha de Fin"
+                      name="endDate"
+                      rules={[{ required: true, message: 'Seleccione fecha de fin' }]}
+                      style={{ flex: 1 }}
+                    >
+                      <DatePickerAnt
+                        value={endDate}
+                        onChange={(date) => setEndDate(date)}
+                      />
+                    </Form.Item>
+                  </Box>
+
+                  <Form.Item>
+                    <AntButton
+                      type="primary"
+                      htmlType="submit"
+                      size="large"
+                      block
+                      style={{
+                        marginTop: 16,
+                        height: 48,
+                        fontSize: '16px',
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      Generar Reporte
+                    </AntButton>
+                  </Form.Item>
+                </Form>
+              </CardContent>
+            </Card>
+          </Box>
+        </Box>
+
+        {/* Columna Derecha - Contenido Dinámico (75%) */}
+        <Box sx={{ flex: '1', minWidth: 0 }}>
+          <Card sx={{ borderRadius: 2, boxShadow: 2, minHeight: 600 }}>
+            <CardContent sx={{ p: 3 }}>
+              {renderReportContent()}
+            </CardContent>
+          </Card>
+        </Box>
       </Box>
-
-      {/* Charts Section */}
-      <Typography variant="h5" component="h2" sx={{ mb: 3, fontWeight: 'medium' }}>
-        Análisis y Tendencias
-      </Typography>
-
-      <Grid container spacing={3}>
-        {/* Sales Chart */}
-        <Grid size={{ xs: 12, lg: 8 }}>
-          <SalesChart />
-        </Grid>
-
-        {/* Client Distribution */}
-        <Grid size={{ xs: 12, lg: 4 }}>
-          <ClientDistributionChart />
-        </Grid>
-
-        {/* Trend Chart */}
-        <Grid size={{ xs: 12, lg: 8 }}>
-          <TrendChart />
-        </Grid>
-
-        {/* Provider Performance */}
-        <Grid size={{ xs: 12, lg: 4 }}>
-          <ProviderPerformanceChart />
-        </Grid>
-
-        {/* Additional Information */}
-        <Grid size={{ xs: 12 }}>
-          <Paper
-            sx={{
-              p: 3,
-              background: 'linear-gradient(135deg, #1976d2 0%, #01a76a 100%)',
-              color: 'white',
-              borderRadius: 2
-            }}
-          >
-            <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
-              🎯 Resumen Ejecutivo
-            </Typography>
-            <Grid container spacing={2}>
-              <Grid size={{ xs: 12, md: 4 }}>
-                <Typography variant="body2" sx={{ mb: 1, opacity: 0.9 }}>
-                  📈 <strong>Crecimiento:</strong> Las ventas han aumentado un 12.5% este mes,
-                  superando las proyecciones iniciales.
-                </Typography>
-              </Grid>
-              <Grid size={{ xs: 12, md: 4 }}>
-                <Typography variant="body2" sx={{ mb: 1, opacity: 0.9 }}>
-                  🎯 <strong>Eficiencia:</strong> El 98.5% de las entregas se completaron a tiempo,
-                  manteniendo la excelencia operativa.
-                </Typography>
-              </Grid>
-              <Grid size={{ xs: 12, md: 4 }}>
-                <Typography variant="body2" sx={{ mb: 1, opacity: 0.9 }}>
-                  💼 <strong>Oportunidad:</strong> Los proveedores muestran un rendimiento
-                  consistente con margen de mejora en tiempos de entrega.
-                </Typography>
-              </Grid>
-            </Grid>
-          </Paper>
-        </Grid>
-      </Grid>
     </PageContent>
   );
 };
