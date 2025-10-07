@@ -10,10 +10,11 @@ interface ProvidersTableProps {
   loading: boolean;
   onRecordAction: (action: ModalStateEnum | 'MANAGE_SALDOS' | 'MANAGE_PAGOS', data: ProviderProps) => void;
   hideActions?: boolean;
+  modalMode?: boolean; // Nueva prop para indicar si está en modo modal
   onReload?: () => void;
 }
 
-const ProvidersTable = ({ data, loading, onRecordAction, hideActions, onReload }: ProvidersTableProps) => {
+const ProvidersTable = ({ data, loading, onRecordAction, hideActions, modalMode, onReload }: ProvidersTableProps) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedRecord, setSelectedRecord] = useState<ProviderProps | null>(null);
 
@@ -110,6 +111,7 @@ const ProvidersTable = ({ data, loading, onRecordAction, hideActions, onReload }
         data={data}
         loading={loading}
         onReload={onReload}
+        hideToolbar={modalMode}
         onRow={(record) => {
           if (!hideActions) return {};
           return {

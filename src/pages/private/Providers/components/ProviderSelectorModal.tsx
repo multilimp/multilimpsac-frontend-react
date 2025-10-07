@@ -1,4 +1,5 @@
-import { Dialog, DialogContent } from '@mui/material';
+import { Dialog, DialogContent, DialogTitle, IconButton } from '@mui/material';
+import { Close } from '@mui/icons-material';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 import ProvidersTable from './ProvidersTable';
 import { ProviderProps } from '@/services/providers/providers';
@@ -12,8 +13,33 @@ const ProviderSelectorModal = ({ onSelected, onClose }: ProviderSelectorModalPro
   const { providers, loadingProviders } = useGlobalInformation();
 
   return (
-    <Dialog open fullWidth maxWidth="md">
-      <DialogContent>
+    <Dialog
+      open
+      fullWidth
+      maxWidth="lg"
+      onClose={onClose} // Permite cerrar haciendo clic fuera del modal
+    >
+      <DialogTitle
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          pb: 1
+        }}
+      >
+        Seleccionar Proveedor
+        <IconButton
+          onClick={onClose}
+          size="small"
+          sx={{
+            color: 'grey.500',
+            '&:hover': { color: 'grey.700' }
+          }}
+        >
+          <Close />
+        </IconButton>
+      </DialogTitle>
+      <DialogContent sx={{ pt: '8px !important' }}>
         <ProvidersTable
           data={providers}
           loading={loadingProviders}
@@ -22,6 +48,7 @@ const ProviderSelectorModal = ({ onSelected, onClose }: ProviderSelectorModalPro
             onClose();
           }}
           hideActions
+          modalMode // Nueva prop para indicar que está en modo modal
         />
       </DialogContent>
     </Dialog>

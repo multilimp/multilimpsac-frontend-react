@@ -183,32 +183,27 @@ export const printOrdenProveedor = async (orderData: any): Promise<void> => {
     };
 
     // Generar HTML de transportes
-    const generateTransportesHtml = (transportes: any[]): string => {
+    const generateTransportesHtml = (transportes: any[], fechaRecepcion?: string): string => {
       if (!transportes || transportes.length === 0) return '';
 
+      const tituloTransportes = fechaRecepcion
+        ? `TRANSPORTES ASIGNADOS - PLAZO DE ENTREGA: ${formatDate(fechaRecepcion)}`
+        : 'TRANSPORTES ASIGNADOS';
+
       return `
-        <div class="seccion-transportes">
-          <h3>TRANSPORTES ASIGNADOS</h3>
-          <table class="tabla-transportes">
-            <thead>
-              <tr>
-                <th class="col-transporte">TRANSPORTE</th>
-                <th class="col-ruc">RUC</th>
-                <th class="col-telefono">TELÉFONO</th>
-                <th class="col-direccion">DIRECCIÓN</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${transportes.map(transporte => `
-                <tr>
-                  <td class="col-transporte">${escapeHtml(transporte.transporte?.razonSocial || '')}</td>
-                  <td class="col-ruc">${escapeHtml(transporte.transporte?.ruc || '')}</td>
-                  <td class="col-telefono">${escapeHtml(transporte.transporte?.telefono || '')}</td>
-                  <td class="col-direccion">${escapeHtml(transporte.transporte?.direccion || '')}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
+        <div class="transportes-card">
+          <h3>${tituloTransportes}</h3>
+          ${transportes.map(transporte => `
+            <div class="transporte-item">
+              <h4>${escapeHtml(transporte.transporte?.razonSocial || '')} - ${escapeHtml(transporte.transporte?.ruc || '')}</h4>
+              <p><strong>Dirección:</strong> ${escapeHtml(transporte.transporte?.direccion || '')}</p>
+              <p><strong>Destino:</strong> ${escapeHtml(transporte.direccion || '')}</p>
+              <p><strong>Etiquetado:</strong> ${escapeHtml(transporte.etiquetado || 'No especificado')}</p>
+              <p><strong>Embalaje:</strong> ${escapeHtml(transporte.embalaje || 'No especificado')}</p>
+              <p><strong>Observaciones:</strong> ${escapeHtml(transporte.notaTransporte || 'Sin observaciones')}</p>
+              ${transporte.otros ? `<p><strong>Otros:</strong> ${escapeHtml(transporte.otros)}</p>` : ''}
+            </div>
+          `).join('')}
         </div>
       `;
     };
@@ -223,35 +218,218 @@ export const printOrdenProveedor = async (orderData: any): Promise<void> => {
         <title>Orden de Proveedor - ${data.codigoOp || data.id}</title>
         <style>
           body {
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            line-height: 1.4;
+            font-family: 'Arial', sans-serif;
+            font-size: 10px;
+            line-height: 1.3;
             margin: 0;
-            padding: 20px;
-            color: #000;
+            padding: 8px;
+            color: #333;
             background: #fff;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
           }
 
           .header {
-            text-align: center;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #000;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #000;
             padding-bottom: 10px;
+            background: white;
+            padding: 8px;
           }
 
-          .header h1 {
-            margin: 0;
-            font-size: 24px;
+          .header-left {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+          }
+
+          .logo {
+            max-width: 100px;
+            max-height: 50px;
+            margin-bottom: 5px;
+            border: 1px solid #e0e0e0;
+            border-radius: 2px;
+            padding: 3px;
+            background: white;
+          }
+
+          .contact-info {
+            font-size: 8px;
+            color: #666;
+            line-height: 1.2;
+            margin-top: 3px;
+          }
+
+          .header-right {
+            text-align: right;
+          }
+
+          .info-box {
+            border: 1px solid #000;
+            padding: 8px;
+            background: white;
+            display: inline-block;
+            min-width: 200px;
+            border-radius: 5px;
+          }
+
+          .info-box h2 {
+            margin: 0 0 5px 0;
+            font-size: 14px;
             font-weight: bold;
+            text-align: center;
+            border-bottom: 1px solid #000;
+            padding-bottom: 3px;
+          }
+
+          .info-box p {
+            margin: 3px 0;
+            font-size: 9px;
+            font-weight: normal;
+          }
+
+          .provider-card, .products-card, .transportes-card, .facturacion-card {
+            border: 1px solid #000;
+            padding: 8px;
+            margin-bottom: 8px;
+            background: white;
+            border-radius: 5px;
+          }
+
+          .products-card, .transportes-card {
+            border: none;
+            padding: 0;
+            margin-bottom: 8px;
+          }
+
+          .provider-card h3, .products-card h3, .transportes-card h3, .facturacion-card h3 {
+            margin: 0 0 6px 0;
+            font-size: 12px;
+            font-weight: bold;
+            text-align: center;
+            border-bottom: 1px solid #000;
+            padding-bottom: 4px;
+          }
+
+          .provider-card p {
+            margin: 2px 0;
+            font-size: 10px;
+          }
+
+          .products-card h3, .transportes-card h3 {
+            margin: 0 0 6px 0;
+            font-size: 12px;
+            font-weight: bold;
+            text-align: center;
+            padding-bottom: 4px;
+          }
+
+          .products-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 8px;
+            margin-top: 5px;
+          }
+
+          .products-table th, .products-table td {
+            border: 1px solid #000;
+            padding: 3px 2px;
+            text-align: left;
+          }
+
+          .products-table th {
+            background: white;
+            color: black;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 7px;
+            text-align: center;
+            border-bottom: 2px solid #000;
+          }
+
+          .products-table .col-codigo { width: 80px; text-align: center; }
+          .products-table .col-cantidad { width: 70px; text-align: center; }
+          .products-table .col-unidad { width: 80px; text-align: center; }
+          .products-table .col-descripcion { width: auto; }
+          .products-table .col-precio { width: 80px; text-align: right; }
+          .products-table .col-importe { width: 80px; text-align: right; }
+
+          .total-row {
+            font-weight: bold;
+            background: white;
+            border-top: 1px solid #000;
+          }
+
+          .total-row td {
+            padding: 8px 4px;
+            font-size: 11px;
+          }
+
+          .transportes-card {
+            border: 1px solid #000;
+            padding: 5px;
+            margin-bottom: 8px;
+            background: #fff;
+          }
+
+          .transportes-card h3 {
+            margin: 0 0 5px 0;
+            font-size: 12px;
+            font-weight: bold;
+            text-align: center;
+          }
+
+          .transporte-item {
+            border: 1px solid #000;
+            padding: 6px;
+            margin-bottom: 5px;
+            background: white;
+            border-radius: 5px;
+          }
+
+          .transporte-item h4 {
+            margin: 0 0 4px 0;
+            font-size: 10px;
+            font-weight: bold;
+            border-bottom: 1px solid #000;
+            padding-bottom: 2px;
+          }
+
+          .transporte-item p {
+            margin: 2px 0;
+            font-size: 8px;
+            line-height: 1.2;
+          }
+
+          .facturacion-card {
+            border: 1px solid #000;
+            padding: 5px;
+            margin-bottom: 8px;
+            background: #fff;
+          }
+
+          .facturacion-card h3 {
+            margin: 0 0 4px 0;
+            font-size: 12px;
+            font-weight: bold;
+            text-align: center;
+          }
+
+          .facturacion-card p {
+            margin: 2px 0;
+            font-size: 10px;
           }
 
           .info-section {
-            margin-bottom: 20px;
+            margin-bottom: 10px;
           }
 
           .info-section h2 {
-            margin: 0 0 10px 0;
-            font-size: 14px;
+            margin: 0 0 5px 0;
+            font-size: 12px;
             font-weight: bold;
             border-bottom: 1px solid #000;
             padding-bottom: 5px;
@@ -330,74 +508,91 @@ export const printOrdenProveedor = async (orderData: any): Promise<void> => {
           @media print {
             body { margin: 0; }
             .no-print { display: none; }
+            .header, .provider-card, .products-card, .transportes-card, .facturacion-card, .info-section {
+              break-inside: avoid;
+            }
           }
         </style>
       </head>
       <body>
         <div class="header">
-          <h1>ORDEN DE PROVEEDOR</h1>
-          <p>Código: ${data.codigoOp || data.id}</p>
-        </div>
-
-        <div class="info-section">
-          <h2>INFORMACIÓN GENERAL</h2>
-          <div class="info-grid">
-            <div class="info-row">
-              <div class="info-label">Empresa:</div>
-              <div class="info-value">${escapeHtml(data.empresa?.razonSocial || '')}</div>
+          <div class="header-left">
+            ${data.empresa?.logo ? `<img src="${data.empresa.logo}" alt="Logo Empresa" class="logo">` : ''}
+            <div class="contact-info">
+              ${data.empresa?.direccion ? `Dirección: ${escapeHtml(data.empresa.direccion)}<br>` : ''}
+              ${[data.empresa?.distrito, data.empresa?.provincia, data.empresa?.departamento].filter(Boolean).length > 0 ? `${[data.empresa?.distrito, data.empresa?.provincia, data.empresa?.departamento].filter(Boolean).join(' - ')}<br>` : ''}
+              ${data.empresa?.telefono ? `Tel: ${escapeHtml(data.empresa.telefono)}<br>` : ''}
+              ${data.empresa?.email ? `Email: ${escapeHtml(data.empresa.email)}<br>` : ''}
+              ${data.empresa?.web ? `Web: ${escapeHtml(data.empresa.web)}` : ''}
             </div>
-            <div class="info-row">
-              <div class="info-label">Proveedor:</div>
-              <div class="info-value">${escapeHtml(data.proveedor?.razonSocial || '')}</div>
-            </div>
-            <div class="info-row">
-              <div class="info-label">RUC Proveedor:</div>
-              <div class="info-value">${escapeHtml(data.proveedor?.ruc || '')}</div>
-            </div>
-            <div class="info-row">
-              <div class="info-label">Contacto:</div>
-              <div class="info-value">${escapeHtml(data.contactoProveedor?.nombre || '')}</div>
-            </div>
-            <div class="info-row">
-              <div class="info-label">Teléfono:</div>
-              <div class="info-value">${escapeHtml(data.contactoProveedor?.telefono || '')}</div>
-            </div>
-            <div class="info-row">
-              <div class="info-label">Fecha Programada:</div>
-              <div class="info-value">${formatDate(data.fechaProgramada)}</div>
-            </div>
-            <div class="info-row">
-              <div class="info-label">Fecha Despacho:</div>
-              <div class="info-value">${formatDate(data.fechaDespacho)}</div>
-            </div>
-            <div class="info-row">
-              <div class="info-label">Fecha Recepción:</div>
-              <div class="info-value">${formatDate(data.fechaRecepcion)}</div>
-            </div>
-            <div class="info-row">
-              <div class="info-label">Tipo de Pago:</div>
-              <div class="info-value">${escapeHtml(data.tipoPago || '')}</div>
-            </div>
-            <div class="info-row">
-              <div class="info-label">Nota de Pago:</div>
-              <div class="info-value">${escapeHtml(data.notaPago || '')}</div>
+          </div>
+          <div class="header-right">
+            <div class="info-box">
+              <h2>ORDEN DE COMPRA</h2>
+              <p><strong>RUC:</strong> ${escapeHtml(data.empresa?.ruc || '')}</p>
+              <p><strong>Código OC:</strong> ${data.codigoOp || data.id}</p>
+              <p><strong>Fecha Emisión:</strong> ${formatDate(data.fechaEmision || data.createdAt)}</p>
             </div>
           </div>
         </div>
 
-        <div class="info-section">
-          <h2>PRODUCTOS</h2>
-          ${generateProductosHtml(data.productos || [])}
-          <div style="text-align: right; margin-top: 10px; font-weight: bold;">
-            Total: ${formatCurrency(data.totalProveedor)}
-          </div>
+        <div class="provider-card">
+          <h3>PROVEEDOR</h3>
+          <p><strong>Sres:</strong> ${escapeHtml(data.proveedor?.razonSocial || '')}</p>
+          <p><strong>RUC:</strong> ${escapeHtml(data.proveedor?.ruc || '')}</p>
         </div>
 
-        ${generateTransportesHtml(data.transportesAsignados || [])}
+        <div class="products-card">
+          <h3>PRODUCTOS</h3>
+          <table class="products-table">
+            <thead>
+              <tr>
+                <th class="col-codigo">CÓDIGO</th>
+                <th class="col-cantidad">CANTIDAD</th>
+                <th class="col-unidad">UNIDAD</th>
+                <th class="col-descripcion">DESCRIPCIÓN</th>
+                <th class="col-precio">PRECIO</th>
+                <th class="col-importe">IMPORTE</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${data.productos && data.productos.length > 0 ? data.productos.map((producto: { codigo: any; cantidad: any; unidadMedida: any; descripcion: any; precioUnitario: any; total: any; }) => `
+                <tr>
+                  <td class="col-codigo">${escapeHtml(producto.codigo || '')}</td>
+                  <td class="col-cantidad">${producto.cantidad || 0}</td>
+                  <td class="col-unidad">${escapeHtml(producto.unidadMedida || '')}</td>
+                  <td class="col-descripcion">${escapeHtml(producto.descripcion || '')}</td>
+                  <td class="col-precio">${formatCurrency(producto.precioUnitario)}</td>
+                  <td class="col-importe">${formatCurrency(producto.total)}</td>
+                </tr>
+              `).join('') : '<tr><td colspan="6" style="text-align: center;">No hay productos</td></tr>'}
+              <tr class="total-row">
+                <td colspan="5" style="text-align: right; font-weight: bold;">TOTAL INCLUYE IGV:</td>
+                <td class="col-importe">${formatCurrency(data.totalProveedor)}</td>
+              </tr>
+              <tr>
+                <td colspan="6" style="text-align: center; font-weight: bold; border-top: 1px solid #000; padding-top: 5px;">
+                  FORMA DE PAGO: ${escapeHtml(data.tipoPago || 'No especificado')}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        ${generateTransportesHtml(data.transportesAsignados || [], data.fechaRecepcion)}
 
         <div class="info-section">
           <h2>OBSERVACIONES</h2>
-          <p>${escapeHtml(data.observaciones || 'Sin observaciones')}</p>
+          <div style="border: 1px solid #000; padding: 8px; border-radius: 5px; background: white; margin-top: 5px;">
+            <p style="margin: 0;">${escapeHtml(data.observaciones || 'Sin observaciones')}</p>
+          </div>
+        </div>
+
+        <div class="facturacion-card">
+          <h3>DATOS DE FACTURACIÓN</h3>
+          <p><strong>RUC:</strong> ${escapeHtml(data.empresa?.ruc || '')}</p>
+          <p><strong>Razón Social:</strong> ${escapeHtml(data.empresa?.razonSocial || '')}</p>
+          <p><strong>Enviar factura PDF, Archivo XML y guía de remisión al correo:</strong> ${escapeHtml(data.empresa?.email || '')}</p>
         </div>
 
         <div class="footer">
