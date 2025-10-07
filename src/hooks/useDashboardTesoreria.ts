@@ -1,47 +1,71 @@
-/**
- * HOOK DASHBOARD TESORERÍA - GESTIÓN DE ESTADO CENTRALIZADA
- * =========================================================
- * 
- * 🎯 PROPÓSITO:
- * Hook personalizado para manejar todo el estado y lógica del dashboard de tesorería.
- * Centraliza la gestión de datos de pagos urgentes y pendientes con auto-refresh.
- * 
- * 📊 FUNCIONALIDADES:
- * - Fetch automático de datos al montar
- * - Auto-refresh cada 5 minutos
- * - Refresh manual con botón
- * - Filtrado inteligente por tipo de pago
- * - Cálculos de estadísticas en tiempo real
- * - Manejo de estados de carga y error
- * 
- * 🔄 FLUJO DE DATOS:
- * 1. fetchDashboard() → llama a getPagosPorEstado()
- * 2. Actualiza estado con respuesta del backend
- * 3. Funciones helper procesan y filtran datos
- * 4. Componente consume datos ya procesados
- * 
- * 📈 DATOS PROCESADOS:
- * - transportesPendientes: Fletes pendientes de pago
- * - transportesUrgentes: Fletes urgentes de pago  
- * - ventasPrivadasPendientes: Ventas privadas pendientes
- * - ventasPrivadasUrgentes: Ventas privadas urgentes
- * - estadisticas: Totales y montos agregados
- * 
- * ⚡ OPTIMIZACIONES:
- * - useCallback para evitar re-renders innecesarios
- * - Auto-cleanup de intervalos
- * - Manejo inteligente de errores
- * - Estados booleanos calculados para UI
- */
-
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { getPagosPorEstado, getPagosUrgentes, getPagosPendientes, getTodosPagosPorEstado, PagosPorEstadoResponse, PagosUrgentesResponse, PagoPorEstado, PagoUrgente } from '@/services/notificaciones/notificaciones.request';
+import { getPagosUrgentes, getPagosPendientes } from '@/services/treasury/treasury.request';
+
+// Interfaces para las respuestas de tesorería
+interface TransportePago {
+    id: number;
+    codigoTransporte: string;
+    montoFlete: number;
+    createdAt: Date;
+    updatedAt: Date;
+    estadoPago: string;
+    notaPago: string | null;
+    transporte?: {
+        id: number;
+        razonSocial: string;
+        ruc: string;
+    };
+    ordenProveedor: {
+        id: number;
+        codigoOp: string;
+        proveedorId: number;
+        ordenCompra: {
+            cliente: {
+                id: number;
+                razonSocial: string;
+                ruc: string;
+            };
+        };
+    };
+}
+
+interface OrdenProveedorPago {
+    id: number;
+    codigoOp: string;
+    proveedor?: {
+        id: number;
+        razonSocial: string;
+        ruc: string;
+    };
+    ordenCompra: {
+        id: number;
+        codigoVenta: string;
+        cliente: {
+            id: number;
+            razonSocial: string;
+            ruc: string;
+        };
+    };
+    montoTotal?: number;
+    createdAt: Date;
+    updatedAt: Date;
+    estadoOp: string;
+    notaPago: string | null;
+}
+
+interface PagosResponse {
+    success: boolean;
+    data: {
+        transportes: TransportePago[];
+        ordenesProveedor: OrdenProveedorPago[];
+    };
+    tiempoRespuesta: number;
+};
 
 export const useDashboardTesoreria = () => {
     const [loading, setLoading] = useState(false);
-    const [data, setData] = useState<PagosPorEstadoResponse | null>(null);
-    const [pagosUrgentesData, setPagosUrgentesData] = useState<PagosUrgentesResponse | null>(null);
-    const [pagosPendientesData, setPagosPendientesData] = useState<PagosUrgentesResponse | null>(null);
+    const [pagosUrgentesData, setPagosUrgentesData] = useState<PagosResponse | null>(null);
+    const [pagosPendientesData, setPagosPendientesData] = useState<PagosResponse | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
 
@@ -50,33 +74,18 @@ export const useDashboardTesoreria = () => {
         setError(null);
 
         try {
-            const response = await getTodosPagosPorEstado();
-            setData(response);
+            // Cargar tanto pagos urgentes como pendientes
+            const [urgentesResponse, pendientesResponse] = await Promise.all([
+                getPagosUrgentes(),
+                getPagosPendientes()
+            ]);
+
+            setPagosUrgentesData(urgentesResponse);
+            setPagosPendientesData(pendientesResponse);
             setLastUpdate(new Date());
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Error al cargar dashboard');
             console.error('Error en dashboard tesorería:', err);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
-
-    // Función para cargar pagos por estado específico usando el nuevo endpoint
-    const fetchPagosPorEstado = useCallback(async (estado: 'URGENTE' | 'PENDIENTE') => {
-        setLoading(true);
-        setError(null);
-
-        try {
-            const response = await getPagosPorEstado(estado);
-            if (estado === 'URGENTE') {
-                setPagosUrgentesData(response);
-            } else {
-                setPagosPendientesData(response);
-            }
-            setLastUpdate(new Date());
-        } catch (err) {
-            setError(err instanceof Error ? err.message : `Error al cargar pagos ${estado.toLowerCase()}`);
-            console.error(`Error al cargar pagos ${estado}:`, err);
         } finally {
             setLoading(false);
         }
@@ -131,21 +140,6 @@ export const useDashboardTesoreria = () => {
         fetchPagosPendientes();
     }, [fetchPagosPendientes]);
 
-    // Función para refrescar pagos por estado usando el nuevo endpoint
-    const refreshPagosPorEstado = useCallback((estado: 'URGENTE' | 'PENDIENTE') => {
-        fetchPagosPorEstado(estado);
-    }, [fetchPagosPorEstado]);
-
-    // Función para refrescar urgentes optimizados
-    const refreshPagosUrgentesOptimizados = useCallback(() => {
-        fetchPagosPorEstado('URGENTE');
-    }, [fetchPagosPorEstado]);
-
-    // Función para refrescar pendientes optimizados
-    const refreshPagosPendientesOptimizados = useCallback(() => {
-        fetchPagosPorEstado('PENDIENTE');
-    }, [fetchPagosPorEstado]);
-
     // Cargar datos al montar el componente
     useEffect(() => {
         fetchDashboard();
@@ -164,85 +158,29 @@ export const useDashboardTesoreria = () => {
         return () => clearInterval(interval);
     }, [fetchDashboard, loading]);
 
-    // Memoización de datos filtrados para evitar recálculos innecesarios
-    const transportesPendientes = useMemo((): PagoPorEstado[] => {
-        return data?.data.pendientes.filter(pago => pago.tipo === 'TRANSPORTE') || [];
-    }, [data]);
-
-    const transportesUrgentes = useMemo((): PagoPorEstado[] => {
-        return data?.data.urgentes.filter(pago => pago.tipo === 'TRANSPORTE') || [];
-    }, [data]);
-
-    const ventasPrivadasPendientes = useMemo((): PagoPorEstado[] => {
-        return data?.data.pendientes.filter(pago => pago.tipo === 'VENTA_PRIVADA') || [];
-    }, [data]);
-
-    const ventasPrivadasUrgentes = useMemo((): PagoPorEstado[] => {
-        return data?.data.urgentes.filter(pago => pago.tipo === 'VENTA_PRIVADA') || [];
-    }, [data]);
-
-    // Memoización de datos de pagos urgentes
-    const transportesUrgentesDirectos = useMemo((): PagoUrgente[] => {
+    // Datos calculados para transportes urgentes
+    const transportesUrgentes = useMemo((): TransportePago[] => {
         return pagosUrgentesData?.data.transportes || [];
     }, [pagosUrgentesData]);
 
-    const ordenesProveedorUrgentes = useMemo((): PagoUrgente[] => {
-        return pagosUrgentesData?.data.ventasPrivadas || [];
+    // Datos calculados para órdenes de proveedor urgentes
+    const ordenesProveedorUrgentes = useMemo((): OrdenProveedorPago[] => {
+        return pagosUrgentesData?.data.ordenesProveedor || [];
     }, [pagosUrgentesData]);
 
-    // Memoización de datos de pagos pendientes
-    const transportesPendientesDirectos = useMemo((): PagoUrgente[] => {
+    // Datos calculados para transportes pendientes
+    const transportesPendientes = useMemo((): TransportePago[] => {
         return pagosPendientesData?.data.transportes || [];
     }, [pagosPendientesData]);
 
-    const ordenesProveedorPendientes = useMemo((): PagoUrgente[] => {
-        return pagosPendientesData?.data.ventasPrivadas || [];
+    // Datos calculados para órdenes de proveedor pendientes
+    const ordenesProveedorPendientes = useMemo((): OrdenProveedorPago[] => {
+        return pagosPendientesData?.data.ordenesProveedor || [];
     }, [pagosPendientesData]);
-
-    // Estadísticas de pagos urgentes
-    const estadisticasUrgentes = useMemo(() => {
-        if (!pagosUrgentesData?.estadisticas) return null;
-
-        return {
-            totalUrgentes: pagosUrgentesData.estadisticas.totalUrgentes,
-            totalTransportes: pagosUrgentesData.estadisticas.totalTransportes,
-            totalOrdenesProveedor: pagosUrgentesData.estadisticas.totalVentas,
-            montoTotal: pagosUrgentesData.estadisticas.montoTotal,
-            tiempoRespuesta: pagosUrgentesData.tiempoRespuesta || 0,
-        };
-    }, [pagosUrgentesData]);
-
-    // Estadísticas de pagos pendientes
-    const estadisticasPendientes = useMemo(() => {
-        if (!pagosPendientesData?.estadisticas) return null;
-
-        return {
-            totalPendientes: pagosPendientesData.estadisticas.totalUrgentes,
-            totalTransportes: pagosPendientesData.estadisticas.totalTransportes,
-            totalOrdenesProveedor: pagosPendientesData.estadisticas.totalVentas,
-            montoTotal: pagosPendientesData.estadisticas.montoTotal,
-            tiempoRespuesta: pagosPendientesData.tiempoRespuesta || 0,
-        };
-    }, [pagosPendientesData]);
-
-    // Memoización de estadísticas calculadas
-    const estadisticasCalculadas = useMemo(() => {
-        const totalPagos = (data?.estadisticas.pendientes.total || 0) + (data?.estadisticas.urgentes.total || 0);
-        const montoTotal = (data?.estadisticas.pendientes.montoTotal || 0) + (data?.estadisticas.urgentes.montoTotal || 0);
-
-        return {
-            totalPagos,
-            montoTotal,
-            hasData: !!data,
-            hasPendientes: (data?.estadisticas.pendientes.total || 0) > 0,
-            hasUrgentes: (data?.estadisticas.urgentes.total || 0) > 0,
-        };
-    }, [data]);
 
     return {
         // Estados principales
         loading,
-        data,
         pagosUrgentesData,
         pagosPendientesData,
         error,
@@ -252,35 +190,11 @@ export const useDashboardTesoreria = () => {
         refresh,
         refreshPagosUrgentes,
         refreshPagosPendientes,
-        refreshPagosPorEstado,
-        refreshPagosUrgentesOptimizados,
-        refreshPagosPendientesOptimizados,
-        fetchPagosPorEstado,
 
         // Datos procesados (memoizados)
         transportesPendientes,
         transportesUrgentes,
-        ventasPrivadasPendientes,
-        ventasPrivadasUrgentes,
-
-        // Datos de pagos urgentes directos
-        transportesUrgentesDirectos,
         ordenesProveedorUrgentes,
-        estadisticasUrgentes,
-
-        // Datos de pagos pendientes directos
-        transportesPendientesDirectos,
-        ordenesProveedorPendientes,
-        estadisticasPendientes,
-
-        // Estadísticas (memoizadas)
-        estadisticas: data?.estadisticas,
-        totalPagos: estadisticasCalculadas.totalPagos,
-        montoTotal: estadisticasCalculadas.montoTotal,
-
-        // Estados booleanos útiles (memoizados)
-        hasData: estadisticasCalculadas.hasData,
-        hasPendientes: estadisticasCalculadas.hasPendientes,
-        hasUrgentes: estadisticasCalculadas.hasUrgentes,
+        ordenesProveedorPendientes
     };
 };

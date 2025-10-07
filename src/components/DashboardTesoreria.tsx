@@ -4,7 +4,6 @@ import {
     CardContent,
     Tabs,
     Tab,
-    Button,
     Chip,
     Table,
     TableBody,
@@ -17,14 +16,20 @@ import {
     Box,
     Alert,
     CircularProgress,
+    TextField,
+    InputAdornment,
+    TableSortLabel,
+    IconButton,
+    Tooltip,
 } from '@mui/material';
 import {
-    Refresh as RefreshIcon,
     AttachMoney as MoneyIcon,
     Warning as WarningIcon,
     Schedule as ClockIcon,
-    TrendingUp as TrendingUpIcon,
+    Search as SearchIcon,
+    Refresh as RefreshIcon,
 } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import { useDashboardTesoreria } from '@/hooks/useDashboardTesoreria';
 import { PagoPorEstado } from '@/services/notificaciones/notificaciones.request';
 import { formatCurrency } from '@/utils/functions';
@@ -74,8 +79,18 @@ const PaymentTableRow = React.memo<{
     pago: PagoPorEstado;
     formatCurrency: (amount: number) => string;
     formatDate: (date: Date | null) => string;
-}>(({ pago, formatCurrency, formatDate }) => (
-    <TableRow hover>
+    onRowClick: (pago: PagoPorEstado) => void;
+}>(({ pago, formatCurrency, formatDate, onRowClick }) => (
+    <TableRow
+        hover
+        onClick={() => onRowClick(pago)}
+        sx={{
+            cursor: 'pointer',
+            '&:hover': {
+                backgroundColor: 'rgba(0, 0, 0, 0.04)',
+            }
+        }}
+    >
         <TableCell>
             <Typography variant="body2" fontFamily="monospace">
                 {pago.codigo}
@@ -83,9 +98,21 @@ const PaymentTableRow = React.memo<{
         </TableCell>
         <TableCell>
             <Chip
-                label={pago.tipo === 'TRANSPORTE' ? 'Transporte' : 'Venta Privada'}
-                color={pago.tipo === 'TRANSPORTE' ? 'default' : 'primary'}
+                label={pago.tipo === 'TRANSPORTE' ? 'Transporte' : 'Orden Proveedor'}
+                color={pago.tipo === 'TRANSPORTE' ? 'info' : 'success'}
                 size="small"
+                sx={{
+                    fontWeight: 600,
+                    ...(pago.tipo === 'TRANSPORTE' ? {
+                        backgroundColor: '#0ea5e9',
+                        color: 'white',
+                        '&:hover': { backgroundColor: '#0284c7' }
+                    } : {
+                        backgroundColor: '#10b981',
+                        color: 'white',
+                        '&:hover': { backgroundColor: '#059669' }
+                    })
+                }}
             />
         </TableCell>
         <TableCell>
@@ -93,9 +120,14 @@ const PaymentTableRow = React.memo<{
                 <Typography variant="body2" fontWeight="medium">
                     {pago.cliente}
                 </Typography>
-                {pago.transporteRazonSocial && (
+                {pago.tipo === 'TRANSPORTE' && pago.transporteRuc && (
                     <Typography variant="caption" color="textSecondary">
-                        {pago.transporteRazonSocial}
+                        RUC: {pago.transporteRuc}
+                    </Typography>
+                )}
+                {pago.tipo === 'OP' && pago.proveedorRuc && (
+                    <Typography variant="caption" color="textSecondary">
+                        RUC: {pago.proveedorRuc}
                     </Typography>
                 )}
             </Box>
@@ -103,11 +135,6 @@ const PaymentTableRow = React.memo<{
         <TableCell>
             <Typography variant="body2" fontFamily="monospace">
                 {formatCurrency(pago.monto)}
-            </Typography>
-        </TableCell>
-        <TableCell>
-            <Typography variant="body2">
-                {formatDate(pago.fechaVencimiento)}
             </Typography>
         </TableCell>
         <TableCell>
@@ -141,7 +168,49 @@ const PaymentTable = React.memo<{
     tipo: 'urgentes' | 'pendientes';
     formatCurrency: (amount: number) => string;
     formatDate: (date: Date | null) => string;
-}>(({ pagos, tipo, formatCurrency, formatDate }) => {
+    onRowClick: (pago: PagoPorEstado) => void;
+    onRefresh: () => void;
+    isRefreshing: boolean;
+}>(({ pagos, tipo, formatCurrency, formatDate, onRowClick, onRefresh, isRefreshing }) => {
+    const [searchTerm, setSearchTerm] = useState('');
+    const [orderBy, setOrderBy] = useState<'codigo' | 'cliente' | 'monto' | 'tipo'>('codigo');
+    const [order, setOrder] = useState<'asc' | 'desc'>('asc');
+
+    const handleRequestSort = (property: 'codigo' | 'cliente' | 'monto' | 'tipo') => {
+        const isAsc = orderBy === property && order === 'asc';
+        setOrder(isAsc ? 'desc' : 'asc');
+        setOrderBy(property);
+    };
+
+    const filteredAndSortedPagos = useMemo(() => {
+        let filtered = pagos.filter(pago =>
+            pago.codigo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            pago.cliente.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (pago.notaPago && pago.notaPago.toLowerCase().includes(searchTerm.toLowerCase()))
+        );
+
+        filtered.sort((a, b) => {
+            let comparison = 0;
+            switch (orderBy) {
+                case 'codigo':
+                    comparison = a.codigo.localeCompare(b.codigo);
+                    break;
+                case 'cliente':
+                    comparison = a.cliente.localeCompare(b.cliente);
+                    break;
+                case 'monto':
+                    comparison = a.monto - b.monto;
+                    break;
+                case 'tipo':
+                    comparison = a.tipo.localeCompare(b.tipo);
+                    break;
+            }
+            return order === 'asc' ? comparison : -comparison;
+        });
+
+        return filtered;
+    }, [pagos, searchTerm, orderBy, order]);
+
     if (pagos.length === 0) {
         return (
             <Box sx={{ textAlign: 'center', py: 8 }}>
@@ -156,57 +225,135 @@ const PaymentTable = React.memo<{
     }
 
     return (
-        <TableContainer component={Paper} variant="outlined" sx={{ maxHeight: 600 }}>
-            <Table stickyHeader>
-                <TableHead>
-                    <TableRow>
-                        <TableCell><strong>Código</strong></TableCell>
-                        <TableCell><strong>Tipo</strong></TableCell>
-                        <TableCell><strong>Cliente/Transporte</strong></TableCell>
-                        <TableCell><strong>Monto</strong></TableCell>
-                        <TableCell><strong>Fecha Vencimiento</strong></TableCell>
-                        <TableCell><strong>Estado</strong></TableCell>
-                        <TableCell><strong>Nota</strong></TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {pagos.map((pago) => (
-                        <PaymentTableRow
-                            key={`${pago.tipo}-${pago.id}`}
-                            pago={pago}
-                            formatCurrency={formatCurrency}
-                            formatDate={formatDate}
+        <Box>
+            <Box sx={{ mb: 2, display: 'flex', gap: 1, alignItems: 'center' }}>
+                <TextField
+                    size="small"
+                    placeholder="Buscar por código, cliente o nota..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    sx={{ maxWidth: 400 }}
+                    InputProps={{
+                        startAdornment: (
+                            <InputAdornment position="start">
+                                <SearchIcon />
+                            </InputAdornment>
+                        ),
+                    }}
+                />
+                <Tooltip title="Actualizar datos">
+                    <IconButton
+                        onClick={onRefresh}
+                        disabled={isRefreshing}
+                        color="primary"
+                        sx={{
+                            minWidth: 40,
+                            height: 40,
+                        }}
+                    >
+                        <RefreshIcon
+                            sx={{
+                                animation: isRefreshing ? 'spin 1s linear infinite' : 'none',
+                                '@keyframes spin': {
+                                    '0%': {
+                                        transform: 'rotate(0deg)',
+                                    },
+                                    '100%': {
+                                        transform: 'rotate(360deg)',
+                                    },
+                                },
+                            }}
                         />
-                    ))}
-                </TableBody>
-            </Table>
-        </TableContainer>
+                    </IconButton>
+                </Tooltip>
+            </Box>
+            <TableContainer component={Paper} variant="outlined" sx={{ maxHeight: 600 }}>
+                <Table stickyHeader>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>
+                                <TableSortLabel
+                                    active={orderBy === 'codigo'}
+                                    direction={orderBy === 'codigo' ? order : 'asc'}
+                                    onClick={() => handleRequestSort('codigo')}
+                                >
+                                    <strong>Código</strong>
+                                </TableSortLabel>
+                            </TableCell>
+                            <TableCell>
+                                <TableSortLabel
+                                    active={orderBy === 'tipo'}
+                                    direction={orderBy === 'tipo' ? order : 'asc'}
+                                    onClick={() => handleRequestSort('tipo')}
+                                >
+                                    <strong>Tipo</strong>
+                                </TableSortLabel>
+                            </TableCell>
+                            <TableCell>
+                                <TableSortLabel
+                                    active={orderBy === 'cliente'}
+                                    direction={orderBy === 'cliente' ? order : 'asc'}
+                                    onClick={() => handleRequestSort('cliente')}
+                                >
+                                    <strong>Proveedor/Transporte</strong>
+                                </TableSortLabel>
+                            </TableCell>
+                            <TableCell>
+                                <TableSortLabel
+                                    active={orderBy === 'monto'}
+                                    direction={orderBy === 'monto' ? order : 'asc'}
+                                    onClick={() => handleRequestSort('monto')}
+                                >
+                                    <strong>Monto</strong>
+                                </TableSortLabel>
+                            </TableCell>
+                            <TableCell><strong>Estado</strong></TableCell>
+                            <TableCell><strong>Nota</strong></TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {filteredAndSortedPagos.map((pago) => (
+                            <PaymentTableRow
+                                key={`${pago.tipo}-${pago.id}`}
+                                pago={pago}
+                                formatCurrency={formatCurrency}
+                                formatDate={formatDate}
+                                onRowClick={onRowClick}
+                            />
+                        ))}
+                    </TableBody>
+                </Table>
+            </TableContainer>
+            <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="body2" color="textSecondary">
+                    Mostrando {filteredAndSortedPagos.length} de {pagos.length} pagos
+                </Typography>
+            </Box>
+        </Box>
     );
 });
 
 PaymentTable.displayName = 'PaymentTable';
 
 const DashboardTesoreria: React.FC = () => {
+    const navigate = useNavigate();
     const {
         loading,
         error,
-        refresh,
-        refreshPagosUrgentes,
-        refreshPagosPendientes,
         transportesPendientes,
         transportesUrgentes,
-        ventasPrivadasPendientes,
-        ventasPrivadasUrgentes,
-        transportesUrgentesDirectos,
         ordenesProveedorUrgentes,
-        estadisticasUrgentes,
-        transportesPendientesDirectos,
         ordenesProveedorPendientes,
-        estadisticasPendientes,
-        hasData,
+        refreshPagosUrgentes,
+        refreshPagosPendientes,
     } = useDashboardTesoreria();
 
     const [activeTab, setActiveTab] = useState<number>(0);
+    const [isRefreshing, setIsRefreshing] = useState(false);
+
+    const handleRowClick = useCallback((pago: PagoPorEstado) => {
+        navigate(`/provider-orders/${pago.id}`);
+    }, [navigate]);
 
     const formatDate = useCallback((date: Date | null): string => {
         if (!date) return 'Sin fecha';
@@ -217,43 +364,81 @@ const DashboardTesoreria: React.FC = () => {
         }).format(new Date(date));
     }, []);
 
-    // Memoización de datos combinados para las tabs
-    const tabsData = useMemo(() => ({
-        urgentes: [...transportesUrgentes, ...ventasPrivadasUrgentes],
-        pendientes: [...transportesPendientes, ...ventasPrivadasPendientes],
-        urgentesOptimizados: {
-            transportes: transportesUrgentesDirectos,
-            ordenesProveedor: ordenesProveedorUrgentes,
-            estadisticas: estadisticasUrgentes,
-        },
-        pendientesOptimizados: {
-            transportes: transportesPendientesDirectos,
-            ordenesProveedor: ordenesProveedorPendientes,
-            estadisticas: estadisticasPendientes,
-        },
-    }), [transportesUrgentes, ventasPrivadasUrgentes, transportesPendientes, ventasPrivadasPendientes, transportesUrgentesDirectos, ordenesProveedorUrgentes, estadisticasUrgentes, transportesPendientesDirectos, ordenesProveedorPendientes, estadisticasPendientes]);
+    // Transformar datos de tesorería al formato PagoPorEstado
+    const transformTransportesToPagoPorEstado = useCallback((transportes: any[], estado: 'URGENTE' | 'PENDIENTE'): PagoPorEstado[] => {
+        return transportes.map(transporte => ({
+            id: transporte.id,
+            tipo: 'TRANSPORTE' as const,
+            codigo: transporte.codigoTransporte,
+            cliente: transporte.transporte?.razonSocial || 'Sin transporte',
+            transporteRazonSocial: transporte.transporte?.razonSocial,
+            transporteRuc: transporte.transporte?.ruc,
+            monto: transporte.montoFlete,
+            fechaVencimiento: null,
+            estadoPago: estado,
+            notaPago: transporte.notaPago,
+            fechaCreacion: transporte.createdAt,
+            grt: transporte.ordenProveedor?.ordenCompra?.codigo,
+            region: transporte.ordenProveedor?.ordenCompra?.cliente?.region,
+            provincia: transporte.ordenProveedor?.ordenCompra?.cliente?.provincia,
+        }));
+    }, []);
 
-    // Handler memoizado para cambio de tab
+    const transformOrdenesProveedorToPagoPorEstado = useCallback((ordenes: any[], estado: 'URGENTE' | 'PENDIENTE'): PagoPorEstado[] => {
+        return ordenes.map(orden => ({
+            id: orden.id,
+            tipo: 'OP' as const,
+            codigo: orden.codigoOp,
+            cliente: orden.proveedor?.razonSocial || 'Sin proveedor',
+            proveedorRazonSocial: orden.proveedor?.razonSocial,
+            proveedorRuc: orden.proveedor?.ruc,
+            monto: orden.montoTotal || 0,
+            fechaVencimiento: null,
+            estadoPago: estado,
+            notaPago: orden.notaPago,
+            fechaCreacion: orden.createdAt,
+            grt: orden.ordenCompra?.codigoVenta || orden.ordenCompra?.codigo,
+            region: orden.ordenCompra?.cliente?.region,
+            provincia: orden.ordenCompra?.cliente?.provincia,
+        }));
+    }, []);
+
+    // Combinar transportes y órdenes de proveedor urgentes en una sola lista
+    const pagosUrgentesCombinados = useMemo(() => {
+        const transportes = transformTransportesToPagoPorEstado(transportesUrgentes || [], 'URGENTE');
+        const ordenesProveedor = transformOrdenesProveedorToPagoPorEstado(ordenesProveedorUrgentes || [], 'URGENTE');
+        return [...transportes, ...ordenesProveedor].sort((a, b) => {
+            // Ordenar por fecha de creación (más recientes primero)
+            return new Date(b.fechaCreacion).getTime() - new Date(a.fechaCreacion).getTime();
+        });
+    }, [transportesUrgentes, ordenesProveedorUrgentes, transformTransportesToPagoPorEstado, transformOrdenesProveedorToPagoPorEstado]);
+
+    // Combinar transportes y órdenes de proveedor pendientes en una sola lista
+    const pagosPendientesCombinados = useMemo(() => {
+        const transportes = transformTransportesToPagoPorEstado(transportesPendientes || [], 'PENDIENTE');
+        const ordenesProveedor = transformOrdenesProveedorToPagoPorEstado(ordenesProveedorPendientes || [], 'PENDIENTE');
+        return [...transportes, ...ordenesProveedor].sort((a, b) => {
+            return new Date(b.fechaCreacion).getTime() - new Date(a.fechaCreacion).getTime();
+        });
+    }, [transportesPendientes, ordenesProveedorPendientes, transformTransportesToPagoPorEstado, transformOrdenesProveedorToPagoPorEstado]);
+
     const handleTabChange = useCallback((_: React.SyntheticEvent, newValue: number) => {
         setActiveTab(newValue);
     }, []);
 
-    // Cargar pagos urgentes cuando se selecciona la tab 2
-    React.useEffect(() => {
-        if (activeTab === 2 && !tabsData.urgentesOptimizados.estadisticas) {
-            refreshPagosUrgentes();
-        }
-    }, [activeTab, tabsData.urgentesOptimizados.estadisticas, refreshPagosUrgentes]);
+    const handleRefreshUrgentes = useCallback(async () => {
+        setIsRefreshing(true);
+        await refreshPagosUrgentes();
+        setIsRefreshing(false);
+    }, [refreshPagosUrgentes]);
 
-    // Cargar pagos pendientes cuando se selecciona la tab 3
-    React.useEffect(() => {
-        if (activeTab === 3 && !tabsData.pendientesOptimizados.estadisticas) {
-            refreshPagosPendientes();
-        }
-    }, [activeTab, tabsData.pendientesOptimizados.estadisticas, refreshPagosPendientes]);
+    const handleRefreshPendientes = useCallback(async () => {
+        setIsRefreshing(true);
+        await refreshPagosPendientes();
+        setIsRefreshing(false);
+    }, [refreshPagosPendientes]);
 
-    // Estados de carga inicial
-    if (loading && !hasData) {
+    if (loading) {
         return (
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}>
                 <CircularProgress size={60} />
@@ -262,17 +447,9 @@ const DashboardTesoreria: React.FC = () => {
         );
     }
 
-    // Estado de error sin datos
-    if (error && !hasData) {
+    if (error) {
         return (
-            <Alert
-                severity="error"
-                action={
-                    <Button color="inherit" size="small" onClick={refresh}>
-                        Reintentar
-                    </Button>
-                }
-            >
+            <Alert severity="error">
                 Error al cargar el dashboard: {error}
             </Alert>
         );
@@ -280,54 +457,14 @@ const DashboardTesoreria: React.FC = () => {
 
     return (
         <Box sx={{ width: '100%' }}>
-            {/* Header con información y botón de refresh */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                 <Box>
                     <Typography variant="h4" component="h1" gutterBottom>
                         Dashboard de Tesorería
                     </Typography>
                 </Box>
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                    <Button
-                        variant="outlined"
-                        onClick={refresh}
-                        disabled={loading}
-                        startIcon={loading ? <CircularProgress size={16} /> : <RefreshIcon />}
-                    >
-                        {loading ? 'Actualizando...' : 'Actualizar Todo'}
-                    </Button>
-                    {activeTab === 0 && (
-                        <Button
-                            variant="contained"
-                            onClick={refreshPagosUrgentes}
-                            disabled={loading}
-                            startIcon={loading ? <CircularProgress size={16} /> : <TrendingUpIcon />}
-                            color="primary"
-                        >
-                            {loading ? 'Cargando...' : 'Cargar Urgentes Optimizados'}
-                        </Button>
-                    )}
-                    {activeTab === 1 && (
-                        <Button
-                            variant="contained"
-                            onClick={refreshPagosPendientes}
-                            disabled={loading}
-                            startIcon={loading ? <CircularProgress size={16} /> : <ClockIcon />}
-                            color="warning"
-                        >
-                            {loading ? 'Cargando...' : 'Cargar Pendientes Optimizados'}
-                        </Button>
-                    )}
-                </Box>
             </Box>
-            {/* Alert de error si hay datos previos */}
-            {error && hasData && (
-                <Alert severity="warning" sx={{ mb: 2 }}>
-                    Error al actualizar: {error}
-                </Alert>
-            )}
 
-            {/* Contenido principal con tabs */}
             <Card variant="outlined">
                 <Tabs
                     value={activeTab}
@@ -336,305 +473,40 @@ const DashboardTesoreria: React.FC = () => {
                     sx={{ borderBottom: 1, borderColor: 'divider' }}
                 >
                     <Tab
-                        label={`Pagos Urgentes (${transportesUrgentes?.length || 0})`}
+                        label={`Pagos Urgentes (${pagosUrgentesCombinados?.length || 0})`}
                         icon={<WarningIcon />}
                         iconPosition="start"
                     />
                     <Tab
-                        label={`Pagos Pendientes (${transportesPendientes?.length || 0})`}
+                        label={`Pagos Pendientes (${pagosPendientesCombinados?.length || 0})`}
                         icon={<ClockIcon />}
                         iconPosition="start"
                     />
                 </Tabs>
 
-                {/* Contenido de las tabs */}
                 <Box sx={{ p: 3 }}>
                     {activeTab === 0 && (
                         <PaymentTable
-                            pagos={transportesUrgentes || []}
+                            pagos={pagosUrgentesCombinados}
                             tipo="urgentes"
                             formatCurrency={formatCurrency}
                             formatDate={formatDate}
+                            onRowClick={handleRowClick}
+                            onRefresh={handleRefreshUrgentes}
+                            isRefreshing={isRefreshing}
                         />
                     )}
 
                     {activeTab === 1 && (
                         <PaymentTable
-                            pagos={transportesPendientes || []}
+                            pagos={pagosPendientesCombinados}
                             tipo="pendientes"
                             formatCurrency={formatCurrency}
                             formatDate={formatDate}
+                            onRowClick={handleRowClick}
+                            onRefresh={handleRefreshPendientes}
+                            isRefreshing={isRefreshing}
                         />
-                    )}
-
-                    {activeTab === 2 && (
-                        <Box>
-                            {/* Estadísticas de rendimiento */}
-                            {tabsData.urgentesOptimizados.estadisticas && (
-                                <Box sx={{ mb: 3 }}>
-                                    <Typography variant="h6" gutterBottom>
-                                        📊 Rendimiento de Consulta Optimizada
-                                    </Typography>
-                                    <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 3 }}>
-                                        <StatsCard
-                                            title="Tiempo de Respuesta"
-                                            value={`${tabsData.urgentesOptimizados.estadisticas.tiempoRespuesta}ms`}
-                                            icon={<TrendingUpIcon />}
-                                            color="primary"
-                                        />
-                                        <StatsCard
-                                            title="Total Urgentes"
-                                            value={tabsData.urgentesOptimizados.estadisticas.totalUrgentes}
-                                            icon={<WarningIcon />}
-                                            color="error"
-                                        />
-                                        <StatsCard
-                                            title="Transportes"
-                                            value={tabsData.urgentesOptimizados.estadisticas.totalTransportes}
-                                            icon={<MoneyIcon />}
-                                            color="warning"
-                                        />
-                                        <StatsCard
-                                            title="Órdenes Proveedor"
-                                            value={tabsData.urgentesOptimizados.estadisticas.totalOrdenesProveedor}
-                                            icon={<ClockIcon />}
-                                            color="primary"
-                                        />
-                                    </Box>
-                                </Box>
-                            )}
-
-                            {/* Transportes Urgentes */}
-                            <Box sx={{ mb: 4 }}>
-                                <Typography variant="h6" gutterBottom sx={{ color: 'warning.main' }}>
-                                    🚛 Transportes con Pago Urgente
-                                </Typography>
-                                {tabsData.urgentesOptimizados.transportes?.length > 0 ? (
-                                    <TableContainer component={Paper} variant="outlined" sx={{ maxHeight: 400 }}>
-                                        <Table size="small">
-                                            <TableHead>
-                                                <TableRow>
-                                                    <TableCell><strong>Código</strong></TableCell>
-                                                    <TableCell><strong>Cliente</strong></TableCell>
-                                                    <TableCell><strong>Monto Flete</strong></TableCell>
-                                                    <TableCell><strong>Nota Pago</strong></TableCell>
-                                                </TableRow>
-                                            </TableHead>
-                                            <TableBody>
-                                                {tabsData.urgentesOptimizados.transportes.map((transporte) => (
-                                                    <TableRow key={transporte.id} hover>
-                                                        <TableCell>
-                                                            <Typography variant="body2" fontFamily="monospace">
-                                                                {transporte.descripcion}
-                                                            </Typography>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <Typography variant="body2">
-                                                                {transporte.entidad.nombre}
-                                                            </Typography>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <Typography variant="body2" fontFamily="monospace">
-                                                                {formatCurrency(transporte.monto || 0)}
-                                                            </Typography>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <Typography variant="body2">
-                                                                {transporte.notaPago || 'Sin nota'}
-                                                            </Typography>
-                                                        </TableCell>
-                                                    </TableRow>
-                                                ))}
-                                            </TableBody>
-                                        </Table>
-                                    </TableContainer>
-                                ) : (
-                                    <Typography color="textSecondary">
-                                        No hay transportes con pago urgente
-                                    </Typography>
-                                )}
-                            </Box>
-
-                            {/* Órdenes de Proveedor Urgentes */}
-                            <Box>
-                                <Typography variant="h6" gutterBottom sx={{ color: 'error.main' }}>
-                                    📋 Órdenes de Proveedor con Pago Urgente
-                                </Typography>
-                                {tabsData.urgentesOptimizados.ordenesProveedor?.length > 0 ? (
-                                    <TableContainer component={Paper} variant="outlined" sx={{ maxHeight: 400 }}>
-                                        <Table size="small">
-                                            <TableHead>
-                                                <TableRow>
-                                                    <TableCell><strong>Código OP</strong></TableCell>
-                                                    <TableCell><strong>Cliente</strong></TableCell>
-                                                    <TableCell><strong>Nota Pago</strong></TableCell>
-                                                </TableRow>
-                                            </TableHead>
-                                            <TableBody>
-                                                {tabsData.urgentesOptimizados.ordenesProveedor.map((op) => (
-                                                    <TableRow key={op.id} hover>
-                                                        <TableCell>
-                                                            <Typography variant="body2" fontFamily="monospace">
-                                                                {op.descripcion}
-                                                            </Typography>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <Typography variant="body2">
-                                                                {op.entidad.nombre}
-                                                            </Typography>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <Typography variant="body2">
-                                                                {op.notaPago || 'Sin nota'}
-                                                            </Typography>
-                                                        </TableCell>
-                                                    </TableRow>
-                                                ))}
-                                            </TableBody>
-                                        </Table>
-                                    </TableContainer>
-                                ) : (
-                                    <Typography color="textSecondary">
-                                        No hay órdenes de proveedor con pago urgente
-                                    </Typography>
-                                )}
-                            </Box>
-                        </Box>
-                    )}
-
-                    {activeTab === 3 && (
-                        <Box>
-                            {/* Estadísticas de rendimiento para pendientes */}
-                            {tabsData.pendientesOptimizados.estadisticas && (
-                                <Box sx={{ mb: 3 }}>
-                                    <Typography variant="h6" gutterBottom>
-                                        📊 Rendimiento de Consulta Optimizada - Pendientes
-                                    </Typography>
-                                    <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 3 }}>
-                                        <StatsCard
-                                            title="Tiempo de Respuesta"
-                                            value={`${tabsData.pendientesOptimizados.estadisticas.tiempoRespuesta}ms`}
-                                            icon={<TrendingUpIcon />}
-                                            color="primary"
-                                        />
-                                        <StatsCard
-                                            title="Total Pendientes"
-                                            value={tabsData.pendientesOptimizados.estadisticas.totalPendientes}
-                                            icon={<ClockIcon />}
-                                            color="warning"
-                                        />
-                                        <StatsCard
-                                            title="Transportes"
-                                            value={tabsData.pendientesOptimizados.estadisticas.totalTransportes}
-                                            icon={<MoneyIcon />}
-                                            color="primary"
-                                        />
-                                        <StatsCard
-                                            title="Órdenes Proveedor"
-                                            value={tabsData.pendientesOptimizados.estadisticas.totalOrdenesProveedor}
-                                            icon={<ClockIcon />}
-                                            color="warning"
-                                        />
-                                    </Box>
-                                </Box>
-                            )}
-
-                            {/* Transportes Pendientes */}
-                            <Box sx={{ mb: 4 }}>
-                                <Typography variant="h6" gutterBottom sx={{ color: 'warning.main' }}>
-                                    🚛 Transportes con Pago Pendiente
-                                </Typography>
-                                {tabsData.pendientesOptimizados.transportes?.length > 0 ? (
-                                    <TableContainer component={Paper} variant="outlined" sx={{ maxHeight: 400 }}>
-                                        <Table size="small">
-                                            <TableHead>
-                                                <TableRow>
-                                                    <TableCell><strong>Código</strong></TableCell>
-                                                    <TableCell><strong>Cliente</strong></TableCell>
-                                                    <TableCell><strong>Monto Flete</strong></TableCell>
-                                                    <TableCell><strong>Nota Pago</strong></TableCell>
-                                                </TableRow>
-                                            </TableHead>
-                                            <TableBody>
-                                                {tabsData.pendientesOptimizados.transportes.map((transporte) => (
-                                                    <TableRow key={transporte.id} hover>
-                                                        <TableCell>
-                                                            <Typography variant="body2" fontFamily="monospace">
-                                                                {transporte.descripcion}
-                                                            </Typography>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <Typography variant="body2">
-                                                                {transporte.entidad.nombre}
-                                                            </Typography>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <Typography variant="body2" fontFamily="monospace">
-                                                                {formatCurrency(transporte.monto || 0)}
-                                                            </Typography>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <Typography variant="body2">
-                                                                {transporte.notaPago || 'Sin nota'}
-                                                            </Typography>
-                                                        </TableCell>
-                                                    </TableRow>
-                                                ))}
-                                            </TableBody>
-                                        </Table>
-                                    </TableContainer>
-                                ) : (
-                                    <Typography color="textSecondary">
-                                        No hay transportes con pago pendiente
-                                    </Typography>
-                                )}
-                            </Box>
-
-                            {/* Órdenes de Proveedor Pendientes */}
-                            <Box>
-                                <Typography variant="h6" gutterBottom sx={{ color: 'secondary.main' }}>
-                                    📋 Órdenes de Proveedor con Pago Pendiente
-                                </Typography>
-                                {tabsData.pendientesOptimizados.ordenesProveedor?.length > 0 ? (
-                                    <TableContainer component={Paper} variant="outlined" sx={{ maxHeight: 400 }}>
-                                        <Table size="small">
-                                            <TableHead>
-                                                <TableRow>
-                                                    <TableCell><strong>Código OP</strong></TableCell>
-                                                    <TableCell><strong>Cliente</strong></TableCell>
-                                                    <TableCell><strong>Nota Pago</strong></TableCell>
-                                                </TableRow>
-                                            </TableHead>
-                                            <TableBody>
-                                                {tabsData.pendientesOptimizados.ordenesProveedor.map((op) => (
-                                                    <TableRow key={op.id} hover>
-                                                        <TableCell>
-                                                            <Typography variant="body2" fontFamily="monospace">
-                                                                {op.descripcion}
-                                                            </Typography>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <Typography variant="body2">
-                                                                {op.entidad.nombre}
-                                                            </Typography>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <Typography variant="body2">
-                                                                {op.notaPago || 'Sin nota'}
-                                                            </Typography>
-                                                        </TableCell>
-                                                    </TableRow>
-                                                ))}
-                                            </TableBody>
-                                        </Table>
-                                    </TableContainer>
-                                ) : (
-                                    <Typography color="textSecondary">
-                                        No hay órdenes de proveedor con pago pendiente
-                                    </Typography>
-                                )}
-                            </Box>
-                        </Box>
                     )}
                 </Box>
             </Card>

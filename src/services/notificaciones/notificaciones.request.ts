@@ -21,12 +21,15 @@ export interface PagoUrgente {
 // Tipos para el dashboard de tesorería
 export interface PagoPorEstado {
     id: number;
-    tipo: 'TRANSPORTE' | 'VENTA_PRIVADA';
+    tipo: 'TRANSPORTE' | 'OP';
     codigo: string;
     cliente: string;
     transporteRazonSocial?: string;
+    transporteRuc?: string;
+    proveedorRazonSocial?: string;
+    proveedorRuc?: string;
     monto: number;
-    fechaVencimiento: Date | null;
+    fechaVencimiento?: Date | null;
     estadoPago: 'URGENTE' | 'PENDIENTE';
     notaPago: string | null;
     fechaCreacion: Date;
@@ -34,7 +37,6 @@ export interface PagoPorEstado {
     region?: string;
     provincia?: string;
     distrito?: string;
-    descripcion: string;
     documentoPago?: string;
     documentoCotizacion?: string;
 }

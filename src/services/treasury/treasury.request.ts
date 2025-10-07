@@ -7,7 +7,7 @@ export const getTreasuryTrackings = async () => {
   try {
     const response = await apiClient.get('/ordenes-compra');
     const ordenesCompra = response.data;
-    
+
     // Transformamos las OCs en datos de tesorería
     const treasuryData = ordenesCompra.map((oc: any) => ({
       id: oc.id,
@@ -27,7 +27,7 @@ export const getTreasuryTrackings = async () => {
       metodoPago: oc.metodoPago || '',
       numeroTransaccion: oc.numeroTransaccion || '',
     }));
-    
+
     return treasuryData;
   } catch (error) {
     console.error('Error al obtener datos de tesorería:', error);
@@ -64,3 +64,25 @@ export const updateTreasuryPayment = async (ordenCompraId: number, paymentData: 
     throw error;
   }
 };
+
+// Funciones para dashboard de tesorería
+export const getPagosUrgentes = async () => {
+  try {
+    const response = await apiClient.get('/tesoreria/pagos-urgentes');
+    return response.data;
+  } catch (error) {
+    console.error('Error al obtener pagos urgentes:', error);
+    throw error;
+  }
+};
+
+export const getPagosPendientes = async () => {
+  try {
+    const response = await apiClient.get('/tesoreria/pagos-pendientes');
+    return response.data;
+  } catch (error) {
+    console.error('Error al obtener pagos pendientes:', error);
+    throw error;
+  }
+};
+
