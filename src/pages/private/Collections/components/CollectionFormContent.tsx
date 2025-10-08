@@ -1841,7 +1841,7 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                     <Typography variant="h5" sx={{ fontWeight: 600, color: '#1976d2', mt: 0.5 }}>
                       {promedioLocal !== null
                         ? `${Math.round(promedioLocal)} días`
-                        : 'No disponible'
+                        : '0'
                       }
                     </Typography>
                     <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
