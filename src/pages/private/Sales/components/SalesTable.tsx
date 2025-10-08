@@ -66,28 +66,13 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onReload, isPriv
   }, [data]);
 
   const getStatusBackgroundColor = (status: string) => {
-    const statusMapping: Record<string, keyof typeof ESTADO_ROL_COLORS> = {
-      completo: 'COMPLETADO',
-      PENDIENTE: 'EN_PROCESO',
-      pendiente: 'PENDIENTE',
-      anulado: 'CANCELADO',
-    };
-
-    const estadoRolKey = statusMapping[status] || 'PENDIENTE';
-    return ESTADO_ROL_COLORS[estadoRolKey];
+    const normalizedStatus = status?.toUpperCase() as keyof typeof ESTADO_ROL_COLORS;
+    return ESTADO_ROL_COLORS[normalizedStatus] || ESTADO_ROL_COLORS.PENDIENTE;
   };
 
   const getStatusLabel = (status: string) => {
-    // Mapear valores del backend a EstadoRol
-    const statusMapping: Record<string, keyof typeof ESTADO_ROL_LABELS> = {
-      PENDIENTE: 'EN_PROCESO',
-      pendiente: 'PENDIENTE',
-      completo: 'COMPLETADO',
-      anulado: 'CANCELADO',
-    };
-
-    const estadoRolKey = statusMapping[status] || 'PENDIENTE';
-    return ESTADO_ROL_LABELS[estadoRolKey];
+    const normalizedStatus = status?.toUpperCase() as keyof typeof ESTADO_ROL_LABELS;
+    return ESTADO_ROL_LABELS[normalizedStatus] || ESTADO_ROL_LABELS.PENDIENTE;
   };
 
   const columns: Array<AntColumnType<any>> = [

@@ -4,31 +4,33 @@ export const EMAIL_PATTERN = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$/i;
 export const PHONE_PATTERN = /^\d+$/i;
 export const STORAGE_KEY = 'APP_MULTILIMP';
 
+export type EstadoVentaType = 'PENDIENTE' | 'COMPLETADO' | 'CANCELADO' | 'EN_PROCESO';
+
 // Estados unificados con toda la información necesaria usando HeroUI Colors
 export const ESTADOS = {
     PENDIENTE: {
-        key: 'PENDIENTE',
+        key: 'PENDIENTE' as const,
         label: 'Pendiente',
         color: heroUIColors.warning[500],
-        value: 'PENDIENTE'
+        value: 'PENDIENTE' as EstadoVentaType
     },
     COMPLETADO: {
-        key: 'COMPLETADO',
+        key: 'COMPLETADO' as const,
         label: 'Completo',
         color: heroUIColors.success[500],
-        value: 'COMPLETADO'
+        value: 'COMPLETADO' as EstadoVentaType
     },
     CANCELADO: {
-        key: 'CANCELADO',
+        key: 'CANCELADO' as const,
         label: 'Cancelado',
         color: heroUIColors.error[500],
-        value: 'CANCELADO'
+        value: 'CANCELADO' as EstadoVentaType
     },
     EN_PROCESO: {
-        key: 'EN_PROCESO',
+        key: 'EN_PROCESO' as const,
         label: 'En proceso',
         color: heroUIColors.secondary[500],
-        value: 'EN_PROCESO'
+        value: 'EN_PROCESO' as EstadoVentaType
     }
 } as const;
 

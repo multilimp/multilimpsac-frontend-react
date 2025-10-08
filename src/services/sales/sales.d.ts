@@ -3,6 +3,7 @@ import { ClientProps } from '../clients/clients';
 import { CompanyProps } from '../companies/company';
 import { ContactProps } from '../contacts/contacts';
 import { ProviderOrderProps } from '../providerOrders/providerOrders';
+import { EstadoVentaType } from '@/utils/constants';
 
 export interface SaleProps {
   id: number;
@@ -48,7 +49,7 @@ export interface SaleProps {
   cartaGarantia?: string;
   cartaAmpliacion?: string;
   etapaActual: string;
-  estadoVenta: string;
+  estadoVenta: EstadoVentaType;
   estadoActivo: boolean;
   createdAt: string;
   updatedAt: string;
