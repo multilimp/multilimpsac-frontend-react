@@ -317,8 +317,8 @@ const PagosModal: React.FC<PagosModalProps> = ({
                 ) : historialPagos && (
                     <Stack direction="row" spacing={2} mb={2}>
                         <Chip
-                            label={`Saldo Pendiente: ${formatCurrency(historialPagos.saldoTotalPendiente)}`}
-                            color={historialPagos.saldoTotalPendiente >= 0 ? 'success' : 'warning'}
+                            label={`Saldo Pendiente: ${formatCurrency(historialPagos.totalAFavor - historialPagos.totalCobrado)}`}
+                            color={(historialPagos.totalAFavor - historialPagos.totalCobrado) >= 0 ? 'success' : 'warning'}
                         />
                         <Chip
                             label={`A Favor: ${formatCurrency(historialPagos.totalAFavor)}`}
@@ -381,7 +381,6 @@ const PagosModal: React.FC<PagosModalProps> = ({
                                             <TableCell>Descripción</TableCell>
                                             <TableCell>Estado</TableCell>
                                             <TableCell align="right">Total</TableCell>
-                                            <TableCell align="right">Saldo</TableCell>
                                             <TableCell align="center">Acciones</TableCell>
                                         </TableRow>
                                     </TableHead>
@@ -399,7 +398,6 @@ const PagosModal: React.FC<PagosModalProps> = ({
                                                     />
                                                 </TableCell>
                                                 <TableCell align="right">{formatCurrency(pago.total)}</TableCell>
-                                                <TableCell align="right">{formatCurrency(pago.saldoPendiente)}</TableCell>
                                                 <TableCell align="center">
                                                     <IconButton
                                                         size="small"
@@ -547,18 +545,45 @@ const PagosModal: React.FC<PagosModalProps> = ({
                         </Stack>
 
                         <Box display="flex" justifyContent="flex-end" gap={2} mt={3}>
-                            <MuiButton onClick={handleCancel} disabled={loading}>
+                            <MuiButton
+                                variant="outlined"
+                                onClick={handleCancel}
+                                disabled={loading}
+                                sx={{
+                                    borderRadius: 2,
+                                    px: 3,
+                                    py: 1,
+                                    textTransform: 'none',
+                                    fontWeight: 600,
+                                    borderColor: '#d1d5db',
+                                    color: '#374151',
+                                    '&:hover': {
+                                        borderColor: '#9ca3af',
+                                        bgcolor: '#f9fafb'
+                                    }
+                                }}
+                            >
                                 Cancelar
                             </MuiButton>
-                            <Form.Item style={{ margin: 0 }}>
-                                <Button
-                                    type="primary"
-                                    htmlType="submit"
-                                    loading={loading}
-                                >
-                                    {editingPago ? 'Actualizar' : 'Registrar'} Pago
-                                </Button>
-                            </Form.Item>
+                            <MuiButton
+                                type="submit"
+                                variant="contained"
+                                disabled={loading}
+                                onClick={() => form.submit()}
+                                sx={{
+                                    borderRadius: 2,
+                                    px: 3,
+                                    py: 1,
+                                    textTransform: 'none',
+                                    fontWeight: 600,
+                                    bgcolor: '#6c5fbf',
+                                    '&:hover': {
+                                        bgcolor: '#5a4ea8'
+                                    }
+                                }}
+                            >
+                                {editingPago ? 'Actualizar' : 'Registrar'} Pago
+                            </MuiButton>
                         </Box>
                     </Form>
                 )}

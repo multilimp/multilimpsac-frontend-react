@@ -4,11 +4,17 @@ export const isNavItemActive = ({ path, pathname = '' }: { path: string; pathnam
   path === pathname || Boolean(path !== '/' && pathname.startsWith(path));
 
 export const formatCurrency = (value: number): string => {
-  return new Intl.NumberFormat('es-PE', {
+  const isNegative = value < 0;
+  const absoluteValue = Math.abs(value);
+
+  const formatted = new Intl.NumberFormat('es-PE', {
     style: 'currency',
     currency: 'PEN',
     minimumFractionDigits: 2,
-  }).format(value);
+  }).format(absoluteValue);
+
+  // Si es negativo, colocar el signo después del símbolo de moneda
+  return isNegative ? formatted.replace('S/', 'S/ -') : formatted;
 };
 
 export const removeAccents = (str?: string): string => {
@@ -26,20 +32,20 @@ export const filterOptions = (inputValue: string, option: any) => {
 export const parseJSON = (str?: null | string | any[] | object) => {
   try {
     if (Array.isArray(str) || (typeof str === 'object' && str !== null)) return str;
-    
+
     if (!str || str === '') return [];
-    
+
     if (typeof str === 'string') {
       // Si no parece ser JSON (no empieza con [ o {), devolver como string simple
       const trimmed = str.trim();
       if (!trimmed.startsWith('[') && !trimmed.startsWith('{')) {
         return str;
       }
-      
+
       const parsed = JSON.parse(str);
       return parsed;
     }
-    
+
     return [];
   } catch (error) {
     // Si no se puede parsear, devolver el valor original si es string

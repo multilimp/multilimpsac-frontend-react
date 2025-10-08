@@ -1,9 +1,11 @@
 import { useMemo, useState, useEffect } from 'react';
 import { Button, Checkbox, Input, Select, Card, Typography as AntTypography, Row, Col } from 'antd';
-import { Box, Stack, Typography } from '@mui/material';
-import { DeleteOutlined, CreditCardOutlined, PaperClipOutlined, CalendarOutlined, BankOutlined, FileTextOutlined, DollarOutlined } from '@ant-design/icons';
+import { Box, Stack, Typography, Button as MuiButton, Chip } from '@mui/material';
+import { DeleteOutlined, CreditCardOutlined, PaperClipOutlined, CalendarOutlined, BankOutlined, FileTextOutlined, DollarOutlined, WalletOutlined } from '@ant-design/icons';
 import DatePickerAntd from '@/components/DatePickerAnt';
 import SimpleFileUpload from '@/components/SimpleFileUpload';
+import PagosModal from '@/components/PagosModal';
+import { getHistorialPagos } from '@/services/pagos/pagos.requests';
 
 const { Title, Text } = AntTypography;
 
@@ -59,6 +61,9 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
   mode = 'edit',
   saldoFavor = 0,
   montoTotal = 0,
+  entityType,
+  entityId,
+  entityName,
   onPaymentsChange,
   onTipoPagoChange,
   onNotaPagoChange,
@@ -69,10 +74,37 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
   const [localTipoPago, setLocalTipoPago] = useState<string>(tipoPago);
   const [localNotaPago, setLocalNotaPago] = useState<string>(notaPago);
 
+  // Estado para el modal de pagos y saldo pendiente de la entidad
+  const [pagosModalOpen, setPagosModalOpen] = useState(false);
+  const [saldoEntidad, setSaldoEntidad] = useState<number>(0);
+  const [loadingSaldo, setLoadingSaldo] = useState(false);
+
   useEffect(() => {
     setLocalTipoPago(tipoPago);
     setLocalNotaPago(notaPago);
   }, [tipoPago, notaPago]);
+
+  // Cargar saldo pendiente de la entidad
+  useEffect(() => {
+    const cargarSaldoEntidad = async () => {
+      if (entityId && entityType) {
+        try {
+          setLoadingSaldo(true);
+          const tipoEntidad = entityType === 'PROVIDER' ? 'PROVEEDOR' : 'TRANSPORTE';
+          const historial = await getHistorialPagos(entityId, tipoEntidad);
+          const saldo = historial.totalAFavor - historial.totalCobrado;
+          setSaldoEntidad(saldo);
+        } catch (error) {
+          console.error('Error al cargar saldo de la entidad:', error);
+          setSaldoEntidad(0);
+        } finally {
+          setLoadingSaldo(false);
+        }
+      }
+    };
+
+    cargarSaldoEntidad();
+  }, [entityId, entityType]);
 
   // Callback inmediato para cambios en nota/tipo
   const handleTipoPagoChange = (value: string) => {
@@ -82,6 +114,32 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
   const handleNotaPagoChange = (value: string) => {
     setLocalNotaPago(value);
     onNotaPagoChange?.(value);
+  };
+
+  // Handler para abrir modal de pagos
+  const handleOpenPagosModal = () => {
+    setPagosModalOpen(true);
+  };
+
+  const handleClosePagosModal = () => {
+    setPagosModalOpen(false);
+    // Recargar saldo después de cerrar el modal
+    if (entityId && entityType) {
+      const cargarSaldoEntidad = async () => {
+        try {
+          setLoadingSaldo(true);
+          const tipoEntidad = entityType === 'PROVIDER' ? 'PROVEEDOR' : 'TRANSPORTE';
+          const historial = await getHistorialPagos(entityId, tipoEntidad);
+          const saldo = historial.totalAFavor - historial.totalCobrado;
+          setSaldoEntidad(saldo);
+        } catch (error) {
+          console.error('Error al cargar saldo de la entidad:', error);
+        } finally {
+          setLoadingSaldo(false);
+        }
+      };
+      cargarSaldoEntidad();
+    }
   };
 
   // Estado local para edición
@@ -200,6 +258,29 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
               <Typography variant="h5" sx={{ color: '#1890ff', fontWeight: 700 }}>
                 saldo a favor: S/ {saldoFavor.toFixed(2)}
               </Typography>
+            )}
+            {/* Botón de Saldo Pendiente - Para PROVIDER y TRANSPORT */}
+            {entityId && entityType && (
+              <MuiButton
+                variant="contained"
+                size="small"
+                onClick={handleOpenPagosModal}
+                disabled={loadingSaldo}
+                startIcon={<WalletOutlined />}
+                sx={{
+                  borderRadius: 2,
+                  px: 2,
+                  py: 0.5,
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  bgcolor: saldoEntidad >= 0 ? '#10b981' : '#f59e0b',
+                  '&:hover': {
+                    bgcolor: saldoEntidad >= 0 ? '#059669' : '#d97706'
+                  }
+                }}
+              >
+                {loadingSaldo ? 'Cargando...' : `Saldo: S/ ${saldoEntidad >= 0 ? '' : '-'}${Math.abs(saldoEntidad).toFixed(2)}`}
+              </MuiButton>
             )}
           </Stack>
         </Box>
@@ -595,6 +676,18 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
             Cancelar
           </Button>
         </Stack>
+      )}
+
+      {/* Modal de Gestión de Pagos */}
+      {entityId && entityType && entityName && (
+        <PagosModal
+          open={pagosModalOpen}
+          onClose={handleClosePagosModal}
+          entidadId={entityId}
+          tipoEntidad={entityType === 'PROVIDER' ? 'PROVEEDOR' : 'TRANSPORTE'}
+          entidadNombre={entityName}
+          onSuccess={handleClosePagosModal}
+        />
       )}
     </Box>
   );
