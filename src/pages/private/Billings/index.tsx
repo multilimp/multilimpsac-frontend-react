@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Tabs } from 'antd';
+import type { TabsProps } from 'antd';
 import PageContent from '@/components/PageContent';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 import BillingsTable from './components/BillingsTable';
@@ -7,8 +8,6 @@ import { Box, Typography } from '@mui/material';
 import CargosEntregaTable from '@/components/CargosEntregaTable';
 import dayjs from 'dayjs';
 import { DatePicker } from 'antd';
-
-const { TabPane } = Tabs;
 
 const BillingsPage = () => {
   const { sales, loadingSales, obtainSales } = useGlobalInformation();
@@ -18,26 +17,23 @@ const BillingsPage = () => {
   const [fechaInicio, setFechaInicio] = useState(dayjs().startOf('month').format('YYYY-MM-DD'));
   const [fechaFin, setFechaFin] = useState(dayjs().format('YYYY-MM-DD'));
 
-  return (
-    <PageContent
-      title="Facturaciones"
-      helper="GESTIÓN DE FACTURAS Y CARGOS DE ENTREGA"
-    >
-      <Tabs
-        activeKey={activeTab}
-        onChange={setActiveTab}
-        size="large"
-        style={{ marginBottom: 16 }}
-      >
-        <TabPane tab="Facturaciones" key="facturaciones">
-          <BillingsTable
-            data={sales}
-            loading={loadingSales}
-            onReload={obtainSales}
-          />
-        </TabPane>
-
-        <TabPane tab="Cargos de Entrega" key="cargos">
+  const items: TabsProps['items'] = useMemo(() => [
+    {
+      key: 'facturaciones',
+      label: 'Facturaciones',
+      children: (
+        <BillingsTable
+          data={sales}
+          loading={loadingSales}
+          onReload={obtainSales}
+        />
+      ),
+    },
+    {
+      key: 'cargos',
+      label: 'Cargos de Entrega',
+      children: (
+        <>
           <Box sx={{ mb: 3 }}>
             <Typography variant="h6" gutterBottom>
               Seleccionar Período
@@ -67,8 +63,23 @@ const BillingsPage = () => {
             fechaInicio={fechaInicio}
             fechaFin={fechaFin}
           />
-        </TabPane>
-      </Tabs>
+        </>
+      ),
+    },
+  ], [sales, loadingSales, obtainSales, fechaInicio, fechaFin]);
+
+  return (
+    <PageContent
+      title="Facturaciones"
+      helper="GESTIÓN DE FACTURAS Y CARGOS DE ENTREGA"
+    >
+      <Tabs
+        activeKey={activeTab}
+        onChange={setActiveTab}
+        size="large"
+        style={{ marginBottom: 16 }}
+        items={items}
+      />
     </PageContent>
   );
 };

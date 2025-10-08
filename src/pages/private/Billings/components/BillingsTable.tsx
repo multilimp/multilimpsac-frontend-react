@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Button, Box, IconButton, Tooltip } from '@mui/material';
 import { Visibility, PictureAsPdf } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { formatCurrency, formattedDate } from '@/utils/functions';
 import AntTable, { AntColumnType } from '@/components/AntTable';
 import { SaleProps } from '@/services/sales/sales';
@@ -20,13 +20,19 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }
   const navigate = useNavigate();
   const { setSelectedSale } = useGlobalInformation();
 
-  const getStatusBackgroundColor = (status: string) => {
-    const normalizedStatus = status?.toUpperCase() as keyof typeof ESTADO_ROL_COLORS;
+  const getStatusBackgroundColor = (status: string | null | undefined) => {
+    if (!status || typeof status !== 'string') {
+      return ESTADO_ROL_COLORS.PENDIENTE;
+    }
+    const normalizedStatus = status.toUpperCase() as keyof typeof ESTADO_ROL_COLORS;
     return ESTADO_ROL_COLORS[normalizedStatus] || ESTADO_ROL_COLORS.PENDIENTE;
   };
 
-  const getStatusLabel = (status: string) => {
-    const normalizedStatus = status?.toUpperCase() as keyof typeof ESTADO_ROL_LABELS;
+  const getStatusLabel = (status: string | null | undefined) => {
+    if (!status || typeof status !== 'string') {
+      return ESTADO_ROL_LABELS.PENDIENTE;
+    }
+    const normalizedStatus = status.toUpperCase() as keyof typeof ESTADO_ROL_LABELS;
     return ESTADO_ROL_LABELS[normalizedStatus] || ESTADO_ROL_LABELS.PENDIENTE;
   };
 
@@ -53,8 +59,8 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }
       codigo_ocf: item.codigoOcf || defaultText,
       oce: item.documentoOce || null,
       ocf: item.documentoOcf || null,
-      estado_facturacion: item.estadoFacturacion || 'PENDIENTE',
-      estado_indicador: item.estadoFacturacion || 'PENDIENTE',
+      estado_facturacion: String(item.estadoFacturacion || 'PENDIENTE'),
+      estado_indicador: String(item.estadoFacturacion || 'PENDIENTE'),
       refact: item.ventaPrivada ? 'Sí' : 'No',
       rawdata: item,
     }));
@@ -87,21 +93,25 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }
       title: 'Código OC',
       dataIndex: 'codigo_venta',
       width: 200,
-      render: (value, record) => (
-        <Button
-          variant="contained"
-          onClick={() => {
-            setSelectedSale(record.rawdata);
-            navigate('/billing/' + record.rawdata.id);
-          }}
-          startIcon={<Visibility />}
-          size="small"
-          color="info"
-          style={{ width: '100%' }}
-        >
-          {value}
-        </Button>
-      )
+      render: (value, record) => {
+        if (!record?.rawdata?.id) {
+          return <span>{value}</span>;
+        }
+        return (
+          <Button
+            component={Link}
+            to={`/billing/${record.rawdata.id}`}
+            onClick={() => setSelectedSale(record.rawdata)}
+            variant="contained"
+            startIcon={<Visibility />}
+            size="small"
+            color="info"
+            style={{ width: '100%', textDecoration: 'none' }}
+          >
+            {value}
+          </Button>
+        );
+      }
     },
     { title: 'Razón Social Cliente', dataIndex: 'razon_social_cliente', width: 200, sort: true, filter: true },
     { title: 'RUC Cliente', dataIndex: 'ruc_cliente', width: 150, sort: true, filter: true },
@@ -215,6 +225,7 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }
       scroll={{ x: 2650 }}
       size="small"
       onReload={onReload}
+      rowKey="id"
     />
   );
 };
