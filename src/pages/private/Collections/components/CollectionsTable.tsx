@@ -2,10 +2,12 @@
 import React, { useMemo } from 'react';
 import { IconButton, Button } from '@mui/material';
 import { PictureAsPdf, Visibility } from '@mui/icons-material';
+import { Link } from 'react-router-dom';
 import { formatCurrency, formattedDate } from '@/utils/functions';
 import { ModalStateEnum } from '@/types/global.enum';
 import AntTable, { AntColumnType } from '@/components/AntTable';
 import { SaleProps } from '@/services/sales/sales';
+import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 
 interface CollectionsTableProps {
   data: SaleProps[];
@@ -17,9 +19,9 @@ interface CollectionsTableProps {
 const defaultText = 'N/A';
 
 const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRecordAction, onReload }) => {
+  const { setSelectedSale } = useGlobalInformation();
 
   const formattedData = useMemo(() => {
-    // ✅ VALIDAR que data sea un array y no esté vacío
     if (!Array.isArray(data) || data.length === 0) {
       return [];
     }
@@ -38,17 +40,12 @@ const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRe
       monto_venta: formatCurrency(item.montoVenta ? parseInt(item.montoVenta, 10) : 0),
       cue: item?.cliente?.codigoUnidadEjecutora ?? defaultText,
       direccion_entrega: `${item.direccionEntrega ?? ''} - ${item.departamentoEntrega ?? ''} ${item.provinciaEntrega ?? ''} ${item.distritoEntrega ?? ''} - ${item.referenciaEntrega ?? ''}`,
-
-      // Campos específicos de cobranza
-      estado_cobranza: item.estadoCobranza || 'pendiente',
       fecha_estado_cobranza: formattedDate(item.fechaEstadoCobranza, undefined, defaultText),
       neto_cobrado: formatCurrency(item.netoCobrado ? parseInt(item.netoCobrado, 10) : 0),
       penalidad: formatCurrency(item.penalidad ? parseInt(item.penalidad, 10) : 0),
       fecha_proxima_gestion: formattedDate(item.fechaProximaGestion, undefined, defaultText),
-
       oce: item.documentoOce || null,
       ocf: item.documentoOcf || null,
-
       rawdata: item,
     }));
   }, [data]);
@@ -58,21 +55,25 @@ const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRe
       title: 'Código OC',
       dataIndex: 'codigo_venta',
       width: 200,
-      render: (value, record) => (
-        <Button
-          variant="contained"
-          onClick={() => {
-            console.log('Abriendo detalles de cobranza:', record.rawdata.id);
-            onRecordAction?.(ModalStateEnum.DETAILS, record.rawdata);
-          }}
-          startIcon={<Visibility />}
-          size="small"
-          color="info"
-          style={{ width: '100%' }}
-        >
-          {value}
-        </Button>
-      )
+      render: (value, record) => {
+        if (!record?.rawdata?.id) {
+          return <span>{value}</span>;
+        }
+        return (
+          <Button
+            component={Link}
+            to={`/collections/${record.rawdata.id}`}
+            onClick={() => setSelectedSale(record.rawdata)}
+            variant="contained"
+            startIcon={<Visibility />}
+            size="small"
+            color="info"
+            style={{ width: '100%', textDecoration: 'none' }}
+          >
+            {value}
+          </Button>
+        );
+      }
     },
     { title: 'Razón Social Cliente', dataIndex: 'razon_social_cliente', width: 200, sort: true, filter: true },
     { title: 'RUC Cliente', dataIndex: 'ruc_cliente', width: 150, sort: true, filter: true },
@@ -92,10 +93,12 @@ const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRe
       dataIndex: 'oce',
       width: 80,
       render: (value) =>
-        value && (
+        value ? (
           <IconButton color="error" component="a" href={value} target="_blank" size="small">
             <PictureAsPdf />
           </IconButton>
+        ) : (
+          <span>-</span>
         ),
     },
     {
@@ -103,38 +106,13 @@ const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRe
       dataIndex: 'ocf',
       width: 80,
       render: (value) =>
-        value && (
+        value ? (
           <IconButton color="error" component="a" href={value} target="_blank" size="small">
             <PictureAsPdf />
           </IconButton>
+        ) : (
+          <span>-</span>
         ),
-    },
-    {
-      title: 'Estado Cobranza',
-      dataIndex: 'estado_cobranza',
-      width: 150,
-      sort: true,
-      filter: true,
-      render: (value) => {
-        const colorMap: Record<string, string> = {
-          'pendiente': '#f5a524', // amarillo
-          'cobrado': '#17c964', // verde
-          'parcial': '#006fee', // azul
-          'vencido': '#f31260', // rojo
-        };
-        return (
-          <span style={{
-            color: colorMap[value] || '#000',
-            fontWeight: 600,
-            padding: '4px 8px',
-            backgroundColor: `${colorMap[value] || '#000'}20`,
-            borderRadius: '4px',
-            fontSize: '12px'
-          }}>
-            {value}
-          </span>
-        );
-      }
     },
   ];
 
@@ -146,6 +124,7 @@ const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRe
       scroll={{ x: 2200 }}
       size="small"
       onReload={onReload}
+      rowKey="id"
     />
   );
 };

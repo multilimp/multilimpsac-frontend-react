@@ -1610,8 +1610,8 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                     overflowY: 'auto'
                   }}
                 >
-                  {galleryFiles.map((file) => (
-                    <Card key={file.id} sx={{ position: 'relative' }}>
+                  {galleryFiles.map((file, index) => (
+                    <Card key={file.id || `file-grid-${index}`} sx={{ position: 'relative' }}>
                       <CardContent sx={{ p: 2, textAlign: 'center' }}>
                         <Box sx={{ mb: 1 }}>
                           {getFileIcon(file.tipo)}
@@ -1661,8 +1661,8 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {galleryFiles.map((file) => (
-                        <TableRow key={file.id} hover>
+                      {galleryFiles.map((file, index) => (
+                        <TableRow key={file.id || `file-table-${index}`} hover>
                           <TableCell>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                               {getFileIcon(file.tipo)}

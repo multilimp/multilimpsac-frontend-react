@@ -3,7 +3,7 @@ import { ClientProps } from '../clients/clients';
 import { CompanyProps } from '../companies/company';
 import { ContactProps } from '../contacts/contacts';
 import { ProviderOrderProps } from '../providerOrders/providerOrders';
-import { EstadoVentaType } from '@/utils/constants';
+import { EstadoVentaType, EstadoCobranzaType } from '@/utils/constants';
 
 export interface SaleProps {
   id: number;
@@ -42,9 +42,10 @@ export interface SaleProps {
   fechaEntregaOc?: string;
   penalidad?: string;
   netoCobrado?: string;
-  estadoCobranza?: string;
+  estadoCobranza?: EstadoCobranzaType;
   fechaEstadoCobranza?: string;
   fechaProximaGestion?: string;
+  cobradorId?: number;
   cartaCci?: string;
   cartaGarantia?: string;
   cartaAmpliacion?: string;
