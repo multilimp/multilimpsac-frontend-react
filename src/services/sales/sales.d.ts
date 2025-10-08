@@ -50,6 +50,7 @@ export interface SaleProps {
   cartaAmpliacion?: string;
   etapaActual: string;
   estadoVenta: EstadoVentaType;
+  estadoFacturacion: EstadoVentaType;
   estadoActivo: boolean;
   createdAt: string;
   updatedAt: string;

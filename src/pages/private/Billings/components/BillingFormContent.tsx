@@ -28,11 +28,13 @@ import {
   Edit as EditIcon,
   Refresh as RefreshIcon,
   Add as AddIcon,
-  Visibility as VisibilityIcon
+  Visibility as VisibilityIcon,
+  ArrowBack as ArrowBackIcon
 } from '@mui/icons-material';
-import { notification, Form } from 'antd';
+import { notification, Form, Select } from 'antd';
 import Grid from '@mui/material/Grid';
 import dayjs from 'dayjs';
+import { useNavigate } from 'react-router-dom';
 import { SaleProps } from '@/services/sales/sales';
 import DatePickerAntd from '@/components/DatePickerAnt';
 import InputAntd from '@/components/InputAntd';
@@ -43,7 +45,7 @@ import SimpleFileUpload from '@/components/SimpleFileUpload';
 import { patchBilling, getBillingHistoryByOrdenCompraId, createBilling, deleteBilling } from '@/services/billings/billings.request';
 import { formatCurrency, formattedDate } from '@/utils/functions';
 import { ProviderOrderProps } from '@/services/providerOrders/providerOrders';
-import { estadoOptions, ESTADOS, getEstadoByValue } from '@/utils/constants';
+import { estadoOptions, ESTADOS, getEstadoByValue, estadoBgMap } from '@/utils/constants';
 import { getOpsByOrdenCompra } from '@/services/trackings/trackings.request';
 import { printOrdenProveedor } from '@/services/print/print.requests';
 import { patchSale } from '@/services/sales/sales.request';
@@ -59,6 +61,7 @@ interface BillingFormContentProps {
 
 const BillingFormContent = ({ sale }: BillingFormContentProps) => {
   const [form] = Form.useForm();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [facturacionId, setFacturacionId] = useState<number | null>(null);
 
@@ -76,7 +79,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
   const [cartaGarantiaUrl, setCartaGarantiaUrl] = useState<string | null>(null);
   const [savingDocuments, setSavingDocuments] = useState(false);
 
-  const [estadoFacturacion, setEstadoFacturacion] = useState<string>(ESTADOS.PENDIENTE.value);
+  const [estadoFacturacion, setEstadoFacturacion] = useState<string>(sale.estadoFacturacion || ESTADOS.PENDIENTE.value);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<'create' | 'edit' | 'view'>('create');
@@ -85,6 +88,13 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
     loadOrdenesProveedor();
     loadBillingHistory();
   }, [sale.id]);
+
+  useEffect(() => {
+    if (sale.estadoFacturacion) {
+      setEstadoFacturacion(sale.estadoFacturacion);
+      form.setFieldsValue({ estadoFacturacion: sale.estadoFacturacion });
+    }
+  }, [sale.estadoFacturacion, form]);
 
   useEffect(() => {
     if (sale.cartaCci) {
@@ -258,6 +268,29 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
   const saveBilling = useCallback(async () => {
     await handleSave();
   }, []);
+
+  const handleEstadoFacturacionChange = useCallback(async (value: string) => {
+    try {
+      setEstadoFacturacion(value);
+      form.setFieldsValue({ estadoFacturacion: value });
+
+      await patchSale(sale.id, { estadoFacturacion: value });
+
+      notification.success({
+        message: 'Estado actualizado',
+        description: 'El estado de facturación se actualizó correctamente',
+        duration: 2
+      });
+    } catch (error) {
+      console.error('Error updating estado facturación:', error);
+      notification.error({
+        message: 'Error al actualizar',
+        description: 'No se pudo actualizar el estado de facturación'
+      });
+      setEstadoFacturacion(sale.estadoFacturacion || ESTADOS.PENDIENTE.value);
+      form.setFieldsValue({ estadoFacturacion: sale.estadoFacturacion || ESTADOS.PENDIENTE.value });
+    }
+  }, [sale.id, sale.estadoFacturacion, form]);
 
   // Función para procesar cada acción de facturación
   const processBillingAction = async (
@@ -1300,34 +1333,98 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
               />
               <Box sx={{
                 display: 'flex',
-                gap: 2,
+                gap: 3,
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                bgcolor: '#f8fafc',
+                bgcolor: '#ffffff',
+                p: 3,
+                borderRadius: 2,
+                border: '1px solid #e2e8f0',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
               }}>
-                <Box sx={{ minWidth: 200 }}>
-                  <Typography sx={{ color: '#667eea', mb: 1, fontSize: '0.875rem', fontWeight: 600 }}>
+                <Button
+                  variant="outlined"
+                  startIcon={<ArrowBackIcon />}
+                  onClick={() => navigate('/billing')}
+                  sx={{
+                    borderColor: '#667eea',
+                    color: '#667eea',
+                    fontWeight: 600,
+                    px: 3,
+                    py: 1.5,
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    '&:hover': {
+                      borderColor: '#5a67d8',
+                      bgcolor: 'rgba(102, 94, 234, 0.05)',
+                    }
+                  }}
+                >
+                  Regresar a Facturaciones
+                </Button>
+
+                <Box sx={{ minWidth: 280 }}>
+                  <Typography sx={{
+                    color: '#475569',
+                    mb: 1.5,
+                    fontSize: '0.875rem',
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em'
+                  }}>
                     Estado de Facturación
                   </Typography>
                   <Form.Item
                     name="estadoFacturacion"
-                    initialValue="pendiente"
+                    initialValue={sale.estadoFacturacion || ESTADOS.PENDIENTE.value}
                     style={{ marginBottom: 0 }}
                   >
-                    <SelectGeneric
+                    <Select
                       value={estadoFacturacion}
-                      onChange={(value) => {
-                        setEstadoFacturacion(value);
-                        form.setFieldsValue({ estadoFacturacion: value });
-                      }}
+                      onChange={handleEstadoFacturacionChange}
                       placeholder="Seleccionar estado"
                       size="large"
                       style={{
                         width: '100%',
-                        ...getEstadoStyles(estadoFacturacion)
+                        borderRadius: 8,
+                        fontWeight: 600,
+                        fontSize: 15,
                       }}
-                      options={estadoOptions}
-                    />
+                      dropdownStyle={{
+                        borderRadius: 12,
+                        boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
+                        fontSize: 15,
+                      }}
+                    >
+                      {estadoOptions.map(option => (
+                        <Select.Option
+                          key={option.value}
+                          value={option.value}
+                          style={{
+                            color: estadoBgMap[option.value] || '#222',
+                            fontWeight: 600,
+                            padding: '10px 16px',
+                          }}
+                        >
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px'
+                          }}>
+                            <div
+                              style={{
+                                width: 10,
+                                height: 10,
+                                borderRadius: '50%',
+                                backgroundColor: estadoBgMap[option.value] || '#ccc',
+                                boxShadow: `0 0 8px ${estadoBgMap[option.value]}60`
+                              }}
+                            />
+                            <span>{option.label}</span>
+                          </div>
+                        </Select.Option>
+                      ))}
+                    </Select>
                   </Form.Item>
                 </Box>
               </Box>
