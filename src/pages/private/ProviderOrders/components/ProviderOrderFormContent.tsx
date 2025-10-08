@@ -47,6 +47,7 @@ interface ProviderOrderFormContentProps {
   orderData?: ProviderOrderProps;
   isEditing?: boolean;
   fromTreasury?: boolean;
+  targetSection?: string | null;
 }
 
 type ProductRecord = {
@@ -114,7 +115,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
       form.setFieldValue(['productos', fieldName, 'total'], total);
     }
   }, 100);
-}; const ProviderOrderFormContent = ({ sale, orderData, isEditing, fromTreasury }: ProviderOrderFormContentProps) => {
+}; const ProviderOrderFormContent = ({ sale, orderData, isEditing, fromTreasury, targetSection }: ProviderOrderFormContentProps) => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -148,6 +149,30 @@ const calculateProductTotals = (form: any, fieldName: number) => {
       });
     }
   });
+
+  // Efecto para hacer scroll automático a la sección de pago indicada
+  useEffect(() => {
+    if (targetSection && isEditing) {
+      // Esperar a que el DOM se renderice completamente
+      const timer = setTimeout(() => {
+        const elementId = targetSection === 'transporte' ? 'transporte-section' : 'proveedor-payments-section';
+        const element = document.getElementById(elementId);
+        if (element) {
+          element.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+          });
+          // Destacar brevemente la sección
+          element.style.transition = 'background-color 0.5s ease';
+          element.style.backgroundColor = '#fff3cd';
+          setTimeout(() => {
+            element.style.backgroundColor = '';
+          }, 2000);
+        }
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [targetSection, isEditing]);
 
   useEffect(() => {
     if (empresaValue && companies.length > 0) {
@@ -1286,33 +1311,35 @@ const calculateProductTotals = (form: any, fieldName: number) => {
             </CardContent>
           </Card>
 
-          <Form.Item noStyle shouldUpdate>
-            {({ getFieldValue }) => {
-              const productos = getFieldValue('productos') || [];
-              const totalProductos = productos.reduce((sum: number, producto: ProductRecord) => {
-                return sum + (Number(producto?.total) || 0);
-              }, 0);
+          <Box id="proveedor-payments-section">
+            <Form.Item noStyle shouldUpdate>
+              {({ getFieldValue }) => {
+                const productos = getFieldValue('productos') || [];
+                const totalProductos = productos.reduce((sum: number, producto: ProductRecord) => {
+                  return sum + (Number(producto?.total) || 0);
+                }, 0);
 
-              const proveedor: ProviderProps | null = getFieldValue('proveedor');
+                const proveedor: ProviderProps | null = getFieldValue('proveedor');
 
-              return (
-                <PaymentsList
-                  title="Pagos Proveedor"
-                  payments={getFieldValue('pagosProveedor') || []}
-                  tipoPago={getFieldValue('tipoPago')}
-                  notaPago={getFieldValue('notaPago') || ''}
-                  montoTotal={totalProductos}
-                  mode={fromTreasury ? "edit" : "readonly"}
-                  entityType="PROVIDER"
-                  entityId={proveedor?.id}
-                  entityName={proveedor?.razonSocial || ''}
-                  onPaymentsChange={handlePaymentsChange}
-                  onTipoPagoChange={handleTipoPagoChange}
-                  onNotaPagoChange={handleNotaPagoChange}
-                />
-              );
-            }}
-          </Form.Item>
+                return (
+                  <PaymentsList
+                    title="Pagos Proveedor"
+                    payments={getFieldValue('pagosProveedor') || []}
+                    tipoPago={getFieldValue('tipoPago')}
+                    notaPago={getFieldValue('notaPago') || ''}
+                    montoTotal={totalProductos}
+                    mode={fromTreasury ? "edit" : "readonly"}
+                    entityType="PROVIDER"
+                    entityId={proveedor?.id}
+                    entityName={proveedor?.razonSocial || ''}
+                    onPaymentsChange={handlePaymentsChange}
+                    onTipoPagoChange={handleTipoPagoChange}
+                    onNotaPagoChange={handleNotaPagoChange}
+                  />
+                );
+              }}
+            </Form.Item>
+          </Box>
 
           {/* Switch para incluir/excluir transportes */}
           <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
@@ -1345,32 +1372,34 @@ const calculateProductTotals = (form: any, fieldName: number) => {
           </Box>
 
           {/* Sección de transportes - mostrar cuando NO está activado el switch (sí requiere transporte) */}
-          <Form.Item noStyle shouldUpdate>
-            {({ getFieldValue }) => {
-              const incluyeTransporte = getFieldValue('incluyeTransporte');
+          <Box id="transporte-section">
+            <Form.Item noStyle shouldUpdate>
+              {({ getFieldValue }) => {
+                const incluyeTransporte = getFieldValue('incluyeTransporte');
 
-              if (incluyeTransporte) {  // Si está activado (NO requiere transporte), ocultar sección
-                return null;
-              }
+                if (incluyeTransporte) {  // Si está activado (NO requiere transporte), ocultar sección
+                  return null;
+                }
 
-              // Si está desactivado (SÍ requiere transporte), mostrar sección
+                // Si está desactivado (SÍ requiere transporte), mostrar sección
 
-              return (
-                <TransportsSection
-                  isTreasury={fromTreasury}
-                  form={form}
-                  isPrivateSale={sale?.ventaPrivada || false}
-                  incluyeTransporte={incluyeTransporte}
-                  privateSaleData={privateSaleData ? {
-                    tipoEntrega: privateSaleData.tipoEntrega,
-                    nombreAgencia: privateSaleData.nombreAgencia,
-                    destinoFinal: privateSaleData.destinoFinal,
-                    nombreEntidad: privateSaleData.nombreEntidad,
-                  } : undefined}
-                />
-              );
-            }}
-          </Form.Item>
+                return (
+                  <TransportsSection
+                    isTreasury={fromTreasury}
+                    form={form}
+                    isPrivateSale={sale?.ventaPrivada || false}
+                    incluyeTransporte={incluyeTransporte}
+                    privateSaleData={privateSaleData ? {
+                      tipoEntrega: privateSaleData.tipoEntrega,
+                      nombreAgencia: privateSaleData.nombreAgencia,
+                      destinoFinal: privateSaleData.destinoFinal,
+                      nombreEntidad: privateSaleData.nombreEntidad,
+                    } : undefined}
+                  />
+                );
+              }}
+            </Form.Item>
+          </Box>
 
           {fromTreasury !== true && (
             <>

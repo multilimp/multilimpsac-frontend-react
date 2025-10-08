@@ -352,7 +352,8 @@ const DashboardTesoreria: React.FC = () => {
     const [isRefreshing, setIsRefreshing] = useState(false);
 
     const handleRowClick = useCallback((pago: PagoPorEstado) => {
-        navigate(`/provider-orders/${pago.id}`);
+        const section = pago.tipo === 'TRANSPORTE' ? 'transporte' : 'proveedor';
+        navigate(`/provider-orders/${pago.id}?from=treasury&section=${section}`);
     }, [navigate]);
 
     const formatDate = useCallback((date: Date | null): string => {

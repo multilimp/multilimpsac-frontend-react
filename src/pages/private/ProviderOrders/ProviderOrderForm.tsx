@@ -16,14 +16,15 @@ const ProviderOrderForm = () => {
   const navigate = useNavigate();
   const [orderData, setOrderData] = useState<ProviderOrderProps | null>(null);
   const [, setLoading] = useState(false);
-  
+
   const isEditing = Boolean(providerOrderId);
   const fromTreasury = searchParams.get('from') === 'treasury';
+  const targetSection = searchParams.get('section'); // 'transporte' o 'proveedor'
 
   useEffect(() => {
     // 🔧 SOLO establecer BlackBarKey una vez al montar
     setBlackBarKey(BlackBarKeyEnum.OP);
-        
+
     // 🔧 Limpiar BlackBarKey solo al desmontar
     return () => {
       setBlackBarKey(null);
@@ -58,7 +59,7 @@ const ProviderOrderForm = () => {
       setLoading(true);
       const orderDetails = await getOrderProviderById(Number(providerOrderId));
       setOrderData(orderDetails);
-      
+
       // En modo edición, establecer la venta desde los datos de la OP
       if (orderDetails.ordenCompra) {
         // Convertir los datos de la OP a formato SaleProps
@@ -79,11 +80,12 @@ const ProviderOrderForm = () => {
   return (
     <Stack direction="column" spacing={2}>
       {saleToUse ? (
-        <ProviderOrderFormContent 
-          sale={saleToUse} 
-          orderData={orderData || undefined} 
+        <ProviderOrderFormContent
+          sale={saleToUse}
+          orderData={orderData || undefined}
           isEditing={isEditing}
           fromTreasury={fromTreasury}
+          targetSection={targetSection}
         />
       ) : (
         <ProviderOrderFormSkeleton />

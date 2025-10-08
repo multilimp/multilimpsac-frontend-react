@@ -1,5 +1,4 @@
 import apiClient from '../apiClient';
-import html2pdf from 'html2pdf.js';
 
 export interface PrintInvoiceData {
   ordenCompraId: number;
@@ -247,13 +246,15 @@ export const printOrdenProveedor = async (orderData: any): Promise<void> => {
           }
 
           .logo {
-            max-width: 100px;
-            max-height: 50px;
+            width: 200px;
+            height: auto;
+            max-height: 80px;
             margin-bottom: 5px;
             border: 1px solid #e0e0e0;
             border-radius: 2px;
-            padding: 3px;
+            padding: 5px;
             background: white;
+            object-fit: contain;
           }
 
           .contact-info {
@@ -268,27 +269,55 @@ export const printOrdenProveedor = async (orderData: any): Promise<void> => {
           }
 
           .info-box {
-            border: 1px solid #000;
-            padding: 8px;
+            border: 2px solid #000;
             background: white;
-            display: inline-block;
-            min-width: 200px;
+            display: flex;
+            flex-direction: column;
+            min-width: 250px;
             border-radius: 5px;
           }
 
-          .info-box h2 {
-            margin: 0 0 5px 0;
-            font-size: 14px;
-            font-weight: bold;
-            text-align: center;
+          .info-box-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
             border-bottom: 1px solid #000;
-            padding-bottom: 3px;
           }
 
-          .info-box p {
-            margin: 3px 0;
-            font-size: 9px;
+          .info-box-row:last-child {
+            border-bottom: none;
+          }
+
+          .info-box-row h2 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+          }
+
+          .info-box-row .codigo-oc {
+            margin: 0;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+          }
+
+          .info-box-row-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 10px;
+          }
+
+          .info-box-row-bottom p {
+            margin: 0;
+            font-size: 10px;
             font-weight: normal;
+          }
+
+          .info-box-row-bottom .ruc-text {
+            font-weight: bold;
           }
 
           .provider-card, .products-card, .transportes-card, .facturacion-card {
@@ -305,7 +334,7 @@ export const printOrdenProveedor = async (orderData: any): Promise<void> => {
             margin-bottom: 8px;
           }
 
-          .provider-card h3, .products-card h3, .transportes-card h3, .facturacion-card h3 {
+          .provider-card h3, .transportes-card h3, .facturacion-card h3 {
             margin: 0 0 6px 0;
             font-size: 12px;
             font-weight: bold;
@@ -319,7 +348,7 @@ export const printOrdenProveedor = async (orderData: any): Promise<void> => {
             font-size: 10px;
           }
 
-          .products-card h3, .transportes-card h3 {
+          .transportes-card h3 {
             margin: 0 0 6px 0;
             font-size: 12px;
             font-weight: bold;
@@ -331,13 +360,25 @@ export const printOrdenProveedor = async (orderData: any): Promise<void> => {
             width: 100%;
             border-collapse: collapse;
             font-size: 8px;
-            margin-top: 5px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #000;
           }
 
           .products-table th, .products-table td {
             border: 1px solid #000;
             padding: 3px 2px;
             text-align: left;
+          }
+
+          .products-table th.titulo-productos {
+            background: white;
+            color: black;
+            font-weight: bold;
+            font-size: 12px;
+            text-align: center;
+            padding: 6px 4px;
+            border-bottom: 1px solid #000;
           }
 
           .products-table th {
@@ -528,10 +569,16 @@ export const printOrdenProveedor = async (orderData: any): Promise<void> => {
           </div>
           <div class="header-right">
             <div class="info-box">
-              <h2>ORDEN DE COMPRA</h2>
-              <p><strong>RUC:</strong> ${escapeHtml(data.empresa?.ruc || '')}</p>
-              <p><strong>Código OC:</strong> ${data.codigoOp || data.id}</p>
-              <p><strong>Fecha Emisión:</strong> ${formatDate(data.fechaEmision || data.createdAt)}</p>
+              <div class="info-box-row">
+                <h2>ORDEN DE COMPRA</h2>
+              </div>
+              <div class="info-box-row">
+                <p class="codigo-oc">${data.codigoOp || data.id}</p>
+              </div>
+              <div class="info-box-row-bottom">
+                <p>Fecha Emisión: ${formatDate(data.fechaEmision || data.createdAt)}</p>
+                <p class="ruc-text">RUC: ${escapeHtml(data.empresa?.ruc || '')}</p>
+              </div>
             </div>
           </div>
         </div>
@@ -543,9 +590,11 @@ export const printOrdenProveedor = async (orderData: any): Promise<void> => {
         </div>
 
         <div class="products-card">
-          <h3>PRODUCTOS</h3>
           <table class="products-table">
             <thead>
+              <tr>
+                <th colspan="6" class="titulo-productos">PRODUCTOS</th>
+              </tr>
               <tr>
                 <th class="col-codigo">CÓDIGO</th>
                 <th class="col-cantidad">CANTIDAD</th>
@@ -584,7 +633,7 @@ export const printOrdenProveedor = async (orderData: any): Promise<void> => {
         <div class="info-section">
           <h2>OBSERVACIONES</h2>
           <div style="border: 1px solid #000; padding: 8px; border-radius: 5px; background: white; margin-top: 5px;">
-            <p style="margin: 0;">${escapeHtml(data.observaciones || 'Sin observaciones')}</p>
+            <p style="margin: 0;">${escapeHtml(data.notaPedido || 'Sin observaciones')}</p>
           </div>
         </div>
 
@@ -639,16 +688,6 @@ export const printOrdenProveedor = async (orderData: any): Promise<void> => {
   } catch (error) {
     console.error('Error al imprimir orden de proveedor:', error);
     throw new Error('Error al generar la orden de proveedor para impresión');
-  }
-};
-
-export const previewInvoice = async (ordenCompraId: number): Promise<string> => {
-  try {
-    const response = await apiClient.get(`/print/preview-factura/${ordenCompraId}`);
-    return response.data.previewUrl;
-  } catch (error) {
-    console.error('Error al obtener preview de factura:', error);
-    throw error;
   }
 };
 
@@ -897,6 +936,7 @@ export const printCargosEntrega = async (fechaInicio: string, fechaFin: string):
             border-collapse: collapse;
             margin: 10px 0;
             border: 2px solid #333;
+            border-radius: 8px;
         }
 
         .tabla-productos th {
