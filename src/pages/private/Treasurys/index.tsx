@@ -55,20 +55,34 @@ const Treasury = () => {
             onChange={(_, newValue) => setActiveTab(newValue)}
             aria-label="tabs de tesorería"
           >
+            <Tab label="Dashboard Pagos" />
             <Tab label="Órdenes de Proveedor (OP)" />
             <Tab label="Órdenes de Compra (OC)" />
-            <Tab label="Dashboard Pagos" />
           </Tabs>
         </Box>
+
+        {/* Tab Panel: Dashboard Pagos */}
+        <div
+          role="tabpanel"
+          hidden={activeTab !== 0}
+          id="tabpanel-dashboard"
+          aria-labelledby="tab-dashboard"
+        >
+          {activeTab === 0 && (
+            <Box sx={{ py: 3 }}>
+              <DashboardTesoreria />
+            </Box>
+          )}
+        </div>
 
         {/* Tab Panel: Órdenes de Proveedor (OP) */}
         <div
           role="tabpanel"
-          hidden={activeTab !== 0}
+          hidden={activeTab !== 1}
           id="tabpanel-op"
           aria-labelledby="tab-op"
         >
-          {activeTab === 0 && (
+          {activeTab === 1 && (
             <Box sx={{ py: 3 }}>
               <TreasurysTable
                 loading={loadingProviderOrders}
@@ -83,11 +97,11 @@ const Treasury = () => {
         {/* Tab Panel: Órdenes de Compra (OC) */}
         <div
           role="tabpanel"
-          hidden={activeTab !== 1}
+          hidden={activeTab !== 2}
           id="tabpanel-oc"
           aria-labelledby="tab-oc"
         >
-          {activeTab === 1 && (
+          {activeTab === 2 && (
             <Box sx={{ py: 3 }}>
               <SalesTable
                 loading={loadingSales}
@@ -95,20 +109,6 @@ const Treasury = () => {
                 onRowClick={handleSaleOrderClick}
                 onReload={obtainSales}
               />
-            </Box>
-          )}
-        </div>
-
-        {/* Tab Panel: Dashboard */}
-        <div
-          role="tabpanel"
-          hidden={activeTab !== 2}
-          id="tabpanel-dashboard"
-          aria-labelledby="tab-dashboard"
-        >
-          {activeTab === 2 && (
-            <Box sx={{ py: 3 }}>
-              <DashboardTesoreria />
             </Box>
           )}
         </div>

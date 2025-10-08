@@ -368,7 +368,7 @@ const DashboardTesoreria: React.FC = () => {
     // Transformar datos de tesorería al formato PagoPorEstado
     const transformTransportesToPagoPorEstado = useCallback((transportes: any[], estado: 'URGENTE' | 'PENDIENTE'): PagoPorEstado[] => {
         return transportes.map(transporte => ({
-            id: transporte.id,
+            id: transporte.ordenProveedor?.id || transporte.id, // Usar el ID de la OP, no del transporte
             tipo: 'TRANSPORTE' as const,
             codigo: transporte.codigoTransporte,
             cliente: transporte.transporte?.razonSocial || 'Sin transporte',
