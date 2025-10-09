@@ -85,12 +85,11 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onReload, isPriv
           sx={{
             width: '100%',
             height: '100%',
-            minHeight: '60px', // ✅ Altura mínima garantizada
+            minHeight: '60px',
             backgroundColor: `${getStatusBackgroundColor(value)} !important`,
-            margin: '-16px !important', // ✅ Compensa el padding de la celda
+            margin: '-16px !important',
             padding: '6px !important',
 
-            // ✅ Forzar que sobrescriba estilos de tabla
             '&:hover': {
               backgroundColor: `${getStatusBackgroundColor(value)} !important`,
               opacity: '0.9 !important',

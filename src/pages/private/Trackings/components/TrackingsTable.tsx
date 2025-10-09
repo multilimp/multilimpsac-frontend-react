@@ -1,7 +1,7 @@
 import AntTable, { AntColumnType } from '@/components/AntTable';
 import { SaleProps } from '@/services/sales/sales';
 import { formatCurrency, formattedDate } from '@/utils/functions';
-import { IconButton, Button } from '@mui/material';
+import { IconButton, Button, Box } from '@mui/material';
 import { PictureAsPdf, Visibility } from '@mui/icons-material';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 import { useNavigate } from 'react-router-dom';
@@ -30,12 +30,27 @@ interface TrackingsDataTable {
   montoVenta: string;
   cue: string;
   departamentoEntrega?: string;
+  ops_completion_color: string;
+  ops_completion_label: string;
 }
 
 const defaultText = 'N/A';
 const TrackingsTable = ({ data, loading, onRowClick, onReload }: TrackingsTableProps) => {
   const { setSelectedSale } = useGlobalInformation();
   const navigate = useNavigate();
+
+  const getOpsCompletionStatus = (sale: SaleProps) => {
+    if (!sale.ordenesProveedor || sale.ordenesProveedor.length === 0) {
+      return { color: '#F59E0B', label: 'Sin OPs' };
+    }
+
+    const allCompleted = sale.ordenesProveedor.every(op => op.isCompleted === true);
+
+    return {
+      color: allCompleted ? '#10B981' : '#F59E0B',
+      label: allCompleted ? 'Completadas' : 'Pendientes'
+    };
+  };
 
   const handleRowClick = (sale: SaleProps) => {
     // Si hay un callback personalizado, usarlo
@@ -48,26 +63,54 @@ const TrackingsTable = ({ data, loading, onRowClick, onReload }: TrackingsTableP
     }
   };
 
-  const formattedData: Array<TrackingsDataTable> = data.map((item) => ({
-    id: item.id,
-    rawdata: item,
-    codigoVenta: item.codigoVenta,
-    clienteRuc: item?.cliente.ruc ?? defaultText,
-    clienteNombre: item?.cliente.razonSocial ?? defaultText,
-    empresaRuc: item?.empresa.ruc ?? defaultText,
-    empresaNombre: item?.empresa.razonSocial ?? defaultText,
-    contactoCargo: item?.contactoCliente?.cargo ?? defaultText,
-    contactoNombre: item?.contactoCliente?.nombre ?? defaultText,
-    catalogoNombre: item?.catalogoEmpresa?.nombre ?? defaultText,
-    catalogoDescripcion: item?.catalogoEmpresa?.descripcion ?? defaultText,
-    fechaEmision: formattedDate(item.fechaEmision, undefined, defaultText),
-    fechaMaxForm: formattedDate(item.fechaMaxForm, undefined, defaultText),
-    montoVenta: formatCurrency(parseInt(item.montoVenta, 10)),
-    cue: item.cliente?.codigoUnidadEjecutora ?? defaultText,
-    departamentoEntrega: item.departamentoEntrega ?? defaultText,
-  }));
+  const formattedData: Array<TrackingsDataTable> = data.map((item) => {
+    const opsStatus = getOpsCompletionStatus(item);
+
+    return {
+      id: item.id,
+      rawdata: item,
+      codigoVenta: item.codigoVenta,
+      clienteRuc: item?.cliente.ruc ?? defaultText,
+      clienteNombre: item?.cliente.razonSocial ?? defaultText,
+      empresaRuc: item?.empresa.ruc ?? defaultText,
+      empresaNombre: item?.empresa.razonSocial ?? defaultText,
+      contactoCargo: item?.contactoCliente?.cargo ?? defaultText,
+      contactoNombre: item?.contactoCliente?.nombre ?? defaultText,
+      catalogoNombre: item?.catalogoEmpresa?.nombre ?? defaultText,
+      catalogoDescripcion: item?.catalogoEmpresa?.descripcion ?? defaultText,
+      fechaEmision: formattedDate(item.fechaEmision, undefined, defaultText),
+      fechaMaxForm: formattedDate(item.fechaMaxForm, undefined, defaultText),
+      montoVenta: formatCurrency(parseInt(item.montoVenta, 10)),
+      cue: item.cliente?.codigoUnidadEjecutora ?? defaultText,
+      departamentoEntrega: item.departamentoEntrega ?? defaultText,
+      ops_completion_color: opsStatus.color,
+      ops_completion_label: opsStatus.label,
+    };
+  });
 
   const columns: Array<AntColumnType<TrackingsDataTable>> = [
+    {
+      title: '',
+      dataIndex: 'ops_completion_color',
+      width: 20,
+      render: (value: string) => (
+        <Box
+          sx={{
+            width: '100%',
+            height: '100%',
+            minHeight: '60px',
+            backgroundColor: `${value} !important`,
+            margin: '-16px !important',
+            padding: '6px !important',
+
+            '&:hover': {
+              backgroundColor: `${value} !important`,
+              opacity: '0.9 !important',
+            }
+          }}
+        />
+      ),
+    },
     {
       title: 'Código OC',
       dataIndex: 'codigoVenta',
@@ -127,6 +170,44 @@ const TrackingsTable = ({ data, loading, onRowClick, onReload }: TrackingsTableP
         ) : (
           defaultText
         ),
+    },
+    {
+      title: 'Estado OPs',
+      dataIndex: 'ops_completion_label',
+      width: 150,
+      sort: true,
+      filter: true,
+      align: 'center',
+      render: (value: string, record: TrackingsDataTable) => {
+        const color = record.ops_completion_color;
+
+        return (
+          <Box
+            sx={{
+              width: '100%',
+              backgroundColor: color,
+              color: 'white',
+              textAlign: 'center',
+              borderRadius: '4px',
+              padding: '6px 16px',
+              fontWeight: 600,
+              fontSize: '0.8125rem',
+              textTransform: 'none',
+              boxShadow: `0 2px 8px ${color}40`,
+              cursor: 'default',
+              transition: 'all 0.2s ease',
+
+              '&:hover': {
+                opacity: 0.9,
+                transform: 'translateY(-1px)',
+                boxShadow: `0 4px 12px ${color}60`,
+              }
+            }}
+          >
+            {value}
+          </Box>
+        );
+      },
     },
   ];
 

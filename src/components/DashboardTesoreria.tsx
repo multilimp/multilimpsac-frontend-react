@@ -312,9 +312,9 @@ const PaymentTable = React.memo<{
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {filteredAndSortedPagos.map((pago) => (
+                        {filteredAndSortedPagos.map((pago, index) => (
                             <PaymentTableRow
-                                key={`${pago.tipo}-${pago.id}`}
+                                key={pago.id || `payment-${pago.tipo}-${index}`}
                                 pago={pago}
                                 formatCurrency={formatCurrency}
                                 formatDate={formatDate}
