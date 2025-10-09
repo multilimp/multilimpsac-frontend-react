@@ -1,6 +1,6 @@
 import { Fragment, useState, useEffect } from 'react';
-import { Form, notification, Spin, Input, InputNumber } from 'antd';
-import { Business, Delete, Add, Inventory, LocalShipping, Print } from '@mui/icons-material';
+import { Form, notification, Spin, Input, InputNumber, Select } from 'antd';
+import { Business, Delete, Add, Inventory, LocalShipping, Print, ArrowBack } from '@mui/icons-material';
 import {
   Box,
   Card,
@@ -26,7 +26,7 @@ import SelectCompanies from '@/components/selects/SelectCompanies';
 import DatePickerAntd from '@/components/DatePickerAnt';
 import { SaleProps } from '@/services/sales/sales';
 import SelectContactsByProvider from '@/components/selects/SelectContactsByProvider';
-import { createOrderProvider, updateOrderProvider, getOrderProvider } from '@/services/providerOrders/providerOrders.requests';
+import { createOrderProvider, updateOrderProvider, getOrderProvider, patchOrderProvider } from '@/services/providerOrders/providerOrders.requests';
 import { uploadFile } from '@/services/files/file.requests';
 import { printOrdenProveedor } from '@/services/print/print.requests';
 import { useNavigate } from 'react-router-dom';
@@ -41,6 +41,7 @@ import TransportsSection, { getEmptyTransformRecord } from './TransportsSection'
 import { usePayments } from '@/hooks/usePayments';
 import InputNumberAntd from '@/components/InputNumberAntd';
 import { getPrivateSaleData } from '@/services/sales/sales.request';
+import { ESTADOS, estadoBgMap, EstadoVentaType } from '@/utils/constants';
 
 interface ProviderOrderFormContentProps {
   sale: SaleProps;
@@ -121,6 +122,9 @@ const calculateProductTotals = (form: any, fieldName: number) => {
   const [loading, setLoading] = useState(false);
   const [openProvider, setOpenProvider] = useState(false);
   const { companies } = useGlobalInformation();
+
+  // Estado para el selector de estado OP
+  const [estadoRolOp, setEstadoRolOp] = useState<EstadoVentaType>(orderData?.estadoRolOp || 'PENDIENTE');
 
   // Estado para datos de venta privada
   const [privateSaleData, setPrivateSaleData] = useState<{
@@ -208,7 +212,44 @@ const calculateProductTotals = (form: any, fieldName: number) => {
     };
 
     loadPrivateSaleData();
-  }, [sale?.id, sale?.ventaPrivada]); useEffect(() => {
+  }, [sale?.id, sale?.ventaPrivada]);
+
+  // Sincronizar estado con prop orderData
+  useEffect(() => {
+    if (orderData?.estadoRolOp) {
+      setEstadoRolOp(orderData.estadoRolOp);
+    }
+  }, [orderData?.estadoRolOp]);
+
+  // Handler para cambiar el estado y persistir
+  const handleEstadoRolOpChange = async (newEstado: EstadoVentaType) => {
+    if (!isEditing || !orderData?.id) {
+      notification.warning({
+        message: 'No disponible',
+        description: 'Debe guardar la OP primero antes de cambiar el estado'
+      });
+      return;
+    }
+
+    const previousEstado = estadoRolOp;
+    setEstadoRolOp(newEstado);
+
+    try {
+      await patchOrderProvider(orderData.id, { estadoRolOp: newEstado });
+      notification.success({
+        message: 'Estado actualizado',
+        description: `El estado de la OP se cambió a ${ESTADOS[newEstado].label}`
+      });
+    } catch (error) {
+      setEstadoRolOp(previousEstado);
+      notification.error({
+        message: 'Error al actualizar',
+        description: 'No se pudo cambiar el estado de la OP'
+      });
+    }
+  };
+
+  useEffect(() => {
     if (isEditing && orderData) {
       // Preparar los productos correctamente para el formulario
       const productosFormatted = orderData.productos?.map(producto => {
@@ -660,7 +701,6 @@ const calculateProductTotals = (form: any, fieldName: number) => {
               </Grid>
             </CardContent>
           </Card>
-
           <StepItemContent
             showHeader
             showFooter
@@ -1400,11 +1440,57 @@ const calculateProductTotals = (form: any, fieldName: number) => {
               }}
             </Form.Item>
           </Box>
+          {/* Selector de Estado OP */}
+          {isEditing && orderData && (
+            <Card sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 3, p: 2 }}>
+              <Button
+                variant="text"
+                startIcon={<ArrowBack />}
+                onClick={() => navigate('/provider-orders')}
+                sx={{ color: 'text.secondary' }}
+              >
+                Volver
+              </Button>
 
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.secondary' }}>
+                  Estado OP:
+                </Typography>
+                <Select
+                  size='large'
+                  value={estadoRolOp}
+                  onChange={handleEstadoRolOpChange}
+                  style={{ minWidth: 200 }}
+                  dropdownStyle={{
+                    padding: '8px 0'
+                  }}
+                >
+                  {Object.values(ESTADOS).map(estado => {
+                    const color = estadoBgMap[estado.key];
+                    return (
+                      <Select.Option key={estado.key} value={estado.value}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                          <Box
+                            sx={{
+                              width: 10,
+                              height: 10,
+                              borderRadius: '50%',
+                              backgroundColor: color,
+                              boxShadow: `0 0 8px ${color}80`
+                            }}
+                          />
+                          <span>{estado.label}</span>
+                        </Box>
+                      </Select.Option>
+                    );
+                  })}
+                </Select>
+              </Box>
+            </Card>
+          )}
           {fromTreasury !== true && (
             <>
-              <br />
-              <Stack direction="row" alignItems="center" justifyContent="center" my={2} spacing={2}>
+              <Stack direction="row" alignItems="center" justifyContent="center" spacing={2}>
                 <Button
                   disabled={loading}
                   type="submit"

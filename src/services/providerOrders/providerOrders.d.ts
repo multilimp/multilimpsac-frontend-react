@@ -3,6 +3,7 @@ import { ProviderProps } from '../providers/providers';
 import { TransportProps } from '../transports/transports';
 import { TransporteAsignadoProps } from '../transporteAsignado/transporteAsignado';
 import { Almacen } from '@/types/almacen.types';
+import { EstadoVentaType } from '@/utils/constants';
 
 export interface ProviderOrderProps {
   id: number;
@@ -30,6 +31,7 @@ export interface ProviderOrderProps {
   notaObservaciones: null;
   notaCobranzas: null;
   isCompleted: boolean;
+  estadoRolOp: EstadoVentaType;
   activo: true;
   ordenCompraId: number | null;
   createdAt: string;
