@@ -1,8 +1,9 @@
 import AntTable, { AntColumnType } from '@/components/AntTable';
 import { ProviderOrderProps } from '@/services/providerOrders/providerOrders';
 import { formatCurrency, formattedDate } from '@/utils/functions';
-import { IconButton, Button } from '@mui/material';
+import { IconButton, Button, Box, Chip } from '@mui/material';
 import { PictureAsPdf, Visibility } from '@mui/icons-material';
+import { ESTADOS, EstadoVentaType, ESTADO_ROL_COLORS } from '@/utils/constants';
 
 interface OpTableProps {
   data: Array<ProviderOrderProps>;
@@ -27,6 +28,7 @@ interface OpDataTable {
   fechaProgramada: string;
   fechaRecepcion: string;
   totalProveedor: string;
+  estadoRolOp: EstadoVentaType;
 }
 
 const defaultText = 'N/A';
@@ -48,9 +50,37 @@ const OpTable = ({ data, loading, onRowClick, onReload }: OpTableProps) => {
     fechaProgramada: formattedDate(item.fechaProgramada, undefined, defaultText),
     fechaRecepcion: formattedDate(item.fechaRecepcion, undefined, defaultText),
     totalProveedor: item.totalProveedor ? formatCurrency(parseFloat(item.totalProveedor)) : defaultText,
+    estadoRolOp: item.estadoRolOp || 'PENDIENTE',
   }));
 
+  const getStatusBackgroundColor = (status: string) => {
+    const normalizedStatus = status?.toUpperCase() as keyof typeof ESTADO_ROL_COLORS;
+    return ESTADO_ROL_COLORS[normalizedStatus] || ESTADO_ROL_COLORS.PENDIENTE;
+  };
+
   const columns: Array<AntColumnType<OpDataTable>> = [
+    {
+      title: '',
+      dataIndex: 'estadoRolOp',
+      width: 20,
+      render: (value: string) => (
+        <Box
+          sx={{
+            width: '100%',
+            height: '100%',
+            minHeight: '60px',
+            backgroundColor: `${getStatusBackgroundColor(value)} !important`,
+            margin: '-16px !important',
+            padding: '6px !important',
+
+            '&:hover': {
+              backgroundColor: `${getStatusBackgroundColor(value)} !important`,
+              opacity: '0.9 !important',
+            }
+          }}
+        />
+      ),
+    },
     {
       title: 'Código OP',
       dataIndex: 'codigoOp',
@@ -81,6 +111,30 @@ const OpTable = ({ data, loading, onRowClick, onReload }: OpTableProps) => {
     { title: 'Fecha Programada', dataIndex: 'fechaProgramada', width: 150, filter: true, sort: true },
     { title: 'Fecha Recepción', dataIndex: 'fechaRecepcion', width: 150, filter: true, sort: true },
     { title: 'Total Proveedor', dataIndex: 'totalProveedor', width: 150, filter: true, sort: true },
+    {
+      title: 'Estado',
+      dataIndex: 'estadoRolOp',
+      width: 150,
+      filter: true,
+      sort: true,
+      render: (value: EstadoVentaType) => {
+        const estado = ESTADOS[value];
+        return (
+          <Chip
+            label={estado.label}
+            sx={{
+              backgroundColor: estado.color,
+              color: '#fff',
+              fontWeight: 600,
+              fontSize: '0.75rem',
+              height: 28,
+              borderRadius: 1.5,
+              boxShadow: `0 0 10px ${estado.color}60`,
+            }}
+          />
+        );
+      }
+    },
   ];
 
   return (
