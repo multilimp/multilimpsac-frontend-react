@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Tabs, Button, DatePicker } from 'antd';
+import { useState, useEffect, useMemo } from 'react';
+import { Tabs, Button, DatePicker, TabsProps } from 'antd';
 import PageContent from '@/components/PageContent';
 import { SaleProps } from '@/services/sales/sales';
 import { ProviderOrderProps } from '@/services/providerOrders/providerOrders';
@@ -15,8 +15,6 @@ import { useNavigate } from 'react-router-dom';
 import { Box, Typography } from '@mui/material';
 import CargosEntregaTable from '@/components/CargosEntregaTable';
 import dayjs from 'dayjs';
-
-const { TabPane } = Tabs;
 
 const ProviderOrders = () => {
   const navigate = useNavigate();
@@ -59,32 +57,35 @@ const ProviderOrders = () => {
     navigate(`/provider-orders/${op.id}`);
   };
 
-  return (
-    <PageContent>
-      <Tabs
-        activeKey={activeTab}
-        onChange={setActiveTab}
-        size="large"
-        style={{ marginBottom: 16 }}
-      >
-        <TabPane tab="Tabla de Órdenes de Compra" key="oc">
-          <ProviderOrdersTable
-            loading={loadingSales}
-            data={sales}
-            onRowClick={(sale) => setModal({ mode: ModalStateEnum.BOX, data: sale })}
-          />
-        </TabPane>
-
-        <TabPane tab="Tabla OP" key="op">
-          <OpTable
-            loading={loadingOps}
-            data={ops}
-            onRowClick={handleOpRowClick}
-            onReload={loadOps}
-          />
-        </TabPane>
-
-        <TabPane tab="Cargos de Entrega" key="cargos">
+  const tabItems: TabsProps['items'] = useMemo(() => [
+    {
+      key: 'oc',
+      label: 'Tabla de Órdenes de Compra',
+      children: (
+        <ProviderOrdersTable
+          loading={loadingSales}
+          data={sales}
+          onRowClick={(sale) => setModal({ mode: ModalStateEnum.BOX, data: sale })}
+        />
+      )
+    },
+    {
+      key: 'op',
+      label: 'Tabla OP',
+      children: (
+        <OpTable
+          loading={loadingOps}
+          data={ops}
+          onRowClick={handleOpRowClick}
+          onReload={loadOps}
+        />
+      )
+    },
+    {
+      key: 'cargos',
+      label: 'Cargos de Entrega',
+      children: (
+        <>
           <Box sx={{ mb: 3 }}>
             <Typography variant="h6" gutterBottom>
               Seleccionar Período
@@ -114,8 +115,20 @@ const ProviderOrders = () => {
             fechaInicio={fechaInicio}
             fechaFin={fechaFin}
           />
-        </TabPane>
-      </Tabs>
+        </>
+      )
+    }
+  ], [loadingSales, sales, loadingOps, ops, handleOpRowClick, loadOps, fechaInicio, fechaFin]);
+
+  return (
+    <PageContent>
+      <Tabs
+        activeKey={activeTab}
+        onChange={setActiveTab}
+        size="large"
+        style={{ marginBottom: 16 }}
+        items={tabItems}
+      />
 
       {modal?.mode === ModalStateEnum.BOX && (
         <ProviderOrdersListDrawer
