@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button, Box, Typography, InputAdornment } from '@mui/material';
 import { LocalShipping, Search } from '@mui/icons-material';
-import SelectTransportsTable from './SelectTransportsTable';
+import TransportSelectorModal from '@/pages/private/Transports/components/TransportSelectorModal';
 import { TransportProps } from '@/services/transports/transports.d';
 
 interface SelectTransportButtonProps {
@@ -78,13 +78,12 @@ const SelectTransportButton: React.FC<SelectTransportButtonProps> = ({
                 </Box>
             </Button>
 
-            <SelectTransportsTable
-                open={modalOpen}
-                onClose={() => setModalOpen(false)}
-                onSelect={handleSelect}
-                selectedTransportId={selectedTransport?.id}
-                title="Seleccionar Empresa de Transporte"
-            />
+            {modalOpen && (
+                <TransportSelectorModal
+                    onClose={() => setModalOpen(false)}
+                    onSelected={handleSelect}
+                />
+            )}
         </>
     );
 };

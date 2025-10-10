@@ -11,10 +11,10 @@ import {
   Typography,
   Box,
   Divider,
+  Button as MuiButton,
 } from '@mui/material';
 import InputAntd from '@/components/InputAntd';
 import SelectGeneric from '@/components/selects/SelectGeneric';
-import SelectTransports from '@/components/selects/SelectTransports';
 import SelectContactsByTransport from '@/components/selects/SelectContactsByTransport';
 import SelectAlmacenes from '@/components/selects/SelectAlmacenes';
 import SimpleFileUpload from '@/components/SimpleFileUpload';
@@ -22,6 +22,10 @@ import PaymentsList from '@/components/PaymentsList';
 import { usePayments } from '@/hooks/usePayments';
 import { notification } from 'antd';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
+import TransportSelectorModal from '@/pages/private/Transports/components/TransportSelectorModal';
+import { TransportProps } from '@/services/transports/transports';
+import { useState } from 'react';
+import SelectTransportButton from '@/components/SelectTransportButton';
 
 // Opciones para el tipo de entrega (similar a ventas privadas)
 const tipoEntregaOptions = [
@@ -135,6 +139,99 @@ const TransportPayments = ({ transporteId, montoFlete, form, fieldName }: Transp
         }}
       </Form.Item>
     </Box>
+  );
+};
+
+interface TransportSelectorFieldProps {
+  form: FormInstance;
+  fieldName: number;
+}
+
+const TransportSelectorField = ({ form, fieldName }: TransportSelectorFieldProps) => {
+  const [modalOpen, setModalOpen] = useState(false);
+  const { transports } = useGlobalInformation();
+
+  return (
+    <>
+      <Form.Item noStyle shouldUpdate>
+        {({ getFieldValue }) => {
+          const transporteId = getFieldValue(['transportes', fieldName, 'transporte']);
+          const transporteCompleto = getFieldValue(['transportes', fieldName, 'transporteCompleto']);
+
+          const transporteData = transporteCompleto ||
+            (typeof transporteId === 'number'
+              ? transports.find(t => t.id === transporteId)
+              : null);
+
+          return (
+            <Form.Item
+              name={[fieldName, 'transporte']}
+              rules={[requiredField]}
+            >
+              <MuiButton
+                onClick={() => setModalOpen(true)}
+                variant="outlined"
+                sx={{
+                  width: '100%',
+                  textAlign: 'left',
+                  maxHeight: 52,
+                  py: 1.5,
+                  px: 2,
+                  border: '1px solid #d1d5db',
+                  borderRadius: 1,
+                  bgcolor: 'white',
+                  color: transporteData ? 'text.primary' : 'text.secondary',
+                  minHeight: 48,
+                }}
+                startIcon={
+                  transporteData ? (
+                    <LocalShipping sx={{ color: '#10b981' }} />
+                  ) : (
+                    <Search sx={{ color: '#9ca3af' }} />
+                  )
+                }
+              >
+                <Box sx={{ flex: 1, textAlign: 'left' }}>
+                  {transporteData ? (
+                    <Box>
+                      <Typography variant="body2" sx={{ fontWeight: 500, lineHeight: 1.2 }}>
+                        {transporteData.razonSocial}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: 'text.secondary', lineHeight: 1.2 }}>
+                        RUC: {transporteData.ruc}
+                      </Typography>
+                    </Box>
+                  ) : (
+                    <Typography variant="body2" sx={{ color: 'inherit' }}>
+                      Seleccionar empresa de transporte
+                    </Typography>
+                  )}
+                </Box>
+              </MuiButton>
+            </Form.Item>
+          );
+        }}
+      </Form.Item>
+
+      {modalOpen && (
+        <TransportSelectorModal
+          onClose={() => setModalOpen(false)}
+          onSelected={(transport: TransportProps) => {
+            form.setFieldsValue({
+              transportes: {
+                [fieldName]: {
+                  transporte: transport.id,
+                  transporteCompleto: transport,
+                  contacto: null,
+                  contactoCompleto: null,
+                }
+              }
+            });
+            setModalOpen(false);
+          }}
+        />
+      )}
+    </>
   );
 };
 
@@ -412,24 +509,10 @@ const TransportsSection = ({ form, isTreasury, isPrivateSale = false, incluyeTra
                       <Grid container spacing={2}>
                         {/* Empresa de Transporte */}
                         <Grid size={{ xs: 12, sm: 6 }}>
-                          <Form.Item name={[field.name, 'transporte']} rules={[requiredField]}>
-                            <SelectTransports
-                              label="Empresa de Transporte"
-                              onChange={(value, record: any) => {
-                                // Guardar tanto el ID como el objeto completo para sincronización
-                                form.setFieldsValue({
-                                  [`transportes[${field.name}].transporte`]: value,
-                                  [`transportes[${field.name}].transporteCompleto`]: record?.optiondata,
-                                });
-
-                                // Limpiar el contacto cuando cambie el transporte
-                                form.setFieldsValue({
-                                  [`transportes[${field.name}].contacto`]: null,
-                                  [`transportes[${field.name}].contactoCompleto`]: null,
-                                });
-                              }}
-                            />
-                          </Form.Item>
+                          <TransportSelectorField
+                            form={form}
+                            fieldName={field.name}
+                          />
                         </Grid>
 
                         {/* Contacto de Transporte */}

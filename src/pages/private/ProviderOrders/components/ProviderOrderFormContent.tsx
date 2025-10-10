@@ -470,7 +470,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
             distrito: item.distrito || null,
             direccion: item.direccion || null,
             notaTransporte: item.nota || null,
-            tipoDestino: item.destino === 'AGENCIA' ? 'AGENCIA' : 'ALMACEN',
+            tipoDestino: item.destino || 'ALMACEN',
             montoFlete: Number(item.flete) || null,
             cotizacionTransporte: cotizacionUrl,
           };

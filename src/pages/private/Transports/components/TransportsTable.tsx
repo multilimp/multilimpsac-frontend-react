@@ -9,10 +9,12 @@ interface TransportsTableProps {
   data: Array<TransportProps>;
   loading: boolean;
   onRecordAction: (action: ModalStateEnum | 'MANAGE_PAGOS', data: TransportProps) => void;
+  hideActions?: boolean;
+  modalMode?: boolean;
   onReload?: () => void;
 }
 
-const TransportsTable = ({ data, loading, onRecordAction, onReload }: TransportsTableProps) => {
+const TransportsTable = ({ data, loading, onRecordAction, hideActions, modalMode, onReload }: TransportsTableProps) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedRecord, setSelectedRecord] = useState<TransportProps | null>(null);
 
@@ -32,7 +34,7 @@ const TransportsTable = ({ data, loading, onRecordAction, onReload }: Transports
     }
     handleMenuClose();
   };
-  const columns: Array<AntColumnType<TransportProps>> = [
+  const columns: Array<AntColumnType<TransportProps> | false> = [
     { title: 'Razón social', dataIndex: 'razonSocial', width: 250, filter: true, sort: true },
     { title: 'RUC', dataIndex: 'ruc', width: 150, filter: true, sort: true },
     { title: 'Correo electrónico', dataIndex: 'email', width: 200, filter: true, sort: true },
@@ -42,7 +44,7 @@ const TransportsTable = ({ data, loading, onRecordAction, onReload }: Transports
       title: 'Dirección',
       dataIndex: 'departamento',
       width: 300,
-      render: (_, record) => (
+      render: (_: unknown, record: TransportProps) => (
         <div>
           <Typography variant="body2">{record.direccion}</Typography>
           <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>
@@ -51,11 +53,11 @@ const TransportsTable = ({ data, loading, onRecordAction, onReload }: Transports
         </div>
       ),
     },
-    {
+    !hideActions && {
       title: 'Contactos',
       dataIndex: 'contactos',
       width: 120,
-      render: (_, record) => (
+      render: (_: unknown, record: TransportProps) => (
         <Button
           variant="outlined"
           size="small"
@@ -67,11 +69,11 @@ const TransportsTable = ({ data, loading, onRecordAction, onReload }: Transports
         </Button>
       ),
     },
-    {
+    !hideActions && {
       title: 'Pagos',
       dataIndex: 'pagos',
       width: 120,
-      render: (_, record) => (
+      render: (_: unknown, record: TransportProps) => (
         <Button
           variant="outlined"
           size="small"
@@ -83,13 +85,13 @@ const TransportsTable = ({ data, loading, onRecordAction, onReload }: Transports
         </Button>
       ),
     },
-    {
+    !hideActions && {
       title: 'Acciones',
       dataIndex: 'id',
       align: 'center',
       fixed: 'right',
       width: 120,
-      render: (_, record) => (
+      render: (_: unknown, record: TransportProps) => (
         <IconButton
           size="small"
           onClick={(event) => handleMenuOpen(event, record)}
@@ -99,11 +101,26 @@ const TransportsTable = ({ data, loading, onRecordAction, onReload }: Transports
         </IconButton>
       ),
     },
-  ];
+  ].filter(Boolean) as Array<AntColumnType<TransportProps>>;
+
+  const filteredColumns = columns.filter((item) => !!item);
 
   return (
     <>
-      <AntTable columns={columns} data={data} loading={loading} onReload={onReload} />
+      <AntTable
+        columns={filteredColumns}
+        data={data}
+        loading={loading}
+        onReload={onReload}
+        hideToolbar={modalMode}
+        onRow={(record) => {
+          if (!hideActions) return {};
+          return {
+            onClick: () => onRecordAction(ModalStateEnum.BOX, record),
+            style: { cursor: 'pointer' },
+          };
+        }}
+      />
 
       <Menu
         anchorEl={anchorEl}
