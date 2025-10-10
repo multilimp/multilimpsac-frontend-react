@@ -5,6 +5,7 @@ import { Visibility } from '@mui/icons-material';
 import AntTable, { AntColumnType } from '@/components/AntTable';
 import { SaleProps } from '@/services/sales/sales';
 import { formatCurrency, formattedDate } from '@/utils/functions';
+import { Link } from 'react-router-dom';
 
 interface SalesTreasuryTableProps {
     data: SaleProps[];
@@ -50,9 +51,8 @@ export default function SalesTreasuryTable({
             render: (value, record) => (
                 <Button
                     variant="contained"
-                    onClick={() => {
-                        onRowClick?.(record.rawdata);
-                    }}
+                    component={Link}
+                    to={`/sales/${record.rawdata.id}/edit?from=treasury`}
                     startIcon={<Visibility />}
                     size="small"
                     color="primary"

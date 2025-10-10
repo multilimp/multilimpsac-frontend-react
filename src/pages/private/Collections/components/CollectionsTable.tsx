@@ -63,7 +63,6 @@ const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRe
           <Button
             component={Link}
             to={`/collections/${record.rawdata.id}`}
-            onClick={() => setSelectedSale(record.rawdata)}
             variant="contained"
             startIcon={<Visibility />}
             size="small"

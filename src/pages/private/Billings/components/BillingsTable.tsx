@@ -101,7 +101,6 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }
           <Button
             component={Link}
             to={`/billing/${record.rawdata.id}`}
-            onClick={() => setSelectedSale(record.rawdata)}
             variant="contained"
             startIcon={<Visibility />}
             size="small"

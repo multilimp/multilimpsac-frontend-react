@@ -5,7 +5,7 @@ import { Visibility, Contacts } from '@mui/icons-material';
 import { formatCurrency, formattedDate } from '@/utils/functions';
 import { ModalStateEnum } from '@/types/global.enum';
 import AntTable, { AntColumnType } from '@/components/AntTable';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import ContactsDrawer from '@/components/ContactsDrawer';
 import { ContactTypeEnum } from '@/services/contacts/contacts.enum';
 import { ESTADO_ROL_COLORS, ESTADO_ROL_LABELS } from '@/utils/constants';
@@ -106,9 +106,8 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onReload, isPriv
         <Tooltip title="Editar venta">
           <Button
             variant="contained"
-            onClick={() => {
-              navigate('/sales/' + record.id + '/edit')
-            }}
+            component={Link}
+            to={`/sales/${record.id}/edit`}
             startIcon={<Visibility />}
             size="small"
             color="info"

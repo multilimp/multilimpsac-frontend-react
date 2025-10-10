@@ -3,6 +3,7 @@ import { SaleProps } from '@/services/sales/sales';
 import { formatCurrency, formattedDate } from '@/utils/functions';
 import { IconButton, Button } from '@mui/material';
 import { PictureAsPdf, Visibility } from '@mui/icons-material';
+import { Link } from 'react-router-dom';
 
 interface ProviderOrdersTableProps {
   data: Array<SaleProps>;
@@ -58,9 +59,8 @@ const ProviderOrdersTable = ({ data, loading, onRowClick }: ProviderOrdersTableP
       render: (value, record) => (
         <Button
           variant="contained"
-          onClick={() => {
-            onRowClick(record.rawdata);
-          }}
+          component={Link}
+          to={`/sales/${record.rawdata.id}/edit`}
           startIcon={<Visibility />}
           size="small"
           color="info"

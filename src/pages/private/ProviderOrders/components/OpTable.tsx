@@ -3,6 +3,7 @@ import { ProviderOrderProps } from '@/services/providerOrders/providerOrders';
 import { formatCurrency, formattedDate } from '@/utils/functions';
 import { IconButton, Button, Box, Chip } from '@mui/material';
 import { PictureAsPdf, Visibility } from '@mui/icons-material';
+import { Link } from 'react-router-dom';
 import { ESTADOS, EstadoVentaType, ESTADO_ROL_COLORS } from '@/utils/constants';
 
 interface OpTableProps {
@@ -88,9 +89,8 @@ const OpTable = ({ data, loading, onRowClick, onReload }: OpTableProps) => {
       render: (value, record) => (
         <Button
           variant="contained"
-          onClick={() => {
-            onRowClick(record.rawdata);
-          }}
+          component={Link}
+          to={`/provider-orders/${record.rawdata.id}`}
           startIcon={<Visibility />}
           size="small"
           color="info"

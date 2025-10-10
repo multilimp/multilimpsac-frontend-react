@@ -5,6 +5,7 @@ import { Visibility } from '@mui/icons-material';
 import AntTable, { AntColumnType } from '@/components/AntTable';
 import { ProviderOrderProps } from '@/services/providerOrders/providerOrders';
 import { formatCurrency, formattedDate } from '@/utils/functions';
+import { Link } from 'react-router-dom';
 
 interface ProviderOrdersTreasuryTableProps {
   data: ProviderOrderProps[];
@@ -52,9 +53,8 @@ export default function ProviderOrdersTreasuryTable({
       render: (value, record) => (
         <Button
           variant="contained"
-          onClick={() => {
-            onRowClick?.(record.rawdata);
-          }}
+          component={Link}
+          to={`/provider-orders/${record.rawdata.id}?from=treasury`}
           startIcon={<Visibility />}
           size="small"
           color="info"
