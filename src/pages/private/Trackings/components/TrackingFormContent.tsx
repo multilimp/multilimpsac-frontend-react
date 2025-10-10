@@ -40,7 +40,7 @@ import {
   GetApp as DownloadIcon,
   Payment as PaymentIcon,
 } from '@mui/icons-material';
-import { notification, Form, Input } from 'antd';
+import { notification, Form, Input, Select } from 'antd';
 import TextArea from 'antd/lib/input/TextArea';
 import dayjs, { Dayjs } from 'dayjs';
 import Grid from '@mui/material/Grid';
@@ -67,6 +67,7 @@ import PagosModal from '@/components/PagosModal';
 import InputNumberAntd from '@/components/InputNumberAntd';
 import PaymentsList from '@/components/PaymentsList';
 import { updatePayments } from '@/services/payments/payments.service';
+import { ESTADOS, EstadoVentaType, estadoBgMap } from '@/utils/constants';
 
 interface TrackingFormContentProps {
   sale: SaleProps;
@@ -2230,7 +2231,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
           <Card
             sx={{
               bgcolor: '#1e293b',
-              borderRadius: 3,
+              borderRadius: 2,
               overflow: 'hidden',
               boxShadow: '0 8px 32px rgba(16, 185, 129, 0.2)'
             }}
@@ -2323,7 +2324,6 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                 </Grid>
               </Grid>
 
-
             </CardContent>
           </Card>
 
@@ -2333,7 +2333,6 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
             gap: 2,
             justifyContent: 'space-between',
             alignItems: 'center',
-            mt: 4,
             p: 3,
             bgcolor: '#f8fafc',
             borderRadius: 2,
@@ -2355,44 +2354,97 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
               Volver
             </Button>
 
-
-            <div style={{ display: 'flex', gap: 10 }}>
-              {changedOCFields.size > 0 && (
-                <Button
-                  variant="outlined"
-                  onClick={cancelOCChanges}
-                  disabled={savingOC}
-                  sx={{
-                    borderColor: '#d1d5db',
-                    color: '#6b7280',
-                    '&:hover': {
-                      borderColor: '#9ca3af',
-                      backgroundColor: alpha('#f3f4f6', 0.5),
-                    }
+            {/* Selector de Estado de Seguimiento */}
+            <Box sx={{ minWidth: 250 }}>
+              <Form.Item
+                name="estadoRolSeguimiento"
+                initialValue={sale.estadoRolSeguimiento || 'PENDIENTE'}
+                style={{ marginBottom: 0 }}
+              >
+                <Select
+                  size='large'
+                  onChange={(value) => handleOCFieldChange('estadoRolSeguimiento', value)}
+                  style={{ width: '100%' }}
+                  dropdownStyle={{
+                    padding: '8px 0'
                   }}
                 >
-                  Cancelar
-                </Button>
-              )}
+                  {Object.values(ESTADOS).map(estado => {
+                    const color = estadoBgMap[estado.key];
+                    return (
+                      <Select.Option key={estado.key} value={estado.value}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                          <Box
+                            sx={{
+                              width: 10,
+                              height: 10,
+                              borderRadius: '50%',
+                              backgroundColor: color,
+                              boxShadow: `0 0 8px ${color}80`
+                            }}
+                          />
+                          <span>{estado.label}</span>
+                        </Box>
+                      </Select.Option>
+                    );
+                  })}
+                </Select>
+              </Form.Item>
+            </Box>
+          </Box>
+
+          {/* Botones de acción - Centrados debajo */}
+          <Box sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: 2,
+            mt: 3
+          }}>
+            {changedOCFields.size > 0 && (
               <Button
-                variant="contained"
-                onClick={saveOCChanges}
+                variant="outlined"
+                onClick={cancelOCChanges}
                 disabled={savingOC}
                 sx={{
-                  bgcolor: '#10b981',
+                  minWidth: 200,
+                  height: 48,
+                  fontSize: '1rem',
+                  fontWeight: 600,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                  borderColor: '#d1d5db',
+                  color: '#6b7280',
                   '&:hover': {
-                    bgcolor: '#059669'
-                  },
-                  '&:disabled': {
-                    bgcolor: '#6b7280'
+                    borderColor: '#9ca3af',
+                    backgroundColor: alpha('#f3f4f6', 0.5),
                   }
                 }}
               >
-                {loading ? 'Guardando...' : 'Guardar Seguimiento'}
+                Cancelar
               </Button>
-            </div>
-
-
+            )}
+            <Button
+              variant="contained"
+              onClick={saveOCChanges}
+              disabled={savingOC}
+              sx={{
+                bgcolor: '#10b981',
+                minWidth: 250,
+                height: 48,
+                fontSize: '1rem',
+                fontWeight: 600,
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                '&:hover': {
+                  bgcolor: '#059669'
+                },
+                '&:disabled': {
+                  bgcolor: '#6b7280'
+                }
+              }}
+            >
+              {loading ? 'Guardando...' : 'Guardar Seguimiento'}
+            </Button>
           </Box>
         </Stack>
       </Form>

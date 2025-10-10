@@ -52,6 +52,7 @@ export interface SaleProps {
   etapaActual: string;
   estadoVenta: EstadoVentaType;
   estadoFacturacion: EstadoVentaType;
+  estadoRolSeguimiento: EstadoVentaType;
   estadoActivo: boolean;
   createdAt: string;
   updatedAt: string;

@@ -1,10 +1,11 @@
 import AntTable, { AntColumnType } from '@/components/AntTable';
 import { SaleProps } from '@/services/sales/sales';
 import { formatCurrency, formattedDate } from '@/utils/functions';
-import { IconButton, Button, Box } from '@mui/material';
+import { IconButton, Button, Box, Chip } from '@mui/material';
 import { PictureAsPdf, Visibility } from '@mui/icons-material';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 import { useNavigate } from 'react-router-dom';
+import { ESTADOS, EstadoVentaType, ESTADO_ROL_COLORS } from '@/utils/constants';
 
 interface TrackingsTableProps {
   data: Array<SaleProps>;
@@ -30,8 +31,7 @@ interface TrackingsDataTable {
   montoVenta: string;
   cue: string;
   departamentoEntrega?: string;
-  ops_completion_color: string;
-  ops_completion_label: string;
+  estadoRolSeguimiento: EstadoVentaType;
 }
 
 const defaultText = 'N/A';
@@ -39,33 +39,21 @@ const TrackingsTable = ({ data, loading, onRowClick, onReload }: TrackingsTableP
   const { setSelectedSale } = useGlobalInformation();
   const navigate = useNavigate();
 
-  const getOpsCompletionStatus = (sale: SaleProps) => {
-    if (!sale.ordenesProveedor || sale.ordenesProveedor.length === 0) {
-      return { color: '#F59E0B', label: 'Sin OPs' };
-    }
-
-    const allCompleted = sale.ordenesProveedor.every(op => op.isCompleted === true);
-
-    return {
-      color: allCompleted ? '#10B981' : '#F59E0B',
-      label: allCompleted ? 'Completadas' : 'Pendientes'
-    };
-  };
-
   const handleRowClick = (sale: SaleProps) => {
-    // Si hay un callback personalizado, usarlo
     if (onRowClick) {
       onRowClick(sale);
     } else {
-      // Comportamiento por defecto
       setSelectedSale(sale);
       navigate(`/tracking/${sale.id}`);
     }
   };
 
-  const formattedData: Array<TrackingsDataTable> = data.map((item) => {
-    const opsStatus = getOpsCompletionStatus(item);
+  const getStatusBackgroundColor = (status: string) => {
+    const normalizedStatus = status?.toUpperCase() as keyof typeof ESTADO_ROL_COLORS;
+    return ESTADO_ROL_COLORS[normalizedStatus] || ESTADO_ROL_COLORS.PENDIENTE;
+  };
 
+  const formattedData: Array<TrackingsDataTable> = data.map((item) => {
     return {
       id: item.id,
       rawdata: item,
@@ -83,15 +71,14 @@ const TrackingsTable = ({ data, loading, onRowClick, onReload }: TrackingsTableP
       montoVenta: formatCurrency(parseInt(item.montoVenta, 10)),
       cue: item.cliente?.codigoUnidadEjecutora ?? defaultText,
       departamentoEntrega: item.departamentoEntrega ?? defaultText,
-      ops_completion_color: opsStatus.color,
-      ops_completion_label: opsStatus.label,
+      estadoRolSeguimiento: item.estadoRolSeguimiento || 'PENDIENTE',
     };
   });
 
   const columns: Array<AntColumnType<TrackingsDataTable>> = [
     {
       title: '',
-      dataIndex: 'ops_completion_color',
+      dataIndex: 'estadoRolSeguimiento',
       width: 20,
       render: (value: string) => (
         <Box
@@ -99,12 +86,12 @@ const TrackingsTable = ({ data, loading, onRowClick, onReload }: TrackingsTableP
             width: '100%',
             height: '100%',
             minHeight: '60px',
-            backgroundColor: `${value} !important`,
+            backgroundColor: `${getStatusBackgroundColor(value)} !important`,
             margin: '-16px !important',
             padding: '6px !important',
 
             '&:hover': {
-              backgroundColor: `${value} !important`,
+              backgroundColor: `${getStatusBackgroundColor(value)} !important`,
               opacity: '0.9 !important',
             }
           }}
@@ -172,42 +159,28 @@ const TrackingsTable = ({ data, loading, onRowClick, onReload }: TrackingsTableP
         ),
     },
     {
-      title: 'Estado OPs',
-      dataIndex: 'ops_completion_label',
+      title: 'Estado Seguimiento',
+      dataIndex: 'estadoRolSeguimiento',
       width: 150,
       sort: true,
       filter: true,
-      align: 'center',
-      render: (value: string, record: TrackingsDataTable) => {
-        const color = record.ops_completion_color;
-
+      render: (value: EstadoVentaType) => {
+        const estado = ESTADOS[value];
         return (
-          <Box
+          <Chip
+            label={estado.label}
             sx={{
-              width: '100%',
-              backgroundColor: color,
-              color: 'white',
-              textAlign: 'center',
-              borderRadius: '4px',
-              padding: '6px 16px',
+              backgroundColor: estado.color,
+              color: '#fff',
               fontWeight: 600,
-              fontSize: '0.8125rem',
-              textTransform: 'none',
-              boxShadow: `0 2px 8px ${color}40`,
-              cursor: 'default',
-              transition: 'all 0.2s ease',
-
-              '&:hover': {
-                opacity: 0.9,
-                transform: 'translateY(-1px)',
-                boxShadow: `0 4px 12px ${color}60`,
-              }
+              fontSize: '0.75rem',
+              height: 28,
+              borderRadius: 1.5,
+              boxShadow: `0 0 10px ${estado.color}60`,
             }}
-          >
-            {value}
-          </Box>
+          />
         );
-      },
+      }
     },
   ];
 
