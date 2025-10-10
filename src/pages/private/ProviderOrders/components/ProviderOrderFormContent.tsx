@@ -498,7 +498,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
                 direccion: transporte.direccion || null,
                 notaTransporte: transporte.nota || null,
                 montoFlete: transporte.flete ? parseFloat(transporte.flete) : 0,
-                tipoDestino: transporte.destino === 'AGENCIA' ? 'AGENCIA' : 'ALMACEN',
+                tipoDestino: transporte.destino || 'ALMACEN',
                 // NO incluir codigoTransporte - se mantiene el existente
               }
             });
@@ -514,7 +514,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
               direccion: transporte.direccion || null,
               notaTransporte: transporte.nota || null,
               montoFlete: transporte.flete ? parseFloat(transporte.flete) : 0,
-              tipoDestino: transporte.destino === 'AGENCIA' ? 'AGENCIA' : 'ALMACEN',
+              tipoDestino: transporte.destino || 'ALMACEN',
               // codigoTransporte se generará automáticamente en el backend
             });
           }
