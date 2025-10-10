@@ -292,19 +292,19 @@ const AntTable = <T extends Record<string, any>>(props: AntTablePropsProps<T>) =
                       <SaveAlt />
                     </IconButton>
                   </Tooltip>
-                  {onReload && (
-                    <Tooltip title="Recargar datos">
-                      <IconButton color="success" size="small" onClick={handleReload}>
-                        <Replay />
-                      </IconButton>
-                    </Tooltip>
-                  )}
                   <Tooltip title="Limpiar filtros">
                     <IconButton color="error" size="small" onClick={handleClear}>
                       <Clear />
                     </IconButton>
                   </Tooltip>
                 </>
+              )}
+              {onReload && (
+                <Tooltip title="Recargar datos">
+                  <IconButton color="success" size="small" onClick={handleReload}>
+                    <Replay />
+                  </IconButton>
+                </Tooltip>
               )}
             </Stack>
           )}
