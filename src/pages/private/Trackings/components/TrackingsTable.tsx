@@ -4,7 +4,7 @@ import { formatCurrency, formattedDate } from '@/utils/functions';
 import { IconButton, Button, Box, Chip } from '@mui/material';
 import { PictureAsPdf, Visibility } from '@mui/icons-material';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { ESTADOS, EstadoVentaType, ESTADO_ROL_COLORS } from '@/utils/constants';
 
 interface TrackingsTableProps {
@@ -108,7 +108,8 @@ const TrackingsTable = ({ data, loading, onRowClick, onReload }: TrackingsTableP
       render: (value, record) => (
         <Button
           variant="contained"
-          onClick={() => handleRowClick(record.rawdata)}
+          component={Link}
+          to={`/tracking/${record.rawdata.id}`}
           startIcon={<Visibility />}
           size="small"
           color="info"
