@@ -1,20 +1,18 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import {
     Card,
-    CardContent,
-    Tabs,
-    Tab,
     Chip,
     Typography,
     Box,
     Alert,
     CircularProgress,
 } from '@mui/material';
+import { Button, Space, Badge } from 'antd';
 import {
-    AttachMoney as MoneyIcon,
-    Warning as WarningIcon,
-    Schedule as ClockIcon,
-} from '@mui/icons-material';
+    DollarOutlined,
+    WarningOutlined,
+    ClockCircleOutlined,
+} from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useDashboardTesoreria } from '@/hooks/useDashboardTesoreria';
 import { PagoPorEstado } from '@/services/notificaciones/notificaciones.request';
@@ -22,56 +20,25 @@ import { formatCurrency } from '@/utils/functions';
 import AntTable from './AntTable';
 import type { AntColumnType } from './AntTable';
 
-// Componente memoizado para tarjetas de estadísticas
-const StatsCard = React.memo<{
-    title: string;
-    value: string | number;
-    icon: React.ReactNode;
-    color: 'error' | 'warning' | 'primary';
-}>(({ title, value, icon, color }) => {
-    return (
-        <Card
-            elevation={2}
-            sx={{
-                borderLeft: 4,
-                borderLeftColor: color === 'error' ? 'error.main' :
-                    color === 'warning' ? 'warning.main' : 'primary.main',
-                background: color === 'error' ? '#fef2f2' :
-                    color === 'warning' ? '#fffbeb' : '#eff6ff',
-                height: '100%',
-            }}
-        >
-            <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Box>
-                        <Typography variant="body2" color="textSecondary" gutterBottom>
-                            {title}
-                        </Typography>
-                        <Typography variant="h4" component="div" fontWeight="bold">
-                            {value}
-                        </Typography>
-                    </Box>
-                    <Box sx={{ fontSize: 48, opacity: 0.5, color: `${color}.main` }}>
-                        {icon}
-                    </Box>
-                </Box>
-            </CardContent>
-        </Card>
-    );
-});
-
-StatsCard.displayName = 'StatsCard';
-
-// Componente memoizado para fila de tabla (micro-optimización)
+type FiltroEstado = 'TODOS' | 'URGENTE' | 'PENDIENTE';
 
 const PaymentTable = React.memo<{
     pagos: PagoPorEstado[];
-    tipo: 'urgentes' | 'pendientes';
     formatCurrency: (amount: number) => string;
     formatDate: (date: Date | null) => string;
     onRowClick: (pago: PagoPorEstado) => void;
     onRefresh: () => Promise<void>;
-}>(({ pagos, tipo, formatCurrency, formatDate, onRowClick, onRefresh }) => {
+}>(({ pagos, formatCurrency, formatDate, onRowClick, onRefresh }) => {
+    const [filtroActivo, setFiltroActivo] = useState<FiltroEstado>('TODOS');
+
+    const pagosFiltrados = useMemo(() => {
+        if (filtroActivo === 'TODOS') return pagos;
+        return pagos.filter(pago => pago.estadoPago === filtroActivo);
+    }, [pagos, filtroActivo]);
+
+    const urgentesCount = useMemo(() => pagos.filter(p => p.estadoPago === 'URGENTE').length, [pagos]);
+    const pendientesCount = useMemo(() => pagos.filter(p => p.estadoPago === 'PENDIENTE').length, [pagos]);
+
     const columns: AntColumnType<PagoPorEstado>[] = useMemo(
         () => [
             {
@@ -182,12 +149,52 @@ const PaymentTable = React.memo<{
 
     return (
         <Box>
+            <Box sx={{ mb: 3 }}>
+                <Space size="middle">
+                    <Button
+                        type={filtroActivo === 'TODOS' ? 'primary' : 'default'}
+                        icon={<DollarOutlined />}
+                        size="large"
+                        onClick={() => setFiltroActivo('TODOS')}
+                        style={{ minWidth: 150 }}
+                    >
+                        Todos {`(${pagos.length})`}
+                    </Button>
+                    <Button
+                        type={filtroActivo === 'URGENTE' ? 'primary' : 'default'}
+                        danger={filtroActivo === 'URGENTE'}
+                        icon={<WarningOutlined />}
+                        size="large"
+                        onClick={() => setFiltroActivo('URGENTE')}
+                        style={{ minWidth: 150 }}
+                    >
+                        Urgentes {`(${urgentesCount})`}
+                    </Button>
+                    <Button
+                        type={filtroActivo === 'PENDIENTE' ? 'primary' : 'default'}
+                        icon={<ClockCircleOutlined />}
+                        size="large"
+                        onClick={() => setFiltroActivo('PENDIENTE')}
+                        style={{
+                            minWidth: 150,
+                            ...(filtroActivo === 'PENDIENTE' && {
+                                backgroundColor: '#faad14',
+                                borderColor: '#faad14',
+                                color: 'white'
+                            })
+                        }}
+                    >
+                        Pendientes {`(${pendientesCount})`}
+                    </Button>
+                </Space>
+            </Box>
+
             <AntTable
                 columns={columns}
-                data={pagos}
+                data={pagosFiltrados}
                 onReload={onRefresh}
                 hideToolbar
-                rowKey={(record) => `${record.tipo}-${record.id || record.codigo}`}
+                rowKey={(record) => `${record.tipo}-${record.codigo}`}
                 onRow={(record) => ({
                     onClick: () => onRowClick(record),
                     style: { cursor: 'pointer' },
@@ -197,16 +204,12 @@ const PaymentTable = React.memo<{
 
             <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography variant="body2" color="textSecondary">
-                    Mostrando {pagos.length} pagos
+                    Mostrando {pagosFiltrados.length} de {pagos.length} pagos
                 </Typography>
             </Box>
         </Box>
     );
 });
-
-// Componente memoizado para tabla de pagos
-
-PaymentTable.displayName = 'PaymentTable';
 
 PaymentTable.displayName = 'PaymentTable';
 
@@ -223,8 +226,6 @@ const DashboardTesoreria: React.FC = () => {
         refreshPagosPendientes,
     } = useDashboardTesoreria();
 
-    const [activeTab, setActiveTab] = useState<number>(0);
-
     const handleRowClick = useCallback((pago: PagoPorEstado) => {
         const section = pago.tipo === 'TRANSPORTE' ? 'transporte' : 'proveedor';
         navigate(`/provider-orders/${pago.id}?from=treasury&section=${section}`);
@@ -239,10 +240,9 @@ const DashboardTesoreria: React.FC = () => {
         }).format(new Date(date));
     }, []);
 
-    // Transformar datos de tesorería al formato PagoPorEstado
     const transformTransportesToPagoPorEstado = useCallback((transportes: any[], estado: 'URGENTE' | 'PENDIENTE'): PagoPorEstado[] => {
         return transportes.map(transporte => ({
-            id: transporte.ordenProveedor?.id || transporte.id, // Usar el ID de la OP, no del transporte
+            id: transporte.ordenProveedor?.id || transporte.id,
             tipo: 'TRANSPORTE' as const,
             codigo: transporte.codigoTransporte,
             cliente: transporte.transporte?.razonSocial || 'Sin transporte',
@@ -278,36 +278,20 @@ const DashboardTesoreria: React.FC = () => {
         }));
     }, []);
 
-    // Combinar transportes y órdenes de proveedor urgentes en una sola lista
-    const pagosUrgentesCombinados = useMemo(() => {
-        const transportes = transformTransportesToPagoPorEstado(transportesUrgentes || [], 'URGENTE');
-        const ordenesProveedor = transformOrdenesProveedorToPagoPorEstado(ordenesProveedorUrgentes || [], 'URGENTE');
-        return [...transportes, ...ordenesProveedor].sort((a, b) => {
-            // Ordenar por fecha de creación (más recientes primero)
+    const todosPagosCombinados = useMemo(() => {
+        const transUrgentes = transformTransportesToPagoPorEstado(transportesUrgentes || [], 'URGENTE');
+        const transPendientes = transformTransportesToPagoPorEstado(transportesPendientes || [], 'PENDIENTE');
+        const opUrgentes = transformOrdenesProveedorToPagoPorEstado(ordenesProveedorUrgentes || [], 'URGENTE');
+        const opPendientes = transformOrdenesProveedorToPagoPorEstado(ordenesProveedorPendientes || [], 'PENDIENTE');
+
+        return [...transUrgentes, ...transPendientes, ...opUrgentes, ...opPendientes].sort((a, b) => {
             return new Date(b.fechaCreacion).getTime() - new Date(a.fechaCreacion).getTime();
         });
-    }, [transportesUrgentes, ordenesProveedorUrgentes, transformTransportesToPagoPorEstado, transformOrdenesProveedorToPagoPorEstado]);
+    }, [transportesUrgentes, transportesPendientes, ordenesProveedorUrgentes, ordenesProveedorPendientes, transformTransportesToPagoPorEstado, transformOrdenesProveedorToPagoPorEstado]);
 
-    // Combinar transportes y órdenes de proveedor pendientes en una sola lista
-    const pagosPendientesCombinados = useMemo(() => {
-        const transportes = transformTransportesToPagoPorEstado(transportesPendientes || [], 'PENDIENTE');
-        const ordenesProveedor = transformOrdenesProveedorToPagoPorEstado(ordenesProveedorPendientes || [], 'PENDIENTE');
-        return [...transportes, ...ordenesProveedor].sort((a, b) => {
-            return new Date(b.fechaCreacion).getTime() - new Date(a.fechaCreacion).getTime();
-        });
-    }, [transportesPendientes, ordenesProveedorPendientes, transformTransportesToPagoPorEstado, transformOrdenesProveedorToPagoPorEstado]);
-
-    const handleTabChange = useCallback((_: React.SyntheticEvent, newValue: number) => {
-        setActiveTab(newValue);
-    }, []);
-
-    const handleRefreshUrgentes = useCallback(async () => {
-        await refreshPagosUrgentes();
-    }, [refreshPagosUrgentes]);
-
-    const handleRefreshPendientes = useCallback(async () => {
-        await refreshPagosPendientes();
-    }, [refreshPagosPendientes]);
+    const handleRefresh = useCallback(async () => {
+        await Promise.all([refreshPagosUrgentes(), refreshPagosPendientes()]);
+    }, [refreshPagosUrgentes, refreshPagosPendientes]);
 
     if (loading) {
         return (
@@ -329,55 +313,19 @@ const DashboardTesoreria: React.FC = () => {
     return (
         <Box sx={{ width: '100%' }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                <Box>
-                    <Typography variant="h4" component="h1" gutterBottom>
-                        Dashboard de Tesorería
-                    </Typography>
-                </Box>
+                <Typography variant="h4" component="h1" gutterBottom>
+                    Dashboard de Tesorería
+                </Typography>
             </Box>
 
-            <Card variant="outlined">
-                <Tabs
-                    value={activeTab}
-                    onChange={handleTabChange}
-                    aria-label="tabs de pagos"
-                    sx={{ borderBottom: 1, borderColor: 'divider' }}
-                >
-                    <Tab
-                        label={`Pagos Urgentes (${pagosUrgentesCombinados?.length || 0})`}
-                        icon={<WarningIcon />}
-                        iconPosition="start"
-                    />
-                    <Tab
-                        label={`Pagos Pendientes (${pagosPendientesCombinados?.length || 0})`}
-                        icon={<ClockIcon />}
-                        iconPosition="start"
-                    />
-                </Tabs>
-
-                <Box sx={{ p: 3 }}>
-                    {activeTab === 0 && (
-                        <PaymentTable
-                            pagos={pagosUrgentesCombinados}
-                            tipo="urgentes"
-                            formatCurrency={formatCurrency}
-                            formatDate={formatDate}
-                            onRowClick={handleRowClick}
-                            onRefresh={handleRefreshUrgentes}
-                        />
-                    )}
-
-                    {activeTab === 1 && (
-                        <PaymentTable
-                            pagos={pagosPendientesCombinados}
-                            tipo="pendientes"
-                            formatCurrency={formatCurrency}
-                            formatDate={formatDate}
-                            onRowClick={handleRowClick}
-                            onRefresh={handleRefreshPendientes}
-                        />
-                    )}
-                </Box>
+            <Card variant="outlined" sx={{ p: 3 }}>
+                <PaymentTable
+                    pagos={todosPagosCombinados}
+                    formatCurrency={formatCurrency}
+                    formatDate={formatDate}
+                    onRowClick={handleRowClick}
+                    onRefresh={handleRefresh}
+                />
             </Card>
         </Box>
     );
