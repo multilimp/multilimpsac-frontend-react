@@ -187,7 +187,7 @@ const PaymentTable = React.memo<{
                 data={pagos}
                 onReload={onRefresh}
                 hideToolbar
-                rowKey={(record) => record.id?.toString() || `${record.tipo}-${record.codigo}`}
+                rowKey={(record) => `${record.tipo}-${record.id || record.codigo}`}
                 onRow={(record) => ({
                     onClick: () => onRowClick(record),
                     style: { cursor: 'pointer' },
