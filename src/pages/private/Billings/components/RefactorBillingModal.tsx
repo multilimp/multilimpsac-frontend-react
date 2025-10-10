@@ -12,7 +12,7 @@ import {
     Divider,
     Fade
 } from '@mui/material';
-import { Form, notification } from 'antd';
+import { Form, Input, notification } from 'antd';
 import { Refresh as RefreshIcon, Save as SaveIcon, Description as DescriptionIcon, DateRange as DateRangeIcon, AttachFile as AttachFileIcon, Info as InfoIcon } from '@mui/icons-material';
 import Grid from '@mui/material/Grid';
 import dayjs from 'dayjs';
@@ -62,19 +62,17 @@ const RefactorBillingModal: React.FC<RefactorBillingModalProps> = ({
                 ordenCompraId,
                 factura: values.numeroFactura,
                 fechaFactura: values.fechaFactura ? values.fechaFactura.toISOString() : null,
-                grr: billing.grr,
-                retencion: billing.retencion || 0,
-                detraccion: billing.detraccion || 0,
-                formaEnvioFactura: billing.formaEnvioFactura,
-                facturaArchivo: billing.facturaArchivo,
-                grrArchivo: billing.grrArchivo,
+                grr: values.grr,
+                retencion: values.retencion || 0,
+                detraccion: values.detraccion || 0,
+                formaEnvioFactura: values.formaEnvioFactura,
+                facturaArchivo: values.facturaArchivo,
+                grrArchivo: values.grrArchivo,
                 notaCreditoTexto: values.notaCreditoTexto,
                 notaCreditoArchivo: values.notaCreditoArchivo || null,
                 esRefacturacion: true,
-                idFacturaOriginal: billing.id
+                idFacturaOriginal: billing.idFacturaOriginal || billing.id
             };
-
-            console.log('🔄 Creando refacturación:', refacturacionData);
 
             await createBilling(refacturacionData);
 
@@ -101,7 +99,13 @@ const RefactorBillingModal: React.FC<RefactorBillingModalProps> = ({
         if (open && billing) {
             form.setFieldsValue({
                 numeroFactura: billing.factura || '',
-                fechaFactura: dayjs(),
+                fechaFactura: billing.fechaFactura ? dayjs(billing.fechaFactura) : null,
+                grr: billing.grr || '',
+                retencion: billing.retencion || 0,
+                detraccion: billing.detraccion || 0,
+                formaEnvioFactura: billing.formaEnvioFactura,
+                facturaArchivo: billing.facturaArchivo,
+                grrArchivo: billing.grrArchivo,
                 notaCreditoTexto: '',
                 notaCreditoArchivo: null
             });
@@ -114,7 +118,6 @@ const RefactorBillingModal: React.FC<RefactorBillingModalProps> = ({
             onClose={handleClose}
             maxWidth="md"
             fullWidth
-            TransitionComponent={Fade}
             transitionDuration={300}
             sx={{
                 '& .MuiDialog-paper': {
@@ -199,7 +202,114 @@ const RefactorBillingModal: React.FC<RefactorBillingModalProps> = ({
                                 />
                             </Form.Item>
                         </Grid>
+                        <Grid size={{ xs: 12, md: 6 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                                <DescriptionIcon sx={{ color: '#6b7280', fontSize: 20 }} />
+                                <Typography sx={{ fontSize: '0.875rem', fontWeight: 600, color: '#374151' }}>
+                                    Archivo Factura
+                                </Typography>
+                            </Box>
+                            <Form.Item
+                                name="facturaArchivo"
+                                rules={[{ required: true, message: 'Archivo de factura requerido' }]}
+                                style={{ marginBottom: 0 }}
+                            >
+                                <SimpleFileUpload />
+                            </Form.Item>
+                        </Grid>
+                        <Grid size={{ xs: 12, md: 6 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                                <DescriptionIcon sx={{ color: '#6b7280', fontSize: 20 }} />
+                                <Typography sx={{ fontSize: '0.875rem', fontWeight: 600, color: '#374151' }}>
+                                    Archivo GRR
+                                </Typography>
+                            </Box>
+                            <Form.Item
+                                name="grrArchivo"
+                                rules={[{ required: true, message: 'Archivo de factura requerido' }]}
+                                style={{ marginBottom: 0 }}
+                            >
+                                <SimpleFileUpload />
+                            </Form.Item>
+                        </Grid>
+                        <Grid size={{ xs: 12, md: 6 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                                <DescriptionIcon sx={{ color: '#6b7280', fontSize: 20 }} />
+                                <Typography sx={{ fontSize: '0.875rem', fontWeight: 600, color: '#374151' }}>
+                                    Retencion
+                                </Typography>
+                            </Box>
+                            <Form.Item
+                                name="retencion"
+                                rules={[{ required: true, message: 'Número de factura requerido' }]}
+                                style={{ marginBottom: 0 }}
+                            >
+                                <InputAntd
+                                    placeholder="Ej: F001-00001234"
+                                    size="small"
+                                    style={{ borderRadius: 8 }}
+                                />
+                            </Form.Item>
+                        </Grid>
 
+                        <Grid size={{ xs: 12, md: 6 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                                <DateRangeIcon sx={{ color: '#6b7280', fontSize: 20 }} />
+                                <Typography sx={{ fontSize: '0.875rem', fontWeight: 600, color: '#374151' }}>
+                                    Detraccion
+                                </Typography>
+                            </Box>
+                            <Form.Item
+                                name="detraccion"
+                                rules={[{ required: true, message: 'Fecha requerida' }]}
+                                style={{ marginBottom: 0 }}
+                            >
+                                <InputAntd
+                                    placeholder="Ej: F001-00001234"
+                                    size="small"
+                                    style={{ borderRadius: 8 }}
+                                />
+                            </Form.Item>
+                        </Grid>
+                        <Grid size={{ xs: 12, md: 6 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                                <DescriptionIcon sx={{ color: '#6b7280', fontSize: 20 }} />
+                                <Typography sx={{ fontSize: '0.875rem', fontWeight: 600, color: '#374151' }}>
+                                    GRR
+                                </Typography>
+                            </Box>
+                            <Form.Item
+                                name="grr"
+                                rules={[{ required: true, message: 'Número de factura requerido' }]}
+                                style={{ marginBottom: 0 }}
+                            >
+                                <InputAntd
+                                    placeholder="Ej: F001-00001234"
+                                    size="small"
+                                    style={{ borderRadius: 8 }}
+                                />
+                            </Form.Item>
+                        </Grid>
+
+                        <Grid size={{ xs: 12, md: 6 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                                <DateRangeIcon sx={{ color: '#6b7280', fontSize: 20 }} />
+                                <Typography sx={{ fontSize: '0.875rem', fontWeight: 600, color: '#374151' }}>
+                                    Envio de Factura
+                                </Typography>
+                            </Box>
+                            <Form.Item
+                                name="formaEnvioFactura"
+                                rules={[{ required: true, message: 'Fecha requerida' }]}
+                                style={{ marginBottom: 0 }}
+                            >
+                                <InputAntd
+                                    placeholder="Ej: F001-00001234"
+                                    size="small"
+                                    style={{ borderRadius: 8 }}
+                                />
+                            </Form.Item>
+                        </Grid>
                         <Grid size={{ xs: 12 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                                 <RefreshIcon sx={{ color: '#6b7280', fontSize: 20 }} />
@@ -236,75 +346,6 @@ const RefactorBillingModal: React.FC<RefactorBillingModalProps> = ({
                         </Grid>
                     </Grid>
                 </Form>
-
-                <Divider sx={{ my: 4, borderColor: '#e5e7eb' }} />
-
-                <Box
-                    sx={{
-                        p: 3,
-                        bgcolor: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
-                        borderRadius: 3,
-                        border: '1px solid #0ea5e9',
-                        boxShadow: '0 4px 6px -1px rgba(14, 165, 233, 0.1)'
-                    }}
-                >
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                        <InfoIcon sx={{ color: '#0ea5e9', fontSize: 20 }} />
-                        <Typography variant="subtitle2" sx={{ color: '#0c4a6e', fontWeight: 600 }}>
-                            Datos que se copiarán de la factura original
-                        </Typography>
-                    </Box>
-
-                    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 2 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Typography variant="body2" sx={{ color: '#0c4a6e', fontWeight: 500 }}>
-                                GRR:
-                            </Typography>
-                            <Chip
-                                label={billing?.grr || 'N/A'}
-                                size="small"
-                                variant="outlined"
-                                sx={{ borderColor: '#0ea5e9', color: '#0c4a6e' }}
-                            />
-                        </Box>
-
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Typography variant="body2" sx={{ color: '#0c4a6e', fontWeight: 500 }}>
-                                Retención:
-                            </Typography>
-                            <Chip
-                                label={`${billing?.retencion || 0}%`}
-                                size="small"
-                                variant="outlined"
-                                sx={{ borderColor: '#0ea5e9', color: '#0c4a6e' }}
-                            />
-                        </Box>
-
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Typography variant="body2" sx={{ color: '#0c4a6e', fontWeight: 500 }}>
-                                Detracción:
-                            </Typography>
-                            <Chip
-                                label={`${billing?.detraccion || 0}%`}
-                                size="small"
-                                variant="outlined"
-                                sx={{ borderColor: '#0ea5e9', color: '#0c4a6e' }}
-                            />
-                        </Box>
-
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Typography variant="body2" sx={{ color: '#0c4a6e', fontWeight: 500 }}>
-                                Forma de Envío:
-                            </Typography>
-                            <Chip
-                                label={billing?.formaEnvioFactura || 'N/A'}
-                                size="small"
-                                variant="outlined"
-                                sx={{ borderColor: '#0ea5e9', color: '#0c4a6e' }}
-                            />
-                        </Box>
-                    </Box>
-                </Box>
             </DialogContent>
 
             <DialogActions
