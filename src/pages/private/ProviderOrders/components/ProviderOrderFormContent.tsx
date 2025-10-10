@@ -618,6 +618,84 @@ const calculateProductTotals = (form: any, fieldName: number) => {
 
   const handleNotaPagoChange = (nota: string) => form.setFieldValue('notaPago', nota);
 
+  const handleFinishFailed = (errorInfo: any) => {
+    console.error('Errores de validación:', errorInfo);
+
+    const errorFields = errorInfo.errorFields || [];
+    const errorCount = errorFields.length;
+
+    if (errorCount === 0) return;
+
+    const errorList = errorFields.map((field: any) => {
+      const fieldPath = field.name.join(' > ');
+      const fieldLabel = getFieldLabel(field.name);
+      return `• ${fieldLabel}: ${field.errors.join(', ')}`;
+    });
+
+    if (errorCount === 1) {
+      const firstError = errorFields[0];
+      const fieldLabel = getFieldLabel(firstError.name);
+      notification.error({
+        message: 'Error de validación',
+        description: `${fieldLabel}: ${firstError.errors.join(', ')}`,
+        duration: 6,
+      });
+    } else {
+      notification.error({
+        message: `${errorCount} errores de validación`,
+        description: (
+          <div>
+            <p style={{ marginBottom: 8 }}>Por favor corrija los siguientes campos:</p>
+            {errorList.slice(0, 5).map((error: string, index: number) => (
+              <div key={index}>{error}</div>
+            ))}
+            {errorCount > 5 && <div>... y {errorCount - 5} más</div>}
+          </div>
+        ),
+        duration: 8,
+      });
+    }
+
+    const errorElement = document.querySelector('.ant-form-item-has-error');
+    if (errorElement) {
+      errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
+
+  const getFieldLabel = (fieldName: any[]): string => {
+    if (!fieldName || fieldName.length === 0) return 'Campo';
+
+    const fieldMap: Record<string, string> = {
+      'proveedor': 'Proveedor',
+      'productos': 'Productos',
+      'transportes': 'Transportes',
+      'transporte': 'Empresa de Transporte',
+      'contacto': 'Contacto',
+      'almacen': 'Almacén',
+      'destino': 'Destino',
+      'flete': 'Flete',
+      'cotizacion': 'Cotización',
+      'codigo': 'Código',
+      'descripcion': 'Descripción',
+      'cantidad': 'Cantidad',
+      'precioUnitario': 'Precio Unitario',
+    };
+
+    if (fieldName.length === 1) {
+      return fieldMap[fieldName[0]] || fieldName[0];
+    }
+
+    if (fieldName[0] === 'productos' && fieldName.length === 3) {
+      return `Producto ${Number(fieldName[1]) + 1} - ${fieldMap[fieldName[2]] || fieldName[2]}`;
+    }
+
+    if (fieldName[0] === 'transportes' && fieldName.length === 3) {
+      return `Transporte ${Number(fieldName[1]) + 1} - ${fieldMap[fieldName[2]] || fieldName[2]}`;
+    }
+
+    return fieldName.join(' > ');
+  };
+
   const handlePaymentsChange = async (payments: PagoRecord[]) => {
     if (!orderData?.id) {
       notification.error({
@@ -658,7 +736,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
 
   return (
     <Spin spinning={loading}>
-      <Form form={form} onFinish={handleFinish}>
+      <Form form={form} onFinish={handleFinish} onFinishFailed={handleFinishFailed}>
         <Form.Item name="proveedor" noStyle />
         <Form.Item name="tipoPago" noStyle />
         <Form.Item name="notaPago" noStyle />
