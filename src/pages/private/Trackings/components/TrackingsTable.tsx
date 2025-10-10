@@ -48,8 +48,11 @@ const TrackingsTable = ({ data, loading, onRowClick, onReload }: TrackingsTableP
     }
   };
 
-  const getStatusBackgroundColor = (status: string) => {
-    const normalizedStatus = status?.toUpperCase() as keyof typeof ESTADO_ROL_COLORS;
+  const getStatusBackgroundColor = (status: string | null | undefined) => {
+    if (!status || typeof status !== 'string') {
+      return ESTADO_ROL_COLORS.PENDIENTE;
+    }
+    const normalizedStatus = status.toUpperCase() as keyof typeof ESTADO_ROL_COLORS;
     return ESTADO_ROL_COLORS[normalizedStatus] || ESTADO_ROL_COLORS.PENDIENTE;
   };
 
@@ -164,8 +167,8 @@ const TrackingsTable = ({ data, loading, onRowClick, onReload }: TrackingsTableP
       width: 150,
       sort: true,
       filter: true,
-      render: (value: EstadoVentaType) => {
-        const estado = ESTADOS[value];
+      render: (value: EstadoVentaType | null | undefined) => {
+        const estado = value && ESTADOS[value] ? ESTADOS[value] : ESTADOS.PENDIENTE;
         return (
           <Chip
             label={estado.label}
