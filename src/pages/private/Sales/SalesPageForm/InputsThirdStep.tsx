@@ -169,21 +169,22 @@ const InputsThirdStep = ({ form, companyId, isPrivateSale = false }: InputsThird
             <Grid container columnSpacing={2} rowSpacing={2} sx={{ mt: 1 }}>
               <Grid size={{ xs: 12, sm: 6, md: 6 }}>
                 <Form.Item name="ordenCompraElectronica">
-                  <InputFile
+                  <SimpleFileUpload
                     label="Orden de Compra Electrónica (OCE)"
                     accept="pdf"
-                    maxSizeMB={10}
+                    value={form.getFieldValue('ordenCompraElectronica')}
+                    onChange={(file) => form.setFieldsValue({ ordenCompraElectronica: file })}
                   />
                 </Form.Item>
               </Grid>
 
               <Grid size={{ xs: 12, sm: 6, md: 6 }}>
                 <Form.Item name="ordenCompraFisica">
-                  <InputFile
+                  <SimpleFileUpload
                     label="Orden de Compra Física (OCF)"
                     accept="pdf"
-                    maxSizeMB={10}
-                    fileNamePrefix={cliente?.ruc ? `${form.getFieldValue('codigoOcf') || ''}`.replace(/-$/, '') : undefined}
+                    value={form.getFieldValue('ordenCompraFisica')}
+                    onChange={(file) => form.setFieldsValue({ ordenCompraFisica: file })}
                   />
                 </Form.Item>
               </Grid>
