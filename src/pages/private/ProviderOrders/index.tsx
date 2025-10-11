@@ -57,6 +57,11 @@ const ProviderOrders = () => {
     navigate(`/provider-orders/${op.id}`);
   };
 
+  // Filtrar ventas completadas
+  const filteredSales = useMemo(() => {
+    return sales.filter(sale => sale.estadoVenta === 'COMPLETADO');
+  }, [sales]);
+
   const tabItems: TabsProps['items'] = useMemo(() => [
     {
       key: 'oc',
@@ -64,7 +69,7 @@ const ProviderOrders = () => {
       children: (
         <ProviderOrdersTable
           loading={loadingSales}
-          data={sales}
+          data={filteredSales}
           onRowClick={(sale) => setModal({ mode: ModalStateEnum.BOX, data: sale })}
         />
       )
@@ -118,7 +123,7 @@ const ProviderOrders = () => {
         </>
       )
     }
-  ], [loadingSales, sales, loadingOps, ops, handleOpRowClick, loadOps, fechaInicio, fechaFin]);
+  ], [loadingSales, filteredSales, loadingOps, ops, handleOpRowClick, loadOps, fechaInicio, fechaFin]);
 
   return (
     <PageContent>
