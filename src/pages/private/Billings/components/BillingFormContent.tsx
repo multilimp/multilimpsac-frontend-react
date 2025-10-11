@@ -1205,7 +1205,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                   </Typography>
                   <Box sx={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(3, 1fr)',
+                    gridTemplateColumns: 'repeat(4, 1fr)',
                     gap: 1.5
                   }}>
                     {/* Card 1: Empresa */}
@@ -1266,6 +1266,30 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                         </Typography>
                         <Typography variant="body1" sx={{ fontWeight: 500, color: '#424242', fontSize: '0.9rem' }}>
                           {formatCurrency(parseFloat(sale.montoVenta || '0'))}
+                        </Typography>
+                      </CardContent>
+                    </Card>
+
+                    {/* Card 4: Fuente de financiamiento */}
+                    <Card sx={{
+                      minHeight: '70px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      boxShadow: 'none'
+                    }}>
+                      <CardContent sx={{ py: 1, px: 1.5, '&:last-child': { pb: 1 } }}>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.7rem' }}>
+                          Fuente de Financiamiento
+                        </Typography>
+                        <Typography variant="body1" sx={{
+                          fontWeight: 500,
+                          color: '#424242',
+                          fontSize: '0.9rem',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap'
+                        }}>
+                          {sale.multipleFuentesFinanciamiento ? 'Múltiples fuentes' : 'Única fuente'}
                         </Typography>
                       </CardContent>
                     </Card>
