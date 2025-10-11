@@ -3,7 +3,6 @@ import { SaleProps } from '@/services/sales/sales';
 import { formatCurrency, formattedDate } from '@/utils/functions';
 import { IconButton, Button, Box, Chip } from '@mui/material';
 import { PictureAsPdf, Visibility } from '@mui/icons-material';
-import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 import { useNavigate, Link } from 'react-router-dom';
 import { ESTADOS, EstadoVentaType, ESTADO_ROL_COLORS } from '@/utils/constants';
 
@@ -35,15 +34,13 @@ interface TrackingsDataTable {
 }
 
 const defaultText = 'N/A';
-const TrackingsTable = ({ data, loading, onRowClick, onReload }: TrackingsTableProps) => {
-  const { setSelectedSale } = useGlobalInformation();
+export const TrackingsTable = ({ data, loading, onRowClick, onReload }: TrackingsTableProps) => {
   const navigate = useNavigate();
 
   const handleRowClick = (sale: SaleProps) => {
     if (onRowClick) {
       onRowClick(sale);
     } else {
-      setSelectedSale(sale);
       navigate(`/tracking/${sale.id}`);
     }
   };
@@ -109,7 +106,7 @@ const TrackingsTable = ({ data, loading, onRowClick, onReload }: TrackingsTableP
         <Button
           variant="contained"
           component={Link}
-          to={`/tracking/${record.rawdata.id}`}
+          to={`/tracking/${record.id}`}
           startIcon={<Visibility />}
           size="small"
           color="info"

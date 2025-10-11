@@ -11,7 +11,7 @@ import { getAllOrderProviders } from '@/services/providerOrders/providerOrders.r
 import { notification } from 'antd';
 
 const TrackingsPage = () => {
-  const { sales, loadingSales, obtainSales, setSelectedSale } = useGlobalInformation();
+  const { sales, loadingSales, obtainSales } = useGlobalInformation();
   const [activeTab, setActiveTab] = useState<number>(0);
   const navigate = useNavigate();
   const [ops, setOps] = useState<Array<ProviderOrderProps>>([]);
@@ -45,9 +45,8 @@ const TrackingsPage = () => {
 
   // Handler para OC
   const handleOcRowClick = useCallback((sale: any) => {
-    setSelectedSale(sale);
     navigate(`/tracking/${sale.id}`);
-  }, [setSelectedSale, navigate]);
+  }, [navigate]);
 
   // Handler para OP
   const handleOpRowClick = useCallback((op: ProviderOrderProps) => {

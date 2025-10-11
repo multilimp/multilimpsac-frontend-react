@@ -5,7 +5,6 @@ import { useNavigate, Link } from 'react-router-dom';
 import { formatCurrency, formattedDate } from '@/utils/functions';
 import AntTable, { AntColumnType } from '@/components/AntTable';
 import { SaleProps } from '@/services/sales/sales';
-import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 import { ESTADO_ROL_COLORS, ESTADO_ROL_LABELS } from '@/utils/constants';
 
 interface BillingsTableProps {
@@ -17,8 +16,6 @@ interface BillingsTableProps {
 const defaultText = 'N/A';
 
 const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }) => {
-  const navigate = useNavigate();
-  const { setSelectedSale } = useGlobalInformation();
 
   const getStatusBackgroundColor = (status: string | null | undefined) => {
     if (!status || typeof status !== 'string') {

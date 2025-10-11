@@ -1126,8 +1126,6 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
       // Recargar datos
       await loadProviderOrders();
       initializeOCValues();
-
-      navigate('/tracking');
     } catch (error) {
       notification.error({
         message: 'Error al guardar',
