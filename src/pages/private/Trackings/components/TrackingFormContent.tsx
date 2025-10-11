@@ -1449,8 +1449,8 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                                     size="small"
                                     variant="contained"
                                     onClick={() => saveCronograma(op.id)}
-                                    disabled={cronogramaDisabled}
                                     sx={{
+                                      display: cronogramaDisabled ? 'none' : 'inline-flex',
                                       bgcolor: '#3b82f6',
                                       '&:hover': {
                                         bgcolor: '#2563eb'
@@ -1862,7 +1862,6 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                                           fontSize: '0.875rem',
                                           fontWeight: 600,
                                           p: 1.5,
-                                          color: '#10b981',
                                           textAlign: 'right'
                                         }}>
                                           {transporteAsignado.montoFlete !== null && transporteAsignado.montoFlete !== undefined
@@ -1874,7 +1873,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                                           fontSize: '0.875rem',
                                           fontWeight: 600,
                                           p: 1.5,
-                                          color: '#10b981',
+                                          color: heroUIColors.secondary[500],
                                           textAlign: 'right'
                                         }}>
                                           {transporteAsignado.estadoPago || 'N/A'}
