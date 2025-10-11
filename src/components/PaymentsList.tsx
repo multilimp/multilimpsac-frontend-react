@@ -184,7 +184,7 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
   }, [localPayments]);
 
   // Saldo pendiente
-  const saldoPendiente = Math.max(0, (montoTotal || 0) - totalPayments - (saldoFavor || 0));
+  const saldoPendiente = Math.max(0, (montoTotal || 0) - totalPayments - anticipoEntidad);
 
   // Handlers locales
   const handleAddPayment = () => {
@@ -591,13 +591,15 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
               minWidth: 0,
             }}
           >
-            <Typography fontWeight={700} fontSize={16}>Total Pagado</Typography>
+            <Typography fontWeight={700} fontSize={16}>
+              {entityType === 'PROVIDER' ? 'Total Pendiente' : 'Total Pagado'}
+            </Typography>
             <Typography
               fontWeight={700}
               fontSize={18}
               color="#059669"
             >
-              S/ {totalPayments.toFixed(2)}
+              S/ {entityType === 'PROVIDER' ? saldoPendiente.toFixed(2) : totalPayments.toFixed(2)}
             </Typography>
           </Box>
         </Stack>
@@ -617,13 +619,15 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
             mb: 3,
           }}
         >
-          <Typography fontWeight={700} fontSize={16}>Total Pagado</Typography>
+          <Typography fontWeight={700} fontSize={16}>
+            {entityType === 'PROVIDER' ? 'Total Pendiente' : 'Total Pagado'}
+          </Typography>
           <Typography
             fontWeight={700}
             fontSize={18}
             color="#059669"
           >
-            S/ {totalPayments.toFixed(2)}
+            S/ {entityType === 'PROVIDER' ? saldoPendiente.toFixed(2) : totalPayments.toFixed(2)}
           </Typography>
         </Box>
       )}
