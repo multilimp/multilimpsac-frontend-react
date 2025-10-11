@@ -6,6 +6,8 @@ import DatePickerAntd from '@/components/DatePickerAnt';
 import SimpleFileUpload from '@/components/SimpleFileUpload';
 import PagosModal from '@/components/PagosModal';
 import { getHistorialPagos } from '@/services/pagos/pagos.requests';
+import { getActiveBankAccountsByEntity } from '@/services/bankAccounts/bankAccount.requests';
+import { BankAccount } from '@/types/bankAccount.types';
 
 const { Title, Text } = AntTypography;
 
@@ -29,6 +31,7 @@ interface PaymentsListProps {
   saldoFavor?: number;
   montoTotal?: number;
   estadoPago?: string;
+  tarjetas?: string[];
   entityType?: 'PROVIDER' | 'TRANSPORT';
   entityId?: number;
   entityName?: string;
@@ -61,6 +64,7 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
   mode = 'edit',
   saldoFavor = 0,
   montoTotal = 0,
+  tarjetas = [],
   entityType,
   entityId,
   entityName,
@@ -78,6 +82,10 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
   const [pagosModalOpen, setPagosModalOpen] = useState(false);
   const [anticipoEntidad, setAnticipoEntidad] = useState<number>(0);
   const [loadingSaldo, setLoadingSaldo] = useState(false);
+
+  // Estado para tarjetas disponibles de la entidad
+  const [tarjetasDisponibles, setTarjetasDisponibles] = useState<BankAccount[]>([]);
+  const [loadingTarjetas, setLoadingTarjetas] = useState(false);
 
   useEffect(() => {
     setLocalTipoPago(tipoPago);
@@ -104,6 +112,27 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
     };
 
     cargarAnticipoEntidad();
+  }, [entityId, entityType]);
+
+  // Cargar tarjetas disponibles de la entidad
+  useEffect(() => {
+    const cargarTarjetasDisponibles = async () => {
+      if (entityId && entityType) {
+        try {
+          setLoadingTarjetas(true);
+          const tipoEntidad = entityType === 'PROVIDER' ? 'PROVEEDOR' : 'TRANSPORTE';
+          const tarjetas = await getActiveBankAccountsByEntity(tipoEntidad as any, entityId);
+          setTarjetasDisponibles(tarjetas);
+        } catch (error) {
+          console.error('Error al cargar tarjetas disponibles:', error);
+          setTarjetasDisponibles([]);
+        } finally {
+          setLoadingTarjetas(false);
+        }
+      }
+    };
+
+    cargarTarjetasDisponibles();
   }, [entityId, entityType]);
 
   // Callback inmediato para cambios en nota/tipo
@@ -347,7 +376,7 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
               background: '#fafafa'
             }}
           >
-            <Row gutter={[16, 16]} alignItems="middle">
+            <Row gutter={[16, 16]} style={{ alignItems: 'middle' }}>
               {/* Fecha */}
               <Col span={4}>
                 <div style={{ marginBottom: 4 }}>
@@ -445,7 +474,7 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
                 background: '#fafafa'
               }}
             >
-              <Row gutter={[16, 16]} alignItems="middle">
+              <Row gutter={[16, 16]} style={{ alignItems: 'middle' }}>
                 {/* Fecha */}
                 <Col span={4}>
                   <div style={{ marginBottom: 4 }}>
@@ -679,6 +708,68 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
           >
             S/ {saldoPendiente.toFixed(2)}
           </Typography>
+        </Box>
+      )}
+
+      {/* TARJETAS DISPONIBLES DE LA ENTIDAD */}
+      {entityId && entityType && tarjetasDisponibles.length > 0 && (
+        <Box sx={{ mb: 3 }}>
+          <Card
+            style={{
+              borderRadius: 8,
+              border: '1px solid #d9d9d9',
+              background: '#f8f9fa'
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <CreditCardOutlined style={{ fontSize: 20, marginRight: 8, color: '#6c5ebf' }} />
+              <Typography variant="h6" fontWeight={700} sx={{ color: '#1a1a1a' }}>
+                Tarjetas Disponibles
+              </Typography>
+            </Box>
+
+            {loadingTarjetas ? (
+              <Typography>Cargando tarjetas...</Typography>
+            ) : (
+              <Stack spacing={1}>
+                {tarjetasDisponibles.map((tarjeta) => (
+                  <Box
+                    key={tarjeta.id}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      p: 2,
+                      bgcolor: 'white',
+                      borderRadius: 1,
+                      border: '1px solid #e0e0e0'
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                      <BankOutlined style={{ fontSize: 16, marginRight: 8, color: '#666' }} />
+                      <Box>
+                        <Typography fontWeight={600} fontSize={14}>
+                          {tarjeta.banco} - {tarjeta.numeroCuenta}
+                        </Typography>
+                        <Typography fontSize={12} color="text.secondary">
+                          {tarjeta.moneda === 'SOLES' ? 'S/' : '$'} • {tarjeta.numeroCci ? `CCI: ${tarjeta.numeroCci}` : 'Sin CCI'}
+                        </Typography>
+                      </Box>
+                    </Box>
+                    <Chip
+                      label="Disponible"
+                      size="small"
+                      sx={{
+                        bgcolor: '#10b981',
+                        color: 'white',
+                        fontWeight: 600
+                      }}
+                    />
+                  </Box>
+                ))}
+              </Stack>
+            )}
+          </Card>
         </Box>
       )}
 
