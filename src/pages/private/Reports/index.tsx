@@ -172,6 +172,8 @@ const Reports = () => {
                     >
                       <DatePickerAnt
                         value={startDate}
+                        picker='month'
+                        placeholder='Seleccione la fecha'
                         onChange={(date) => setStartDate(date)}
                       />
                     </Form.Item>
@@ -184,6 +186,8 @@ const Reports = () => {
                     >
                       <DatePickerAnt
                         value={endDate}
+                        picker='month'
+                        placeholder='Seleccione la fecha'
                         onChange={(date) => setEndDate(date)}
                       />
                     </Form.Item>
