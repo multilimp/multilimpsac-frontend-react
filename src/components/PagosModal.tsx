@@ -300,7 +300,7 @@ const PagosModal: React.FC<PagosModalProps> = ({
                                 width={180}
                                 sx={{ bgcolor: 'grey.200' }}
                             />
-                            <Skeleton
+                            {/* <Skeleton
                                 variant="rounded"
                                 height={32}
                                 width={120}
@@ -311,7 +311,7 @@ const PagosModal: React.FC<PagosModalProps> = ({
                                 height={32}
                                 width={140}
                                 sx={{ bgcolor: 'grey.200' }}
-                            />
+                            /> */}
                         </Stack>
                     </Box>
                 ) : historialPagos && (
@@ -320,14 +320,14 @@ const PagosModal: React.FC<PagosModalProps> = ({
                             label={`Anticipo Disponible: ${formatCurrency(historialPagos.totalAFavor - historialPagos.totalCobrado)}`}
                             color={(historialPagos.totalAFavor - historialPagos.totalCobrado) >= 0 ? 'success' : 'warning'}
                         />
-                        <Chip
+                        {/* <Chip
                             label={`Total Anticipos: ${formatCurrency(historialPagos.totalAFavor)}`}
                             color="info"
                         />
                         <Chip
                             label={`Anticipado Aplicado: ${formatCurrency(historialPagos.totalCobrado)}`}
                             color="secondary"
-                        />
+                        /> */}
                     </Stack>
                 )}
 
