@@ -74,9 +74,9 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
   const [localTipoPago, setLocalTipoPago] = useState<string>(tipoPago);
   const [localNotaPago, setLocalNotaPago] = useState<string>(notaPago);
 
-  // Estado para el modal de pagos y saldo pendiente de la entidad
+  // Estado para el modal de pagos y anticipo disponible de la entidad
   const [pagosModalOpen, setPagosModalOpen] = useState(false);
-  const [saldoEntidad, setSaldoEntidad] = useState<number>(0);
+  const [anticipoEntidad, setAnticipoEntidad] = useState<number>(0);
   const [loadingSaldo, setLoadingSaldo] = useState(false);
 
   useEffect(() => {
@@ -84,26 +84,26 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
     setLocalNotaPago(notaPago);
   }, [tipoPago, notaPago]);
 
-  // Cargar saldo pendiente de la entidad
+  // Cargar anticipo disponible de la entidad
   useEffect(() => {
-    const cargarSaldoEntidad = async () => {
+    const cargarAnticipoEntidad = async () => {
       if (entityId && entityType) {
         try {
           setLoadingSaldo(true);
           const tipoEntidad = entityType === 'PROVIDER' ? 'PROVEEDOR' : 'TRANSPORTE';
           const historial = await getHistorialPagos(entityId, tipoEntidad);
-          const saldo = historial.totalAFavor - historial.totalCobrado;
-          setSaldoEntidad(saldo);
+          const anticipo = historial.totalAFavor - historial.totalCobrado;
+          setAnticipoEntidad(anticipo);
         } catch (error) {
-          console.error('Error al cargar saldo de la entidad:', error);
-          setSaldoEntidad(0);
+          console.error('Error al cargar anticipo de la entidad:', error);
+          setAnticipoEntidad(0);
         } finally {
           setLoadingSaldo(false);
         }
       }
     };
 
-    cargarSaldoEntidad();
+    cargarAnticipoEntidad();
   }, [entityId, entityType]);
 
   // Callback inmediato para cambios en nota/tipo
@@ -130,8 +130,8 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
           setLoadingSaldo(true);
           const tipoEntidad = entityType === 'PROVIDER' ? 'PROVEEDOR' : 'TRANSPORTE';
           const historial = await getHistorialPagos(entityId, tipoEntidad);
-          const saldo = historial.totalAFavor - historial.totalCobrado;
-          setSaldoEntidad(saldo);
+          const anticipo = historial.totalAFavor - historial.totalCobrado;
+          setAnticipoEntidad(anticipo);
         } catch (error) {
           console.error('Error al cargar saldo de la entidad:', error);
         } finally {
@@ -273,13 +273,13 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
                   py: 0.5,
                   textTransform: 'none',
                   fontWeight: 600,
-                  bgcolor: saldoEntidad >= 0 ? '#10b981' : '#f59e0b',
+                  bgcolor: anticipoEntidad >= 0 ? '#10b981' : '#f59e0b',
                   '&:hover': {
-                    bgcolor: saldoEntidad >= 0 ? '#059669' : '#d97706'
+                    bgcolor: anticipoEntidad >= 0 ? '#059669' : '#d97706'
                   }
                 }}
               >
-                {loadingSaldo ? 'Cargando...' : `Saldo: S/ ${saldoEntidad >= 0 ? '' : '-'}${Math.abs(saldoEntidad).toFixed(2)}`}
+                {loadingSaldo ? 'Cargando...' : `Anticipo: S/ ${anticipoEntidad >= 0 ? '' : '-'}${Math.abs(anticipoEntidad).toFixed(2)}`}
               </MuiButton>
             )}
           </Stack>
