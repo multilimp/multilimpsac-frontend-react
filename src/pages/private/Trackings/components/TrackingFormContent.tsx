@@ -1807,6 +1807,16 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                                         color: '#374151',
                                         p: 1.5,
                                         borderBottom: '2px solid #e5e7eb',
+                                        textAlign: 'right'
+                                      }}>
+                                        Tipo Pago
+                                      </TableCell>
+                                      <TableCell sx={{
+                                        fontSize: '0.875rem',
+                                        fontWeight: 700,
+                                        color: '#374151',
+                                        p: 1.5,
+                                        borderBottom: '2px solid #e5e7eb',
                                         textAlign: 'center',
                                         width: '120px'
                                       }}>
@@ -1861,6 +1871,15 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                                             ? formatCurrency(parseFloat(String(transporteAsignado.montoFlete)))
                                             : 'N/A'
                                           }
+                                        </TableCell>
+                                        <TableCell sx={{
+                                          fontSize: '0.875rem',
+                                          fontWeight: 600,
+                                          p: 1.5,
+                                          color: '#10b981',
+                                          textAlign: 'right'
+                                        }}>
+                                          {transporteAsignado.estadoPago || 'N/A'}
                                         </TableCell>
                                         <TableCell sx={{
                                           p: 1,
