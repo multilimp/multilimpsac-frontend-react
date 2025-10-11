@@ -35,6 +35,8 @@ import {
     Print,
     Search,
     Clear,
+    Description,
+    PictureAsPdf,
 } from '@mui/icons-material';
 import { CargosEntregaData } from '@/services/print/print.requests';
 import { getCargosEntregaData, printCargosEntregaMonochrome } from '@/services/print/printMonochrome.requests'; interface CargosEntregaTableProps {
@@ -49,6 +51,8 @@ interface OpRow {
     ocf: string | null;
     estadoOp: string | null;
     fechaProgramada: string | null;
+    cartaCci?: string | null;
+    cartaGarantia?: string | null;
     productos: Array<{
         codigo: string;
         descripcion: string;
@@ -523,6 +527,89 @@ const CargosEntregaTable: React.FC<CargosEntregaTableProps> = ({ fechaInicio, fe
                                                                         </CardContent>
                                                                     </Card>
                                                                 </Box>
+
+                                                                {/* Documentos: Carta CCI y Carta de Garantía */}
+                                                                {(op.cartaCci || op.cartaGarantia) && (
+                                                                    <Box sx={{ flex: '1 1 100%', minWidth: '300px' }}>
+                                                                        <Card variant="outlined">
+                                                                            <CardHeader
+                                                                                title={
+                                                                                    <Box display="flex" alignItems="center" gap={1}>
+                                                                                        <Description fontSize="small" />
+                                                                                        <Typography variant="subtitle2">Documentos</Typography>
+                                                                                    </Box>
+                                                                                }
+                                                                                sx={{ pb: 1 }}
+                                                                            />
+                                                                            <CardContent sx={{ pt: 0 }}>
+                                                                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                                                                                    {op.cartaCci && (
+                                                                                        <Box sx={{ flex: '1 1 45%', minWidth: '200px' }}>
+                                                                                            <Box sx={{
+                                                                                                display: 'flex',
+                                                                                                alignItems: 'center',
+                                                                                                gap: 1,
+                                                                                                p: 1.5,
+                                                                                                bgcolor: 'grey.50',
+                                                                                                borderRadius: 1,
+                                                                                                border: '1px solid',
+                                                                                                borderColor: 'grey.300'
+                                                                                            }}>
+                                                                                                <PictureAsPdf color="error" />
+                                                                                                <Box sx={{ flex: 1 }}>
+                                                                                                    <Typography variant="body2" fontWeight="medium">
+                                                                                                        Carta CCI
+                                                                                                    </Typography>
+                                                                                                    <Button
+                                                                                                        size="small"
+                                                                                                        variant="text"
+                                                                                                        color="primary"
+                                                                                                        href={op.cartaCci}
+                                                                                                        target="_blank"
+                                                                                                        sx={{ p: 0, minWidth: 'auto', textTransform: 'none' }}
+                                                                                                    >
+                                                                                                        Ver documento
+                                                                                                    </Button>
+                                                                                                </Box>
+                                                                                            </Box>
+                                                                                        </Box>
+                                                                                    )}
+                                                                                    {op.cartaGarantia && (
+                                                                                        <Box sx={{ flex: '1 1 45%', minWidth: '200px' }}>
+                                                                                            <Box sx={{
+                                                                                                display: 'flex',
+                                                                                                alignItems: 'center',
+                                                                                                gap: 1,
+                                                                                                p: 1.5,
+                                                                                                bgcolor: 'grey.50',
+                                                                                                borderRadius: 1,
+                                                                                                border: '1px solid',
+                                                                                                borderColor: 'grey.300'
+                                                                                            }}>
+                                                                                                <PictureAsPdf color="error" />
+                                                                                                <Box sx={{ flex: 1 }}>
+                                                                                                    <Typography variant="body2" fontWeight="medium">
+                                                                                                        Carta de Garantía
+                                                                                                    </Typography>
+                                                                                                    <Button
+                                                                                                        size="small"
+                                                                                                        variant="text"
+                                                                                                        color="primary"
+                                                                                                        href={op.cartaGarantia}
+                                                                                                        target="_blank"
+                                                                                                        sx={{ p: 0, minWidth: 'auto', textTransform: 'none' }}
+                                                                                                    >
+                                                                                                        Ver documento
+                                                                                                    </Button>
+                                                                                                </Box>
+                                                                                            </Box>
+                                                                                        </Box>
+                                                                                    )}
+                                                                                </Box>
+                                                                            </CardContent>
+                                                                        </Card>
+                                                                    </Box>
+                                                                )}
 
                                                                 {/* Observaciones */}
                                                                 {op.observacion && (

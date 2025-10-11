@@ -26,6 +26,8 @@ export interface CargosEntregaData {
       ocf: string | null;
       estadoOp: string | null;
       fechaProgramada: string | null;
+      cartaCci?: string | null;
+      cartaGarantia?: string | null;
       productos: Array<{
         codigo: string;
         descripcion: string;
