@@ -183,8 +183,8 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
     }, 0);
   }, [localPayments]);
 
-  // Saldo pendiente
-  const saldoPendiente = Math.max(0, (montoTotal || 0) - totalPayments - anticipoEntidad);
+  // Saldo pendiente - Ahora permite valores negativos
+  const saldoPendiente = (montoTotal || 0) - totalPayments;
 
   // Handlers locales
   const handleAddPayment = () => {
@@ -347,7 +347,7 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
               background: '#fafafa'
             }}
           >
-            <Row gutter={[16, 16]} align="middle">
+            <Row gutter={[16, 16]} alignItems="middle">
               {/* Fecha */}
               <Col span={4}>
                 <div style={{ marginBottom: 4 }}>
@@ -445,7 +445,7 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
                 background: '#fafafa'
               }}
             >
-              <Row gutter={[16, 16]} align="middle">
+              <Row gutter={[16, 16]} alignItems="middle">
                 {/* Fecha */}
                 <Col span={4}>
                   <div style={{ marginBottom: 4 }}>
@@ -643,9 +643,11 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
             <Typography
               fontWeight={700}
               fontSize={18}
-              color="#059669"
+              sx={{
+                color: saldoPendiente > 0 ? '#059669' : saldoPendiente < 0 ? '#dc2626' : '#666'
+              }}
             >
-              S/ {entityType === 'PROVIDER' ? saldoPendiente.toFixed(2) : totalPayments.toFixed(2)}
+              S/ {saldoPendiente.toFixed(2)}
             </Typography>
           </Box>
         </Stack>
@@ -671,9 +673,11 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
           <Typography
             fontWeight={700}
             fontSize={18}
-            color="#059669"
+            sx={{
+              color: saldoPendiente > 0 ? '#059669' : saldoPendiente < 0 ? '#dc2626' : '#666'
+            }}
           >
-            S/ {entityType === 'PROVIDER' ? saldoPendiente.toFixed(2) : totalPayments.toFixed(2)}
+            S/ {saldoPendiente.toFixed(2)}
           </Typography>
         </Box>
       )}

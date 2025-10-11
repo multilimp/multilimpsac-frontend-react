@@ -1434,7 +1434,12 @@ const calculateProductTotals = (form: any, fieldName: number) => {
               {({ getFieldValue }) => {
                 const productos = getFieldValue('productos') || [];
                 const totalProductos = productos.reduce((sum: number, producto: ProductRecord) => {
-                  return sum + (Number(producto?.total) || 0);
+                  // Calcular el total del producto si no existe
+                  const cantidad = Number(producto?.cantidad) || 0;
+                  const precioUnitario = Number(producto?.precioUnitario) || 0;
+                  const totalProducto = producto?.total ? Number(producto.total) : (cantidad * precioUnitario);
+
+                  return sum + totalProducto;
                 }, 0);
 
                 const proveedor: ProviderProps | null = getFieldValue('proveedor');
