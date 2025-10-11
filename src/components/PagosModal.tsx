@@ -114,12 +114,12 @@ const PagosModal: React.FC<PagosModalProps> = ({
         } catch (error: any) {
             console.error('Error al cargar historial de pagos:', error);
             // Mejor manejo de errores para mostrar mensajes más específicos
-            let errorMessage = 'Error al cargar el historial de pagos';
+            let errorMessage = 'Error al cargar el historial de anticipos';
 
             if (error?.message?.includes('Unexpected token')) {
                 errorMessage = 'El backend no está respondiendo correctamente. Verifica que el servidor esté corriendo.';
             } else if (error?.response?.status === 404) {
-                errorMessage = 'El endpoint de pagos no existe en el backend.';
+                errorMessage = 'El endpoint de anticipos no existe en el backend.';
             } else if (error?.response?.status === 401) {
                 errorMessage = 'No tienes permisos para acceder a esta información.';
             } else if (error?.response?.status === 500) {
@@ -157,10 +157,10 @@ const PagosModal: React.FC<PagosModalProps> = ({
 
             if (editingPago) {
                 await updatePago(editingPago.id!, pagoData);
-                message.success('Pago actualizado exitosamente');
+                message.success('Anticipo actualizado exitosamente');
             } else {
                 await createPago(pagoData);
-                message.success('Pago registrado exitosamente');
+                message.success('Anticipo registrado exitosamente');
             }
 
             await cargarHistorialPagos(); // Recargar historial
@@ -179,7 +179,7 @@ const PagosModal: React.FC<PagosModalProps> = ({
 
             onSuccess();
         } catch (error) {
-            message.error('Error al procesar el pago');
+            message.error('Error al procesar el anticipo');
             console.error('Error:', error);
         } finally {
             setLoading(false);
@@ -193,10 +193,10 @@ const PagosModal: React.FC<PagosModalProps> = ({
     const handleDelete = async (id: number) => {
         try {
             await deletePago(id);
-            message.success('Pago eliminado exitosamente');
+            message.success('Anticipo eliminado exitosamente');
             await cargarHistorialPagos(); // Recargar historial
         } catch (error) {
-            message.error('Error al eliminar el pago');
+            message.error('Error al eliminar el anticipo');
             console.error('Error:', error);
         }
     };
@@ -279,7 +279,7 @@ const PagosModal: React.FC<PagosModalProps> = ({
             }}>
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
                     <Typography variant="h6" component="h2">
-                        Gestión de Pagos
+                        Gestión de Anticipos
                     </Typography>
                     <IconButton onClick={handleClose} size="small">
                         <CloseIcon />
@@ -317,35 +317,35 @@ const PagosModal: React.FC<PagosModalProps> = ({
                 ) : historialPagos && (
                     <Stack direction="row" spacing={2} mb={2}>
                         <Chip
-                            label={`Saldo Pendiente: ${formatCurrency(historialPagos.totalAFavor - historialPagos.totalCobrado)}`}
+                            label={`Anticipo Disponible: ${formatCurrency(historialPagos.totalAFavor - historialPagos.totalCobrado)}`}
                             color={(historialPagos.totalAFavor - historialPagos.totalCobrado) >= 0 ? 'success' : 'warning'}
                         />
                         <Chip
-                            label={`A Favor: ${formatCurrency(historialPagos.totalAFavor)}`}
+                            label={`Total Anticipos: ${formatCurrency(historialPagos.totalAFavor)}`}
                             color="info"
                         />
                         <Chip
-                            label={`Cobrado: ${formatCurrency(historialPagos.totalCobrado)}`}
+                            label={`Anticipado Aplicado: ${formatCurrency(historialPagos.totalCobrado)}`}
                             color="secondary"
                         />
                     </Stack>
                 )}
 
                 <Tabs value={activeTab} onChange={(_, newValue) => setActiveTab(newValue)} sx={{ mb: 2 }}>
-                    <Tab label="Lista de Pagos" />
-                    <Tab label={editingPago ? 'Editar Pago' : 'Nuevo Pago'} />
+                    <Tab label="Lista de Anticipos" />
+                    <Tab label={editingPago ? 'Editar Anticipo' : 'Nuevo Anticipo'} />
                 </Tabs>
 
                 {activeTab === 0 && (
                     <Box>
                         <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                            <Typography variant="h6">Historial de Pagos</Typography>
+                            <Typography variant="h6">Historial de Anticipos</Typography>
                             <Button
                                 type="primary"
                                 icon={<AddIcon />}
                                 onClick={handleAddNew}
                             >
-                                Nuevo Pago
+                                Nuevo Anticipo
                             </Button>
                         </Box>
 
@@ -392,7 +392,7 @@ const PagosModal: React.FC<PagosModalProps> = ({
                                                 <TableCell>{pago.descripcion}</TableCell>
                                                 <TableCell>
                                                     <Chip
-                                                        label={pago.estado === 'A_FAVOR' ? 'A Favor' : 'Cobrado'}
+                                                        label={pago.estado === 'A_FAVOR' ? 'Disponible' : 'Aplicado'}
                                                         color={pago.estado === 'A_FAVOR' ? 'success' : 'error'}
                                                         size="small"
                                                     />
@@ -407,7 +407,7 @@ const PagosModal: React.FC<PagosModalProps> = ({
                                                         <EditIcon />
                                                     </IconButton>
                                                     <Popconfirm
-                                                        title="¿Eliminar este pago?"
+                                                        title="¿Eliminar este anticipo?"
                                                         description="Esta acción no se puede deshacer"
                                                         onConfirm={() => handleDelete(pago.id!)}
                                                         okText="Sí"
@@ -426,14 +426,14 @@ const PagosModal: React.FC<PagosModalProps> = ({
                         ) : (
                             <Box textAlign="center" py={4}>
                                 <Typography variant="h6" color="text.secondary" mb={2}>
-                                    No hay pagos registrados
+                                    No hay anticipos registrados
                                 </Typography>
                                 <Button
                                     type="primary"
                                     icon={<AddIcon />}
                                     onClick={handleAddNew}
                                 >
-                                    Agregar Primer Pago
+                                    Agregar Primer Anticipo
                                 </Button>
                             </Box>
                         )}
@@ -452,7 +452,7 @@ const PagosModal: React.FC<PagosModalProps> = ({
                                 <Box sx={{ flex: 1 }}>
                                     <Form.Item
                                         name="fechaPago"
-                                        label="Fecha de Pago"
+                                        label="Fecha de Anticipo"
                                         rules={[{ required: true, message: 'La fecha es requerida' }]}
                                     >
                                         <DatePicker
@@ -488,7 +488,7 @@ const PagosModal: React.FC<PagosModalProps> = ({
                             >
                                 <TextArea
                                     rows={3}
-                                    placeholder="Descripción del pago"
+                                    placeholder="Descripción del anticipo"
                                     maxLength={500}
                                     showCount
                                 />
@@ -503,8 +503,8 @@ const PagosModal: React.FC<PagosModalProps> = ({
                                         rules={[{ required: true, message: 'El estado es requerido' }]}
                                     >
                                         <AntSelect placeholder="Seleccionar estado">
-                                            <Option value="A_FAVOR">A Favor (+)</Option>
-                                            <Option value="COBRADO">Cobrado (-)</Option>
+                                            <Option value="A_FAVOR">Anticipo Disponible (+)</Option>
+                                            <Option value="COBRADO">Anticipo Aplicado (-)</Option>
                                         </AntSelect>
                                     </Form.Item>
                                 </Box>
@@ -537,7 +537,7 @@ const PagosModal: React.FC<PagosModalProps> = ({
 
                                     return (
                                         <Alert severity={nuevoSaldo >= 0 ? 'success' : 'warning'}>
-                                            Nuevo saldo pendiente: {formatCurrency(nuevoSaldo)}
+                                            Nuevo anticipo disponible: {formatCurrency(nuevoSaldo)}
                                         </Alert>
                                     );
                                 }}
@@ -582,7 +582,7 @@ const PagosModal: React.FC<PagosModalProps> = ({
                                     }
                                 }}
                             >
-                                {editingPago ? 'Actualizar' : 'Registrar'} Pago
+                                {editingPago ? 'Actualizar' : 'Registrar'} Anticipo
                             </MuiButton>
                         </Box>
                     </Form>

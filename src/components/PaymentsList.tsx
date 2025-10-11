@@ -287,6 +287,52 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
         <Stack direction="row" alignItems="center" spacing={2}>
           {/* Tipo de Pago */}
           {renderTipoPago()}
+          {/* Botones de Guardar y Cancelar - Solo si hay cambios */}
+          {!isReadonly && isDirty && (
+            <>
+              <Button
+                type="default"
+                onClick={() => {
+                  setLocalPayments(payments);
+                  setLocalTipoPago(tipoPago);
+                  setLocalNotaPago(notaPago);
+                  setIsDirty(false);
+                }}
+                style={{
+                  background: '#f3f6f9',
+                  color: '#222',
+                  fontWeight: 700,
+                  borderRadius: 8,
+                  height: 48,
+                  fontSize: 14,
+                  border: '1px solid #d9d9d9',
+                }}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="primary"
+                disabled={!validatePayments()}
+                onClick={() => {
+                  onPaymentsChange?.(localPayments);
+                  onTipoPagoChange?.(localTipoPago);
+                  onNotaPagoChange?.(localNotaPago);
+                  setIsDirty(false);
+                }}
+                style={{
+                  background: '#059669',
+                  color: 'white',
+                  fontWeight: 700,
+                  borderRadius: 8,
+                  height: 48,
+                  fontSize: 14,
+                  border: 'none',
+                }}
+              >
+                Guardar cambios
+              </Button>
+            </>
+          )}
         </Stack>
       </Box>
 
@@ -634,53 +680,6 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
 
       {/* NOTA PRIVADA */}
       {renderNotaPago()}
-
-      {/* BOTONES GUARDAR/CANCELAR SOLO EN EDITOR Y SI HAY CAMBIOS */}
-      {!isReadonly && isDirty && (
-        <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
-          <Button
-            type="primary"
-            disabled={!validatePayments()}
-            style={{
-              background: '#059669',
-              color: 'white',
-              fontWeight: 700,
-              borderRadius: 8,
-              height: 48,
-              fontSize: 16,
-              flex: 1,
-            }}
-            onClick={() => {
-              onPaymentsChange?.(localPayments);
-              onTipoPagoChange?.(localTipoPago);
-              onNotaPagoChange?.(localNotaPago);
-              setIsDirty(false);
-            }}
-          >
-            Guardar cambios
-          </Button>
-          <Button
-            type="default"
-            style={{
-              background: '#f3f6f9',
-              color: '#222',
-              fontWeight: 700,
-              borderRadius: 8,
-              height: 48,
-              fontSize: 16,
-              flex: 1,
-            }}
-            onClick={() => {
-              setLocalPayments(payments);
-              setLocalTipoPago(tipoPago);
-              setLocalNotaPago(notaPago);
-              setIsDirty(false);
-            }}
-          >
-            Cancelar
-          </Button>
-        </Stack>
-      )}
 
       {/* Modal de Gestión de Pagos */}
       {entityId && entityType && entityName && (
