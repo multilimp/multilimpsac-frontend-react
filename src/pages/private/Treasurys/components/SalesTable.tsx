@@ -52,11 +52,12 @@ export default function SalesTreasuryTable({
                 <Button
                     variant="contained"
                     component={Link}
-                    to={`/sales/${record.rawdata.id}/edit?from=treasury`}
+                    to={record.rawdata?.id ? `/sales/${record.rawdata.id}/edit?from=treasury` : '#'}
                     startIcon={<Visibility />}
                     size="small"
                     color="primary"
                     style={{ width: '100%' }}
+                    disabled={!record.rawdata?.id}
                 >
                     {value}
                 </Button>

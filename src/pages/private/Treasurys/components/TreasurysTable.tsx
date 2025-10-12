@@ -54,11 +54,12 @@ export default function ProviderOrdersTreasuryTable({
         <Button
           variant="contained"
           component={Link}
-          to={`/provider-orders/${record.rawdata.id}?from=treasury`}
+          to={record.rawdata?.id ? `/provider-orders/${record.rawdata.id}?from=treasury` : '#'}
           startIcon={<Visibility />}
           size="small"
           color="info"
           style={{ width: '100%' }}
+          disabled={!record.rawdata?.id}
         >
           {value}
         </Button>
