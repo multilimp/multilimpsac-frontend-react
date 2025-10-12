@@ -31,7 +31,6 @@ interface PaymentsListProps {
   saldoFavor?: number;
   montoTotal?: number;
   estadoPago?: string;
-  tarjetas?: string[];
   entityType?: 'PROVIDER' | 'TRANSPORT';
   entityId?: number;
   entityName?: string;
@@ -64,7 +63,6 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
   mode = 'edit',
   saldoFavor = 0,
   montoTotal = 0,
-  tarjetas = [],
   entityType,
   entityId,
   entityName,
@@ -305,6 +303,31 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
               <CreditCardOutlined style={{ fontSize: 28, marginRight: 8 }} />
               {title}
             </Typography>
+            {/* Botón de Tarjetas Disponibles */}
+            {entityId && entityType && tarjetasDisponibles.length > 0 && (
+              <MuiButton
+                variant="outlined"
+                size="small"
+                onClick={handleOpenTarjetasModal}
+                disabled={loadingTarjetas}
+                startIcon={<EyeOutlined />}
+                sx={{
+                  borderRadius: 2,
+                  px: 2,
+                  py: 0.5,
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  borderColor: '#6c5ebf',
+                  color: '#6c5ebf',
+                  '&:hover': {
+                    borderColor: '#5a4fcf',
+                    bgcolor: '#f3f0ff'
+                  }
+                }}
+              >
+                {loadingTarjetas ? '...' : `${tarjetasDisponibles.length} tarjeta${tarjetasDisponibles.length !== 1 ? 's' : ''}`}
+              </MuiButton>
+            )}
             {saldoFavor > 0 && (
               <Typography variant="h5" sx={{ color: '#1890ff', fontWeight: 700 }}>
                 saldo a favor: S/ {saldoFavor.toFixed(2)}

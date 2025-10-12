@@ -1455,7 +1455,6 @@ const calculateProductTotals = (form: any, fieldName: number) => {
                     entityType="PROVIDER"
                     entityId={proveedor?.id}
                     entityName={proveedor?.razonSocial || ''}
-                    tarjetas={proveedor?.cuentasBancarias}
                     onPaymentsChange={handlePaymentsChange}
                     onTipoPagoChange={handleTipoPagoChange}
                     onNotaPagoChange={handleNotaPagoChange}
