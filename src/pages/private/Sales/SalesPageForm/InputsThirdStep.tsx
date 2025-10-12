@@ -32,14 +32,14 @@ const InputsThirdStep = ({ form, companyId, isPrivateSale = false }: InputsThird
   useEffect(() => {
     if (cliente?.ruc && !isPrivateSale) {
       const currentOcfValue = form.getFieldValue('codigoOcf');
-      // Solo establecer si el campo está vacío o si el cliente cambió y el valor actual coincide con el patrón anterior
+
       const shouldUpdate = !currentOcfValue ||
         currentOcfValue === '' ||
         (currentOcfValue.match(/^\d{11}-$/) && !currentOcfValue.startsWith(cliente.ruc));
 
       if (shouldUpdate) {
         form.setFieldsValue({
-          codigoOcf: `${cliente.ruc}-`
+          codigoOcf: `${cliente.ruc}`
         });
       }
     }
