@@ -54,8 +54,8 @@ const OpTable = ({ data, loading, onRowClick, onReload }: OpTableProps) => {
     estadoRolOp: item.estadoRolOp || 'PENDIENTE',
   }));
 
-  const getStatusBackgroundColor = (status: string) => {
-    const normalizedStatus = status?.toUpperCase() as keyof typeof ESTADO_ROL_COLORS;
+  const getStatusBackgroundColor = (status: any) => {
+    const normalizedStatus = typeof status === 'string' ? status.toUpperCase() as keyof typeof ESTADO_ROL_COLORS : 'PENDIENTE';
     return ESTADO_ROL_COLORS[normalizedStatus] || ESTADO_ROL_COLORS.PENDIENTE;
   };
 
@@ -90,11 +90,12 @@ const OpTable = ({ data, loading, onRowClick, onReload }: OpTableProps) => {
         <Button
           variant="contained"
           component={Link}
-          to={`/provider-orders/${record.rawdata.id}`}
+          to={record.rawdata?.id ? `/provider-orders/${record.rawdata.id}` : '#'}
           startIcon={<Visibility />}
           size="small"
           color="info"
           style={{ width: '100%' }}
+          disabled={!record.rawdata?.id}
         >
           {value}
         </Button>
@@ -118,7 +119,7 @@ const OpTable = ({ data, loading, onRowClick, onReload }: OpTableProps) => {
       filter: true,
       sort: true,
       render: (value: EstadoVentaType) => {
-        const estado = ESTADOS[value];
+        const estado = ESTADOS[value] || ESTADOS.PENDIENTE;
         return (
           <Chip
             label={estado.label}
