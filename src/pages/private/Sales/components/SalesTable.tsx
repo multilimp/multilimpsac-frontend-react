@@ -65,13 +65,13 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onReload, isPriv
     });
   }, [data]);
 
-  const getStatusBackgroundColor = (status: string) => {
-    const normalizedStatus = status?.toUpperCase() as keyof typeof ESTADO_ROL_COLORS;
+  const getStatusBackgroundColor = (status: any) => {
+    const normalizedStatus = typeof status === 'string' ? status.toUpperCase() as keyof typeof ESTADO_ROL_COLORS : 'PENDIENTE';
     return ESTADO_ROL_COLORS[normalizedStatus] || ESTADO_ROL_COLORS.PENDIENTE;
   };
 
-  const getStatusLabel = (status: string) => {
-    const normalizedStatus = status?.toUpperCase() as keyof typeof ESTADO_ROL_LABELS;
+  const getStatusLabel = (status: any) => {
+    const normalizedStatus = typeof status === 'string' ? status.toUpperCase() as keyof typeof ESTADO_ROL_LABELS : 'PENDIENTE';
     return ESTADO_ROL_LABELS[normalizedStatus] || ESTADO_ROL_LABELS.PENDIENTE;
   };
 
