@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from 'react';
-import { Button, Checkbox, Input, Select, Card, Typography as AntTypography, Row, Col } from 'antd';
+import { Button, Checkbox, Input, Select, Card, Typography as AntTypography, Row, Col, Modal, message } from 'antd';
 import { Box, Stack, Typography, Button as MuiButton, Chip } from '@mui/material';
-import { DeleteOutlined, CreditCardOutlined, PaperClipOutlined, CalendarOutlined, BankOutlined, FileTextOutlined, DollarOutlined, WalletOutlined } from '@ant-design/icons';
+import { DeleteOutlined, CreditCardOutlined, PaperClipOutlined, CalendarOutlined, BankOutlined, FileTextOutlined, DollarOutlined, WalletOutlined, CopyOutlined, EyeOutlined } from '@ant-design/icons';
 import DatePickerAntd from '@/components/DatePickerAnt';
 import SimpleFileUpload from '@/components/SimpleFileUpload';
 import PagosModal from '@/components/PagosModal';
@@ -87,6 +87,9 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
   const [tarjetasDisponibles, setTarjetasDisponibles] = useState<BankAccount[]>([]);
   const [loadingTarjetas, setLoadingTarjetas] = useState(false);
 
+  // Estado para modal de tarjetas
+  const [tarjetasModalOpen, setTarjetasModalOpen] = useState(false);
+
   useEffect(() => {
     setLocalTipoPago(tipoPago);
     setLocalNotaPago(notaPago);
@@ -168,6 +171,25 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
         }
       };
       cargarSaldoEntidad();
+    }
+  };
+
+  // Handlers para modal de tarjetas
+  const handleOpenTarjetasModal = () => {
+    setTarjetasModalOpen(true);
+  };
+
+  const handleCloseTarjetasModal = () => {
+    setTarjetasModalOpen(false);
+  };
+
+  // Función para copiar número de cuenta al portapapeles
+  const handleCopyAccountNumber = async (accountNumber: string, bankName: string) => {
+    try {
+      await navigator.clipboard.writeText(accountNumber);
+      message.success(`Número de cuenta de ${bankName} copiado al portapapeles`);
+    } catch (error) {
+      message.error('Error al copiar al portapapeles');
     }
   };
 
@@ -714,67 +736,116 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
       {/* TARJETAS DISPONIBLES DE LA ENTIDAD */}
       {entityId && entityType && tarjetasDisponibles.length > 0 && (
         <Box sx={{ mb: 3 }}>
-          <Card
-            style={{
-              borderRadius: 8,
-              border: '1px solid #d9d9d9',
-              background: '#f8f9fa'
+          <MuiButton
+            variant="outlined"
+            onClick={handleOpenTarjetasModal}
+            startIcon={<CreditCardOutlined />}
+            disabled={loadingTarjetas}
+            sx={{
+              borderRadius: 2,
+              px: 3,
+              py: 1.5,
+              textTransform: 'none',
+              fontWeight: 600,
+              borderColor: '#6c5ebf',
+              color: '#6c5ebf',
+              '&:hover': {
+                borderColor: '#5a4fcf',
+                bgcolor: '#f3f0ff'
+              }
             }}
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <CreditCardOutlined style={{ fontSize: 20, marginRight: 8, color: '#6c5ebf' }} />
-              <Typography variant="h6" fontWeight={700} sx={{ color: '#1a1a1a' }}>
-                Tarjetas Disponibles
-              </Typography>
-            </Box>
-
-            {loadingTarjetas ? (
-              <Typography>Cargando tarjetas...</Typography>
-            ) : (
-              <Stack spacing={1}>
-                {tarjetasDisponibles.map((tarjeta) => (
-                  <Box
-                    key={tarjeta.id}
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      p: 2,
-                      bgcolor: 'white',
-                      borderRadius: 1,
-                      border: '1px solid #e0e0e0'
-                    }}
-                  >
-                    <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
-                      <BankOutlined style={{ fontSize: 16, marginRight: 8, color: '#666' }} />
-                      <Box>
-                        <Typography fontWeight={600} fontSize={14}>
-                          {tarjeta.banco} - {tarjeta.numeroCuenta}
-                        </Typography>
-                        <Typography fontSize={12} color="text.secondary">
-                          {tarjeta.moneda === 'SOLES' ? 'S/' : '$'} • {tarjeta.numeroCci ? `CCI: ${tarjeta.numeroCci}` : 'Sin CCI'}
-                        </Typography>
-                      </Box>
-                    </Box>
-                    <Chip
-                      label="Disponible"
-                      size="small"
-                      sx={{
-                        bgcolor: '#10b981',
-                        color: 'white',
-                        fontWeight: 600
-                      }}
-                    />
-                  </Box>
-                ))}
-              </Stack>
-            )}
-          </Card>
+            {loadingTarjetas ? 'Cargando...' : `Ver ${tarjetasDisponibles.length} tarjeta${tarjetasDisponibles.length !== 1 ? 's' : ''} disponible${tarjetasDisponibles.length !== 1 ? 's' : ''}`}
+          </MuiButton>
         </Box>
       )}
 
       {/* NOTA PRIVADA */}
       {renderNotaPago()}
+
+      {/* Modal de Tarjetas Disponibles */}
+      <Modal
+        title={
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <CreditCardOutlined style={{ fontSize: 20, marginRight: 8, color: '#6c5ebf' }} />
+            <Typography variant="h6" fontWeight={700}>
+              Cuentas Bancarias Disponibles
+            </Typography>
+          </Box>
+        }
+        open={tarjetasModalOpen}
+        onCancel={handleCloseTarjetasModal}
+        footer={[
+          <Button key="close" onClick={handleCloseTarjetasModal}>
+            Cerrar
+          </Button>
+        ]}
+        width={600}
+        centered
+      >
+        <Box sx={{ mt: 2 }}>
+          {loadingTarjetas ? (
+            <Typography align="center">Cargando cuentas bancarias...</Typography>
+          ) : tarjetasDisponibles.length === 0 ? (
+            <Typography align="center" color="text.secondary">
+              No hay cuentas bancarias disponibles
+            </Typography>
+          ) : (
+            <Stack spacing={2}>
+              {tarjetasDisponibles.map((tarjeta) => (
+                <Card
+                  key={tarjeta.id}
+                  style={{
+                    borderRadius: 8,
+                    border: '1px solid #e0e0e0',
+                    background: '#fafafa'
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                      <BankOutlined style={{ fontSize: 18, marginRight: 12, color: '#6c5ebf' }} />
+                      <Box>
+                        <Typography fontWeight={600} fontSize={16} sx={{ mb: 0.5 }}>
+                          {tarjeta.banco}
+                        </Typography>
+                        <Typography fontSize={14} color="text.secondary" sx={{ mb: 0.5 }}>
+                          Cuenta: {tarjeta.numeroCuenta}
+                        </Typography>
+                        <Typography fontSize={12} color="text.secondary">
+                          Moneda: {tarjeta.moneda === 'SOLES' ? 'Soles (PEN)' : 'Dólares (USD)'}
+                        </Typography>
+                      </Box>
+                    </Box>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1 }}>
+                      <Chip
+                        label="Disponible"
+                        size="small"
+                        sx={{
+                          bgcolor: '#10b981',
+                          color: 'white',
+                          fontWeight: 600
+                        }}
+                      />
+                      <Button
+                        type="primary"
+                        size="small"
+                        icon={<CopyOutlined />}
+                        onClick={() => handleCopyAccountNumber(tarjeta.numeroCuenta, tarjeta.banco)}
+                        style={{
+                          background: '#6c5ebf',
+                          borderColor: '#6c5ebf'
+                        }}
+                      >
+                        Copiar
+                      </Button>
+                    </Box>
+                  </Box>
+                </Card>
+              ))}
+            </Stack>
+          )}
+        </Box>
+      </Modal>
 
       {/* Modal de Gestión de Pagos */}
       {entityId && entityType && entityName && (
