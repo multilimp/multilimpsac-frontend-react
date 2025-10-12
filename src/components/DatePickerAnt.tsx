@@ -1,28 +1,11 @@
 import { useState } from 'react';
-import generatePicker from 'antd/lib/date-picker/generatePicker';
-import dateFnsGenerateConfig from 'rc-picker/lib/generate/dateFns';
+import { DatePicker, DatePickerProps } from 'antd';
 
-// Create a DatePicker powered by date-fns (no dayjs)
-const InternalDatePicker = generatePicker<Date>(dateFnsGenerateConfig);
-
-interface DatePickerAntdProps {
+interface DatePickerAntdProps extends DatePickerProps {
   label?: string;
   isFloating?: boolean;
   hasError?: boolean;
   isAddonBefore?: boolean;
-  size?: 'large' | 'middle' | 'small';
-  value?: Date | null;
-  defaultValue?: Date | null;
-  onChange?: (value: Date | null, dateString: string) => void;
-  disabled?: boolean;
-  placeholder?: string;
-  picker?: 'date' | 'week' | 'month' | 'quarter' | 'year';
-  format?: string;
-  allowClear?: boolean;
-  showNow?: boolean;
-  variant?: any;
-  style?: React.CSSProperties;
-  [key: string]: any;
 }
 
 const DatePickerAntd = ({ label, isFloating, isAddonBefore, hasError, size = 'large', ...rest }: DatePickerAntdProps) => {
@@ -38,10 +21,10 @@ const DatePickerAntd = ({ label, isFloating, isAddonBefore, hasError, size = 'la
   return (
     <div className={`input-form ${size}`}>
       <div className="float-label" onBlur={() => setFocus(false)} onFocus={() => setFocus(true)}>
-        <InternalDatePicker
+        <DatePicker
           size={size}
           style={{ width: '100%', height: '50px' }}
-          format={rest.format ?? 'dd/MM/yyyy'}
+          format="DD/MM/YYYY"
           variant="outlined"
           allowClear
           showNow={false}

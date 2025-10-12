@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import { Table } from 'antd';
-// Removed dayjs import
+import dayjs from 'dayjs';
 import { ColumnType, TableProps } from 'antd/es/table';
 import {
   Box,
@@ -151,8 +151,7 @@ const AntTable = <T extends Record<string, any>>(props: AntTablePropsProps<T>) =
     const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    // Replace dayjs usage with native Date
-    link.setAttribute('download', `data_${new Date().toISOString()}.csv`);
+    link.setAttribute('download', `data_${dayjs().toISOString()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

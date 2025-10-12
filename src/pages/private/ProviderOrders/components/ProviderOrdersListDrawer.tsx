@@ -9,7 +9,6 @@ import { notification } from 'antd';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
-import { formattedDate } from '@/utils/functions';
 
 interface ProviderOrdersListDrawerProps {
   handleClose: VoidFunction;
@@ -352,7 +351,7 @@ const ProviderOrdersListDrawer = ({ handleClose, data, isTreasury = false }: Pro
                               Última modificación
                             </Typography>
                             <Typography variant="body2" fontWeight={500} sx={{ color: alpha('#ffffff', 0.9) }}>
-                              {item.updatedAt ? formattedDate(item.updatedAt, 'dd/MM/yyyy - HH:mm') : 'No disponible'}
+                              {item.updatedAt ? dayjs(item.updatedAt).format('DD/MM/YYYY - HH:mm') : 'No disponible'}
                             </Typography>
                           </Box>
                         </Stack>

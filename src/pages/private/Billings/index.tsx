@@ -8,16 +8,14 @@ import { Box, Typography } from '@mui/material';
 import CargosEntregaTable from '@/components/CargosEntregaTable';
 import dayjs from 'dayjs';
 import { DatePicker } from 'antd';
-import { formattedDate } from '@/utils/functions';
-import { startOfMonth } from 'date-fns';
 
 const BillingsPage = () => {
   const { sales, loadingSales, obtainSales } = useGlobalInformation();
   const [activeTab, setActiveTab] = useState('facturaciones');
 
   // Estados para el tab de Cargos de Entrega
-  const [fechaInicio, setFechaInicio] = useState(formattedDate(startOfMonth(new Date()), 'YYYY-MM-DD'));
-  const [fechaFin, setFechaFin] = useState(formattedDate(new Date(), 'YYYY-MM-DD'));
+  const [fechaInicio, setFechaInicio] = useState(dayjs().startOf('month').format('YYYY-MM-DD'));
+  const [fechaFin, setFechaFin] = useState(dayjs().format('YYYY-MM-DD'));
 
   const items: TabsProps['items'] = useMemo(() => [
     {
@@ -45,7 +43,7 @@ const BillingsPage = () => {
                 <Typography variant="body2" sx={{ mb: 1 }}>Fecha Inicio</Typography>
                 <DatePicker
                   value={dayjs(fechaInicio)}
-                  onChange={(date) => setFechaInicio(date ? formattedDate(date.toDate(), 'YYYY-MM-DD') : fechaInicio)}
+                  onChange={(date) => setFechaInicio(date?.format('YYYY-MM-DD') || fechaInicio)}
                   format="DD/MM/YYYY"
                   placeholder="Seleccionar fecha inicio"
                 />
@@ -54,7 +52,7 @@ const BillingsPage = () => {
                 <Typography variant="body2" sx={{ mb: 1 }}>Fecha Fin</Typography>
                 <DatePicker
                   value={dayjs(fechaFin)}
-                  onChange={(date) => setFechaFin(date ? formattedDate(date.toDate(), 'YYYY-MM-DD') : fechaFin)}
+                  onChange={(date) => setFechaFin(date?.format('YYYY-MM-DD') || fechaFin)}
                   format="DD/MM/YYYY"
                   placeholder="Seleccionar fecha fin"
                 />

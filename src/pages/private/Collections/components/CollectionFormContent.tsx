@@ -456,7 +456,7 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
 
     // Comparar fechaSiaf
     const currentFechaSiaf = currentValues.fechaSiaf ? currentValues.fechaSiaf.format('YYYY-MM-DD') : '';
-    const originalFechaSiaf = originalCobranzaData.fechaSiaf ? formattedDate(originalCobranzaData.fechaSiaf, 'YYYY-MM-DD') : '';
+    const originalFechaSiaf = originalCobranzaData.fechaSiaf ? dayjs(originalCobranzaData.fechaSiaf).format('YYYY-MM-DD') : '';
     if (currentFechaSiaf !== originalFechaSiaf) {
       changedFields.fechaSiaf = currentFechaSiaf || undefined;
     }
@@ -477,7 +477,7 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
 
     // Comparar fechaEstadoCobranza
     const currentFechaEstadoCobranza = currentValues.fechaEstadoCobranza ? currentValues.fechaEstadoCobranza.format('YYYY-MM-DD') : '';
-    const originalFechaEstadoCobranza = originalCobranzaData.fechaEstadoCobranza ? formattedDate(originalCobranzaData.fechaEstadoCobranza, 'YYYY-MM-DD') : '';
+    const originalFechaEstadoCobranza = originalCobranzaData.fechaEstadoCobranza ? dayjs(originalCobranzaData.fechaEstadoCobranza).format('YYYY-MM-DD') : '';
     if (currentFechaEstadoCobranza !== originalFechaEstadoCobranza) {
       changedFields.fechaEstadoCobranza = currentFechaEstadoCobranza || undefined;
     }

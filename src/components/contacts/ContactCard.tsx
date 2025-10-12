@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card, Button, Form, Input, Space, Popconfirm } from 'antd';
 import { EditOutlined, DeleteOutlined, SaveOutlined, CloseOutlined } from '@ant-design/icons';
-// Removed dayjs import
+import dayjs from 'dayjs';
 import {
   Box,
   Typography,
@@ -26,7 +26,6 @@ import {
 import { ContactProps, ContactUpdateProps } from '../../services/contacts/contacts.d';
 import InputAntd from '../InputAntd';
 import DatePickerAntd from '../DatePickerAnt'; import { heroUIColors } from '../ui';
-import { parseDate } from '@/utils/functions';
 interface ContactCardProps {
   contact: ContactProps;
   onUpdate: (contactId: number, data: ContactUpdateProps) => Promise<void>;
@@ -51,8 +50,7 @@ export const ContactCard: React.FC<ContactCardProps> = ({
       cargo: contact.cargo,
       telefono: contact.telefono,
       email: contact.email,
--      cumpleanos: contact.cumpleanos ? dayjs(contact.cumpleanos) : null,
-+      cumpleanos: contact.cumpleanos ? parseDate(contact.cumpleanos) : null,
+      cumpleanos: contact.cumpleanos ? dayjs(contact.cumpleanos) : null,
       nota: contact.nota,
     });
     setIsEditing(true);
@@ -65,8 +63,7 @@ export const ContactCard: React.FC<ContactCardProps> = ({
       // Procesar la fecha para enviarla en formato ISO al backend
       const processedValues = {
         ...values,
--        cumpleanos: values.cumpleanos ? values.cumpleanos.toISOString() : null,
-+        cumpleanos: values.cumpleanos ? (values.cumpleanos as Date).toISOString() : null,
+        cumpleanos: values.cumpleanos ? values.cumpleanos.toISOString() : null,
       };
 
       await onUpdate(contact.id, processedValues);

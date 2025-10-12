@@ -7,14 +7,14 @@ export interface BillingProps {
   companyRuc: string;
   companyBusinessName: string;
   contact: string;
-  registerDate: string | null;
-  maxDeliveryDate: string | null;
-  deliveryDateOC?: string | null;
+  registerDate: string;
+  maxDeliveryDate: string;
+  deliveryDateOC?: string;
   saleAmount: number;
   oce: string;
   ocf: string;
-  receptionDate: string | null;
-  programmingDate: string | null;
+  receptionDate: string;
+  programmingDate: string;
   // Campos de facturación
   factura?: string | null;
   fechaFactura?: string | null;
@@ -29,8 +29,8 @@ export interface BillingProps {
   idFacturaOriginal?: number | null;
   facturaArchivo?: string | null;
   grrArchivo?: string | null;
-  createdAt?: string | null;
-  updatedAt?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
   // Campos calculados para UI
   invoiceNumber?: string; // Alias para factura
   invoiceDate?: string; // Alias para fechaFactura
@@ -59,7 +59,7 @@ export interface BillingUpdateData {
 export interface BillingData {
   ordenCompraId: number;
   factura?: string | null;
-  fechaFactura?: string | null; // Se envía como ISO string
+  fechaFactura?: string | null; // Se envía como ISO string desde dayjs
   grr?: string | null;
   retencion?: number | null; // Decimal en BD
   detraccion?: number | null; // Decimal en BD

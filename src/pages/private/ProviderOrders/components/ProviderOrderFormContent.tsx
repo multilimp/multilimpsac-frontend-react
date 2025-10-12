@@ -42,7 +42,6 @@ import { usePayments } from '@/hooks/usePayments';
 import InputNumberAntd from '@/components/InputNumberAntd';
 import { getPrivateSaleData } from '@/services/sales/sales.request';
 import { ESTADOS, estadoBgMap, EstadoVentaType } from '@/utils/constants';
-import { formattedDate } from '@/utils/functions';
 
 interface ProviderOrderFormContentProps {
   sale: SaleProps;
@@ -814,7 +813,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
                     <Fragment>
                       {'Creado: '}
                       <Typography component="span" color="inherit" variant="inherit" fontWeight={600}>
-                        {createdDate ? formattedDate(createdDate, 'dd / MM / yyyy') : '---'}
+                        {createdDate ? dayjs(createdDate).format('DD / MM / YYYY') : '---'}
                       </Typography>
                     </Fragment>
                   );
@@ -830,7 +829,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
                       <Fragment>
                         {'Actualizado: '}
                         <Typography component="span" color="inherit" variant="inherit" fontWeight={600}>
-                          {createdDate ? formattedDate(createdDate, 'dd / MM / yyyy') : '---'}
+                          {createdDate ? dayjs(createdDate).format('DD / MM / YYYY') : '---'}
                         </Typography>
                       </Fragment>
                     );

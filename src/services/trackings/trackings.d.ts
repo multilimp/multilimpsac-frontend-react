@@ -10,7 +10,7 @@ export interface TrackingProps {
   companyRuc: string;
   companyBusinessName: string;
   clientName: string;
-  maxDeliveryDate: string | null;
+  maxDeliveryDate: string;
   saleAmount: number;
   cue?: string;
   department?: string;
@@ -20,9 +20,9 @@ export interface TrackingProps {
   grr?: string;
   invoiceNumber?: string;
   isRefact: boolean;
-  peruPurchasesDate?: string | null;
-  deliveryDateOC?: string | null;
+  peruPurchasesDate?: string;
+  deliveryDateOC?: string;
   utility?: number;
   status: 'pending' | 'in_progress' | 'delivered' | 'canceled';
-  createdAt?: string | null; // Fecha de creación para ordenamiento
+  createdAt?: string; // Fecha de creación para ordenamiento
 }

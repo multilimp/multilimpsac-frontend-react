@@ -675,7 +675,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                           {billing.factura || 'Sin número'}
                         </TableCell>
                         <TableCell sx={{ color: '#64748b' }}>
-                          {billing.fechaFactura ? formattedDate(billing.fechaFactura, 'dd/MM/yyyy') : 'Sin fecha'}
+                          {billing.fechaFactura ? dayjs(billing.fechaFactura).format('DD/MM/YYYY') : 'Sin fecha'}
                         </TableCell>
                         <TableCell sx={{ color: '#64748b' }}>
                           {billing.grr || 'Sin GRR'}
