@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Tabs, Button, DatePicker, TabsProps } from 'antd';
+import { Tabs, Button, TabsProps } from 'antd';
 import PageContent from '@/components/PageContent';
 import { SaleProps } from '@/services/sales/sales';
 import { ProviderOrderProps } from '@/services/providerOrders/providerOrders';
@@ -14,9 +14,10 @@ import { notification } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { Box, Typography } from '@mui/material';
 import CargosEntregaTable from '@/components/CargosEntregaTable';
-import dayjs from 'dayjs';
-import { formattedDate } from '@/utils/functions';
+// Removed dayjs import
+import { formattedDate, parseDate } from '@/utils/functions';
 import { startOfMonth } from 'date-fns';
+import DatePickerAntd from '@/components/DatePickerAnt';
 
 const ProviderOrders = () => {
   const navigate = useNavigate();
@@ -100,21 +101,31 @@ const ProviderOrders = () => {
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
               <Box>
                 <Typography variant="body2" sx={{ mb: 1 }}>Fecha Inicio</Typography>
-                <DatePicker
-                  value={dayjs(fechaInicio)}
-                  onChange={(date) => setFechaInicio(date ? formattedDate(date.toDate(), 'YYYY-MM-DD') : fechaInicio)}
-                  format="DD/MM/YYYY"
-                  placeholder="Seleccionar fecha inicio"
-                />
+-                <DatePicker
+-                  value={dayjs(fechaInicio)}
+-                  onChange={(date) => setFechaInicio(date ? formattedDate(date.toDate(), 'YYYY-MM-DD') : fechaInicio)}
+-                  format="DD/MM/YYYY"
+-                  placeholder="Seleccionar fecha inicio"
+-                />
++                <DatePickerAntd
++                  value={parseDate(fechaInicio)}
++                  onChange={(date) => setFechaInicio(date ? formattedDate(date, 'YYYY-MM-DD') : fechaInicio)}
++                  placeholder="Seleccionar fecha inicio"
++                />
               </Box>
               <Box>
                 <Typography variant="body2" sx={{ mb: 1 }}>Fecha Fin</Typography>
-                <DatePicker
-                  value={dayjs(fechaFin)}
-                  onChange={(date) => setFechaFin(date ? formattedDate(date.toDate(), 'YYYY-MM-DD') : fechaFin)}
-                  format="DD/MM/YYYY"
-                  placeholder="Seleccionar fecha fin"
-                />
+-                <DatePicker
+-                  value={dayjs(fechaFin)}
+-                  onChange={(date) => setFechaFin(date ? formattedDate(date.toDate(), 'YYYY-MM-DD') : fechaFin)}
+-                  format="DD/MM/YYYY"
+-                  placeholder="Seleccionar fecha fin"
+-                />
++                <DatePickerAntd
++                  value={parseDate(fechaFin)}
++                  onChange={(date) => setFechaFin(date ? formattedDate(date, 'YYYY-MM-DD') : fechaFin)}
++                  placeholder="Seleccionar fecha fin"
++                />
               </Box>
             </Box>
           </Box>

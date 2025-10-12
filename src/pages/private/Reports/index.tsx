@@ -4,7 +4,9 @@ import { Select, Form, Button as AntButton } from 'antd';
 import { BarChart, TrendingUp, LocalShipping, Star } from '@mui/icons-material';
 import PageContent from '@/components/PageContent';
 import DatePickerAnt from '@/components/DatePickerAnt';
-import dayjs from 'dayjs';
+// Removed dayjs import
+import { startOfMonth, endOfMonth } from 'date-fns';
+import { formattedDate } from '@/utils/functions';
 
 const { Option } = Select;
 
@@ -12,8 +14,8 @@ type ReportType = 'ventas' | 'cobranza' | 'entregas-oc' | 'ranking';
 
 const Reports = () => {
   const [reportType, setReportType] = useState<ReportType>('ventas');
-  const [startDate, setStartDate] = useState<any>(dayjs().startOf('month'));
-  const [endDate, setEndDate] = useState<any>(dayjs().endOf('month'));
+  const [startDate, setStartDate] = useState<Date | null>(startOfMonth(new Date()));
+  const [endDate, setEndDate] = useState<Date | null>(endOfMonth(new Date()));
   const [form] = Form.useForm();
 
   const reportOptions = [
@@ -27,8 +29,8 @@ const Reports = () => {
     // Aquí irá la lógica para generar el reporte
     console.log('Generando reporte:', {
       type: reportType,
-      startDate: startDate?.format('YYYY-MM-DD'),
-      endDate: endDate?.format('YYYY-MM-DD'),
+      startDate: formattedDate(startDate, 'YYYY-MM-DD'),
+      endDate: formattedDate(endDate, 'YYYY-MM-DD'),
     });
   };
 

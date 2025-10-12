@@ -25,12 +25,12 @@ import {
     Skeleton
 } from '@mui/material';
 import { Close as CloseIcon, Edit as EditIcon, Delete as DeleteIcon, Add as AddIcon } from '@mui/icons-material';
-import { DatePicker } from 'antd';
+import DatePickerAntd from '@/components/DatePickerAnt';
 import { Form, Input, InputNumber, Select as AntSelect, message, Button, Popconfirm } from 'antd';
-import dayjs from 'dayjs';
+
 import { createPago, updatePago, getHistorialPagos, deletePago } from '@/services/pagos/pagos.requests';
 import { PagoProveedorTransporte, HistorialPagos } from '@/types/pagos.types';
-import { formatCurrency, formattedDate } from '@/utils/functions';
+import { formatCurrency, formattedDate, parseDate } from '@/utils/functions';
 
 const { TextArea } = Input;
 const { Option } = AntSelect;
@@ -73,7 +73,7 @@ const PagosModal: React.FC<PagosModalProps> = ({
             // Resetear formulario con valores por defecto
             form.resetFields();
             form.setFieldsValue({
-                fechaPago: dayjs(),
+                fechaPago: new Date(),
                 estado: 'A_FAVOR',
                 banco: '',
                 descripcion: '',
@@ -90,7 +90,7 @@ const PagosModal: React.FC<PagosModalProps> = ({
         if (editingPago) {
             setActiveTab(1); // Cambiar a formulario
             form.setFieldsValue({
-                fechaPago: dayjs(editingPago.fechaPago),
+                fechaPago: parseDate(editingPago.fechaPago),
                 banco: editingPago.banco,
                 descripcion: editingPago.descripcion,
                 estado: editingPago.estado,
@@ -147,7 +147,7 @@ const PagosModal: React.FC<PagosModalProps> = ({
             const pagoData = {
                 proveedorTransporteId: entidadId,
                 tipoEntidad,
-                fechaPago: values.fechaPago.format('YYYY-MM-DD'),
+                fechaPago: formattedDate(values.fechaPago, 'YYYY-MM-DD'),
                 banco: values.banco,
                 descripcion: values.descripcion,
                 estado: values.estado,
@@ -455,7 +455,7 @@ const PagosModal: React.FC<PagosModalProps> = ({
                                         label="Fecha de Anticipo"
                                         rules={[{ required: true, message: 'La fecha es requerida' }]}
                                     >
-                                        <DatePicker
+                                        <DatePickerAntd
                                             style={{ width: '100%' }}
                                             format="DD/MM/YYYY"
                                             placeholder="Seleccionar fecha"
