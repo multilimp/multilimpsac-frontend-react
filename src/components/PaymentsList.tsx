@@ -840,15 +840,6 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
                       </Box>
                     </Box>
                     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1 }}>
-                      <Chip
-                        label="Disponible"
-                        size="small"
-                        sx={{
-                          bgcolor: '#10b981',
-                          color: 'white',
-                          fontWeight: 600
-                        }}
-                      />
                       <Button
                         type="primary"
                         size="small"
