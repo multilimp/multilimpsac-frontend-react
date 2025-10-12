@@ -1324,8 +1324,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                           checked={Boolean(op.isCompleted)}
                           onChange={(event) => handleToggleOpCompleted(op.id, event.target.checked)}
                           disabled={updatingCompletionOp === op.id}
-                          color="success"
-                          checkedIcon={<CheckIcon />} />
+                          color="success" />
 
                         {/* Separador visual */}
                         <Box sx={{
