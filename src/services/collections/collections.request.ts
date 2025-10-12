@@ -2,6 +2,33 @@
 import apiClient from '../apiClient';
 import { CollectionProps } from './collections.d';
 
+interface OrdenCompraMinimal {
+  id: number;
+  codigoVenta?: string;
+  cliente?: { razonSocial?: string; ruc?: string; codigoUnidadEjecutora?: string };
+  empresa?: { ruc?: string; razonSocial?: string };
+  contactoCliente?: { nombre?: string; cargo?: string };
+  catalogoEmpresa?: { nombre?: string };
+  fechaForm?: string | null;
+  fechaEmision?: string | null;
+  fechaMaxForm?: string | null;
+  fechaMaxEntrega?: string | null;
+  montoVenta?: string | number | null;
+  direccionEntrega?: string;
+  departamentoEntrega?: string;
+  provinciaEntrega?: string;
+  distritoEntrega?: string;
+  referenciaEntrega?: string;
+  estadoVenta?: string;
+  documentoOce?: string;
+  documentoOcf?: string;
+  estadoCobranza?: string;
+  fechaEstadoCobranza?: string | null;
+  netoCobrado?: string;
+  penalidad?: string;
+  fechaProximaGestion?: string | null;
+}
+
 export const getCollections = async (): Promise<CollectionProps[]> => {
   try {
     // Obtenemos las órdenes de compra desde el endpoint de ventas (mismo backend)
@@ -9,9 +36,9 @@ export const getCollections = async (): Promise<CollectionProps[]> => {
     const ordenesCompra = response.data;
 
     // Transformamos las OCs manteniendo la estructura exacta de ventas
-    const collections: CollectionProps[] = ordenesCompra.map((oc: any) => ({
+    const collections: CollectionProps[] = (ordenesCompra as OrdenCompraMinimal[]).map((oc) => ({
       id: oc.id,
-      codigoVenta: oc.codigoVenta,
+      codigoVenta: oc.codigoVenta as string,
       cliente: {
         razonSocial: oc.cliente?.razonSocial || '',
         ruc: oc.cliente?.ruc || '',
@@ -22,15 +49,15 @@ export const getCollections = async (): Promise<CollectionProps[]> => {
         razonSocial: oc.empresa?.razonSocial || '',
       },
       contactoCliente: oc.contactoCliente ? {
-        nombre: oc.contactoCliente.nombre,
-        cargo: oc.contactoCliente.cargo,
+        nombre: oc.contactoCliente.nombre ?? '',
+        cargo: oc.contactoCliente.cargo ?? '',
       } : undefined,
       catalogoEmpresa: oc.catalogoEmpresa ? {
-        nombre: oc.catalogoEmpresa.nombre,
+        nombre: oc.catalogoEmpresa.nombre ?? '',
       } : undefined,
-      fechaForm: oc.fechaForm || oc.fechaEmision || new Date().toISOString(),
-      fechaMaxForm: oc.fechaMaxForm || oc.fechaMaxEntrega || new Date().toISOString(),
-      montoVenta: oc.montoVenta || '0',
+      fechaForm: oc.fechaForm ?? oc.fechaEmision ?? null,
+      fechaMaxForm: oc.fechaMaxForm ?? oc.fechaMaxEntrega ?? null,
+      montoVenta: typeof oc.montoVenta === 'number' ? String(oc.montoVenta) : (oc.montoVenta ?? '0'),
       direccionEntrega: oc.direccionEntrega,
       departamentoEntrega: oc.departamentoEntrega,
       provinciaEntrega: oc.provinciaEntrega,
@@ -41,18 +68,18 @@ export const getCollections = async (): Promise<CollectionProps[]> => {
       documentoOcf: oc.documentoOcf,
       // Campos específicos de cobranza
       estadoCobranza: oc.estadoCobranza,
-      fechaEstadoCobranza: oc.fechaEstadoCobranza,
+      fechaEstadoCobranza: oc.fechaEstadoCobranza ?? null,
       netoCobrado: oc.netoCobrado,
       penalidad: oc.penalidad,
-      fechaProximaGestion: oc.fechaProximaGestion,
+      fechaProximaGestion: oc.fechaProximaGestion ?? null,
     }));
 
     // Ordenar por fecha de creación descendente (más recientes primero)
-    const sortedCollections = collections.sort((a, b) => {
-      const dateA = new Date(a.fechaForm || '').getTime();
-      const dateB = new Date(b.fechaForm || '').getTime();
-      return dateB - dateA; // Orden descendente
-    });
+    const toTime = (d: string | null): number => {
+      const t = d ? new Date(d).getTime() : NaN;
+      return Number.isFinite(t) ? t : 0;
+    };
+    const sortedCollections = collections.sort((a, b) => toTime(b.fechaForm) - toTime(a.fechaForm));
 
     return sortedCollections;
   } catch (error) {

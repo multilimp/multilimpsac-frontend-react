@@ -30,7 +30,7 @@ import { Form, Input, InputNumber, Select as AntSelect, message, Button, Popconf
 import dayjs from 'dayjs';
 import { createPago, updatePago, getHistorialPagos, deletePago } from '@/services/pagos/pagos.requests';
 import { PagoProveedorTransporte, HistorialPagos } from '@/types/pagos.types';
-import { formatCurrency } from '@/utils/functions';
+import { formatCurrency, formattedDate } from '@/utils/functions';
 
 const { TextArea } = Input;
 const { Option } = AntSelect;
@@ -387,7 +387,7 @@ const PagosModal: React.FC<PagosModalProps> = ({
                                     <TableBody>
                                         {historialPagos.pagos.map((pago) => (
                                             <TableRow key={pago.id}>
-                                                <TableCell>{dayjs(pago.fechaPago).format('DD/MM/YYYY')}</TableCell>
+                                                <TableCell>{formattedDate(pago.fechaPago, 'dd/MM/yyyy')}</TableCell>
                                                 <TableCell>{pago.banco}</TableCell>
                                                 <TableCell>{pago.descripcion}</TableCell>
                                                 <TableCell>

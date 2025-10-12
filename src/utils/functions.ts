@@ -1,4 +1,5 @@
-import dayjs from 'dayjs';
+import { parseISO, isValid as isValidDate } from 'date-fns';
+import { formatInTimeZone } from 'date-fns-tz';
 
 export const isNavItemActive = ({ path, pathname = '' }: { path: string; pathname?: string }): boolean =>
   path === pathname || Boolean(path !== '/' && pathname.startsWith(path));
@@ -24,12 +25,15 @@ export const removeAccents = (str?: string): string => {
     .replace(/[\u0300-\u036f]/g, '');
 };
 
-export const filterOptions = (inputValue: string, option: any) => {
-  const title = removeAccents(String(option?.title ?? option?.children).toLowerCase());
+export const filterOptions = (inputValue: string, option: { title?: unknown; children?: unknown }) => {
+  const titleRaw = (option?.title ?? option?.children);
+  const title = removeAccents(String(titleRaw).toLowerCase());
   return title.includes(inputValue.toLowerCase());
 };
 
-export const parseJSON = (str?: null | string | any[] | object) => {
+export const parseJSON = (
+  str?: null | string | unknown[] | Record<string, unknown>
+): unknown | unknown[] | string => {
   try {
     if (Array.isArray(str) || (typeof str === 'object' && str !== null)) return str;
 
@@ -43,7 +47,7 @@ export const parseJSON = (str?: null | string | any[] | object) => {
       }
 
       const parsed = JSON.parse(str);
-      return parsed;
+      return parsed as unknown;
     }
 
     return [];
@@ -57,7 +61,35 @@ export const parseJSON = (str?: null | string | any[] | object) => {
   }
 };
 
+// Helper para parsear fechas de forma segura
+export const parseDate = (value?: null | Date | string): Date | null => {
+  if (!value) return null;
+  if (value instanceof Date) return isValidDate(value) ? value : null;
+  if (typeof value === 'string') {
+    const isoParsed = parseISO(value);
+    if (isValidDate(isoParsed)) return isoParsed;
+    const nativeParsed = new Date(value);
+    return isValidDate(nativeParsed) ? nativeParsed : null;
+  }
+  return null;
+};
+
+// Normaliza tokens de formato tipo Day.js a los de date-fns
+const normalizeFormatTokens = (fmt: string): string => {
+  return fmt
+    .replace(/YYYY/g, 'yyyy')
+    .replace(/YY/g, 'yy')
+    .replace(/DD/g, 'dd')
+    .replace(/d{1}(?!d)/g, 'd') // dia sin cero
+    .replace(/HH/g, 'HH')
+    .replace(/mm/g, 'mm')
+    .replace(/ss/g, 'ss');
+};
+
 export const formattedDate = (value?: null | Date | string, format = 'DD/MM/YYYY', defaultText?: string): string => {
-  if (!value || !dayjs(value).isValid()) return defaultText ?? '';
-  return dayjs(value).format(format);
+  const date = parseDate(value);
+  if (!date) return defaultText ?? '';
+  const fmt = normalizeFormatTokens(format);
+  // Formatear en UTC para evitar desfasajes por zona horaria
+  return formatInTimeZone(date, 'UTC', fmt);
 };

@@ -18,8 +18,8 @@ export interface CollectionProps {
   catalogoEmpresa?: {
     nombre: string;
   };
-  fechaForm: string;
-  fechaMaxForm: string;
+  fechaForm: string | null;
+  fechaMaxForm: string | null;
   montoVenta: string;
   direccionEntrega?: string;
   departamentoEntrega?: string;
@@ -31,8 +31,8 @@ export interface CollectionProps {
   documentoOcf?: string;
   // Campos específicos de cobranza (se pueden agregar después)
   estadoCobranza?: string;
-  fechaEstadoCobranza?: string;
+  fechaEstadoCobranza?: string | null;
   netoCobrado?: string;
   penalidad?: string;
-  fechaProximaGestion?: string;
+  fechaProximaGestion?: string | null;
 }

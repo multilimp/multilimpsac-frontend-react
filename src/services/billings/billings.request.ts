@@ -2,6 +2,38 @@
 import apiClient from '../apiClient';
 import { BillingData, BillingProps, BillingUpdateData } from './billings.d';
 
+// Tipos mínimos para evitar "any" del backend
+interface OrdenCompraMinimal {
+  id: number;
+  cliente?: { razonSocial?: string; ruc?: string };
+  empresa?: { ruc?: string; razonSocial?: string };
+  contactoCliente?: { telefono?: string };
+  fechaEmision?: string | null;
+  fechaMaxForm?: string | null;
+  fechaEntrega?: string | null;
+  montoVenta?: string | number | null;
+  documentoOce?: string | null;
+  documentoOcf?: string | null;
+  estadoActivo?: boolean;
+}
+
+interface FacturacionMinimal {
+  id: number;
+  factura?: string | null;
+  fechaFactura?: string | null;
+  grr?: string | null;
+  retencion?: number | null;
+  detraccion?: number | null;
+  formaEnvioFactura?: string | null;
+  estado?: number | null;
+  esRefacturacion?: boolean;
+  facturaArchivo?: string | null;
+  grrArchivo?: string | null;
+  notaCreditoArchivo?: string | null;
+  notaCreditoTexto?: string | null;
+  createdAt?: string | null;
+}
+
 export const getBillings = async (): Promise<BillingProps[]> => {
   try {
     // Obtenemos las órdenes de compra para crear la data de facturación
@@ -9,22 +41,22 @@ export const getBillings = async (): Promise<BillingProps[]> => {
     const ordenesCompra = response.data;
 
     // Transformamos las OCs en datos de facturación
-    const billings: BillingProps[] = ordenesCompra.map((oc: any) => ({
+    const billings: BillingProps[] = (ordenesCompra as OrdenCompraMinimal[]).map((oc) => ({
       id: oc.id,
-      saleId: oc.id,
+      ordenCompraId: oc.id,
       clientBusinessName: oc.cliente?.razonSocial || '',
       clientRuc: oc.cliente?.ruc || '',
       companyRuc: oc.empresa?.ruc || '',
       companyBusinessName: oc.empresa?.razonSocial || '',
-      contact: oc.contactoCliente?.telefono,
-      registerDate: oc.fechaEmision || new Date().toISOString(),
-      maxDeliveryDate: oc.fechaMaxForm || new Date().toISOString(),
+      contact: oc.contactoCliente?.telefono || '',
+      registerDate: oc.fechaEmision || null,
+      maxDeliveryDate: oc.fechaMaxForm || null,
       deliveryDateOC: oc.fechaEntrega || null,
-      saleAmount: parseFloat(oc.montoVenta || '0'),
+      saleAmount: parseFloat(String(oc.montoVenta ?? '0')),
       oce: oc.documentoOce || '',
       ocf: oc.documentoOcf || '',
-      receptionDate: oc.fechaEntrega || new Date().toISOString(),
-      programmingDate: oc.fechaMaxForm || new Date().toISOString(),
+      receptionDate: oc.fechaEntrega || null,
+      programmingDate: oc.fechaMaxForm || null,
       invoiceNumber: undefined, // Campo pendiente de implementar
       invoiceDate: undefined, // Campo pendiente de implementar
       grr: undefined, // Campo pendiente de implementar
@@ -93,7 +125,7 @@ export const getBillingByOrdenCompraId = async (ordenCompraId: number): Promise<
   try {
     // Como ahora es 1:1, obtenemos directamente la orden de compra con su facturación
     const response = await apiClient.get(`/ordenes-compra/${ordenCompraId}?include=facturacion`);
-    const ordenCompra = response.data;
+    const ordenCompra = response.data as OrdenCompraMinimal & { facturacion?: FacturacionMinimal | null };
 
     if (!ordenCompra.facturacion) {
       return null;
@@ -109,32 +141,32 @@ export const getBillingByOrdenCompraId = async (ordenCompraId: number): Promise<
       companyRuc: ordenCompra.empresa?.ruc || '',
       companyBusinessName: ordenCompra.empresa?.razonSocial || '',
       contact: ordenCompra.contactoCliente?.telefono || '',
-      registerDate: ordenCompra.fechaEmision || new Date().toISOString(),
-      maxDeliveryDate: ordenCompra.fechaMaxForm || new Date().toISOString(),
+      registerDate: ordenCompra.fechaEmision || null,
+      maxDeliveryDate: ordenCompra.fechaMaxForm || null,
       deliveryDateOC: ordenCompra.fechaEntrega || null,
-      saleAmount: parseFloat(ordenCompra.montoVenta || '0'),
+      saleAmount: parseFloat(String(ordenCompra.montoVenta ?? '0')),
       oce: ordenCompra.documentoOce || '',
       ocf: ordenCompra.documentoOcf || '',
-      receptionDate: ordenCompra.fechaEntrega || new Date().toISOString(),
-      programmingDate: ordenCompra.fechaMaxForm || new Date().toISOString(),
-      invoiceNumber: facturacion.factura || null,
-      invoiceDate: facturacion.fechaFactura || null,
-      grr: facturacion.grr || null,
+      receptionDate: ordenCompra.fechaEntrega || null,
+      programmingDate: ordenCompra.fechaMaxForm || null,
+      invoiceNumber: facturacion.factura ?? undefined,
+      invoiceDate: facturacion.fechaFactura ?? undefined,
+      grr: facturacion.grr ?? undefined,
       isRefact: false,
       // Campos específicos de facturación del backend
-      factura: facturacion.factura || null,
-      fechaFactura: facturacion.fechaFactura || null,
-      retencion: facturacion.retencion || null,
-      detraccion: facturacion.detraccion || null,
-      formaEnvioFactura: facturacion.formaEnvioFactura || null,
-      estadoFacturacion: facturacion.estado || null,
+      factura: facturacion.factura ?? null,
+      fechaFactura: facturacion.fechaFactura ?? null,
+      retencion: facturacion.retencion ?? null,
+      detraccion: facturacion.detraccion ?? null,
+      formaEnvioFactura: facturacion.formaEnvioFactura ?? null,
+      estadoFacturacion: facturacion.estado ?? undefined,
       facturacionId: facturacion.id,
       esRefacturacion: facturacion.esRefacturacion || false,
       // Campos de archivos que faltaban
-      facturaArchivo: facturacion.facturaArchivo || null,
-      grrArchivo: facturacion.grrArchivo || null,
-      notaCreditoArchivo: facturacion.notaCreditoArchivo || null,
-      notaCreditoTexto: facturacion.notaCreditoTexto || null
+      facturaArchivo: facturacion.facturaArchivo ?? null,
+      grrArchivo: facturacion.grrArchivo ?? null,
+      notaCreditoArchivo: facturacion.notaCreditoArchivo ?? null,
+      notaCreditoTexto: facturacion.notaCreditoTexto ?? null
     };
   } catch (error) {
     console.error('Error al obtener facturación por orden de compra ID:', error);
@@ -181,9 +213,9 @@ export const getBillingHistoryByOrdenCompraId = async (ordenCompraId: number): P
 
     // Necesitamos obtener la información de la orden de compra para completar los datos
     const ordenResponse = await apiClient.get(`/ordenes-compra/${ordenCompraId}?include=cliente,empresa,contactoCliente`);
-    const ordenCompra = ordenResponse.data;
+    const ordenCompra = ordenResponse.data as OrdenCompraMinimal;
 
-    return facturaciones.map((facturacion: any) => ({
+    return (facturaciones as FacturacionMinimal[]).map((facturacion) => ({
       id: facturacion.id,
       ordenCompraId: ordenCompra.id,
       clientBusinessName: ordenCompra.cliente?.razonSocial || '',
@@ -191,34 +223,34 @@ export const getBillingHistoryByOrdenCompraId = async (ordenCompraId: number): P
       companyRuc: ordenCompra.empresa?.ruc || '',
       companyBusinessName: ordenCompra.empresa?.razonSocial || '',
       contact: ordenCompra.contactoCliente?.telefono || '',
-      registerDate: ordenCompra.fechaEmision || new Date().toISOString(),
-      maxDeliveryDate: ordenCompra.fechaMaxForm || new Date().toISOString(),
+      registerDate: ordenCompra.fechaEmision || null,
+      maxDeliveryDate: ordenCompra.fechaMaxForm || null,
       deliveryDateOC: ordenCompra.fechaEntrega || null,
-      saleAmount: parseFloat(ordenCompra.montoVenta || '0'),
+      saleAmount: parseFloat(String(ordenCompra.montoVenta ?? '0')),
       oce: ordenCompra.documentoOce || '',
       ocf: ordenCompra.documentoOcf || '',
-      receptionDate: ordenCompra.fechaEntrega || new Date().toISOString(),
-      programmingDate: ordenCompra.fechaMaxForm || new Date().toISOString(),
-      invoiceNumber: facturacion.factura || null,
-      invoiceDate: facturacion.fechaFactura || null,
-      grr: facturacion.grr || null,
+      receptionDate: ordenCompra.fechaEntrega || null,
+      programmingDate: ordenCompra.fechaMaxForm || null,
+      invoiceNumber: facturacion.factura ?? undefined,
+      invoiceDate: facturacion.fechaFactura ?? undefined,
+      grr: facturacion.grr ?? undefined,
       isRefact: false,
       status: ordenCompra.estadoActivo ? 'pending' : 'cancelled',
       // Campos específicos de facturación del backend
-      factura: facturacion.factura || null,
-      fechaFactura: facturacion.fechaFactura || null,
-      retencion: facturacion.retencion || null,
-      detraccion: facturacion.detraccion || null,
-      formaEnvioFactura: facturacion.formaEnvioFactura || null,
-      estadoFacturacion: facturacion.estado || null,
+      factura: facturacion.factura ?? null,
+      fechaFactura: facturacion.fechaFactura ?? null,
+      retencion: facturacion.retencion ?? null,
+      detraccion: facturacion.detraccion ?? null,
+      formaEnvioFactura: facturacion.formaEnvioFactura ?? null,
+      estadoFacturacion: facturacion.estado ?? undefined,
       facturacionId: facturacion.id,
-      createdAt: facturacion.createdAt || null,
+      createdAt: facturacion.createdAt ?? null,
       esRefacturacion: facturacion.esRefacturacion || false,
       // Campos de archivos que faltaban
-      facturaArchivo: facturacion.facturaArchivo || null,
-      grrArchivo: facturacion.grrArchivo || null,
-      notaCreditoArchivo: facturacion.notaCreditoArchivo || null,
-      notaCreditoTexto: facturacion.notaCreditoTexto || null
+      facturaArchivo: facturacion.facturaArchivo ?? null,
+      grrArchivo: facturacion.grrArchivo ?? null,
+      notaCreditoArchivo: facturacion.notaCreditoArchivo ?? null,
+      notaCreditoTexto: facturacion.notaCreditoTexto ?? null
     }));
   } catch (error) {
     console.error('❌ Backend: Error al obtener historial de facturaciones:', error);

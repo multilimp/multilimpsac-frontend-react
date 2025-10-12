@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { SaleProps } from '@/services/sales/sales';
 import { Close, Edit, KeyboardArrowDown, KeyboardArrowUp, OpenInNew } from '@mui/icons-material';
 import { Card, CardContent, CardHeader, Collapse, Drawer, Fab, IconButton, List, ListItem, ListItemText, Stack, Typography } from '@mui/material';
-import dayjs from 'dayjs';
-import { formatCurrency } from '@/utils/functions';
+import { formatCurrency, formattedDate } from '@/utils/functions';
 import { useNavigate } from 'react-router-dom';
+// removed: import { formattedDate } from '../../../../utils/functions';
 
 interface SalesDetailsProps {
   handleClose: VoidFunction;
@@ -108,8 +108,8 @@ const SalesDetails = ({ handleClose, data }: SalesDetailsProps) => {
                 { label: 'Dirección', value: direccionEntrega },
                 { label: defaultText, value: `${departamentoEntrega} - ${provinciaEntrega} - ${distritoEntrega}` },
                 { label: 'Referencia', value: referenciaEntrega },
-                { label: 'Fecha de entrega', value: fechaEntrega ? dayjs(fechaEntrega).format('DD/MM/YYYY') : defaultText },
-                { label: 'Fecha de entrega OC', value: fechaEntregaOc ? dayjs(fechaEntregaOc).format('DD/MM/YYYY') : defaultText },
+                { label: 'Fecha de entrega', value: fechaEntrega ? formattedDate(fechaEntrega, 'dd/MM/yyyy') : defaultText },
+                { label: 'Fecha de entrega OC', value: fechaEntregaOc ? formattedDate(fechaEntregaOc, 'dd/MM/yyyy') : defaultText },
               ]}
             />
 
@@ -118,8 +118,8 @@ const SalesDetails = ({ handleClose, data }: SalesDetailsProps) => {
               data={[
                 { label: 'Catálogo', value: catalogoEmpresa.nombre },
                 { label: defaultText, value: catalogoEmpresa.descripcion },
-                { label: 'Fecha formalización', value: fechaForm ? dayjs(fechaForm).format('DD/MM/YYYY') : defaultText },
-                { label: 'Fecha máxima de entrega', value: fechaMaxForm ? dayjs(fechaMaxForm).format('DD/MM/YYYY') : defaultText },
+                { label: 'Fecha formalización', value: fechaForm ? formattedDate(fechaForm, 'dd/MM/yyyy') : defaultText },
+                { label: 'Fecha máxima de entrega', value: fechaMaxForm ? formattedDate(fechaMaxForm, 'dd/MM/yyyy') : defaultText },
                 { label: 'Monto de venta', value: formatCurrency(Number(montoVenta)) },
                 { label: 'Número SIAF', value: siaf },
                 { label: 'Etapa SIAF', value: etapaSiaf },

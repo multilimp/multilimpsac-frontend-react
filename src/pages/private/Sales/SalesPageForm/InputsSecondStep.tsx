@@ -10,7 +10,7 @@ import { Business, LocationOn } from '@mui/icons-material';
 import ClientSelectorModal from '../../Clients/components/ClientSelectorModal';
 import { ClientProps } from '@/services/clients/clients';
 import { SaleProps } from '@/services/sales/sales';
-import dayjs from 'dayjs';
+import { formattedDate } from '@/utils/functions';
 
 // Opciones para el tipo de entrega en ventas privadas
 const tipoEntregaOptions = [
@@ -88,7 +88,7 @@ const InputsSecondStep = ({ form, isEditing = false, currentSale, isPrivateSale 
           <Fragment>
             {'Creado: '}
             <Typography component="span" color="inherit" variant="inherit" fontWeight={600}>
-              {currentSale?.createdAt ? dayjs(currentSale.createdAt).format('DD / MM / YYYY') : '---'}
+              {currentSale?.createdAt ? formattedDate(currentSale.createdAt, 'dd / MM / yyyy') : '---'}
             </Typography>
           </Fragment>
         }
@@ -96,7 +96,7 @@ const InputsSecondStep = ({ form, isEditing = false, currentSale, isPrivateSale 
           <Fragment>
             {'Actualizado: '}
             <Typography component="span" color="inherit" variant="inherit" fontWeight={600}>
-              {currentSale?.updatedAt ? dayjs(currentSale.updatedAt).format('DD / MM / YYYY') : '---'}
+              {currentSale?.updatedAt ? formattedDate(currentSale.updatedAt, 'dd / MM / yyyy') : '---'}
             </Typography>
           </Fragment>
         }
