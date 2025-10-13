@@ -153,7 +153,10 @@ const QuotesPageForm = () => {
         // Recargar las cotizaciones en el contexto global
         await obtainQuotes();
       } else {
-        await createCotizacion(baseQuoteData);
+        await createCotizacion({
+          ...baseQuoteData,
+          fechaCotizacion: baseQuoteData.fechaCotizacion || dayjs().format('YYYY-MM-DD'),
+        });
         notification.success({ message: 'La cotización fue creada correctamente' });
         form.resetFields();
         // Recargar las cotizaciones en el contexto global
