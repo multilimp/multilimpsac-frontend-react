@@ -22,7 +22,7 @@ export const getTrackings = async (): Promise<TrackingProps[]> => {
       companyRuc: oc.empresa?.ruc || '',
       companyBusinessName: oc.empresa?.razonSocial || '',
       clientName: oc.cliente?.razonSocial || '',
-      maxDeliveryDate: oc.fechaMaxForm || new Date().toISOString(),
+      maxDeliveryDate: oc.fechaMaxForm || null,
       saleAmount: parseFloat(oc.montoVenta || '0'),
       cue: oc.cliente?.codigoUnidadEjecutora || '',
       department: oc.departamentoEntrega || '',
@@ -36,7 +36,9 @@ export const getTrackings = async (): Promise<TrackingProps[]> => {
       deliveryDateOC: undefined, // Campo pendiente de implementar
       utility: 0, // Campo calculado o predeterminado
       status: 'pending' as const, // Estado inicial
-      createdAt: oc.createdAt || oc.fechaEmision || new Date().toISOString(), // Fecha de creación para ordenamiento
+      createdAt: oc.createdAt || oc.fechaEmision || null, // Fecha de creación para ordenamiento
+      receptionDate: oc.fechaEntrega || null,
+      programmingDate: oc.fechaMaxForm || null,
     }));
   } catch (error) {
     console.error('Error al obtener trackings:', error);

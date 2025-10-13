@@ -68,6 +68,12 @@ import InputNumberAntd from '@/components/InputNumberAntd';
 import PaymentsList from '@/components/PaymentsList';
 import { updatePayments } from '@/services/payments/payments.service';
 import { ESTADOS, EstadoVentaType, estadoBgMap } from '@/utils/constants';
+import { TransportProps } from '@/services/transports/transports';
+import { ContactProps } from '@/services/contacts/contacts';
+import { TransporteAsignadoProps } from '@/services/transporteAsignado/transporteAsignado';
+import { PaymentData } from '@/services/payments/payments.service';
+import { Almacen } from '@/types/almacen.types';
+import { RegionProps, ProvinceProps, DistrictProps } from '@/services/ubigeo/ubigeo';
 
 interface TrackingFormContentProps {
   sale: SaleProps;
@@ -88,22 +94,39 @@ interface TransportePaymentsState {
   payments: TransportePaymentItem[];
 }
 
+type TransporteFormData = {
+  montoFletePagado: number;
+  numeroFactura: string;
+  archivoFactura: string | null;
+  guiaRemision: string | null;
+  guiaTransporte: string | null;
+};
+
 const createDefaultPaymentsState = (): TransportePaymentsState => ({
   tipoPago: 'PENDIENTE',
   notaPago: '',
   payments: []
 });
 
-const mapPagosToPaymentItems = (pagos: any[]): TransportePaymentItem[] => {
+type PagoTransporte = {
+  fechaPago?: string | Date | null;
+  bancoPago?: string | null;
+  descripcionPago?: string | null;
+  archivoPago?: string | File | null;
+  montoPago?: number | null;
+  estadoPago?: boolean;
+};
+
+const mapPagosToPaymentItems = (pagos: (PagoTransporte | PaymentData)[]): TransportePaymentItem[] => {
   if (!Array.isArray(pagos)) {
     return [];
   }
 
-  return pagos.map((pago: any) => ({
+  return pagos.map((pago) => ({
     date: pago?.fechaPago ? dayjs(pago.fechaPago) : null,
     bank: pago?.bancoPago || '',
     description: pago?.descripcionPago || '',
-    file: pago?.archivoPago || null,
+    file: typeof pago?.archivoPago === 'string' ? pago.archivoPago : null,
     amount: pago?.montoPago != null ? String(pago.montoPago) : '',
     status: Boolean(pago?.estadoPago)
   }));
@@ -118,7 +141,7 @@ const clonePaymentsState = (state: TransportePaymentsState): TransportePaymentsS
   }))
 });
 
-const mapPaymentItemsToPayload = (payments: TransportePaymentItem[]) => payments.map(payment => ({
+const mapPaymentItemsToPayload = (payments: TransportePaymentItem[]): PaymentData[] => payments.map(payment => ({
   fechaPago: payment.date ? payment.date.toDate() : null,
   bancoPago: payment.bank,
   descripcionPago: payment.description,
@@ -127,7 +150,21 @@ const mapPaymentItemsToPayload = (payments: TransportePaymentItem[]) => payments
   estadoPago: payment.status
 }));
 
+interface TransporteAsignadoUI extends TransporteAsignadoProps {
+  montoFletePagado?: number;
+  numeroFactura?: string;
+  archivoFactura?: string | null;
+  guiaRemision?: string | null;
+  guiaTransporte?: string | null;
+  archivoCotizacion?: string | null;
+}
+
 const scheduleFields = ['fechaRecepcion', 'fechaProgramada', 'fechaDespacho'] as const;
+
+const getUbigeoName = (val: RegionProps | ProvinceProps | DistrictProps | string | undefined) => {
+  if (!val) return undefined;
+  return typeof val === 'string' ? val : val.name;
+};
 
 const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
   const [form] = Form.useForm();
@@ -148,27 +185,27 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
     open: boolean;
     mode: 'create' | 'view';
     opId: number | null;
-    transporteData: any;
+    transporteData: TransporteAsignadoUI | null;
   }>({
     open: false,
     mode: 'create',
     opId: null,
     transporteData: null
   });
-  const [transportCompanies, setTransportCompanies] = useState<any[]>([]);
-  const [transportContacts, setTransportContacts] = useState<any[]>([]);
-  const [almacenes, setAlmacenes] = useState<any[]>([]);
+  const [transportCompanies, setTransportCompanies] = useState<TransportProps[]>([]);
+  const [transportContacts, setTransportContacts] = useState<ContactProps[]>([]);
+  const [almacenes, setAlmacenes] = useState<Almacen[]>([]);
   const [activeTab, setActiveTab] = useState(0);
-  const [pagosModalData, setPagosModalData] = useState<{ open: boolean; entidad: any | null }>({
+  const [pagosModalData, setPagosModalData] = useState<{ open: boolean; entidad: TransporteAsignadoUI | null }>({
     open: false,
     entidad: null
   });
-  const [transporteFormData, setTransporteFormData] = useState({
+  const [transporteFormData, setTransporteFormData] = useState<TransporteFormData>({
     montoFletePagado: 0,
     numeroFactura: '',
-    archivoFactura: null as string | null,
-    guiaRemision: null as string | null,
-    guiaTransporte: null as string | null,
+    archivoFactura: null,
+    guiaRemision: null,
+    guiaTransporte: null,
   });
   const [originalTransporteValues, setOriginalTransporteValues] = useState<{
     montoFletePagado: number;
@@ -233,7 +270,10 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
     }
   };
 
-  const updateTransporteField = (field: string, value: any) => {
+  const updateTransporteField = (
+    field: keyof TransporteFormData,
+    value: TransporteFormData[typeof field]
+  ) => {
     setTransporteFormData(prev => ({ ...prev, [field]: value }));
 
     // Detectar cambios
@@ -244,9 +284,9 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
       setChangedTransporteFields(prev => {
         const newSet = new Set(prev);
         if (hasChanged) {
-          newSet.add(field);
+          newSet.add(field as string);
         } else {
-          newSet.delete(field);
+          newSet.delete(field as string);
         }
         return newSet;
       });
@@ -391,9 +431,10 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
 
     setSavingTransporte(true);
     try {
-      const data: Record<string, any> = {};
-      changedTransporteFields.forEach(field => {
-        data[field] = transporteFormData[field as keyof typeof transporteFormData];
+      const data: Record<string, unknown> = {};
+      changedTransporteFields.forEach(fieldStr => {
+        const field = fieldStr as keyof TransporteFormData;
+        data[field] = transporteFormData[field];
       });
 
       const updatedTransporte = await updateTransporteAsignado(currentTransporte.id, data);
@@ -702,7 +743,18 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
       let fechaMaxFormValue: string | null = null;
       if (changedOCFields.has('fechaMaxForm')) {
         const ocValue = form.getFieldValue('fechaMaxForm');
-        fechaMaxFormValue = serializeDateValue(ocValue);
+        if (ocValue) {
+          if (dayjs.isDayjs(ocValue)) {
+            fechaMaxFormValue = (ocValue as dayjs.Dayjs).format('YYYY-MM-DD');
+          } else if (typeof ocValue === 'string') {
+            const d = dayjs(ocValue);
+            fechaMaxFormValue = d.isValid() ? d.format('YYYY-MM-DD') : ocValue;
+          } else {
+            fechaMaxFormValue = null;
+          }
+        } else {
+          fechaMaxFormValue = null;
+        }
         requests.push(updateOrdenCompra(sale.id, { fechaMaxForm: fechaMaxFormValue }));
       }
 
@@ -832,7 +884,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
 
 
 
-  const handleViewTransporte = (transporteAsignado: any) => {
+  const handleViewTransporte = (transporteAsignado: TransporteAsignadoUI) => {
     setTransporteModal({
       open: true,
       mode: 'view',
@@ -851,13 +903,18 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
     // Comparar valores, teniendo en cuenta que dayjs objects requieren comparación especial
     let isChanged = false;
     if (fieldName === 'fechaEntregaOC' || fieldName === 'fechaPeruCompras' || fieldName === 'fechaMaxForm') {
-      // Para campos de fecha, comparar como string ISO
-      const originalDateStr = originalValue && typeof originalValue === 'object' && 'toISOString' in originalValue
-        ? (originalValue as dayjs.Dayjs).toISOString()
-        : null;
-      const currentDateStr = value && typeof value === 'object' && 'toISOString' in value
-        ? (value as dayjs.Dayjs).toISOString()
-        : null;
+      // Para campos de fecha-only, comparar como 'YYYY-MM-DD'
+      const formatDateOnly = (val: unknown) => {
+        if (!val) return null;
+        if (dayjs.isDayjs(val)) return (val as dayjs.Dayjs).format('YYYY-MM-DD');
+        if (typeof val === 'string') {
+          const d = dayjs(val);
+          return d.isValid() ? d.format('YYYY-MM-DD') : val;
+        }
+        return null;
+      };
+      const originalDateStr = formatDateOnly(originalValue);
+      const currentDateStr = formatDateOnly(value);
       isChanged = originalDateStr !== currentDateStr;
     } else {
       // Para otros campos, usar comparación JSON
@@ -983,13 +1040,15 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
       changedOCFields.forEach(fieldName => {
         let value = currentValues[fieldName];
 
-        if (
-          (fieldName === 'fechaEntregaOC' || fieldName === 'fechaPeruCompras' || fieldName === 'fechaMaxForm') &&
-          value &&
-          typeof value === 'object' &&
-          'toISOString' in value
-        ) {
-          value = value.toISOString();
+        if (fieldName === 'fechaEntregaOC' || fieldName === 'fechaPeruCompras' || fieldName === 'fechaMaxForm') {
+          if (!value) {
+            value = null;
+          } else if (dayjs.isDayjs(value)) {
+            value = (value as dayjs.Dayjs).format('YYYY-MM-DD');
+          } else if (typeof value === 'string') {
+            const d = dayjs(value);
+            value = d.isValid() ? d.format('YYYY-MM-DD') : value;
+          }
         }
 
         // Mapear nombres de campos del frontend al backend
@@ -1047,13 +1106,15 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
         changedOCFields.forEach(fieldName => {
           let value = values[fieldName];
 
-          if (
-            (fieldName === 'fechaEntregaOC' || fieldName === 'fechaPeruCompras' || fieldName === 'fechaMaxForm') &&
-            value &&
-            typeof value === 'object' &&
-            'toISOString' in value
-          ) {
-            value = (value as dayjs.Dayjs).toISOString();
+          if (fieldName === 'fechaEntregaOC' || fieldName === 'fechaPeruCompras' || fieldName === 'fechaMaxForm') {
+            if (!value) {
+              value = null;
+            } else if (dayjs.isDayjs(value)) {
+              value = (value as dayjs.Dayjs).format('YYYY-MM-DD');
+            } else if (typeof value === 'string') {
+              const d = dayjs(value);
+              value = d.isValid() ? d.format('YYYY-MM-DD') : value;
+            }
           }
 
           // Mapear nombres de campos del frontend al backend
@@ -2592,7 +2653,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                         RUC: {transporteModal.transporteData?.transporte?.ruc || 'N/A'}
                       </Typography>
                       <Typography variant="body2" sx={{ color: '#6b7280', fontSize: '0.875rem' }}>
-                        {transporteModal.transporteData?.transporte?.departamento || 'N/A'} - {transporteModal.transporteData?.transporte?.provincia || 'N/A'} - {transporteModal.transporteData?.transporte?.distrito || 'N/A'}
+                        {getUbigeoName(transporteModal.transporteData?.transporte?.departamento) || 'N/A'} - {getUbigeoName(transporteModal.transporteData?.transporte?.provincia) || 'N/A'} - {getUbigeoName(transporteModal.transporteData?.transporte?.distrito) || 'N/A'}
                       </Typography>
                     </Box>
                   </Grid>
@@ -2712,7 +2773,12 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                             <Button
                               variant="outlined"
                               startIcon={<DownloadIcon />}
-                              onClick={() => window.open(transporteModal.transporteData.archivoCotizacion, '_blank')}
+                              onClick={() => {
+  const fileUrl = transporteModal.transporteData?.archivoCotizacion ?? null;
+  if (fileUrl) {
+    window.open(fileUrl, '_blank');
+  }
+}}
                               sx={{
                                 borderColor: '#10b981',
                                 color: '#10b981',

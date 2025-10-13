@@ -17,7 +17,7 @@ export const getTreasuryTrackings = async () => {
       companyRuc: oc.empresa?.ruc || '',
       companyBusinessName: oc.empresa?.razonSocial || '',
       clientName: oc.cliente?.razonSocial || '',
-      maxDeliveryDate: oc.fechaMaxForm || new Date().toISOString(),
+      maxDeliveryDate: oc.fechaMaxForm || null,
       saleAmount: parseFloat(oc.montoVenta || '0'),
       cue: oc.cliente?.codigoUnidadEjecutora || '',
       department: oc.departamentoEntrega || '',

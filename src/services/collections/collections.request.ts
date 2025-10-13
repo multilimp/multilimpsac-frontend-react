@@ -28,8 +28,8 @@ export const getCollections = async (): Promise<CollectionProps[]> => {
       catalogoEmpresa: oc.catalogoEmpresa ? {
         nombre: oc.catalogoEmpresa.nombre,
       } : undefined,
-      fechaForm: oc.fechaForm || oc.fechaEmision || new Date().toISOString(),
-      fechaMaxForm: oc.fechaMaxForm || oc.fechaMaxEntrega || new Date().toISOString(),
+      fechaForm: oc.fechaForm || oc.fechaEmision || '',
+      fechaMaxForm: oc.fechaMaxForm || oc.fechaMaxEntrega || '',
       montoVenta: oc.montoVenta || '0',
       direccionEntrega: oc.direccionEntrega,
       departamentoEntrega: oc.departamentoEntrega,

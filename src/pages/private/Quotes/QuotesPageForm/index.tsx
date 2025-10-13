@@ -50,7 +50,7 @@ const QuotesPageForm = () => {
             notaPago: quoteData.notaPago ?? '',
             notaPedido: quoteData.notaPedido ?? '',
             fechaCotizacion: dayjs(quoteData.fechaCotizacion),
-            fechaEntrega: dayjs(quoteData.fechaEntrega),
+            fechaEntrega: quoteData.fechaEntrega ? dayjs(quoteData.fechaEntrega) : null,
             direccionEntrega: quoteData.direccionEntrega ?? '',
             distritoEntrega: quoteData.distritoEntrega ?? '',
             provinciaEntrega: quoteData.provinciaEntrega ?? '',
@@ -80,6 +80,13 @@ const QuotesPageForm = () => {
     try {
       setLoading(true);
 
+      console.log('Valores del formulario:', values);
+      console.log('Productos:', values.productos);
+      console.log('Empresa:', values.empresa);
+      console.log('Cliente:', values.cliente);
+      console.log('Tipo de Pago:', values.tipoPago);
+      console.log('Fecha Cotización:', values.fechaCotizacion);
+
       const baseQuoteData = {
         empresaId: Number(values.empresa),
         clienteId: (values.cliente as { id: number })?.id,
@@ -99,8 +106,10 @@ const QuotesPageForm = () => {
         provinciaEntrega: values.provinciaEntrega ? String(values.provinciaEntrega) : undefined,
         departamentoEntrega: values.departamentoEntrega ? String(values.departamentoEntrega) : undefined,
         referenciaEntrega: values.referenciaEntrega ? String(values.referenciaEntrega) : undefined,
-        fechaCotizacion: dayjs(values.fechaCotizacion as string | Date | dayjs.Dayjs).toISOString() || new Date().toISOString(),
-        fechaEntrega: values.fechaEntrega ? dayjs(values.fechaEntrega as string | Date | dayjs.Dayjs).toISOString() : undefined,
+        fechaCotizacion: dayjs.isDayjs(values.fechaCotizacion)
+          ? (values.fechaCotizacion as dayjs.Dayjs).format('YYYY-MM-DD')
+          : undefined,
+        fechaEntrega: (values.fechaEntrega as { toISOString: () => string })?.toISOString() || undefined,
         productos: (() => {
           const productos = values.productos as ProductoRecord[] || [];
           return productos.map(prod => ({
@@ -115,6 +124,8 @@ const QuotesPageForm = () => {
           }));
         })(),
       };
+
+      console.log('Datos a enviar:', baseQuoteData);
 
       // Validaciones adicionales
       if (!baseQuoteData.empresaId || isNaN(baseQuoteData.empresaId)) {

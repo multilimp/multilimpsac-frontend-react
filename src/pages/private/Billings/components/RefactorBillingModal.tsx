@@ -61,7 +61,7 @@ const RefactorBillingModal: React.FC<RefactorBillingModalProps> = ({
             const refacturacionData: BillingData = {
                 ordenCompraId,
                 factura: values.numeroFactura,
-                fechaFactura: dayjs(values.fechaFactura).toISOString() || undefined,
+                fechaFactura: values.fechaFactura ? values.fechaFactura.format('YYYY-MM-DD') : null,
                 grr: values.grr,
                 retencion: values.retencion || 0,
                 detraccion: values.detraccion || 0,

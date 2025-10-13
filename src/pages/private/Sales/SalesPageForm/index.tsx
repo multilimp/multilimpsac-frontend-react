@@ -15,6 +15,7 @@ import { SaleProps } from '@/services/sales/sales';
 import { parseJSON } from '@/utils/functions';
 import { Save } from '@mui/icons-material';
 import { estadoOptions, estadoBgMap } from '@/utils/constants';
+import { Producto } from '@/types/almacen.types';
 
 const SalesPageForm = () => {
   const { companies, clients, saleInputValues, setSaleInputValues, setBlackBarKey, obtainSales, setSelectedSale } = useGlobalInformation();
@@ -247,45 +248,32 @@ const SalesPageForm = () => {
           provinciaEntrega: values.provinciaEntrega || null,
           departamentoEntrega: values.regionEntrega || null,
           referenciaEntrega: values.referenciaEntrega || null,
-          fechaEntrega: values.fechaEntrega ? values.fechaEntrega.toISOString() : null,
-          fechaForm: values.fechaFormalizacion ? values.fechaFormalizacion.toISOString() : null,
-          fechaMaxForm: values.fechaMaxEntrega ? values.fechaMaxEntrega.toISOString() : null,
+          fechaEntrega: dayjs(values.fechaEntrega).isValid() ? dayjs(values.fechaEntrega).toISOString() : undefined,
+          fechaForm: dayjs(values.fechaFormalizacion).isValid() ? dayjs(values.fechaFormalizacion).toISOString() : undefined,
+          fechaMaxForm: dayjs(values.fechaMaxEntrega).isValid() ? dayjs(values.fechaMaxEntrega).toISOString() : undefined,
           montoVenta: values.montoVenta ? Number(values.montoVenta) : null,
           siaf: values.numeroSIAF ? String(values.numeroSIAF) : null,
           etapaSiaf: values.etapaSIAF || null,
-          fechaSiaf: values.fechaSIAF ? values.fechaSIAF.toISOString() : null,
+          fechaSiaf: dayjs(values.fechaSIAF).isValid() ? dayjs(values.fechaSIAF).toISOString() : undefined,
           estadoVenta: values.estadoVenta || 'PENDIENTE',
           documentoOce: values.ordenCompraElectronica || null,
           documentoOcf: values.ordenCompraFisica || null,
           codigoOcf: values.codigoOcf || null,
-          productos: (values.productos || []).map((producto: any) => ({
+          productos: (values.productos || []).map((producto: Producto) => ({
             ...producto,
             isCompleted: false, // Campo interno por defecto
-          })),
+          }))
         };
 
         // Si es venta privada, incluir datos específicos
         if (saleInputValues.tipoVenta === 'privada') {
-          console.log('Datos de venta privada para actualización:', {
-            tipoPago: tipoPago,
-            notaPago: notaPago,
-            payments: payments,
-            allValues: values
-          }); // Debug para edición
-
-          console.log('Datos de tipo de entrega en edición:', {
-            tipoEntrega: values.tipoEntrega,
-            nombreAgencia: values.nombreAgencia,
-            destinoFinal: values.destinoFinal,
-            destinoEntidad: values.destinoEntidad
-          }); // Debug tipo de entrega en edición
 
           const bodyVentaPrivada = {
             ...baseVentaData,
             multipleFuentesFinanciamiento: values.multipleFuentesFinanciamiento || false,
             ventaPrivada: {
               estadoPago: tipoPago || 'PENDIENTE',
-              fechaPago: values.dateFactura ? values.dateFactura.toISOString() : null,
+              fechaPago: values.dateFactura && dayjs(values.dateFactura).isValid() ? dayjs(values.dateFactura).toISOString() : undefined,
               documentoPago: values.documentoFactura,
               documentoCotizacion: values.documentoCotizacion, // Campo de cotización
               cotizacion: values.cotizacion || null, // Campo cotización
@@ -296,7 +284,9 @@ const SalesPageForm = () => {
               destinoFinal: values.destinoFinal || null,
               nombreEntidad: values.destinoEntidad || null,
               pagos: payments.map(payment => ({
-                fechaPago: payment.date ? payment.date.toISOString() : null,
+                fechaPago: payment.date && dayjs(payment.date).isValid()
+                  ? dayjs(payment.date).toISOString()
+                  : undefined,
                 bancoPago: payment.bank || '',
                 descripcionPago: payment.description || '',
                 archivoPago: payment.file || null,
@@ -305,41 +295,24 @@ const SalesPageForm = () => {
               }))
             },
           };
-
-          console.log('Body completo para actualización de venta privada:', bodyVentaPrivada); // Debug
-
           await updateSale(Number(id), bodyVentaPrivada);
         } else {
-          // Venta directa
           await updateSale(Number(id), baseVentaData);
         }
 
         notification.success({ message: `La venta fue actualizada correctamente` });
-        obtainSales();
-        navigate('/sales');
       } else {
         // Modo creación (código existente)
         let bodyVentaPrivada = null;
         if (saleInputValues.tipoVenta === 'privada') {
-          console.log('Form values para venta privada:', {
-            tipoPago: tipoPago,
-            notaPago: notaPago,
-            payments: payments,
-            allValues: values
-          }); // Debug
-
-          console.log('Pagos del estado antes de procesar:', payments); // Debug adicional
 
           const pagos = [];
           for (const payment of payments || []) {
-            console.log('Procesando pago individual:', payment); // Debug de cada pago
-            // Validar que el pago tenga datos válidos
             if (payment.amount && parseFloat(payment.amount) > 0) {
-              console.log('Processing payment:', payment); // Debug
               pagos.push({
                 fechaPago: payment.date && dayjs(payment.date).isValid()
                   ? payment.date.toISOString()
-                  : null,
+                  : undefined,
                 bancoPago: payment.bank || '',
                 descripcionPago: payment.description || '',
                 archivoPago: payment.file || null,
@@ -348,17 +321,10 @@ const SalesPageForm = () => {
               });
             }
           }
-          console.log('Processed pagos for creation:', pagos); // Debug
-          console.log('Datos de tipo de entrega:', {
-            tipoEntrega: values.tipoEntrega,
-            nombreAgencia: values.nombreAgencia,
-            destinoFinal: values.destinoFinal,
-            destinoEntidad: values.destinoEntidad
-          }); // Debug tipo de entrega
 
           bodyVentaPrivada = {
             estadoPago: tipoPago || 'PENDIENTE',
-            fechaPago: values.dateFactura ? values.dateFactura.toISOString() : null,
+            fechaPago: dayjs(values.dateFactura).isValid() ? dayjs(values.dateFactura).toISOString() : undefined,
             documentoPago: values.documentoFactura,
             documentoCotizacion: values.documentoCotizacion, // Campo de cotización
             cotizacion: values.cotizacion || null, // Campo cotización
@@ -371,8 +337,6 @@ const SalesPageForm = () => {
             pagos,
           };
         }
-
-        console.log(values, saleInputValues);
 
         // Validar datos requeridos
         if (!saleInputValues.enterprise?.id) {
@@ -409,28 +373,26 @@ const SalesPageForm = () => {
           distritoEntrega: values.distritoEntrega || null,
           direccionEntrega: values.direccionEntrega || null,
           referenciaEntrega: values.referenciaEntrega || null,
-          fechaForm: values.fechaFormalizacion ? values.fechaFormalizacion.toISOString() : null,
-          fechaMaxForm: values.fechaMaxEntrega ? values.fechaMaxEntrega.toISOString() : null,
+          fechaForm: dayjs(values.fechaFormalizacion).isValid() ? dayjs(values.fechaFormalizacion).toISOString() : undefined,
+          fechaMaxForm: dayjs(values.fechaMaxEntrega).isValid() ? dayjs(values.fechaMaxEntrega).toISOString() : undefined,
           montoVenta: values.montoVenta ? Number(values.montoVenta) : null,
           siaf: values.numeroSIAF ? String(values.numeroSIAF) : null,
           etapaSiaf: values.etapaSIAF || null,
-          fechaSiaf: values.fechaSIAF ? values.fechaSIAF.toISOString() : null,
+          fechaSiaf: dayjs(values.fechaSIAF).isValid() ? dayjs(values.fechaSIAF).toISOString() : undefined,
           estadoVenta: values.estadoVenta || 'PENDIENTE',
           documentoOce: values.ordenCompraElectronica || null,
           documentoOcf: values.ordenCompraFisica || null,
           codigoOcf: values.codigoOcf || null,
           productos: (values.productos || []).map((producto: any) => ({
             ...producto,
-            isCompleted: false, // Campo interno por defecto
+            isCompleted: false,
           })),
         };
 
-        console.log('Datos a enviar:', bodyVentaDirecta);
         const nuevaVenta = await createDirectSale(bodyVentaDirecta);
 
         notification.success({ message: `La venta fue registrada correctamente` });
-        form.resetFields();
-        obtainSales();
+        navigate(`/sales/${nuevaVenta.id}/edit`);
       }
     } catch (error: any) {
       console.error('Error al guardar venta:', error);
