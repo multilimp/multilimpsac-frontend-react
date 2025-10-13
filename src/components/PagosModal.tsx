@@ -3,12 +3,7 @@ import {
     Modal,
     Box,
     Typography,
-    TextField,
     Button as MuiButton,
-    FormControl,
-    InputLabel,
-    Select,
-    MenuItem,
     Stack,
     Alert,
     IconButton,
@@ -31,6 +26,7 @@ import dayjs from 'dayjs';
 import { createPago, updatePago, getHistorialPagos, deletePago } from '@/services/pagos/pagos.requests';
 import { PagoProveedorTransporte, HistorialPagos } from '@/types/pagos.types';
 import { formatCurrency } from '@/utils/functions';
+import DatePickerAntd from './DatePickerAnt';
 
 const { TextArea } = Input;
 const { Option } = AntSelect;
@@ -90,7 +86,7 @@ const PagosModal: React.FC<PagosModalProps> = ({
         if (editingPago) {
             setActiveTab(1); // Cambiar a formulario
             form.setFieldsValue({
-                fechaPago: dayjs(editingPago.fechaPago),
+                fechaPago: dayjs(editingPago.fechaPago).toISOString() || undefined,
                 banco: editingPago.banco,
                 descripcion: editingPago.descripcion,
                 estado: editingPago.estado,
@@ -446,7 +442,7 @@ const PagosModal: React.FC<PagosModalProps> = ({
                         layout="vertical"
                         onFinish={handleSubmit}
                     >
-                        <Stack spacing={2}>
+                        <Stack spacing={1}>
                             {/* Fecha y Banco en la misma fila */}
                             <Box sx={{ display: 'flex', gap: 2 }}>
                                 <Box sx={{ flex: 1 }}>
@@ -455,9 +451,9 @@ const PagosModal: React.FC<PagosModalProps> = ({
                                         label="Fecha de Anticipo"
                                         rules={[{ required: true, message: 'La fecha es requerida' }]}
                                     >
-                                        <DatePicker
+                                        <DatePickerAntd
                                             style={{ width: '100%' }}
-                                            format="DD/MM/YYYY"
+                                            size='small'
                                             placeholder="Seleccionar fecha"
                                         />
                                     </Form.Item>
@@ -472,6 +468,11 @@ const PagosModal: React.FC<PagosModalProps> = ({
                                             placeholder="Seleccionar banco"
                                             showSearch
                                             allowClear
+                                            style={
+                                                {
+                                                    height: "40px"
+                                                }
+                                            }
                                         >
                                             {bancosComunes.map(banco => (
                                                 <Option key={banco} value={banco}>{banco}</Option>
