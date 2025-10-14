@@ -165,7 +165,6 @@ const UsersModal = ({ data, handleClose, handleReload }: UsersModalProps) => {
                 <Form.Item name="role" rules={[{ required: true, message: 'El rol es requerido' }]}>
                   <SelectGeneric
                     label="Rol"
-                    placeholder="Selecciona un rol"
                     onChange={(value: RolesEnum) => setSelectedRole(value)}
                   >
                     {Object.values(RolesEnum).map((r) => (
