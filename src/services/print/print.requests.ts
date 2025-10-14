@@ -84,108 +84,95 @@ export interface CargosEntregaData {
   totalOps: number;
 }
 
-export const printInvoice = async (data: PrintInvoiceData): Promise<any> => {
+export interface Empresa {
+  logo?: string;
+  direccion?: string;
+  distrito?: string;
+  provincia?: string;
+  departamento?: string;
+  telefono?: string;
+  email?: string;
+  web?: string;
+  ruc?: string;
+  razonSocial?: string;
+}
+
+export interface Proveedor {
+  razonSocial?: string;
+  ruc?: string;
+}
+
+export interface Producto {
+  codigo?: string;
+  cantidad?: number;
+  unidadMedida?: string;
+  descripcion?: string;
+  precioUnitario?: number;
+  total?: number;
+}
+
+export interface TransporteAsignado {
+  transporte?: {
+    razonSocial?: string;
+    ruc?: string;
+    direccion?: string;
+    telefono?: string;
+  };
+  direccion?: string;
+  etiquetado?: string;
+  embalaje?: string;
+  notaTransporte?: string;
+  otros?: string;
+}
+
+export interface OrdenProveedorData {
+  id?: string | number;
+  codigoOp?: string;
+  empresa?: Empresa;
+  proveedor?: Proveedor;
+  productos?: Producto[];
+  totalProveedor?: number;
+  tipoPago?: string;
+  transportesAsignados?: TransporteAsignado[];
+  fechaRecepcion?: string;
+  notaPedido?: string;
+  fechaEmision?: string;
+  createdAt?: string;
+}
+
+export const printOrdenProveedor = async (id: number): Promise<void> => {
   try {
-    // ✅ CORRECCIÓN: Usar la ruta correcta con el ID de la orden de compra
-    const response = await apiClient.post(`/print/factura/${data.ordenCompraId}`, data, {
-      responseType: 'blob'
-    });
+    const response = await apiClient.get<OrdenProveedorData>(`/print/orden-proveedor/${id}`);
+    const data = response.data;
+    const productos = (data.productos || []) as Producto[];
+    const transportes = (data.transportesAsignados || []) as TransporteAsignado[];
 
-    // Crear URL del blob para descarga
-    const blob = new Blob([response.data], { type: 'application/pdf' });
-    const url = window.URL.createObjectURL(blob);
-
-    // Crear link temporal para descarga
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `factura-${data.codigoOp}.pdf`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    // Limpiar URL
-    window.URL.revokeObjectURL(url);
-
-    return { success: true, message: 'Factura generada y descargada correctamente' };
-  } catch (error) {
-    console.error('Error al imprimir factura:', error);
-    throw new Error('Error al generar la factura');
-  }
-};
-
-export const generateInvoicePDF = async (ordenCompraId: number, invoiceData: any): Promise<any> => {
-  try {
-    const response = await apiClient.post(`/print/generar-factura/${ordenCompraId}`, invoiceData, {
-      responseType: 'blob'
-    });
-
-    return response.data;
-  } catch (error) {
-    console.error('Error al generar PDF de factura:', error);
-    throw error;
-  }
-};
-
-export const printOrdenProveedor = async (orderData: any): Promise<void> => {
-  try {
-    const data = orderData;
-
-    // Función auxiliar para formatear moneda
-    const formatCurrency = (value: any): string => {
-      if (typeof value === 'number') {
-        return 'S/ ' + value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-      }
-      return value || '';
+    // Función auxiliar para formatear moneda (robusta y localizada)
+    const formatCurrency = (value: unknown): string => {
+      if (value === null || value === undefined || value === '') return '';
+      const num = typeof value === 'number' ? value : Number(value);
+      if (Number.isNaN(num)) return '';
+      return new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN', minimumFractionDigits: 2 }).format(num);
     };
 
-    // Función auxiliar para escapar HTML
+    // Función auxiliar para escapar HTML (prevención XSS en impresión)
     const escapeHtml = (text: string): string => {
       const div = document.createElement('div');
-      div.textContent = text;
+      div.textContent = text ?? '';
       return div.innerHTML;
     };
 
-    // Función para formatear fecha
+    // Función para formatear fecha (consistente y localizada)
     const formatDate = (dateString: string): string => {
       if (!dateString) return '';
-      return new Date(dateString).toLocaleDateString('es-ES');
-    };
-
-    // Generar HTML de productos
-    const generateProductosHtml = (productos: any[]): string => {
-      if (!productos || productos.length === 0) return '';
-
-      return `
-        <table class="tabla-productos">
-          <thead>
-            <tr>
-              <th class="col-codigo">CÓDIGO</th>
-              <th class="col-descripcion">DESCRIPCIÓN</th>
-              <th class="col-unidad">UNIDAD</th>
-              <th class="col-cantidad">CANTIDAD</th>
-              <th class="col-precio">PRECIO UNIT.</th>
-              <th class="col-total">TOTAL</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${productos.map(producto => `
-              <tr>
-                <td class="col-codigo">${escapeHtml(producto.codigo || '')}</td>
-                <td class="col-descripcion">${escapeHtml(producto.descripcion || '')}</td>
-                <td class="col-unidad">${escapeHtml(producto.unidadMedida || '')}</td>
-                <td class="col-cantidad">${producto.cantidad || 0}</td>
-                <td class="col-precio">${formatCurrency(producto.precioUnitario)}</td>
-                <td class="col-total">${formatCurrency(producto.total)}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      `;
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return '';
+      return new Intl.DateTimeFormat('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(date);
     };
 
     // Generar HTML de transportes
-    const generateTransportesHtml = (transportes: any[], fechaRecepcion?: string): string => {
-      if (!transportes || transportes.length === 0) return '';
+    const generateTransportesHtml = (transportesAsignados: TransporteAsignado[], fechaRecepcion?: string): string => {
+      if (!transportesAsignados || transportesAsignados.length === 0) return '';
 
       const tituloTransportes = fechaRecepcion
         ? `TRANSPORTES ASIGNADOS - PLAZO DE ENTREGA: ${formatDate(fechaRecepcion)}`
@@ -194,7 +181,7 @@ export const printOrdenProveedor = async (orderData: any): Promise<void> => {
       return `
         <div class="transportes-card">
           <h3>${tituloTransportes}</h3>
-          ${transportes.map(transporte => `
+          ${transportesAsignados.map((transporte) => `
             <div class="transporte-item">
               <h4>${escapeHtml(transporte.transporte?.razonSocial || '')} - ${escapeHtml(transporte.transporte?.ruc || '')}</h4>
               <p><strong>Dirección:</strong> ${escapeHtml(transporte.transporte?.direccion || '')}</p>
@@ -218,10 +205,12 @@ export const printOrdenProveedor = async (orderData: any): Promise<void> => {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Orden de Proveedor - ${data.codigoOp || data.id}</title>
         <style>
+          @page { size: A4; margin: 12mm; }
+
           body {
-            font-family: 'Arial', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Inter', 'Helvetica Neue', Arial, sans-serif;
             font-size: 10px;
-            line-height: 1.3;
+            line-height: 1.35;
             margin: 0;
             padding: 8px;
             color: #333;
@@ -548,6 +537,8 @@ export const printOrdenProveedor = async (orderData: any): Promise<void> => {
             color: #666;
           }
 
+          thead { display: table-header-group; }
+          tfoot { display: table-footer-group; }
           @media print {
             body { margin: 0; }
             .no-print { display: none; }
@@ -572,13 +563,13 @@ export const printOrdenProveedor = async (orderData: any): Promise<void> => {
           <div class="header-right">
             <div class="info-box">
               <div class="info-box-row">
-                <h2>ORDEN DE COMPRA</h2>
+                <h2>ORDEN DE PROVEEDOR</h2>
               </div>
               <div class="info-box-row">
                 <p class="codigo-oc">${data.codigoOp || data.id}</p>
               </div>
               <div class="info-box-row-bottom">
-                <p>Fecha Emisión: ${formatDate(data.fechaEmision || data.createdAt)}</p>
+                <p>Fecha Emisión: ${formatDate(data.fechaEmision || data.createdAt || '')}</p>
                 <p class="ruc-text">RUC: ${escapeHtml(data.empresa?.ruc || '')}</p>
               </div>
             </div>
@@ -602,12 +593,12 @@ export const printOrdenProveedor = async (orderData: any): Promise<void> => {
                 <th class="col-cantidad">CANTIDAD</th>
                 <th class="col-unidad">UNIDAD</th>
                 <th class="col-descripcion">DESCRIPCIÓN</th>
-                <th class="col-precio">PRECIO</th>
+                <th class="col-precio">PRECIO UNIT.</th>
                 <th class="col-importe">IMPORTE</th>
               </tr>
             </thead>
             <tbody>
-              ${data.productos && data.productos.length > 0 ? data.productos.map((producto: { codigo: any; cantidad: any; unidadMedida: any; descripcion: any; precioUnitario: any; total: any; }) => `
+              ${productos.length > 0 ? productos.map((producto) => `
                 <tr>
                   <td class="col-codigo">${escapeHtml(producto.codigo || '')}</td>
                   <td class="col-cantidad">${producto.cantidad || 0}</td>
@@ -618,7 +609,7 @@ export const printOrdenProveedor = async (orderData: any): Promise<void> => {
                 </tr>
               `).join('') : '<tr><td colspan="6" style="text-align: center;">No hay productos</td></tr>'}
               <tr class="total-row">
-                <td colspan="5" style="text-align: right; font-weight: bold;">TOTAL INCLUYE IGV:</td>
+                <td colspan="5" style="text-align: right; font-weight: bold;">TOTAL:</td>
                 <td class="col-importe">${formatCurrency(data.totalProveedor)}</td>
               </tr>
               <tr>
@@ -630,7 +621,7 @@ export const printOrdenProveedor = async (orderData: any): Promise<void> => {
           </table>
         </div>
 
-        ${generateTransportesHtml(data.transportesAsignados || [], data.fechaRecepcion)}
+        ${generateTransportesHtml(transportes, data.fechaRecepcion)}
 
         <div class="info-section">
           <h2>OBSERVACIONES</h2>
@@ -647,34 +638,29 @@ export const printOrdenProveedor = async (orderData: any): Promise<void> => {
         </div>
 
         <div class="footer">
-          <p>Generado el ${new Date().toLocaleString('es-ES')}</p>
+          <p>Generado el ${new Intl.DateTimeFormat('es-PE', { dateStyle: 'short', timeStyle: 'short' }).format(new Date())}</p>
         </div>
       </body>
       <script>
-        // Auto-imprimir cuando la página se carga
         window.onload = function() {
           window.print();
-        }
-
+        };
         window.onafterprint = function() {
           window.close();
-        }
+        };
       </script>
     </html>
   `;
 
-    // Abrir en nueva ventana para impresión
-    const printWindow = window.open('_blank', 'width=800,height=600');
+    // Abrir en nueva ventana para impresión (corrección de firma)
+    const printWindow = window.open('', '_blank', 'width=900,height=700,noopener,noreferrer');
 
     if (printWindow) {
       printWindow.document.open();
       printWindow.document.write(html);
       printWindow.document.close();
-
-      // Enfocar la ventana para que aparezca el diálogo de impresión
       printWindow.focus();
     } else {
-      // Fallback si no se puede abrir la ventana (bloqueador de popups)
       const blob = new Blob([html], { type: 'text/html' });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -684,7 +670,6 @@ export const printOrdenProveedor = async (orderData: any): Promise<void> => {
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-
       throw new Error('No se pudo abrir la ventana de impresión. Verifica que los popups estén habilitados.');
     }
   } catch (error) {
@@ -702,23 +687,23 @@ export const printCargosEntrega = async (fechaInicio: string, fechaFin: string):
 
     const data: CargosEntregaData = response.data.data;
 
-    // Función auxiliar para formatear moneda
-    const formatCurrency = (value: any): string => {
-      if (typeof value === 'number') {
-        return 'S/ ' + value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-      }
-      return value || '';
+    // Función auxiliar para formatear moneda (robusta y localizada)
+    const formatCurrency = (value: unknown): string => {
+      if (value === null || value === undefined || value === '') return '';
+      const num = typeof value === 'number' ? value : Number(value);
+      if (Number.isNaN(num)) return '';
+      return new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN', minimumFractionDigits: 2 }).format(num);
     };
 
-    // Función auxiliar para escapar HTML
+    // Función auxiliar para escapar HTML (prevención XSS en impresión)
     const escapeHtml = (text: string): string => {
       const div = document.createElement('div');
-      div.textContent = text;
+      div.textContent = text ?? '';
       return div.innerHTML;
     };
 
     // Función para generar HTML de productos
-    const generateProductosHtml = (productos: any[]): string => {
+    const generateProductosHtml = (productos: Array<{ codigo?: string; descripcion?: string; cantidad?: number }>): string => {
       if (!productos || productos.length === 0) return '';
 
       return `
@@ -744,7 +729,7 @@ export const printCargosEntrega = async (fechaInicio: string, fechaFin: string):
     };
 
     // Función para generar HTML de proveedor
-    const generateProveedorHtml = (proveedor: any): string => {
+    const generateProveedorHtml = (proveedor: { razonSocial?: string; contacto?: { nombre?: string; telefono?: string; cargo?: string } }): string => {
       if (!proveedor) return '';
 
       return `
@@ -764,7 +749,7 @@ export const printCargosEntrega = async (fechaInicio: string, fechaFin: string):
     };
 
     // Función para generar HTML de destino
-    const generateDestinoHtml = (destino: any): string => {
+    const generateDestinoHtml = (destino: { tipo?: string; cliente?: { razonSocial?: string }; direccion?: string; referencia?: string; contacto?: { nombre?: string }; telefono?: string }): string => {
       if (!destino) return '';
 
       return `
@@ -1147,23 +1132,23 @@ export const generateCargosEntregaPDF = async (fechaInicio: string, fechaFin: st
 
     const data: CargosEntregaData = response.data.data;
 
-    // Función auxiliar para formatear moneda
-    const formatCurrency = (value: any): string => {
-      if (typeof value === 'number') {
-        return 'S/ ' + value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-      }
-      return value || '';
+    // Función auxiliar para formatear moneda (robusta y localizada)
+    const formatCurrency = (value: unknown): string => {
+      if (value === null || value === undefined || value === '') return '';
+      const num = typeof value === 'number' ? value : Number(value);
+      if (Number.isNaN(num)) return '';
+      return new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN', minimumFractionDigits: 2 }).format(num);
     };
 
-    // Función auxiliar para escapar HTML
+    // Función auxiliar para escapar HTML (prevención XSS en impresión)
     const escapeHtml = (text: string): string => {
       const div = document.createElement('div');
-      div.textContent = text;
+      div.textContent = text ?? '';
       return div.innerHTML;
     };
 
     // Función para generar HTML de productos
-    const generateProductosHtml = (productos: any[]): string => {
+    const generateProductosHtml = (productos: Array<{ codigo?: string; descripcion?: string; cantidad?: number }>): string => {
       if (!productos || productos.length === 0) return '';
 
       return `
@@ -1189,7 +1174,7 @@ export const generateCargosEntregaPDF = async (fechaInicio: string, fechaFin: st
     };
 
     // Función para generar HTML de proveedor
-    const generateProveedorHtml = (proveedor: any): string => {
+    const generateProveedorHtml = (proveedor: { razonSocial?: string; contacto?: { nombre?: string; telefono?: string; cargo?: string } }): string => {
       if (!proveedor) return '';
 
       return `
@@ -1209,7 +1194,7 @@ export const generateCargosEntregaPDF = async (fechaInicio: string, fechaFin: st
     };
 
     // Función para generar HTML de destino
-    const generateDestinoHtml = (destino: any): string => {
+    const generateDestinoHtml = (destino: { tipo?: string; cliente?: { razonSocial?: string }; direccion?: string; referencia?: string; contacto?: { nombre?: string }; telefono?: string }): string => {
       if (!destino) return '';
 
       return `

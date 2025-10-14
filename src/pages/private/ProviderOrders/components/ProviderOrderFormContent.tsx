@@ -596,7 +596,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
       return;
     }
     try {
-      await printOrdenProveedor(orderData);
+      await printOrdenProveedor(orderData.id);
     } catch (error) {
       notification.error({ message: 'Error al imprimir la orden' });
     }
