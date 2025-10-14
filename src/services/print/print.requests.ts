@@ -353,6 +353,10 @@ export const printOrdenProveedor = async (id: number): Promise<void> => {
 
     printWindow.document.write(htmlFinal);
     printWindow.document.close();
+
+    printWindow.onafterprint = function () {
+      printWindow.close();
+    };
   } catch (error) {
     console.error('Error al imprimir orden de proveedor:', error);
     throw new Error('Error al generar la orden de proveedor para impresión');
