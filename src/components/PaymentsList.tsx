@@ -755,34 +755,6 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
           </Typography>
         </Box>
       )}
-
-      {/* TARJETAS DISPONIBLES DE LA ENTIDAD */}
-      {entityId && entityType && tarjetasDisponibles.length > 0 && (
-        <Box sx={{ mb: 3 }}>
-          <MuiButton
-            variant="outlined"
-            onClick={handleOpenTarjetasModal}
-            startIcon={<CreditCardOutlined />}
-            disabled={loadingTarjetas}
-            sx={{
-              borderRadius: 2,
-              px: 3,
-              py: 1.5,
-              textTransform: 'none',
-              fontWeight: 600,
-              borderColor: '#6c5ebf',
-              color: '#6c5ebf',
-              '&:hover': {
-                borderColor: '#5a4fcf',
-                bgcolor: '#f3f0ff'
-              }
-            }}
-          >
-            {loadingTarjetas ? 'Cargando...' : `Ver ${tarjetasDisponibles.length} tarjeta${tarjetasDisponibles.length !== 1 ? 's' : ''} disponible${tarjetasDisponibles.length !== 1 ? 's' : ''}`}
-          </MuiButton>
-        </Box>
-      )}
-
       {/* NOTA PRIVADA */}
       {renderNotaPago()}
 
