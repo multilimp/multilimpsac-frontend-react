@@ -1,4 +1,5 @@
 import apiClient from '../apiClient';
+import { loadTemplate, fillTemplate } from './template-loader';
 
 export interface PrintInvoiceData {
   ordenCompraId: number;
@@ -139,15 +140,19 @@ export interface OrdenProveedorData {
   fechaEmision?: string;
   createdAt?: string;
 }
-
 export const printOrdenProveedor = async (id: number): Promise<void> => {
   try {
-    const response = await apiClient.get<OrdenProveedorData>(`/print/orden-proveedor/${id}`);
-    const data = response.data;
-    const productos = (data.productos || []) as Producto[];
-    const transportes = (data.transportesAsignados || []) as TransporteAsignado[];
+    const response = await apiClient.get(`/print/orden-proveedor/${id}`);
 
-    // Función auxiliar para formatear moneda (robusta y localizada)
+    if (!response.data || !response.data.data || !response.data.data.ordenProveedor) {
+      throw new Error('Datos de orden de proveedor no disponibles');
+    }
+
+    const data = response.data.data.ordenProveedor;
+    const productos = (data.productos || []) as any[];
+    const transportesAsignados = data.transportesAsignados || [];
+    const ordenCompra = data.ordenCompra;
+
     const formatCurrency = (value: unknown): string => {
       if (value === null || value === undefined || value === '') return '';
       const num = typeof value === 'number' ? value : Number(value);
@@ -155,14 +160,12 @@ export const printOrdenProveedor = async (id: number): Promise<void> => {
       return new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN', minimumFractionDigits: 2 }).format(num);
     };
 
-    // Función auxiliar para escapar HTML (prevención XSS en impresión)
     const escapeHtml = (text: string): string => {
       const div = document.createElement('div');
       div.textContent = text ?? '';
       return div.innerHTML;
     };
 
-    // Función para formatear fecha (consistente y localizada)
     const formatDate = (dateString: string): string => {
       if (!dateString) return '';
       const date = new Date(dateString);
@@ -170,498 +173,166 @@ export const printOrdenProveedor = async (id: number): Promise<void> => {
       return new Intl.DateTimeFormat('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(date);
     };
 
-    // Generar HTML de transportes
-    const generateTransportesHtml = (transportesAsignados: TransporteAsignado[], fechaRecepcion?: string): string => {
-      if (!transportesAsignados || transportesAsignados.length === 0) return '';
+    const template = await loadTemplate('/src/services/print/print-op-template.html');
 
-      const tituloTransportes = fechaRecepcion
-        ? `TRANSPORTES ASIGNADOS - PLAZO DE ENTREGA: ${formatDate(fechaRecepcion)}`
-        : 'TRANSPORTES ASIGNADOS';
+    const logoHtml = data.empresa?.logo
+      ? `<img class="company-logo" src="${data.empresa.logo}" alt="Logo Empresa">`
+      : '';
 
-      return `
-        <div class="transportes-card">
-          <h3>${tituloTransportes}</h3>
-          ${transportesAsignados.map((transporte) => `
-            <div class="transporte-item">
-              <h4>${escapeHtml(transporte.transporte?.razonSocial || '')} - ${escapeHtml(transporte.transporte?.ruc || '')}</h4>
-              <p><strong>Dirección:</strong> ${escapeHtml(transporte.transporte?.direccion || '')}</p>
-              <p><strong>Destino:</strong> ${escapeHtml(transporte.direccion || '')}</p>
-              <p><strong>Etiquetado:</strong> ${escapeHtml(transporte.etiquetado || 'No especificado')}</p>
-              <p><strong>Embalaje:</strong> ${escapeHtml(transporte.embalaje || 'No especificado')}</p>
-              <p><strong>Observaciones:</strong> ${escapeHtml(transporte.notaTransporte || 'Sin observaciones')}</p>
-              ${transporte.otros ? `<p><strong>Otros:</strong> ${escapeHtml(transporte.otros)}</p>` : ''}
-            </div>
-          `).join('')}
-        </div>
+    const empresaDirecciones = data.empresa?.direcciones || data.empresa?.direccion || 'Sin dirección';
+
+    const productosRows = productos.map((producto: any) => `
+      <tr>
+        <td class="product-cell">${escapeHtml(producto.codigo || 'N/A')}</td>
+        <td class="product-cell">${producto.cantidad || 0}</td>
+        <td class="product-cell">${escapeHtml(producto.unidadMedida || 'UND')}</td>
+        <td class="product-cell-description">${escapeHtml(producto.descripcion || 'Sin descripción')}</td>
+        <td class="product-cell">${formatCurrency(Number(producto.precioUnitario) || 0)}</td>
+        <td class="product-cell-last">${formatCurrency(Number(producto.total) || 0)}</td>
+      </tr>
+    `).join('');
+
+    const total = productos.reduce((sum: number, p: any) => sum + (Number(p.total) || 0), 0);
+    const plazoEntrega = data.fechaRecepcion ? formatDate(data.fechaRecepcion) : 'No especificado';
+
+    let seccionTransporte = '';
+    let destinoInfo = '';
+    let etiquetadoRow = '';
+    let embalajeRow = '';
+    let observacionesRow = '';
+    let otrosRow = '';
+
+    if (transportesAsignados.length > 0) {
+      seccionTransporte = transportesAsignados.map((transporte: any, index: number) => {
+        const transporteData = transporte.transporte;
+        const transporteDireccion = [
+          transporte.direccion,
+          transporte.distrito,
+          transporte.provincia,
+          transporte.region
+        ].filter(Boolean).join(' / ') || 'No especificada';
+
+        return `
+          <tr>
+            <td class="section-label">
+              <svg xmlns="http://www.w3.org/2000/svg" height="16" width="15" viewBox="0 0 640 512" class="icon-truck">
+                <path d="M48 0C21.5 0 0 21.5 0 48V368c0 26.5 21.5 48 48 48H64c0 53 43 96 96 96s96-43 96-96H384c0 53 43 96 96 96s96-43 96-96h32c17.7 0 32-14.3 32-32s-14.3-32-32-32V288 256 237.3c0-17-6.7-33.3-18.7-45.3L512 114.7c-12-12-28.3-18.7-45.3-18.7H416V48c0-26.5-21.5-48-48-48H48zM416 160h50.7L544 237.3V256H416V160zM112 416a48 48 0 1 1 96 0 48 48 0 1 1 -96 0zm368-48a48 48 0 1 1 0 96 48 48 0 1 1 0-96z" />
+              </svg>
+              TRANSPORTE${transportesAsignados.length > 1 ? ` ${index + 1}` : ''}:
+            </td>
+            <td class="section-content">
+              <div>${escapeHtml(transporteData?.razonSocial || 'Sin información')}</div>
+              <div><b>Dirección: </b>${escapeHtml(transporteDireccion)}</div>
+              <div><b>RUC: </b>${escapeHtml(transporteData?.ruc || 'N/A')}</div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      const primerTransporte = transportesAsignados[0];
+
+      etiquetadoRow = `
+        <tr>
+          <td class="section-label">ETIQUETADO:</td>
+          <td class="section-content">${escapeHtml(primerTransporte.etiquetado || '')}</td>
+        </tr>
       `;
-    };
 
-    // Generar HTML completo
-    const html = `
-      <!DOCTYPE html>
-      <html lang="es">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Orden de Proveedor - ${data.codigoOp || data.id}</title>
-        <style>
-          @page { size: A4; margin: 12mm; }
+      embalajeRow = `
+        <tr>
+          <td class="section-label">EMBALAJE:</td>
+          <td class="section-content">${escapeHtml(primerTransporte.embalaje || '')}</td>
+        </tr>
+      `;
 
-          body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Inter', 'Helvetica Neue', Arial, sans-serif;
-            font-size: 10px;
-            line-height: 1.35;
-            margin: 0;
-            padding: 8px;
-            color: #333;
-            background: #fff;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-          }
+      observacionesRow = `
+        <tr>
+          <td class="section-label">OBSERVACIONES:</td>
+          <td class="section-content">${escapeHtml(primerTransporte.notaTransporte || '')}</td>
+        </tr>
+      `;
 
-          .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 12px;
-            border-bottom: 1px solid #000;
-            padding-bottom: 10px;
-            background: white;
-            padding: 8px;
-          }
-
-          .header-left {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-          }
-
-          .logo {
-            width: 200px;
-            height: auto;
-            max-height: 80px;
-            margin-bottom: 5px;
-            border: 1px solid #e0e0e0;
-            border-radius: 2px;
-            padding: 5px;
-            background: white;
-            object-fit: contain;
-          }
-
-          .contact-info {
-            font-size: 8px;
-            color: #666;
-            line-height: 1.2;
-            margin-top: 3px;
-          }
-
-          .header-right {
-            text-align: right;
-          }
-
-          .info-box {
-            border: 2px solid #000;
-            background: white;
-            display: flex;
-            flex-direction: column;
-            min-width: 250px;
-            border-radius: 5px;
-          }
-
-          .info-box-row {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 8px;
-            border-bottom: 1px solid #000;
-          }
-
-          .info-box-row:last-child {
-            border-bottom: none;
-          }
-
-          .info-box-row h2 {
-            margin: 0;
-            font-size: 16px;
-            font-weight: bold;
-            text-align: center;
-          }
-
-          .info-box-row .codigo-oc {
-            margin: 0;
-            font-size: 16px;
-            font-weight: bold;
-            text-align: center;
-          }
-
-          .info-box-row-bottom {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 6px 10px;
-          }
-
-          .info-box-row-bottom p {
-            margin: 0;
-            font-size: 10px;
-            font-weight: normal;
-          }
-
-          .info-box-row-bottom .ruc-text {
-            font-weight: bold;
-          }
-
-          .provider-card, .products-card, .transportes-card, .facturacion-card {
-            border: 1px solid #000;
-            padding: 8px;
-            margin-bottom: 8px;
-            background: white;
-            border-radius: 5px;
-          }
-
-          .products-card, .transportes-card {
-            border: none;
-            padding: 0;
-            margin-bottom: 8px;
-          }
-
-          .provider-card h3, .transportes-card h3, .facturacion-card h3 {
-            margin: 0 0 6px 0;
-            font-size: 12px;
-            font-weight: bold;
-            text-align: center;
-            border-bottom: 1px solid #000;
-            padding-bottom: 4px;
-          }
-
-          .provider-card p {
-            margin: 2px 0;
-            font-size: 10px;
-          }
-
-          .transportes-card h3 {
-            margin: 0 0 6px 0;
-            font-size: 12px;
-            font-weight: bold;
-            text-align: center;
-            padding-bottom: 4px;
-          }
-
-          .products-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 8px;
-            border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid #000;
-          }
-
-          .products-table th, .products-table td {
-            border: 1px solid #000;
-            padding: 3px 2px;
-            text-align: left;
-          }
-
-          .products-table th.titulo-productos {
-            background: white;
-            color: black;
-            font-weight: bold;
-            font-size: 12px;
-            text-align: center;
-            padding: 6px 4px;
-            border-bottom: 1px solid #000;
-          }
-
-          .products-table th {
-            background: white;
-            color: black;
-            font-weight: bold;
-            text-transform: uppercase;
-            font-size: 7px;
-            text-align: center;
-            border-bottom: 2px solid #000;
-          }
-
-          .products-table .col-codigo { width: 80px; text-align: center; }
-          .products-table .col-cantidad { width: 70px; text-align: center; }
-          .products-table .col-unidad { width: 80px; text-align: center; }
-          .products-table .col-descripcion { width: auto; }
-          .products-table .col-precio { width: 80px; text-align: right; }
-          .products-table .col-importe { width: 80px; text-align: right; }
-
-          .total-row {
-            font-weight: bold;
-            background: white;
-            border-top: 1px solid #000;
-          }
-
-          .total-row td {
-            padding: 8px 4px;
-            font-size: 11px;
-          }
-
-          .transportes-card {
-            border: 1px solid #000;
-            padding: 5px;
-            margin-bottom: 8px;
-            background: #fff;
-          }
-
-          .transportes-card h3 {
-            margin: 0 0 5px 0;
-            font-size: 12px;
-            font-weight: bold;
-            text-align: center;
-          }
-
-          .transporte-item {
-            border: 1px solid #000;
-            padding: 6px;
-            margin-bottom: 5px;
-            background: white;
-            border-radius: 5px;
-          }
-
-          .transporte-item h4 {
-            margin: 0 0 4px 0;
-            font-size: 10px;
-            font-weight: bold;
-            border-bottom: 1px solid #000;
-            padding-bottom: 2px;
-          }
-
-          .transporte-item p {
-            margin: 2px 0;
-            font-size: 8px;
-            line-height: 1.2;
-          }
-
-          .facturacion-card {
-            border: 1px solid #000;
-            padding: 5px;
-            margin-bottom: 8px;
-            background: #fff;
-          }
-
-          .facturacion-card h3 {
-            margin: 0 0 4px 0;
-            font-size: 12px;
-            font-weight: bold;
-            text-align: center;
-          }
-
-          .facturacion-card p {
-            margin: 2px 0;
-            font-size: 10px;
-          }
-
-          .info-section {
-            margin-bottom: 10px;
-          }
-
-          .info-section h2 {
-            margin: 0 0 5px 0;
-            font-size: 12px;
-            font-weight: bold;
-            border-bottom: 1px solid #000;
-            padding-bottom: 5px;
-          }
-
-          .info-grid {
-            display: table;
-            width: 100%;
-            margin-bottom: 10px;
-          }
-
-          .info-row {
-            display: table-row;
-          }
-
-          .info-label {
-            display: table-cell;
-            width: 150px;
-            font-weight: bold;
-            padding: 2px 0;
-          }
-
-          .info-value {
-            display: table-cell;
-            padding: 2px 0;
-          }
-
-          .tabla-productos, .tabla-transportes {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 10px 0;
-            font-size: 11px;
-          }
-
-          .tabla-productos th, .tabla-productos td,
-          .tabla-transportes th, .tabla-transportes td {
-            border: 1px solid #000;
-            padding: 4px;
-            text-align: left;
-          }
-
-          .tabla-productos th, .tabla-transportes th {
-            background: #f0f0f0;
-            font-weight: bold;
-          }
-
-          .col-codigo { width: 80px; }
-          .col-descripcion { width: auto; }
-          .col-unidad { width: 60px; }
-          .col-cantidad { width: 70px; text-align: center; }
-          .col-precio { width: 80px; text-align: right; }
-          .col-total { width: 80px; text-align: right; }
-
-          .col-transporte { width: 200px; }
-          .col-ruc { width: 100px; }
-          .col-telefono { width: 100px; }
-          .col-direccion { width: auto; }
-
-          .seccion-transportes {
-            margin-top: 30px;
-          }
-
-          .seccion-transportes h3 {
-            margin: 0 0 10px 0;
-            font-size: 14px;
-            font-weight: bold;
-          }
-
-          .footer {
-            margin-top: 40px;
-            text-align: center;
-            font-size: 10px;
-            color: #666;
-          }
-
-          thead { display: table-header-group; }
-          tfoot { display: table-footer-group; }
-          @media print {
-            body { margin: 0; }
-            .no-print { display: none; }
-            .header, .provider-card, .products-card, .transportes-card, .facturacion-card, .info-section {
-              break-inside: avoid;
-            }
-          }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <div class="header-left">
-            ${data.empresa?.logo ? `<img src="${data.empresa.logo}" alt="Logo Empresa" class="logo">` : ''}
-            <div class="contact-info">
-              ${data.empresa?.direccion ? `Dirección: ${escapeHtml(data.empresa.direccion)}<br>` : ''}
-              ${[data.empresa?.distrito, data.empresa?.provincia, data.empresa?.departamento].filter(Boolean).length > 0 ? `${[data.empresa?.distrito, data.empresa?.provincia, data.empresa?.departamento].filter(Boolean).join(' - ')}<br>` : ''}
-              ${data.empresa?.telefono ? `Tel: ${escapeHtml(data.empresa.telefono)}<br>` : ''}
-              ${data.empresa?.email ? `Email: ${escapeHtml(data.empresa.email)}<br>` : ''}
-              ${data.empresa?.web ? `Web: ${escapeHtml(data.empresa.web)}` : ''}
-            </div>
-          </div>
-          <div class="header-right">
-            <div class="info-box">
-              <div class="info-box-row">
-                <h2>ORDEN DE PROVEEDOR</h2>
-              </div>
-              <div class="info-box-row">
-                <p class="codigo-oc">${data.codigoOp || data.id}</p>
-              </div>
-              <div class="info-box-row-bottom">
-                <p>Fecha Emisión: ${formatDate(data.fechaEmision || data.createdAt || '')}</p>
-                <p class="ruc-text">RUC: ${escapeHtml(data.empresa?.ruc || '')}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="provider-card">
-          <h3>PROVEEDOR</h3>
-          <p><strong>Sres:</strong> ${escapeHtml(data.proveedor?.razonSocial || '')}</p>
-          <p><strong>RUC:</strong> ${escapeHtml(data.proveedor?.ruc || '')}</p>
-        </div>
-
-        <div class="products-card">
-          <table class="products-table">
-            <thead>
-              <tr>
-                <th colspan="6" class="titulo-productos">PRODUCTOS</th>
-              </tr>
-              <tr>
-                <th class="col-codigo">CÓDIGO</th>
-                <th class="col-cantidad">CANTIDAD</th>
-                <th class="col-unidad">UNIDAD</th>
-                <th class="col-descripcion">DESCRIPCIÓN</th>
-                <th class="col-precio">PRECIO UNIT.</th>
-                <th class="col-importe">IMPORTE</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${productos.length > 0 ? productos.map((producto) => `
-                <tr>
-                  <td class="col-codigo">${escapeHtml(producto.codigo || '')}</td>
-                  <td class="col-cantidad">${producto.cantidad || 0}</td>
-                  <td class="col-unidad">${escapeHtml(producto.unidadMedida || '')}</td>
-                  <td class="col-descripcion">${escapeHtml(producto.descripcion || '')}</td>
-                  <td class="col-precio">${formatCurrency(producto.precioUnitario)}</td>
-                  <td class="col-importe">${formatCurrency(producto.total)}</td>
-                </tr>
-              `).join('') : '<tr><td colspan="6" style="text-align: center;">No hay productos</td></tr>'}
-              <tr class="total-row">
-                <td colspan="5" style="text-align: right; font-weight: bold;">TOTAL:</td>
-                <td class="col-importe">${formatCurrency(data.totalProveedor)}</td>
-              </tr>
-              <tr>
-                <td colspan="6" style="text-align: center; font-weight: bold; border-top: 1px solid #000; padding-top: 5px;">
-                  FORMA DE PAGO: ${escapeHtml(data.tipoPago || 'No especificado')}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        ${generateTransportesHtml(transportes, data.fechaRecepcion)}
-
-        <div class="info-section">
-          <h2>OBSERVACIONES</h2>
-          <div style="border: 1px solid #000; padding: 8px; border-radius: 5px; background: white; margin-top: 5px;">
-            <p style="margin: 0;">${escapeHtml(data.notaPedido || 'Sin observaciones')}</p>
-          </div>
-        </div>
-
-        <div class="facturacion-card">
-          <h3>DATOS DE FACTURACIÓN</h3>
-          <p><strong>RUC:</strong> ${escapeHtml(data.empresa?.ruc || '')}</p>
-          <p><strong>Razón Social:</strong> ${escapeHtml(data.empresa?.razonSocial || '')}</p>
-          <p><strong>Enviar factura PDF, Archivo XML y guía de remisión al correo:</strong> ${escapeHtml(data.empresa?.email || '')}</p>
-        </div>
-
-        <div class="footer">
-          <p>Generado el ${new Intl.DateTimeFormat('es-PE', { dateStyle: 'short', timeStyle: 'short' }).format(new Date())}</p>
-        </div>
-      </body>
-      <script>
-        window.onload = function() {
-          window.print();
-        };
-        window.onafterprint = function() {
-          window.close();
-        };
-      </script>
-    </html>
-  `;
-
-    // Abrir en nueva ventana para impresión (corrección de firma)
-    const printWindow = window.open('', '_blank', 'width=900,height=700,noopener,noreferrer');
-
-    if (printWindow) {
-      printWindow.document.open();
-      printWindow.document.write(html);
-      printWindow.document.close();
-      printWindow.focus();
+      otrosRow = `
+        <tr>
+          <td class="section-label">OTROS:</td>
+          <td class="section-content">${escapeHtml(primerTransporte.otros || '')}</td>
+        </tr>
+      `;
     } else {
-      const blob = new Blob([html], { type: 'text/html' });
+      etiquetadoRow = `
+        <tr>
+          <td class="section-label">ETIQUETADO:</td>
+          <td class="section-content"></td>
+        </tr>
+      `;
+
+      embalajeRow = `
+        <tr>
+          <td class="section-label">EMBALAJE:</td>
+          <td class="section-content"></td>
+        </tr>
+      `;
+
+      observacionesRow = `
+        <tr>
+          <td class="section-label">OBSERVACIONES:</td>
+          <td class="section-content"></td>
+        </tr>
+      `;
+
+      otrosRow = `
+        <tr>
+          <td class="section-label">OTROS:</td>
+          <td class="section-content"></td>
+        </tr>
+      `;
+    }
+
+    if (ordenCompra) {
+      const direccionCompleta = [
+        ordenCompra.direccionEntrega,
+        ordenCompra.distritoEntrega,
+        ordenCompra.provinciaEntrega,
+        ordenCompra.departamentoEntrega
+      ].filter(Boolean).join(' / ') || 'No especificada';
+
+      destinoInfo = `
+        <div><b>${escapeHtml(ordenCompra.cliente?.razonSocial || 'Sin cliente')}</b></div>
+        <div><b>Dirección: </b>${escapeHtml(direccionCompleta)}</div>
+        ${ordenCompra.referenciaEntrega ? `<div><b>Referencia: </b>${escapeHtml(ordenCompra.referenciaEntrega)}</div>` : ''}
+        ${ordenCompra.contactoCliente ? `<div><b>Contacto: </b>${escapeHtml(ordenCompra.contactoCliente.nombre || '')} - ${escapeHtml(ordenCompra.contactoCliente.telefono || '')}</div>` : ''}
+      `;
+    } else {
+      destinoInfo = '<div>No especificado</div>';
+    }
+
+    const htmlFinal = fillTemplate(template, {
+      LOGO: logoHtml,
+      EMPRESA_TELEFONO: escapeHtml(data.empresa?.telefono || 'Sin teléfono'),
+      EMPRESA_DIRECCIONES: escapeHtml(empresaDirecciones),
+      FECHA_EMISION: formatDate(data.fechaEmision || data.createdAt),
+      RUC_EMPRESA: escapeHtml(data.empresa?.ruc || ''),
+      CODIGO_OP: data.codigoOp || data.id,
+      PROVEEDOR_RAZON_SOCIAL: escapeHtml(data.proveedor?.razonSocial || ''),
+      PROVEEDOR_RUC: escapeHtml(data.proveedor?.ruc || ''),
+      PRODUCTOS_ROWS: productosRows,
+      TOTAL_INCLUYE_IGV: formatCurrency(total),
+      FORMA_PAGO: escapeHtml(data.tipoPago || 'No especificado'),
+      PLAZO_ENTREGA: plazoEntrega,
+      SECCION_TRANSPORTE: seccionTransporte,
+      DESTINO_INFO: destinoInfo,
+      ETIQUETADO_ROW: etiquetadoRow,
+      EMBALAJE_ROW: embalajeRow,
+      OBSERVACIONES_ROW: observacionesRow,
+      OTROS_ROW: otrosRow,
+      RUC_FACTURACION: escapeHtml(data.empresa?.ruc || ''),
+      RAZON_SOCIAL_FACTURACION: escapeHtml(data.empresa?.razonSocial || ''),
+      EMAIL_FACTURACION: escapeHtml(data.empresa?.email || 'contabilidad@multilimpsac.com')
+    });
+
+    const printWindow = window.open('', '_blank', 'width=800,height=600');
+    if (!printWindow) {
+      const blob = new Blob([htmlFinal], { type: 'text/html' });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -672,12 +343,14 @@ export const printOrdenProveedor = async (id: number): Promise<void> => {
       window.URL.revokeObjectURL(url);
       throw new Error('No se pudo abrir la ventana de impresión. Verifica que los popups estén habilitados.');
     }
+
+    printWindow.document.write(htmlFinal);
+    printWindow.document.close();
   } catch (error) {
     console.error('Error al imprimir orden de proveedor:', error);
     throw new Error('Error al generar la orden de proveedor para impresión');
   }
 };
-
 export const printCargosEntrega = async (fechaInicio: string, fechaFin: string): Promise<void> => {
   try {
     // Obtener datos del backend

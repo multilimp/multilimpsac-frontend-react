@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orden de Compra - {{CODIGO_OP}}</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+            padding: 50px;
+            line-height: 1 !important;
+        }
+
+        p {
+            margin: 0 !important;
+        }
+
+        @media print {
+            @page {
+                margin: 0;
+            }
+
+            :first {
+                margin: 0;
+            }
+        }
+
+        .template-container {
+            width: 100%;
+        }
+
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .company-info {
+            display: flex;
+            flex-direction: column;
+            width: 45%;
+        }
+
+        .company-logo {
+            width: 100%;
+        }
+
+        .company-phone {
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        .company-address {
+            line-height: 1 !important;
+            font-size: 12px !important;
+            padding: 0;
+            margin: 0 !important;
+        }
+
+        .document-info {
+            display: flex;
+            flex-direction: column;
+            width: 30%;
+        }
+
+        .emission-date {
+            font-size: 12px;
+            font-weight: 600;
+            color: #04ba6b;
+            width: 100%;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .document-box {
+            width: 100%;
+            border: 2px solid #04ba6b;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .ruc-info {
+            padding: 10px;
+            font-weight: bold;
+        }
+
+        .document-type {
+            padding: 10px;
+            border-top: 2px solid #04ba6b;
+            border-bottom: 2px solid #04ba6b;
+            color: #04ba6b;
+            font-weight: bold;
+        }
+
+        .document-number {
+            padding: 10px;
+            font-weight: bold;
+        }
+
+        .provider-info {
+            margin-top: 10px;
+            width: 97%;
+            border-radius: 10px;
+            border: 2px solid #ccc;
+            padding: 10px;
+        }
+
+        .provider-name {
+            font-weight: bold;
+        }
+
+        .provider-ruc {
+            margin-top: 2px;
+            font-weight: bold;
+        }
+
+        .products-header {
+            margin-top: 10px;
+            width: 100%;
+            border-radius: 10px;
+            border: 2px solid #aaa;
+        }
+
+        .products-table {
+            margin-top: 10px;
+            width: 100%;
+            border-radius: 10px;
+            border: 2px solid #ccc;
+        }
+
+        .header-cell {
+            width: 12%;
+            font-weight: bold;
+            background-color: #eee;
+            font-size: 11px;
+            border-right: 2px solid #eee;
+            text-align: center;
+            margin: 0;
+            padding: 5px;
+        }
+
+        .header-cell-description {
+            width: 40%;
+            font-weight: bold;
+            background-color: #eee;
+            font-size: 11px;
+            border-right: 2px solid #eee;
+            text-align: center;
+            margin: 0;
+            padding: 5px;
+        }
+
+        .header-cell-last {
+            width: 12%;
+            font-weight: bold;
+            background-color: #eee;
+            font-size: 11px;
+            text-align: center;
+            margin: 0;
+            padding: 5px;
+        }
+
+        .product-cell {
+            font-size: 11px;
+            border-right: 2px solid #eee;
+            text-align: center;
+            margin: 0;
+            padding-top: 10px;
+            vertical-align: top;
+        }
+
+        .product-cell-description {
+            font-size: 11px;
+            border-right: 2px solid #eee;
+            margin: 0;
+            padding-top: 10px;
+            vertical-align: top;
+        }
+
+        .product-cell-last {
+            font-size: 11px;
+            text-align: center;
+            padding-top: 10px;
+            vertical-align: top;
+        }
+
+        .total-row {
+            width: 100%;
+            font-size: 11px;
+            text-align: end;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            font-weight: bold;
+            border-top: 2px solid #eee;
+        }
+
+        .payment-row {
+            width: 100%;
+            font-size: 11px;
+            text-align: center;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            border-top: 2px solid #eee;
+            font-weight: bold;
+        }
+
+        .details-table {
+            margin-top: 10px;
+            width: 100%;
+            border-radius: 10px;
+            border: 2px solid #ccc;
+        }
+
+        .delivery-row {
+            width: 100%;
+            font-size: 11px;
+            text-align: center;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .section-label {
+            font-size: 14px;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            border-top: 2px solid #eee;
+            font-weight: bold;
+            line-height: 1;
+            width: 70px;
+        }
+
+        .section-content {
+            font-size: 11px;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            border-top: 2px solid #eee;
+        }
+
+        .footer-info {
+            width: 100%;
+            text-align: center;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        .icon-truck {
+            padding: 0 5px;
+        }
+
+        .icon-location {
+            padding: 0 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="template-container">
+        <!-- Encabezado con información de empresa y documento -->
+        <div class="header-section">
+            <div class="company-info">
+                {{LOGO}}
+                <div class="company-phone">VENTAS: {{EMPRESA_TELEFONO}}</div>
+                <div class="company-address">{{EMPRESA_DIRECCIONES}}</div>
+            </div>
+            <div class="document-info">
+                <div class="emission-date">Emisión: {{FECHA_EMISION}}</div>
+                <div class="document-box">
+                    <div class="ruc-info">R.U.C: {{RUC_EMPRESA}}</div>
+                    <div class="document-type">ORDEN DE COMPRA</div>
+                    <div class="document-number">{{CODIGO_OP}}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información del proveedor -->
+        <div class="provider-info">
+            <div class="provider-name">Sres: {{PROVEEDOR_RAZON_SOCIAL}}</div>
+            <div class="provider-ruc">RUC: {{PROVEEDOR_RUC}}</div>
+        </div>
+
+        <!-- Encabezado de tabla de productos -->
+        <table class="products-header">
+            <tr>
+                <td class="header-cell">CÓDIGO</td>
+                <td class="header-cell">CANTIDAD</td>
+                <td class="header-cell">UNIDAD DE MEDIDA</td>
+                <td class="header-cell-description">DESCRIPCIÓN</td>
+                <td class="header-cell">PRECIO S/</td>
+                <td class="header-cell-last">IMPORTE S/</td>
+            </tr>
+        </table>
+
+        <!-- Tabla de productos -->
+        <table class="products-table">
+            {{PRODUCTOS_ROWS}}
+            <tr>
+                <td colspan="6" class="total-row">TOTAL INCLUYE I.G.V.&nbsp;&nbsp;&nbsp;{{TOTAL_INCLUYE_IGV}}
+                    &nbsp;&nbsp;</td>
+            </tr>
+            <tr>
+                <td colspan="6" class="payment-row">Forma de pago: {{FORMA_PAGO}}</td>
+            </tr>
+        </table>
+
+        <!-- Detalles adicionales -->
+        <table class="details-table">
+            <tr>
+                <td colspan="2" class="delivery-row">PLAZO DE ENTREGA: {{PLAZO_ENTREGA}}</td>
+            </tr>
+            {{SECCION_TRANSPORTE}}
+            <tr>
+                <td class="section-label">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="16" width="12" viewBox="0 0 384 512"
+                        class="icon-location">
+                        <path
+                            d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
+                    </svg>
+                    DESTINO:
+                </td>
+                <td class="section-content">
+                    {{DESTINO_INFO}}
+                </td>
+            </tr>
+            {{ETIQUETADO_ROW}}
+            {{EMBALAJE_ROW}}
+            {{OBSERVACIONES_ROW}}
+            {{OTROS_ROW}}
+        </table>
+
+        <!-- Información de facturación -->
+        <div class="footer-info">
+            <div><b>Datos de facturación:</b> RUC: {{RUC_FACTURACION}}&nbsp;&nbsp; <b>Razón social:
+                </b>{{RAZON_SOCIAL_FACTURACION}}</div>
+            <div>Enviar factura PDF, Archivo XML y guía de remisión al correo {{EMAIL_FACTURACION}}</div>
+        </div>
+    </div>
+
+    <script>
+        window.onload = function () {
+            window.print();
+            window.onafterprint = function () {
+                window.close();
+            };
+        };
+    </script>
+</body>
+
+</html>
