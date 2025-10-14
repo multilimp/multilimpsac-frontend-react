@@ -1,8 +1,9 @@
 import AntTable, { AntColumnType } from '@/components/AntTable';
 import { SaleProps } from '@/services/sales/sales';
 import { formatCurrency, formattedDate } from '@/utils/functions';
-import { IconButton, Button } from '@mui/material';
+import { IconButton, Button, Typography } from '@mui/material';
 import { PictureAsPdf, Visibility } from '@mui/icons-material';
+import { calcularUtilidadCompleta } from '@/utils/utilidadCalculator';
 
 interface ProviderOrdersTableProps {
   data: Array<SaleProps>;
@@ -113,6 +114,42 @@ const ProviderOrdersTable = ({ data, loading, onRowClick }: ProviderOrdersTableP
           defaultText
         ),
     },
+    {
+      title: 'Utilidad %',
+      dataIndex: 'utilidad',
+      filter: false,
+      width: 180,
+      align: 'center',
+      render: (_: any, record: ProviderOrdersDataTable) => {
+        if (!record?.rawdata) {
+          return <Typography variant="body2" sx={{ color: 'gray' }}>-</Typography>;
+        }
+
+        const montoVenta = record.rawdata.montoVenta;
+        const totalProveedores = record.rawdata.ordenesProveedor?.reduce((sum, op) => {
+          const total = typeof op.totalProveedor === 'string'
+            ? parseFloat(op.totalProveedor)
+            : (op.totalProveedor || 0);
+          return sum + total;
+        }, 0) || 0;
+
+        const utilidad = calcularUtilidadCompleta(montoVenta, totalProveedores);
+
+        return (
+          <Typography
+            variant="body2"
+            sx={{
+              color: utilidad.color === 'success' ? 'green' :
+                utilidad.color === 'error' ? 'red' : 'gray',
+              fontWeight: 'medium',
+              fontSize: '0.875rem',
+            }}
+          >
+            {utilidad.mensaje}
+          </Typography>
+        );
+      },
+    }
   ];
 
   return (

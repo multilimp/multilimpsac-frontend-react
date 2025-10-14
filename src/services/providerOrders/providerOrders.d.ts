@@ -51,6 +51,7 @@ export interface ProviderOrderProps {
     distritoEntrega: string;
     direccionEntrega: string;
     referenciaEntrega: string;
+    montoVenta?: string | null;
     cliente: {
       id: number;
       razonSocial: string;

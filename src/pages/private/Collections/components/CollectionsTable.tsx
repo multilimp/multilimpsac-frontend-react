@@ -1,6 +1,6 @@
 // src/pages/private/Collections/components/CollectionsTable.tsx
 import React, { useMemo } from 'react';
-import { IconButton, Button } from '@mui/material';
+import { IconButton, Button, Typography } from '@mui/material';
 import { PictureAsPdf, Visibility } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import { formatCurrency, formattedDate } from '@/utils/functions';
@@ -8,6 +8,7 @@ import { ModalStateEnum } from '@/types/global.enum';
 import AntTable, { AntColumnType } from '@/components/AntTable';
 import { SaleProps } from '@/services/sales/sales';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
+import { calcularUtilidadCompleta } from '@/utils/utilidadCalculator';
 
 interface CollectionsTableProps {
   data: SaleProps[];
@@ -82,6 +83,38 @@ const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRe
     { title: 'Fecha Formalización', dataIndex: 'fecha_formalizacion', width: 150, sort: true, filter: true },
     { title: 'Fecha Máx. Entrega', dataIndex: 'fecha_max_entrega', width: 150, sort: true, filter: true },
     { title: 'Monto Venta', dataIndex: 'monto_venta', width: 130, sort: true, filter: true },
+    {
+      title: 'Utilidad %',
+      dataIndex: 'utilidad',
+      width: 180,
+      align: 'center',
+      render: (_: any, record: any) => {
+        const montoVenta = record.rawdata?.montoVenta;
+
+        const totalProveedores = record.rawdata?.ordenesProveedor?.reduce((sum: number, op: any) => {
+          const total = typeof op.totalProveedor === 'string'
+            ? parseFloat(op.totalProveedor)
+            : (op.totalProveedor || 0);
+          return sum + total;
+        }, 0) || 0;
+
+        const utilidad = calcularUtilidadCompleta(montoVenta, totalProveedores);
+
+        return (
+          <Typography
+            variant="body2"
+            sx={{
+              color: utilidad.color === 'success' ? 'green' :
+                utilidad.color === 'error' ? 'red' : 'gray',
+              fontWeight: 'medium',
+              fontSize: '0.875rem',
+            }}
+          >
+            {utilidad.mensaje}
+          </Typography>
+        );
+      },
+    },
     { title: 'CUE', dataIndex: 'cue', width: 120, sort: true, filter: true },
     { title: 'Fecha Estado Cobranza', dataIndex: 'fecha_estado_cobranza', width: 160, sort: true, filter: true },
     { title: 'Neto Cobrado', dataIndex: 'neto_cobrado', width: 120, sort: true, filter: true },
