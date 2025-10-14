@@ -229,28 +229,28 @@ export const printOrdenProveedor = async (id: number): Promise<void> => {
       etiquetadoRow = `
         <tr>
           <td class="section-label">ETIQUETADO:</td>
-          <td class="section-content">${escapeHtml(primerTransporte.etiquetado || '')}</td>
+          <td class="section-content">${escapeHtml(data.etiquetado || '')}</td>
         </tr>
       `;
 
       embalajeRow = `
         <tr>
           <td class="section-label">EMBALAJE:</td>
-          <td class="section-content">${escapeHtml(primerTransporte.embalaje || '')}</td>
+          <td class="section-content">${escapeHtml(data.embalaje || '')}</td>
         </tr>
       `;
 
       observacionesRow = `
         <tr>
           <td class="section-label">OBSERVACIONES</td>
-          <td class="section-content">${escapeHtml(data.productosNota || '')}</td>
+          <td class="section-content">${escapeHtml(data.notaPedido || '')}</td>
         </tr>
       `;
 
       otrosRow = `
         <tr>
           <td class="section-label">OTROS:</td>
-          <td class="section-content">${escapeHtml(primerTransporte.otros || '')}</td>
+          <td class="section-content">${escapeHtml(data.otros || '')}</td>
         </tr>
       `;
     } else {
