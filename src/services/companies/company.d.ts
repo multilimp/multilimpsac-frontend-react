@@ -11,5 +11,6 @@ export interface CompanyProps {
   provincia?: ProvinceProps;
   distrito?: DistrictProps;
   direccion: string;
+  direcciones?: string;
   logo: string;
 }

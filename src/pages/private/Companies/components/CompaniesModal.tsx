@@ -45,6 +45,7 @@ const CompaniesModal = ({ data, handleClose, handleReload }: CompaniesModalProps
       provincia: data.provincia || '',
       distrito: data.distrito || '',
       direccion: data.direccion,
+      direcciones: data.direcciones || '',
       logo: data.logo || '',
       departamentoId: null,
       provinciaId: null,
@@ -67,6 +68,7 @@ const CompaniesModal = ({ data, handleClose, handleReload }: CompaniesModalProps
         provincia: values.provincia,       // Guardar el nombre, no el objeto
         distrito: values.distrito,         // Guardar el nombre, no el objeto
         direccion: values.direccion,
+        direcciones: values.direcciones,
         logo: values.logo,
       };
 
@@ -250,6 +252,11 @@ const CompaniesModal = ({ data, handleClose, handleReload }: CompaniesModalProps
                 <Grid size={{ xs: 12 }}>
                   <Form.Item name="direccion" rules={[{ required: true, message: 'La dirección es requerida' }]}>
                     <InputAntd label="Dirección completa" />
+                  </Form.Item>
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <Form.Item name="direcciones">
+                    <InputAntd label="Direcciones adicionales (opcional)" />
                   </Form.Item>
                 </Grid>
               </Grid>
