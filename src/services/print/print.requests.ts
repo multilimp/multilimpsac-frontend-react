@@ -1,5 +1,6 @@
 import apiClient from '../apiClient';
-import { loadTemplate, fillTemplate } from './template-loader';
+import { fillTemplate } from './template-loader';
+import opTemplate from './print-op-template.html?raw';
 
 export interface PrintInvoiceData {
   ordenCompraId: number;
@@ -142,6 +143,8 @@ export interface OrdenProveedorData {
 }
 export const printOrdenProveedor = async (id: number): Promise<void> => {
   try {
+    const printWindow = window.open('', '_blank', 'width=800,height=600');
+
     const response = await apiClient.get(`/print/orden-proveedor/${id}`);
 
     if (!response.data || !response.data.data || !response.data.data.ordenProveedor) {
@@ -149,7 +152,7 @@ export const printOrdenProveedor = async (id: number): Promise<void> => {
     }
 
     const data = response.data.data.ordenProveedor;
-    const productos = (data.productos || []) as any[];
+    const productos = (data.productos || []) as Producto[];
     const transportesAsignados = data.transportesAsignados || [];
     const ordenCompra = data.ordenCompra;
 
@@ -173,7 +176,7 @@ export const printOrdenProveedor = async (id: number): Promise<void> => {
       return new Intl.DateTimeFormat('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(date);
     };
 
-    const template = await loadTemplate('/src/services/print/print-op-template.html');
+    const template = opTemplate;
 
     const logoHtml = data.empresa?.logo
       ? `<img class="company-logo" src="${data.empresa.logo}" alt="Logo Empresa">`
@@ -181,7 +184,8 @@ export const printOrdenProveedor = async (id: number): Promise<void> => {
 
     const empresaDirecciones = data.empresa?.direcciones || data.empresa?.direccion || 'Sin dirección';
 
-    const productosRows = productos.map((producto: any) => `
+    const productosRows = productos.map((producto: Producto) => `
+
       <tr>
         <td class="product-cell">${escapeHtml(producto.codigo || 'N/A')}</td>
         <td class="product-cell">${producto.cantidad || 0}</td>
@@ -192,7 +196,7 @@ export const printOrdenProveedor = async (id: number): Promise<void> => {
       </tr>
     `).join('');
 
-    const total = productos.reduce((sum: number, p: any) => sum + (Number(p.total) || 0), 0);
+    const total = productos.reduce((sum: number, p: Producto) => sum + (Number(p.total) || 0), 0);
     const plazoEntrega = data.fechaRecepcion ? formatDate(data.fechaRecepcion) : 'No especificado';
 
     let seccionTransporte = '';
@@ -203,7 +207,7 @@ export const printOrdenProveedor = async (id: number): Promise<void> => {
     let otrosRow = '';
 
     if (transportesAsignados.length > 0) {
-      seccionTransporte = transportesAsignados.map((transporte: any, index: number) => {
+      seccionTransporte = transportesAsignados.map((transporte: TransporteAsignado, index: number) => {
         const transporteData = transporte.transporte;
         const transporteDireccion = escapeHtml(transporteData?.direccion || 'No especificada');
 
@@ -223,8 +227,6 @@ export const printOrdenProveedor = async (id: number): Promise<void> => {
           </tr>
         `;
       }).join('');
-
-      const primerTransporte = transportesAsignados[0];
 
       etiquetadoRow = `
         <tr>
@@ -337,7 +339,6 @@ export const printOrdenProveedor = async (id: number): Promise<void> => {
       EMAIL_FACTURACION: escapeHtml(data.empresa?.email || 'contabilidad@multilimpsac.com')
     });
 
-    const printWindow = window.open('', '_blank', 'width=800,height=600');
     if (!printWindow) {
       const blob = new Blob([htmlFinal], { type: 'text/html' });
       const url = window.URL.createObjectURL(blob);
@@ -351,6 +352,7 @@ export const printOrdenProveedor = async (id: number): Promise<void> => {
       throw new Error('No se pudo abrir la ventana de impresión. Verifica que los popups estén habilitados.');
     }
 
+    printWindow.document.open();
     printWindow.document.write(htmlFinal);
     printWindow.document.close();
 
