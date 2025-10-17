@@ -2774,11 +2774,11 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                               variant="outlined"
                               startIcon={<DownloadIcon />}
                               onClick={() => {
-  const fileUrl = transporteModal.transporteData?.archivoCotizacion ?? null;
-  if (fileUrl) {
-    window.open(fileUrl, '_blank');
-  }
-}}
+                                const fileUrl = transporteModal.transporteData?.archivoCotizacion ?? null;
+                                if (fileUrl) {
+                                  window.open(fileUrl, '_blank');
+                                }
+                              }}
                               sx={{
                                 borderColor: '#10b981',
                                 color: '#10b981',
