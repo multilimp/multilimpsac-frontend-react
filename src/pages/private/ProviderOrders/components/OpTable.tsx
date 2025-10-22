@@ -51,7 +51,8 @@ const OpTable = ({ data, loading, onRowClick, onReload }: OpTableProps) => {
     fechaProgramada: formattedDate(item.fechaProgramada, undefined, defaultText),
     fechaRecepcion: formattedDate(item.fechaRecepcion, undefined, defaultText),
     totalProveedor: item.totalProveedor ? formatCurrency(parseFloat(item.totalProveedor)) : defaultText,
-    estadoRolOp: item.estadoRolOp || 'PENDIENTE',
+    tipoPago: item.tipoPago,
+    estadoRolOp: item.estadoRolOp,
   }));
 
   const getStatusBackgroundColor = (status: any) => {
@@ -112,6 +113,7 @@ const OpTable = ({ data, loading, onRowClick, onReload }: OpTableProps) => {
     { title: 'Fecha Programada', dataIndex: 'fechaProgramada', width: 150, filter: true, sort: true },
     { title: 'Fecha Recepción', dataIndex: 'fechaRecepcion', width: 150, filter: true, sort: true },
     { title: 'Total Proveedor', dataIndex: 'totalProveedor', width: 150, filter: true, sort: true },
+    { title: 'Estado Pago Proveedor', dataIndex: 'tipoPago', width: 150, filter: true, sort: true },
     {
       title: 'Estado',
       dataIndex: 'estadoRolOp',

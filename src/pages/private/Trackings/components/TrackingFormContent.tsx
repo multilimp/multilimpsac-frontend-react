@@ -1561,7 +1561,8 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                                         style={{ marginBottom: 0 }}
                                       >
                                         <DatePickerAntd
-                                          placeholder="Seleccionar fecha"
+                                          placeholder="Seleccionar fecha y hora"
+                                          showTime={{ format: 'HH:mm' }}
                                           onChange={(value) => handleFieldChange(op.id.toString(), 'fechaRecepcion', value)}
                                         />
                                       </Form.Item>

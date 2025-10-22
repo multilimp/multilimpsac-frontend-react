@@ -57,17 +57,20 @@ const InputsThirdStep = ({ form, companyId, isPrivateSale = false }: InputsThird
             </Typography>
 
             {/* Switch de fuentes de financiamiento */}
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <Typography variant="body2" sx={{ color: '#6b7280', fontWeight: 500 }}>
-                Fuentes de financiamiento:
-              </Typography>
-              <Form.Item name="multipleFuentesFinanciamiento" initialValue={false}>
-                <Select size="small" style={{ minWidth: 180 }}>
-                  <Select.Option value={false}>Una fuente</Select.Option>
-                  <Select.Option value={true}>Múltiples fuentes</Select.Option>
-                </Select>
-              </Form.Item>
-            </Stack>
+            {/* Ocultar para venta privada */}
+            {!isPrivateSale && (
+              <Stack direction="row" alignItems="center" spacing={1}>
+                <Typography variant="body2" sx={{ color: '#6b7280', fontWeight: 500 }}>
+                  Fuentes de financiamiento:
+                </Typography>
+                <Form.Item name="multipleFuentesFinanciamiento" initialValue={false}>
+                  <Select size="small" style={{ minWidth: 180 }}>
+                    <Select.Option value={false}>Una fuente</Select.Option>
+                    <Select.Option value={true}>Múltiples fuentes</Select.Option>
+                  </Select>
+                </Form.Item>
+              </Stack>
+            )}
           </Stack>
           {/* Primera fila: Datos principales */}
           <Grid container columnSpacing={2} rowSpacing={2}>

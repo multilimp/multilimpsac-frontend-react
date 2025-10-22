@@ -868,6 +868,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
                     label="Fecha de recepción"
                     disabled={fromTreasury}
                     disabledDate={disablePastReceptionDate}
+                    showTime={{ format: 'HH:mm' }}
                   />
                 </Form.Item>
               </Grid>

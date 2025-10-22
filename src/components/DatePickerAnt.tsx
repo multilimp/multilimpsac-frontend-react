@@ -18,13 +18,16 @@ const DatePickerAntd = ({ label, isFloating, isAddonBefore, hasError, size = 'la
   labelClass += rest?.disabled ? ' disabled' : '';
   labelClass += isAddonBefore ? ` label-addon-before${focus ? '-focus' : ''}` : '';
 
+  // Determine format based on showTime prop
+  const format = rest.showTime ? "DD/MM/YYYY HH:mm" : "DD/MM/YYYY";
+
   return (
     <div className={`input-form ${size}`}>
       <div className="float-label" onBlur={() => setFocus(false)} onFocus={() => setFocus(true)}>
         <DatePicker
           size={size}
           style={{ width: '100%', height: '50px' }}
-          format="DD/MM/YYYY"
+          format={format}
           variant="outlined"
           allowClear
           showNow={false}
