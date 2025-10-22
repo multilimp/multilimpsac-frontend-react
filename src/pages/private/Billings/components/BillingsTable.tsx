@@ -13,7 +13,7 @@ interface BillingsTableProps {
   onReload?: () => void;
 }
 
-const defaultText = 'N/A';
+const defaultText = '-';
 
 const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }) => {
 
@@ -51,6 +51,7 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }
       fecha_programacion: formattedDate(item.fechaPeruCompras, undefined, defaultText),
       monto_venta: formatCurrency(item.montoVenta ? parseInt(item.montoVenta, 10) : 0),
       fecha_factura: formattedDate(item.fechaEmision, undefined, defaultText),
+      fecha_entrega_oc: formattedDate(item.fechaEntregaOc, undefined, defaultText),
       numero_factura: item.codigoVenta || defaultText,
       grr: item.siaf || defaultText,
       codigo_ocf: item.codigoOcf || defaultText,
@@ -116,10 +117,10 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }
     { title: 'Contacto', dataIndex: 'contacto', width: 200, sort: true, filter: true },
     { title: 'Fecha Registro', dataIndex: 'fecha_formalizacion', width: 150, sort: true, filter: true },
     { title: 'Fecha Programación', dataIndex: 'fecha_programacion', width: 150, sort: true, filter: true },
+    { title: 'Fecha Entrega OC', dataIndex: 'fecha_entrega_oc', width: 150, sort: true, filter: true },
     { title: 'Monto Venta', dataIndex: 'monto_venta', width: 130, sort: true, filter: true },
     { title: 'Fecha Factura', dataIndex: 'fecha_factura', width: 150, sort: true, filter: true },
     { title: 'GRR', dataIndex: 'grr', width: 100, sort: true, filter: true },
-    { title: 'Código OCF', dataIndex: 'codigo_ocf', width: 120, sort: true, filter: true },
     {
       title: 'OCE',
       dataIndex: 'oce',
@@ -174,6 +175,7 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }
           <Box sx={{ color: '#94a3b8', fontSize: '0.75rem' }}>-</Box>
         ),
     },
+    { title: 'Código OCF', dataIndex: 'codigo_ocf', width: 120, sort: true, filter: true },
     {
       title: 'Estado Facturación',
       dataIndex: 'estado_facturacion',
