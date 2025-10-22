@@ -25,6 +25,7 @@ export interface BillingProps {
   estado?: number;
   notaCreditoArchivo?: string | null;
   notaCreditoTexto?: string | null;
+  motivoRefacturacion?: string | null;
   esRefacturacion?: boolean;
   idFacturaOriginal?: number | null;
   facturaArchivo?: string | null;
@@ -50,6 +51,7 @@ export interface BillingUpdateData {
   estado?: number;
   notaCreditoArchivo?: string | null;
   notaCreditoTexto?: string | null;
+  motivoRefacturacion?: string | null;
   esRefacturacion?: boolean;
   idFacturaOriginal?: number | null;
   facturaArchivo?: string | null;
@@ -66,6 +68,7 @@ export interface BillingData {
   formaEnvioFactura?: string | null;
   notaCreditoArchivo?: string | null;
   notaCreditoTexto?: string | null;
+  motivoRefacturacion?: string | null;
   esRefacturacion?: boolean; // Default false en BD
   idFacturaOriginal?: number | null;
   facturaArchivo?: string | null;

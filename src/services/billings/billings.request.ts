@@ -134,7 +134,8 @@ export const getBillingByOrdenCompraId = async (ordenCompraId: number): Promise<
       facturaArchivo: facturacion.facturaArchivo || null,
       grrArchivo: facturacion.grrArchivo || null,
       notaCreditoArchivo: facturacion.notaCreditoArchivo || null,
-      notaCreditoTexto: facturacion.notaCreditoTexto || null
+      notaCreditoTexto: facturacion.notaCreditoTexto || null,
+      motivoRefacturacion: facturacion.motivoRefacturacion || null
     };
   } catch (error) {
     console.error('Error al obtener facturación por orden de compra ID:', error);
@@ -218,7 +219,8 @@ export const getBillingHistoryByOrdenCompraId = async (ordenCompraId: number): P
       facturaArchivo: facturacion.facturaArchivo || null,
       grrArchivo: facturacion.grrArchivo || null,
       notaCreditoArchivo: facturacion.notaCreditoArchivo || null,
-      notaCreditoTexto: facturacion.notaCreditoTexto || null
+      notaCreditoTexto: facturacion.notaCreditoTexto || null,
+      motivoRefacturacion: facturacion.motivoRefacturacion || null
     }));
   } catch (error) {
     console.error('❌ Backend: Error al obtener historial de facturaciones:', error);

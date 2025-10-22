@@ -70,6 +70,7 @@ const RefactorBillingModal: React.FC<RefactorBillingModalProps> = ({
                 grrArchivo: values.grrArchivo,
                 notaCreditoTexto: values.notaCreditoTexto,
                 notaCreditoArchivo: values.notaCreditoArchivo || null,
+                motivoRefacturacion: values.motivoRefacturacion,
                 esRefacturacion: true,
                 idFacturaOriginal: billing.idFacturaOriginal || billing.id
             };
@@ -107,7 +108,8 @@ const RefactorBillingModal: React.FC<RefactorBillingModalProps> = ({
                 facturaArchivo: billing.facturaArchivo,
                 grrArchivo: billing.grrArchivo,
                 notaCreditoTexto: '',
-                notaCreditoArchivo: null
+                notaCreditoArchivo: null,
+                motivoRefacturacion: ''
             });
         }
     }, [open, billing, form]);
@@ -310,11 +312,11 @@ const RefactorBillingModal: React.FC<RefactorBillingModalProps> = ({
                                 />
                             </Form.Item>
                         </Grid>
-                        <Grid size={{ xs: 12 }}>
+                        <Grid size={{ xs: 12, md: 6 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                                 <RefreshIcon sx={{ color: '#6b7280', fontSize: 20 }} />
                                 <Typography sx={{ fontSize: '0.875rem', fontWeight: 600, color: '#374151' }}>
-                                    Motivo de Refacturación (Nota de Crédito) *
+                                    Nota de Crédito *
                                 </Typography>
                             </Box>
                             <Form.Item
@@ -330,7 +332,7 @@ const RefactorBillingModal: React.FC<RefactorBillingModalProps> = ({
                             </Form.Item>
                         </Grid>
 
-                        <Grid size={{ xs: 12 }}>
+                        <Grid size={{ xs: 12, md: 6 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                                 <AttachFileIcon sx={{ color: '#6b7280', fontSize: 20 }} />
                                 <Typography sx={{ fontSize: '0.875rem', fontWeight: 600, color: '#374151' }}>
@@ -342,6 +344,21 @@ const RefactorBillingModal: React.FC<RefactorBillingModalProps> = ({
                                 style={{ marginBottom: 0 }}
                             >
                                 <SimpleFileUpload editable={true} />
+                            </Form.Item>
+                        </Grid>
+                        <Grid size={{ xs: 12 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                                <InfoIcon sx={{ color: '#6b7280', fontSize: 20 }} />
+                                <Typography sx={{ fontSize: '0.875rem', fontWeight: 600, color: '#374151' }}>
+                                    Motivo de Refacturación *
+                                </Typography>
+                            </Box>
+                            <Form.Item
+                                name="motivoRefacturacion"
+                                rules={[{ required: true, message: 'Motivo requerido' }]}
+                                style={{ marginBottom: 0 }}
+                            >
+                                <Input.TextArea rows={4} placeholder="Explique el motivo de la refacturación" style={{ borderRadius: 8 }} />
                             </Form.Item>
                         </Grid>
                     </Grid>
