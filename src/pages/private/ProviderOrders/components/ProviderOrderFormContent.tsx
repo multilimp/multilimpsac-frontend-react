@@ -42,6 +42,9 @@ import { usePayments } from '@/hooks/usePayments';
 import InputNumberAntd from '@/components/InputNumberAntd';
 import { getPrivateSaleData } from '@/services/sales/sales.request';
 import { ESTADOS, estadoBgMap, EstadoVentaType } from '@/utils/constants';
+import { useAppContext } from '@/context';
+import { PermissionsEnum } from '@/services/users/permissions.enum';
+import { RolesEnum } from '@/services/users/user.enum';
 
 interface ProviderOrderFormContentProps {
   sale: SaleProps;
@@ -117,6 +120,8 @@ const calculateProductTotals = (form: any, fieldName: number) => {
     }
   }, 100);
 }; const ProviderOrderFormContent = ({ sale, orderData, isEditing, fromTreasury, targetSection }: ProviderOrderFormContentProps) => {
+  const { user } = useAppContext();
+  const canEditSchedule = user?.role === RolesEnum.ADMIN || (user?.permisos || []).includes(PermissionsEnum.TRACKING);
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -874,12 +879,12 @@ const calculateProductTotals = (form: any, fieldName: number) => {
               </Grid>
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                 <Form.Item name="fechaProgramada">
-                  <DatePickerAntd label="Fecha programada" disabled={fromTreasury} />
+                  <DatePickerAntd label="Fecha programada" disabled={fromTreasury || !canEditSchedule} />
                 </Form.Item>
               </Grid>
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                 <Form.Item name="fechaDespacho">
-                  <DatePickerAntd label="Fecha de despacho" disabled={fromTreasury} />
+                  <DatePickerAntd label="Fecha de despacho" disabled={fromTreasury || !canEditSchedule} />
                 </Form.Item>
               </Grid>
             </Grid>

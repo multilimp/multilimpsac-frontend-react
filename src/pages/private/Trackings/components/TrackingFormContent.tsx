@@ -67,13 +67,16 @@ import PagosModal from '@/components/PagosModal';
 import InputNumberAntd from '@/components/InputNumberAntd';
 import PaymentsList from '@/components/PaymentsList';
 import { updatePayments } from '@/services/payments/payments.service';
-import { ESTADOS, EstadoVentaType, estadoBgMap } from '@/utils/constants';
+import { ESTADOS, estadoBgMap } from '@/utils/constants';
 import { TransportProps } from '@/services/transports/transports';
 import { ContactProps } from '@/services/contacts/contacts';
 import { TransporteAsignadoProps } from '@/services/transporteAsignado/transporteAsignado';
 import { PaymentData } from '@/services/payments/payments.service';
 import { Almacen } from '@/types/almacen.types';
 import { RegionProps, ProvinceProps, DistrictProps } from '@/services/ubigeo/ubigeo';
+import { useAppContext } from '@/context';
+import { PermissionsEnum } from '@/services/users/permissions.enum';
+import { RolesEnum } from '@/services/users/user.enum';
 
 interface TrackingFormContentProps {
   sale: SaleProps;
@@ -167,6 +170,8 @@ const getUbigeoName = (val: RegionProps | ProvinceProps | DistrictProps | string
 };
 
 const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
+  const { user } = useAppContext();
+  const canEditSchedule = user?.role === RolesEnum.ADMIN || (user?.permisos || []).includes(PermissionsEnum.TRACKING);
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -1580,6 +1585,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                                       >
                                         <DatePickerAntd
                                           placeholder="Seleccionar fecha"
+                                          disabled={!canEditSchedule}
                                           onChange={(value) => handleFieldChange(op.id.toString(), 'fechaProgramada', value)}
                                         />
                                       </Form.Item>
@@ -1597,6 +1603,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                                       >
                                         <DatePickerAntd
                                           placeholder="Seleccionar fecha"
+                                          disabled={!canEditSchedule}
                                           onChange={(value) => handleFieldChange(op.id.toString(), 'fechaDespacho', value)}
                                         />
                                       </Form.Item>
