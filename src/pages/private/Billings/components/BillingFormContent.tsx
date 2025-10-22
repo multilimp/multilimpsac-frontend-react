@@ -31,7 +31,7 @@ import {
   Visibility as VisibilityIcon,
   ArrowBack as ArrowBackIcon
 } from '@mui/icons-material';
-import { notification, Form, Select } from 'antd';
+import { notification, Form, Select, Input } from 'antd';
 import Grid from '@mui/material/Grid';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
@@ -171,7 +171,8 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
       facturaArchivo: billing.facturaArchivo || null,
       grrArchivo: billing.grrArchivo || null,
       notaCreditoTexto: billing.notaCreditoTexto || null,
-      notaCreditoArchivo: billing.notaCreditoArchivo || null
+      notaCreditoArchivo: billing.notaCreditoArchivo || null,
+      motivoRefacturacion: billing.motivoRefacturacion || null,
     });
 
     notification.info({
@@ -1135,7 +1136,21 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                   </Grid>
                 </Grid>
               </Box>
+              <Grid size={{ xs: 12 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <Typography>
+                    Motivo de Refacturación
+                  </Typography>
+                </Box>
+                <Form.Item
+                  name="motivoRefacturacion"
+                  style={{ marginBottom: 0 }}
+                >
+                  <Input.TextArea rows={4} readOnly style={{ borderRadius: 8 }} />
+                </Form.Item>
+              </Grid>
             </Box>
+
           )}
         </CardContent>
       </Card>
