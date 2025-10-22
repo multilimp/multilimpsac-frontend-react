@@ -53,6 +53,7 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }
       fecha_factura: formattedDate(item.fechaEmision, undefined, defaultText),
       fecha_entrega_oc: formattedDate(item.fechaEntregaOc, undefined, defaultText),
       numero_factura: item.codigoVenta || defaultText,
+      etapa_siaf: item.etapaSiaf || defaultText,
       grr: item.siaf || defaultText,
       codigo_ocf: item.codigoOcf || defaultText,
       oce: item.documentoOce || null,
@@ -120,6 +121,7 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }
     { title: 'Fecha Entrega OC', dataIndex: 'fecha_entrega_oc', width: 150, sort: true, filter: true },
     { title: 'Monto Venta', dataIndex: 'monto_venta', width: 130, sort: true, filter: true },
     { title: 'Fecha Factura', dataIndex: 'fecha_factura', width: 150, sort: true, filter: true },
+    { title: 'Etapa SIAF', dataIndex: 'etapa_siaf', width: 150, sort: true, filter: true },
     { title: 'GRR', dataIndex: 'grr', width: 100, sort: true, filter: true },
     {
       title: 'OCE',
