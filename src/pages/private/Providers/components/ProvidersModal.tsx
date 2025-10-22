@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Form, notification, Spin, Select } from 'antd';
-import { ProviderProps, BankAccount } from '@/services/providers/providers';
+import { ProviderProps } from '@/services/providers/providers';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, Typography, Divider, Box, IconButton, Card, CardContent } from '@mui/material';
 import { createProvider, updateProvider } from '@/services/providers/providers.request';
 import InputAntd from '@/components/InputAntd';

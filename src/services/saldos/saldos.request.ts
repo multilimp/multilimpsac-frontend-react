@@ -5,7 +5,11 @@ import { SaldoData, CuentaBancariaData, EntidadFinancieraData, SaldoResumen } fr
 export const getProviderFinancialData = async (providerId: number): Promise<EntidadFinancieraData> => {
     try {
         const response = await apiClient.get(`/saldos/providers/${providerId}/financial-data`);
-        return response.data;
+        const payload = response.data;
+        if (payload?.success && payload?.data) {
+            return payload.data as EntidadFinancieraData;
+        }
+        throw new Error('Respuesta inválida del servidor al obtener datos financieros del proveedor');
     } catch (error) {
         throw new Error('Error al obtener datos financieros del proveedor');
     }
@@ -15,7 +19,11 @@ export const getProviderFinancialData = async (providerId: number): Promise<Enti
 export const getTransportFinancialData = async (transportId: number): Promise<EntidadFinancieraData> => {
     try {
         const response = await apiClient.get(`/saldos/transports/${transportId}/financial-data`);
-        return response.data;
+        const payload = response.data;
+        if (payload?.success && payload?.data) {
+            return payload.data as EntidadFinancieraData;
+        }
+        throw new Error('Respuesta inválida del servidor al obtener datos financieros del transporte');
     } catch (error) {
         throw new Error('Error al obtener datos financieros del transporte');
     }

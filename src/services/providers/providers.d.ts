@@ -28,4 +28,8 @@ export interface ProviderProps {
 
   // Información bancaria para pagos - múltiples cuentas
   cuentasBancarias?: BankAccount[];
+
+  // Saldo/Anticipo disponible resumido
+  saldo?: number;
+  saldoTipo?: 'A_FAVOR' | 'DEBE' | 'NEUTRO';
 }

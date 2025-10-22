@@ -1,4 +1,4 @@
-import { Delete, Edit, PermContactCalendar, RadioButtonChecked, RadioButtonUnchecked, MoreVert, AccountBalance, Payment } from '@mui/icons-material';
+import { Delete, Edit, PermContactCalendar, MoreVert, Payment } from '@mui/icons-material';
 import AntTable, { AntColumnType } from '@/components/AntTable';
 import { Typography, IconButton, Menu, MenuItem, ListItemIcon, ListItemText, Button } from '@mui/material';
 import { ModalStateEnum } from '@/types/global.enum';
@@ -52,6 +52,22 @@ const ProvidersTable = ({ data, loading, onRecordAction, hideActions, modalMode,
     },
     { title: 'Correo electrónico', dataIndex: 'email', width: 200, filter: true },
     { title: 'Teléfono', dataIndex: 'telefono', width: 150, filter: true },
+    {
+      title: 'Saldo',
+      dataIndex: 'saldo',
+      width: 140,
+      render: (_, record) => {
+        const value = Number(record.saldo || 0);
+        const isFavor = record.saldoTipo === 'A_FAVOR';
+        const color = isFavor ? 'success.main' : value < 0 ? 'error.main' : 'text.primary';
+        const label = record.saldoTipo === 'A_FAVOR' ? 'A favor' : record.saldoTipo === 'DEBE' ? 'Debe' : 'Neutro';
+        return (
+          <Typography variant="body2" sx={{ color }}>
+            S/ {Math.abs(value).toFixed(2)} {label}
+          </Typography>
+        );
+      },
+    },
     !hideActions && {
       title: 'Contactos',
       dataIndex: 'contactos',

@@ -22,6 +22,7 @@ import { getCotizaciones } from '@/services/quotes/quotes.request';
 import { BlackBarKeyEnum } from '@/types/global.enum';
 import { ProviderOrderProps } from '@/services/providerOrders/providerOrders';
 import { getAllOrderProviders } from '@/services/providerOrders/providerOrders.requests';
+import { getProviderFinancialData } from '@/services/saldos/saldos.request';
 
 export type SaleInputsType = { enterprise: null | CompanyProps; tipoVenta: 'directa' | 'privada'; file: null | File };
 export type QuoteInputsType = { enterprise: null | CompanyProps };
@@ -167,7 +168,22 @@ const GlobalInformationProvider = ({ children }: { children: ReactNode }) => {
     try {
       setLoadingProviders(true);
       const res = await getProviders();
-      setProviders(res);
+
+      // Enriquecer cada proveedor con su resumen de saldo
+      const enriched: ProviderProps[] = await Promise.all(
+        res.map(async (p) => {
+          try {
+            const fin = await getProviderFinancialData(p.id);
+            const { saldoFavor, saldoDeuda, saldoNeto, tipoSaldo } = fin.resumenSaldo;
+            const signedSaldo = tipoSaldo === 'A_FAVOR' ? saldoNeto : tipoSaldo === 'DEBE' ? -saldoNeto : 0;
+            return { ...p, saldo: signedSaldo, saldoTipo: tipoSaldo };
+          } catch (e) {
+            return { ...p, saldo: 0, saldoTipo: 'NEUTRO' };
+          }
+        })
+      );
+
+      setProviders(enriched);
     } catch (error) {
       notification.error({
         message: 'Error al obtener los proveedores',
