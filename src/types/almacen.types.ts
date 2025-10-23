@@ -15,7 +15,7 @@ export interface CreateAlmacenData {
     ciudad?: string;
 }
 
-export interface UpdateAlmacenData extends Partial<CreateAlmacenData> { }
+export type UpdateAlmacenData = Partial<CreateAlmacenData>;
 
 // Tipos para Producto  
 export interface Producto {
@@ -38,7 +38,7 @@ export interface CreateProductoData {
     estado?: boolean;
 }
 
-export interface UpdateProductoData extends Partial<CreateProductoData> { }
+export type UpdateProductoData = Partial<CreateProductoData>;
 
 // Tipos para Stock
 export interface StockProducto {
@@ -74,4 +74,16 @@ export interface ProductoWithStock extends Producto {
 export interface StockWithDetails extends StockProducto {
     producto: Producto;
     almacen: Almacen;
+}
+
+export interface MovimientoStock {
+    id: number;
+    productoId: number;
+    almacenId: number;
+    cantidad: number;
+    tipo: 'ENTRADA' | 'SALIDA';
+    referencia?: string;
+    createdAt: string;
+    producto?: Producto;
+    almacen?: Almacen;
 }

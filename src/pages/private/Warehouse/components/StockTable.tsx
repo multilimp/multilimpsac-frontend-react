@@ -26,11 +26,13 @@ import {
     Refresh as RefreshIcon,
     Search as SearchIcon,
     Clear as ClearIcon,
+    History as HistoryIcon,
 } from '@mui/icons-material';
 import { Spin, notification, Modal } from 'antd';
 import { StockWithDetails } from '@/types/almacen.types';
 import { deleteStock } from '@/services/almacen/almacen.requests';
 import { formattedDate } from '@/utils/functions';
+import StockHistoryModal from './StockHistoryModal';
 
 interface StockTableProps {
     data: StockWithDetails[];
@@ -47,6 +49,7 @@ const StockTable: React.FC<StockTableProps> = ({
 }) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [selectedStock, setSelectedStock] = useState<StockWithDetails | null>(null);
+    const [historyOpen, setHistoryOpen] = useState(false);
 
     // Estados para filtros
     const [searchTerm, setSearchTerm] = useState('');
@@ -107,7 +110,14 @@ const StockTable: React.FC<StockTableProps> = ({
 
     const handleMenuClose = () => {
         setAnchorEl(null);
-        setSelectedStock(null);
+        // no limpiar selectedStock para poder abrir historial
+    };
+
+    const handleShowHistory = () => {
+        if (selectedStock) {
+            setHistoryOpen(true);
+        }
+        setAnchorEl(null);
     };
 
     const handleEdit = () => {
@@ -406,6 +416,10 @@ const StockTable: React.FC<StockTableProps> = ({
                     <EditIcon sx={{ mr: 1, fontSize: 20 }} />
                     Editar
                 </MenuItem>
+                <MenuItem onClick={handleShowHistory}>
+                    <HistoryIcon sx={{ mr: 1, fontSize: 20 }} />
+                    Ver historial
+                </MenuItem>
                 <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
                     <DeleteIcon sx={{ mr: 1, fontSize: 20 }} />
                     Eliminar
@@ -415,6 +429,13 @@ const StockTable: React.FC<StockTableProps> = ({
                     Actualizar
                 </MenuItem>
             </Menu>
+
+            <StockHistoryModal
+                open={historyOpen}
+                onClose={() => { setHistoryOpen(false); setSelectedStock(null); }}
+                productoId={selectedStock?.productoId ?? null}
+                almacenId={selectedStock?.almacenId ?? null}
+            />
         </>
     );
 };

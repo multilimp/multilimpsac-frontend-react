@@ -10,6 +10,7 @@ import {
     CreateStockData,
     UpdateStockData,
     StockWithDetails,
+    MovimientoStock
 } from '@/types/almacen.types';
 
 const BASE_URL = '/almacenes';
@@ -96,4 +97,12 @@ export const updateStock = async (
 
 export const deleteStock = async (productoId: number, almacenId: number): Promise<void> => {
     await apiClient.delete(`${BASE_URL}/stock/${productoId}/${almacenId}`);
+};
+
+export const getMovimientosByStock = async (
+    productoId: number,
+    almacenId: number
+): Promise<MovimientoStock[]> => {
+    const response = await apiClient.get(`${BASE_URL}/stock/movimientos/${productoId}/${almacenId}`);
+    return Array.isArray(response.data) ? response.data : [];
 };
