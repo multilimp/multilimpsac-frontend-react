@@ -256,6 +256,7 @@ const SalesPageForm = () => {
           etapaSiaf: values.etapaSIAF || null,
           fechaSiaf: dayjs(values.fechaSIAF).isValid() ? dayjs(values.fechaSIAF).toISOString() : undefined,
           estadoVenta: values.estadoVenta || 'PENDIENTE',
+          multipleFuentesFinanciamiento: values.multipleFuentesFinanciamiento || false,
           documentoOce: values.ordenCompraElectronica || null,
           documentoOcf: values.ordenCompraFisica || null,
           codigoOcf: values.codigoOcf || null,
