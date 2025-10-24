@@ -69,6 +69,31 @@ export const useDashboardTesoreria = () => {
     const [error, setError] = useState<string | null>(null);
     const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
 
+    // Cache local para evitar llamar a la API al ingresar
+    const CACHE_KEY = 'dashboardTesoreriaCache';
+    const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutos
+
+    const loadCache = (): { ts: number; urgentes?: PagosResponse; pendientes?: PagosResponse } | null => {
+        try {
+            const raw = localStorage.getItem(CACHE_KEY);
+            if (!raw) return null;
+            return JSON.parse(raw);
+        } catch {
+            return null;
+        }
+    };
+
+    const saveCache = (urgentes: PagosResponse | null, pendientes: PagosResponse | null) => {
+        try {
+            const payload = { ts: Date.now(), urgentes: urgentes ?? undefined, pendientes: pendientes ?? undefined };
+            localStorage.setItem(CACHE_KEY, JSON.stringify(payload));
+        } catch {
+            // ignorar errores de almacenamiento
+        }
+    };
+
+    const isFresh = (ts?: number) => (ts ? Date.now() - ts < CACHE_TTL_MS : false);
+
     const fetchDashboard = useCallback(async () => {
         setLoading(true);
         setError(null);
@@ -82,6 +107,8 @@ export const useDashboardTesoreria = () => {
 
             setPagosUrgentesData(urgentesResponse);
             setPagosPendientesData(pendientesResponse);
+            // Persistir en cache
+            saveCache(urgentesResponse, pendientesResponse);
             setLastUpdate(new Date());
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Error al cargar dashboard');
@@ -99,6 +126,7 @@ export const useDashboardTesoreria = () => {
         try {
             const response = await getPagosUrgentes();
             setPagosUrgentesData(response);
+            saveCache(response, pagosPendientesData);
             setLastUpdate(new Date());
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Error al cargar pagos urgentes');
@@ -106,7 +134,7 @@ export const useDashboardTesoreria = () => {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [pagosPendientesData]);
 
     // Función para cargar pagos pendientes específicamente
     const fetchPagosPendientes = useCallback(async () => {
@@ -116,6 +144,7 @@ export const useDashboardTesoreria = () => {
         try {
             const response = await getPagosPendientes();
             setPagosPendientesData(response);
+            saveCache(pagosUrgentesData, response);
             setLastUpdate(new Date());
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Error al cargar pagos pendientes');
@@ -123,7 +152,7 @@ export const useDashboardTesoreria = () => {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [pagosUrgentesData]);
 
     // Función para refrescar manualmente
     const refresh = useCallback(() => {
@@ -140,8 +169,16 @@ export const useDashboardTesoreria = () => {
         fetchPagosPendientes();
     }, [fetchPagosPendientes]);
 
-    // Cargar datos al montar el componente
+    // Cargar datos al montar el componente: primero intenta desde cache
     useEffect(() => {
+        const cache = loadCache();
+        if (cache && isFresh(cache.ts)) {
+            if (cache.urgentes) setPagosUrgentesData(cache.urgentes);
+            if (cache.pendientes) setPagosPendientesData(cache.pendientes);
+            setLastUpdate(new Date(cache.ts));
+            // no llamar a la API en ingreso si el cache está fresco
+            return;
+        }
         fetchDashboard();
     }, [fetchDashboard]);
 

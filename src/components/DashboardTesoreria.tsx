@@ -7,18 +7,20 @@ import {
     Alert,
     CircularProgress,
 } from '@mui/material';
-import { Button, Space, Badge } from 'antd';
+import { Button, Space, Badge, Tooltip } from 'antd';
+import { Button as MuiButton } from '@mui/material';
 import {
     DollarOutlined,
     WarningOutlined,
     ClockCircleOutlined,
 } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useDashboardTesoreria } from '@/hooks/useDashboardTesoreria';
 import { PagoPorEstado } from '@/services/notificaciones/notificaciones.request';
 import { formatCurrency } from '@/utils/functions';
 import AntTable from './AntTable';
 import type { AntColumnType } from './AntTable';
+import { Visibility } from '@mui/icons-material';
 
 type FiltroEstado = 'TODOS' | 'URGENTE' | 'PENDIENTE';
 
@@ -46,10 +48,43 @@ const PaymentTable = React.memo<{
                 dataIndex: 'codigo',
                 key: 'codigo',
                 width: 150,
+                filter: true,
                 render: (codigo: string) => (
-                    <Typography variant="body2" fontFamily="monospace">
-                        {codigo}
-                    </Typography>
+                    <Tooltip title="Editar venta">
+                        <MuiButton
+                            variant="contained"
+                            startIcon={<Visibility />}
+                            size="small"
+                            color="info"
+                            style={{ width: '100%' }}
+                        >
+                            {codigo}
+                        </MuiButton>
+                    </Tooltip>
+                ),
+            },
+            {
+                title: 'Proveedor/Transporte',
+                dataIndex: 'cliente',
+                key: 'cliente',
+                width: 280,
+                filter: true,
+                render: (_: unknown, record: PagoPorEstado) => (
+                    <Box>
+                        <Typography variant="body2" fontWeight="medium">
+                            {record.cliente}
+                        </Typography>
+                        {record.tipo === 'TRANSPORTE' && record.transporteRuc && (
+                            <Typography variant="caption" color="textSecondary">
+                                RUC: {record.transporteRuc}
+                            </Typography>
+                        )}
+                        {record.tipo === 'OP' && record.proveedorRuc && (
+                            <Typography variant="caption" color="textSecondary">
+                                RUC: {record.proveedorRuc}
+                            </Typography>
+                        )}
+                    </Box>
                 ),
             },
             {
@@ -57,6 +92,7 @@ const PaymentTable = React.memo<{
                 dataIndex: 'tipo',
                 key: 'tipo',
                 width: 180,
+                filter: true,
                 render: (tipo: string) => (
                     <Chip
                         label={tipo === 'TRANSPORTE' ? 'Transporte' : 'Orden Proveedor'}
@@ -78,33 +114,11 @@ const PaymentTable = React.memo<{
                 ),
             },
             {
-                title: 'Proveedor/Transporte',
-                dataIndex: 'cliente',
-                key: 'cliente',
-                width: 280,
-                render: (_: any, record: PagoPorEstado) => (
-                    <Box>
-                        <Typography variant="body2" fontWeight="medium">
-                            {record.cliente}
-                        </Typography>
-                        {record.tipo === 'TRANSPORTE' && record.transporteRuc && (
-                            <Typography variant="caption" color="textSecondary">
-                                RUC: {record.transporteRuc}
-                            </Typography>
-                        )}
-                        {record.tipo === 'OP' && record.proveedorRuc && (
-                            <Typography variant="caption" color="textSecondary">
-                                RUC: {record.proveedorRuc}
-                            </Typography>
-                        )}
-                    </Box>
-                ),
-            },
-            {
                 title: 'Monto',
                 dataIndex: 'monto',
                 key: 'monto',
                 width: 150,
+                sort: true,
                 render: (monto: number) => (
                     <Typography variant="body2" fontFamily="monospace">
                         {formatCurrency(monto)}
@@ -112,23 +126,11 @@ const PaymentTable = React.memo<{
                 ),
             },
             {
-                title: 'Estado',
-                dataIndex: 'estadoPago',
-                key: 'estadoPago',
-                width: 150,
-                render: (estadoPago: string) => (
-                    <Chip
-                        label={estadoPago}
-                        color={estadoPago === 'URGENTE' ? 'error' : 'warning'}
-                        size="small"
-                    />
-                ),
-            },
-            {
                 title: 'Nota',
                 dataIndex: 'notaPago',
                 key: 'notaPago',
                 width: 200,
+                filter: true,
                 render: (notaPago: string | null) => (
                     <Typography
                         variant="body2"
@@ -141,6 +143,22 @@ const PaymentTable = React.memo<{
                     >
                         {notaPago || 'Sin nota'}
                     </Typography>
+                ),
+            },
+
+            {
+                title: 'Estado',
+                dataIndex: 'estadoPago',
+                key: 'estadoPago',
+                width: 150,
+                filter: true,
+                render: (estadoPago: string) => (
+                    <Chip
+                        label={estadoPago}
+                        color={estadoPago === 'URGENTE' ? 'error' : 'warning'}
+                        size="small"
+                        sx={{ fontWeight: 600 }}
+                    />
                 ),
             },
         ],
@@ -193,7 +211,8 @@ const PaymentTable = React.memo<{
                 columns={columns}
                 data={pagosFiltrados}
                 onReload={onRefresh}
-                hideToolbar
+                // Mostrar toolbar para habilitar filtros por columna
+                hideToolbar={false}
                 rowKey={(record) => `${record.tipo}-${record.codigo}`}
                 onRow={(record) => ({
                     onClick: () => onRowClick(record),
@@ -312,12 +331,6 @@ const DashboardTesoreria: React.FC = () => {
 
     return (
         <Box sx={{ width: '100%' }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                <Typography variant="h4" component="h1" gutterBottom>
-                    Dashboard de Tesorería
-                </Typography>
-            </Box>
-
             <Card variant="outlined" sx={{ p: 3 }}>
                 <PaymentTable
                     pagos={todosPagosCombinados}
