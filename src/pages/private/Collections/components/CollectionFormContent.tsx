@@ -91,6 +91,12 @@ const estadosCobranzaOptions = [
   { label: 'DENUNCIA JUDICIAL', value: 'DENUNCIA_JUDICIAL' }
 ];
 
+// Opciones para el selector de Estado de Cobranza (Rol) usando enum EstadoRol
+const estadosCobranzaRolOptions = [
+  { label: 'En Proceso', value: 'EN_PROCESO' },
+  { label: 'Completo', value: 'COMPLETO' },
+];
+
 const etapasSiafOptions = [
   { label: 'COM', value: 'COM' },
   { label: 'DEV', value: 'DEV' },
@@ -310,6 +316,8 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
         penalidad: cobranzaData.penalidad || '',
         estadoCobranza: cobranzaData.estadoCobranza || '',
         fechaEstadoCobranza: cobranzaData.fechaEstadoCobranza ? dayjs(cobranzaData.fechaEstadoCobranza) : null,
+        // Nuevo: estado de cobranza rol
+        estadoCobranzaRol: cobranzaData.estadoCobranzaRol || 'PENDIENTE',
       });
 
       // Configurar formulario de cobrador
@@ -422,6 +430,8 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
         penalidad: originalCobranzaData.penalidad || '',
         estadoCobranza: originalCobranzaData.estadoCobranza || '',
         fechaEstadoCobranza: originalCobranzaData.fechaEstadoCobranza ? dayjs(originalCobranzaData.fechaEstadoCobranza) : null,
+        // Nuevo: estado de cobranza rol
+        estadoCobranzaRol: originalCobranzaData.estadoCobranzaRol || 'PENDIENTE',
       });
     }
 
@@ -482,6 +492,13 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
       changedFields.fechaEstadoCobranza = currentFechaEstadoCobranza || undefined;
     }
 
+    // Comparar estadoCobranzaRol
+    const currentEstadoCobranzaRol = currentValues.estadoCobranzaRol || '';
+    const originalEstadoCobranzaRol = originalCobranzaData.estadoCobranzaRol || '';
+    if (currentEstadoCobranzaRol !== originalEstadoCobranzaRol) {
+      changedFields.estadoCobranzaRol = currentEstadoCobranzaRol;
+    }
+
     return changedFields;
   };
 
@@ -506,6 +523,8 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
     penalidad?: string;
     estadoCobranza?: string;
     fechaEstadoCobranza?: Dayjs | null;
+    // Nuevo: estado de cobranza rol
+    estadoCobranzaRol?: string;
   }
 
   const handleFinish = async (values: CollectionFormValues) => {
@@ -1286,6 +1305,12 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                 <Col span={8}>
                   <Form.Item label="Fecha de Cobranza" name="fechaEstadoCobranza">
                     <DatePickerAntd placeholder="Seleccionar fecha" />
+                  </Form.Item>
+                </Col>
+                {/* Nueva fila: Estado de Cobranza (Rol) */}
+                <Col span={8}>
+                  <Form.Item label="Estado de Cobranza (Rol)" name="estadoCobranzaRol">
+                    <SelectGeneric placeholder="Seleccionar estado" options={estadosCobranzaRolOptions} />
                   </Form.Item>
                 </Col>
               </Row>

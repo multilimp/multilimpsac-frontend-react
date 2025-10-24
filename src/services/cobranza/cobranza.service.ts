@@ -54,6 +54,8 @@ export interface CobranzaData {
   estadoCobranza?: string;
   fechaEstadoCobranza?: string;
   cobradorId?: number;
+  // Nuevo campo: Estado de Cobranza Rol (usa enum EstadoRol en backend)
+  estadoCobranzaRol?: string;
 }
 
 /**
@@ -101,6 +103,8 @@ export const getCobranzaByOrdenCompra = async (ordenCompraId: number): Promise<C
       estadoCobranza: cobranza.estadoCobranza,
       fechaEstadoCobranza: cobranza.fechaEstadoCobranza,
       cobradorId: cobranza.cobradorId,
+      // Mapear desde estadoVenta mientras el backend migra el campo dedicado
+      estadoCobranzaRol: cobranza.estadoCobranzaRol || cobranza.estadoVenta,
     };
   } catch (error) {
     console.error('Error al obtener datos de cobranza:', error);
