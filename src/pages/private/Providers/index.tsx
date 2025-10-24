@@ -15,7 +15,7 @@ import { ContactTypeEnum } from '@/services/contacts/contacts.enum';
 const Providers = () => {
   const { providers, obtainProviders, loadingProviders } = useGlobalInformation();
   const [modal, setModal] = useState<ModalStateProps<ProviderProps>>(null);
-  const [setSaldosDrawerData] = useState<ProviderProps | null>(null);
+  const [saldosDrawerData, setSaldosDrawerData] = useState<ProviderProps | null>(null);
   const [pagosModalData, setPagosModalData] = useState<{ open: boolean; entidad: ProviderProps | null }>({
     open: false,
     entidad: null

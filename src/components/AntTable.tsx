@@ -2,6 +2,7 @@ import { Fragment, useEffect, useMemo, useState } from 'react';
 import { Table } from 'antd';
 import dayjs from 'dayjs';
 import { ColumnType, TableProps } from 'antd/es/table';
+import type { SortOrder } from 'antd/es/table/interface';
 import {
   Box,
   Button,
@@ -21,39 +22,75 @@ import {
   Typography,
   useTheme,
 } from '@mui/material';
-import { Bolt, Clear, Close, North, Reorder, Replay, SaveAlt, Search, South, Star, Storage, SwapVert } from '@mui/icons-material';
+import { Bolt, Clear, Close, North, Reorder, Replay, SaveAlt, Search, South, Storage, SwapVert } from '@mui/icons-material';
 import { removeAccents } from '@/utils/functions';
 
-export interface AntColumnType<T> extends ColumnType<T> {
+export interface AntColumnType<T = unknown> extends ColumnType<T> {
   filter?: boolean;
   sort?: boolean;
   children?: AntColumnType<T>[];
 }
 
-interface AntTablePropsProps<T> extends Omit<TableProps<T>, 'columns'> {
+interface AntTablePropsProps<T = unknown> extends Omit<TableProps<T>, 'columns'> {
   data: T[];
   columns: AntColumnType<T>[];
   onReload?: () => void | Promise<void>;
   hideToolbar?: boolean;
+  persistKey?: string; // clave opcional para persistencia por tabla
 }
 
-const valTypes = (value: any) => ['number', 'string'].includes(typeof value);
+const valTypes = (value: unknown): value is number | string => typeof value === 'number' || typeof value === 'string';
 
-const AntTable = <T extends Record<string, any>>(props: AntTablePropsProps<T>) => {
-  const { columns, data, onReload, hideToolbar, ...rest } = props;
+const AntTable = <T,>(props: AntTablePropsProps<T>) => {
+  const { columns, data, onReload, hideToolbar, persistKey, ...rest } = props;
   const theme = useTheme();
   const [filters, setFilters] = useState<{ [key: string]: string }>({});
   const [showInputs, setShowInputs] = useState(false);
   const [search, setSearch] = useState('');
   const [wait, setWait] = useState<NodeJS.Timeout>();
   const [showDrawer, setShowDrawer] = useState(false);
-  const [columnsCloned, setColumnsCloned] = useState<Array<AntColumnType<any> & { selected: boolean }>>([]);
+  const [columnsCloned, setColumnsCloned] = useState<Array<AntColumnType<T> & { selected: boolean }>>([]);
+
+  // Clave de almacenamiento única por tabla
+  const storageKey = useMemo(() => {
+    const base = persistKey || `${typeof window !== 'undefined' ? window.location.pathname : 'unknown'}::${columns
+      .map((c) => String(c.dataIndex))
+      .join('|')}`;
+    return `antTable.columns.${base}`;
+  }, [persistKey, columns]);
 
   useEffect(() => {
-    if (columnsCloned.length) return;
-    const aux = columns.map((item) => ({ ...item, selected: true }));
-    setColumnsCloned([...aux]);
-  }, [columns]);
+    if (columnsCloned.length) return; // evita sobreescribir la selección actual
+    // Cargar selección desde localStorage si existe
+    try {
+      const saved = localStorage.getItem(storageKey);
+      const aux = columns.map((item) => ({ ...item, selected: true }));
+      if (saved) {
+        const parsed = JSON.parse(saved) as { selectedKeys?: string[] };
+        if (parsed?.selectedKeys && Array.isArray(parsed.selectedKeys)) {
+          aux.forEach((col) => {
+            const key = String(col.dataIndex);
+            col.selected = parsed.selectedKeys!.includes(key);
+          });
+        }
+      }
+      setColumnsCloned([...aux]);
+    } catch {
+      const aux = columns.map((item) => ({ ...item, selected: true }));
+      setColumnsCloned([...aux]);
+    }
+  }, [columns, storageKey, columnsCloned.length]);
+
+  // Guardar selección en localStorage cuando cambia
+  useEffect(() => {
+    if (!columnsCloned.length) return;
+    try {
+      const selectedKeys = columnsCloned.filter((c) => c.selected).map((c) => String(c.dataIndex));
+      localStorage.setItem(storageKey, JSON.stringify({ selectedKeys }));
+    } catch {
+      // ignorar errores de almacenamiento
+    }
+  }, [columnsCloned, storageKey]);
 
   const handleFilterChange = (key: string, value: string) => setFilters((prev) => ({ ...prev, [key]: value }));
 
@@ -61,7 +98,7 @@ const AntTable = <T extends Record<string, any>>(props: AntTablePropsProps<T>) =
 
   const filteredData = useMemo(() => {
     const firstRecord = data[0];
-    const filterRecord: any = {};
+    const filterRecord: Record<string, unknown> = {};
 
     if (firstRecord && showInputs) {
       filterRecord.id = '10012931823612536123';
@@ -83,38 +120,44 @@ const AntTable = <T extends Record<string, any>>(props: AntTablePropsProps<T>) =
       });
     }
 
-    const filtered = data
-      .filter((item) => Object.keys(filters).every((key) => clean(item[key]).includes(clean(filters[key]))))
-      .filter(({ rawdata, ...rest }) => (search ? Object.values(rest).some((item) => clean(String(item || '')).includes(clean(search))) : true));
+    const filtered = (data as Array<Record<string, unknown>>)
+      .filter((item) => Object.keys(filters).every((key) => clean(String(item[key] ?? '')).includes(clean(filters[key]))))
+      .filter((row) => {
+        const { rawdata, ...rest } = row;
+        return search ? Object.values(rest).some((v) => clean(String(v ?? '')).includes(clean(search))) : true;
+      }) as T[];
 
     if (Object.values(filterRecord).length) {
-      filtered.unshift(filterRecord);
+      filtered.unshift(filterRecord as T);
     }
 
     return filtered;
-  }, [filters, data, showInputs, search]);
+  }, [filters, data, showInputs, search, columnsCloned]);
 
   const columnsFiltered = useMemo(
     () =>
       columnsCloned
         .filter((item) => item.selected)
         .map((item) => {
-          const newItemProperties: AntColumnType<any> = {};
+          const newItemProperties: AntColumnType<T> = {};
 
           if (item.sort) {
-            const sortProperties: AntColumnType<any> = {
-              sorter: (a: any, b: any) => {
-                const valA = a[item.dataIndex];
-                const valB = b[item.dataIndex];
+            const sortProperties: AntColumnType<T> = {
+              sorter: (a: T, b: T) => {
+                const aObj = a as Record<string, unknown>;
+                const bObj = b as Record<string, unknown>;
+                const key = item.dataIndex as string;
+                const valA = aObj[key];
+                const valB = bObj[key];
 
                 if (!valTypes(valA) || !valTypes(valB)) return 0;
-                if (typeof valA === 'number') return valA - valB;
+                if (typeof valA === 'number') return valA - (valB as number);
 
-                return String(valA).localeCompare(valB, undefined, { sensitivity: 'base' });
+                return String(valA).localeCompare(String(valB), undefined, { sensitivity: 'base' });
               },
-              sortIcon(params: any) {
-                if (!params.sortOrder) return <SwapVert color="disabled" />;
-                if (params.sortOrder === 'ascend') return <North color="success" />;
+              sortIcon(props: { sortOrder: SortOrder }) {
+                if (!props.sortOrder) return <SwapVert color="disabled" />;
+                if (props.sortOrder === 'ascend') return <North color="success" />;
                 return <South color="success" />;
               },
               ellipsis: true,
@@ -124,8 +167,8 @@ const AntTable = <T extends Record<string, any>>(props: AntTablePropsProps<T>) =
           }
 
           if (showInputs) {
-            const filterProperties: AntColumnType<any> = {
-              onCell: (_, index) => ({
+            const filterProperties: AntColumnType<T> = {
+              onCell: (_: T, index) => ({
                 style: {
                   backgroundColor: index === 0 ? theme.palette.secondary.main : '#fff',
                 },
@@ -137,14 +180,14 @@ const AntTable = <T extends Record<string, any>>(props: AntTablePropsProps<T>) =
 
           return { ...newItemProperties, ...item };
         }),
-    [columnsCloned, showInputs]
+    [columnsCloned, showInputs, theme]
   );
 
   // Fijar las dos primeras columnas a la izquierda y calcular scroll horizontal
   const columnsWithFixed = useMemo(() => {
     return columnsFiltered.map((col, idx) => {
       if (idx <= 1) {
-        const next = { ...col } as AntColumnType<any>;
+        const next = { ...col } as AntColumnType<T>;
         if (!next.fixed) next.fixed = 'left';
         if (!next.width) next.width = idx === 0 ? 50 : 150;
         return next;
@@ -161,9 +204,9 @@ const AntTable = <T extends Record<string, any>>(props: AntTablePropsProps<T>) =
   const handleDownloadCSV = () => {
     const headers = columns.map((item) => ({ label: String(item.title), key: String(item.dataIndex) }));
 
-    const rows = filteredData
+    const rows = (filteredData as Array<Record<string, unknown>>)
       .filter((_, index) => (showInputs ? index > 0 : true))
-      .map((row) => headers.map((field) => `"${clean(row[field.key]).replace(/\n/g, ' ')}"`).join(','));
+      .map((row) => headers.map((field) => `"${clean(String(row[field.key] ?? '')).replace(/\n/g, ' ')}"`).join(','));
     const csvString = [headers.map((item) => clean(item.label)).join(','), ...rows].join('\n');
 
     const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
@@ -251,6 +294,11 @@ const AntTable = <T extends Record<string, any>>(props: AntTablePropsProps<T>) =
                     columnsCloned[index].selected = true;
                   });
                   setColumnsCloned([...columnsCloned]);
+                  try {
+                    localStorage.removeItem(storageKey);
+                  } catch {
+                    // ignorar
+                  }
                 }}
               >
                 Reestablecer Predeterminado
@@ -267,7 +315,7 @@ const AntTable = <T extends Record<string, any>>(props: AntTablePropsProps<T>) =
 
       <Paper sx={{ border: '1px solid #f2f2f2' }}>
         <Table
-          columns={columnsWithFixed}
+          columns={columnsFiltered as ColumnType<T>[]}
           dataSource={filteredData}
           scroll={{ x: scrollX }}
           sticky
