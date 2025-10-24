@@ -64,7 +64,7 @@ import { getAlmacenes } from '@/services/almacen/almacen.requests';
 import InputNumberAntd from '@/components/InputNumberAntd';
 import PaymentsList from '@/components/PaymentsList';
 import { updatePayments } from '@/services/payments/payments.service';
-import { ESTADOS, estadoBgMap } from '@/utils/constants';
+import { ESTADOS_SEGUIMIENTO, estadoSeguimientoBgMap } from '@/utils/constants';
 import { TransportProps } from '@/services/transports/transports';
 import { ContactProps } from '@/services/contacts/contacts';
 import { TransporteAsignadoProps } from '@/services/transporteAsignado/transporteAsignado';
@@ -2450,8 +2450,8 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                     padding: '8px 0'
                   }}
                 >
-                  {Object.values(ESTADOS).map(estado => {
-                    const color = estadoBgMap[estado.key];
+                  {Object.values(ESTADOS_SEGUIMIENTO).map(estado => {
+                    const color = estadoSeguimientoBgMap[estado.key];
                     return (
                       <Select.Option key={estado.key} value={estado.value}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>

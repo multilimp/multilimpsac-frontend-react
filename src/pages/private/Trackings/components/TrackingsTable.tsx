@@ -4,7 +4,7 @@ import { formatCurrency, formattedDate } from '@/utils/functions';
 import { IconButton, Button, Box, Chip } from '@mui/material';
 import { PictureAsPdf, Visibility } from '@mui/icons-material';
 import { useNavigate, Link } from 'react-router-dom';
-import { ESTADOS, EstadoVentaType, ESTADO_ROL_COLORS } from '@/utils/constants';
+import { ESTADOS_SEGUIMIENTO, ESTADO_SEGUIMIENTO_COLORS, EstadoSeguimientoType } from '@/utils/constants';
 
 interface TrackingsTableProps {
   data: Array<SaleProps>;
@@ -30,7 +30,7 @@ interface TrackingsDataTable {
   montoVenta: string;
   cue: string;
   departamentoEntrega?: string;
-  estadoRolSeguimiento: EstadoVentaType;
+  estadoRolSeguimiento: EstadoSeguimientoType;
 }
 
 const defaultText = 'N/A';
@@ -47,10 +47,10 @@ export const TrackingsTable = ({ data, loading, onRowClick, onReload }: Tracking
 
   const getStatusBackgroundColor = (status: string | null | undefined) => {
     if (!status || typeof status !== 'string') {
-      return ESTADO_ROL_COLORS.PENDIENTE;
+      return ESTADO_SEGUIMIENTO_COLORS.PENDIENTE;
     }
-    const normalizedStatus = status.toUpperCase() as keyof typeof ESTADO_ROL_COLORS;
-    return ESTADO_ROL_COLORS[normalizedStatus] || ESTADO_ROL_COLORS.PENDIENTE;
+    const normalizedStatus = status.toUpperCase() as keyof typeof ESTADO_SEGUIMIENTO_COLORS;
+    return ESTADO_SEGUIMIENTO_COLORS[normalizedStatus] || ESTADO_SEGUIMIENTO_COLORS.PENDIENTE;
   };
 
   const formattedData: Array<TrackingsDataTable> = data.map((item) => {
@@ -71,7 +71,7 @@ export const TrackingsTable = ({ data, loading, onRowClick, onReload }: Tracking
       montoVenta: formatCurrency(parseInt(item?.montoVenta ?? '0', 10)),
       cue: item?.cliente?.codigoUnidadEjecutora ?? defaultText,
       departamentoEntrega: item?.departamentoEntrega ?? defaultText,
-      estadoRolSeguimiento: item?.estadoRolSeguimiento || 'PENDIENTE',
+      estadoRolSeguimiento: (item?.estadoRolSeguimiento ?? 'PENDIENTE') as EstadoSeguimientoType,
     };
   });
 
@@ -165,8 +165,8 @@ export const TrackingsTable = ({ data, loading, onRowClick, onReload }: Tracking
       width: 150,
       sort: true,
       filter: true,
-      render: (value: EstadoVentaType | null | undefined) => {
-        const estado = value && ESTADOS[value] ? ESTADOS[value] : ESTADOS.PENDIENTE;
+      render: (value: EstadoSeguimientoType | null | undefined) => {
+        const estado = value && ESTADOS_SEGUIMIENTO[value] ? ESTADOS_SEGUIMIENTO[value] : ESTADOS_SEGUIMIENTO.PENDIENTE;
         return (
           <Chip
             label={estado.label}

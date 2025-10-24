@@ -15,12 +15,26 @@ const CollectionsPage = () => {
     if (!sales || sales.length === 0) return [];
 
     const isJefeCobranzas = user.permisos?.includes(PermissionsEnum.JEFECOBRANZAS);
+    const isCobranzas = user.permisos?.includes(PermissionsEnum.COLLECTIONS) || isJefeCobranzas;
 
-    if (isJefeCobranzas) {
-      return sales;
+    let filtered = sales;
+
+    // Filtrar por cobrador si no es jefe de cobranzas
+    if (!isJefeCobranzas) {
+      filtered = filtered.filter(sale => sale.cobradorId === user.id);
     }
 
-    return sales.filter(sale => sale.cobradorId === user.id);
+    // Filtrar por estado de seguimiento para usuarios de cobranza
+    if (isCobranzas) {
+      filtered = filtered.filter(sale => {
+        const estado = sale.estadoRolSeguimiento;
+        // Cobranza NO ve: PENDIENTE y ENTREGADO
+        // Cobranza SÍ ve: EN_PROCESO, COMPLETO, ANULADO
+        return estado !== 'PENDIENTE' && estado !== 'ENTREGADO';
+      });
+    }
+
+    return filtered;
   }, [sales, user.permisos, user.id]);
 
   return (

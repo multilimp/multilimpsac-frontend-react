@@ -3,7 +3,7 @@ import { ClientProps } from '../clients/clients';
 import { CompanyProps } from '../companies/company';
 import { ContactProps } from '../contacts/contacts';
 import { ProviderOrderProps } from '../providerOrders/providerOrders';
-import { EstadoVentaType, EstadoCobranzaType } from '@/utils/constants';
+import { EstadoVentaType, EstadoCobranzaType, EstadoSeguimientoType } from '@/utils/constants';
 
 export interface SaleProps {
   id: number;
@@ -52,7 +52,7 @@ export interface SaleProps {
   etapaActual: string;
   estadoVenta: EstadoVentaType;
   estadoFacturacion: EstadoVentaType;
-  estadoRolSeguimiento: EstadoVentaType;
+  estadoRolSeguimiento: EstadoSeguimientoType;
   estadoActivo: boolean;
   createdAt: string;
   updatedAt: string;

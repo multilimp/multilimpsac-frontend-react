@@ -122,12 +122,6 @@ const PageContent = ({ component, children, title, helper }: PageContentProps) =
             >
               {displayTitle}
             </Typography>
-
-            {displayHelper && (
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                {displayHelper}
-              </Typography>
-            )}
           </Box>
 
           {<Box sx={{ width: { xs: '100%', md: '50%' }, display: 'flex', justifyContent: 'flex-end' }}>{component}</Box>}

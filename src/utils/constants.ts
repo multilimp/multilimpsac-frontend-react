@@ -35,6 +35,42 @@ export const ESTADOS = {
     }
 } as const;
 
+// Estados de Seguimiento (rol) específicos
+export type EstadoSeguimientoType = 'PENDIENTE' | 'ENTREGADO' | 'EN_PROCESO' | 'COMPLETO' | 'ANULADO';
+
+export const ESTADOS_SEGUIMIENTO = {
+    PENDIENTE: {
+        key: 'PENDIENTE' as const,
+        label: 'Pendiente',
+        color: heroUIColors.warning[500],
+        value: 'PENDIENTE' as EstadoSeguimientoType,
+    },
+    ENTREGADO: {
+        key: 'ENTREGADO' as const,
+        label: 'Entregado',
+        color: heroUIColors.primary[500],
+        value: 'ENTREGADO' as EstadoSeguimientoType,
+    },
+    EN_PROCESO: {
+        key: 'EN_PROCESO' as const,
+        label: 'En Proceso',
+        color: heroUIColors.secondary[500],
+        value: 'EN_PROCESO' as EstadoSeguimientoType,
+    },
+    COMPLETO: {
+        key: 'COMPLETO' as const,
+        label: 'Completo',
+        color: heroUIColors.success[600],
+        value: 'COMPLETO' as EstadoSeguimientoType,
+    },
+    ANULADO: {
+        key: 'ANULADO' as const,
+        label: 'Anulado',
+        color: heroUIColors.error[600],
+        value: 'ANULADO' as EstadoSeguimientoType,
+    },
+} as const;
+
 // Estados de cobranza
 export const ESTADOS_COBRANZA = {
     REQ: {
@@ -96,6 +132,14 @@ export const ESTADO_ROL_LABELS = Object.fromEntries(
     Object.entries(ESTADOS).map(([key, estado]) => [key, estado.label])
 ) as Record<keyof typeof ESTADOS, string>;
 
+export const ESTADO_SEGUIMIENTO_COLORS = Object.fromEntries(
+    Object.entries(ESTADOS_SEGUIMIENTO).map(([key, estado]) => [key, estado.color])
+) as Record<keyof typeof ESTADOS_SEGUIMIENTO, string>;
+
+export const ESTADO_SEGUIMIENTO_LABELS = Object.fromEntries(
+    Object.entries(ESTADOS_SEGUIMIENTO).map(([key, estado]) => [key, estado.label])
+) as Record<keyof typeof ESTADOS_SEGUIMIENTO, string>;
+
 export const ESTADO_COBRANZA_COLORS = Object.fromEntries(
     Object.entries(ESTADOS_COBRANZA).map(([key, estado]) => [key, estado.color])
 ) as Record<keyof typeof ESTADOS_COBRANZA, string>;
@@ -110,6 +154,11 @@ export const estadoOptions = Object.values(ESTADOS).map(estado => ({
     label: estado.label
 }));
 
+export const estadoSeguimientoOptions = Object.values(ESTADOS_SEGUIMIENTO).map(estado => ({
+    value: estado.value,
+    label: estado.label,
+}));
+
 export const estadoCobranzaOptions = Object.values(ESTADOS_COBRANZA).map(estado => ({
     value: estado.value,
     label: estado.label
@@ -121,6 +170,11 @@ export const getEstadoByValue = (value: string) =>
 
 export const getEstadoByKey = (key: keyof typeof ESTADOS) => ESTADOS[key];
 
+export const getEstadoSeguimientoByValue = (value: string) =>
+    Object.values(ESTADOS_SEGUIMIENTO).find(estado => estado.value === value);
+
+export const getEstadoSeguimientoByKey = (key: keyof typeof ESTADOS_SEGUIMIENTO) => ESTADOS_SEGUIMIENTO[key];
+
 export const getEstadoCobranzaByValue = (value: string) =>
     Object.values(ESTADOS_COBRANZA).find(estado => estado.value === value);
 
@@ -128,4 +182,5 @@ export const getEstadoCobranzaByKey = (key: keyof typeof ESTADOS_COBRANZA) => ES
 
 // Mapas de colores para backgrounds
 export const estadoBgMap: Record<string, string> = ESTADO_ROL_COLORS;
+export const estadoSeguimientoBgMap: Record<string, string> = ESTADO_SEGUIMIENTO_COLORS;
 export const estadoCobranzaBgMap: Record<string, string> = ESTADO_COBRANZA_COLORS;
