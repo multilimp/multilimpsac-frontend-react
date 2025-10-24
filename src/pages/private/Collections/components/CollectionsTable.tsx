@@ -62,6 +62,7 @@ const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRe
       fecha_proxima_gestion: formattedDate(item.fechaProximaGestion, undefined, defaultText),
       oce: item.documentoOce || null,
       ocf: item.documentoOcf || null,
+      carta_ampliacion: item.cartaAmpliacion || null,
       estado_indicador: String(item.estadoRolSeguimiento || 'PENDIENTE'),
       rawdata: item,
     }));
@@ -126,6 +127,41 @@ const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRe
     { title: 'Contacto', dataIndex: 'contacto', width: 200, sort: true, filter: true },
     { title: 'Fecha Formalización', dataIndex: 'fecha_formalizacion', width: 150, sort: true, filter: true },
     { title: 'Fecha Máx. Entrega', dataIndex: 'fecha_max_entrega', width: 150, sort: true, filter: true },
+    {
+      title: 'Fuera de plazo',
+      dataIndex: 'fuera_plazo',
+      width: 140,
+      align: 'center',
+      render: (_: unknown, record: CollectionsRow) => {
+        const entrega = record.rawdata?.fechaEntregaOc || record.rawdata?.fechaEntrega;
+        const max = record.rawdata?.fechaMaxForm;
+        if (!entrega || !max) {
+          return <span>-</span>;
+        }
+        const entregaTime = new Date(entrega).getTime();
+        const maxTime = new Date(max).getTime();
+        if (Number.isNaN(entregaTime) || Number.isNaN(maxTime)) {
+          return <span>-</span>;
+        }
+        const fuera = entregaTime > maxTime;
+        return (
+          <Box
+            sx={{
+              bgcolor: fuera ? '#ef4444' : '#22c55e',
+              color: '#fff',
+              borderRadius: '4px',
+              px: 1.25,
+              py: 0.5,
+              fontWeight: 600,
+              fontSize: '0.75rem',
+              textAlign: 'center',
+            }}
+          >
+            {fuera ? 'Sí' : 'No'}
+          </Box>
+        );
+      },
+    },
     { title: 'Monto Venta', dataIndex: 'monto_venta', width: 130, sort: true, filter: true },
     {
       title: 'Utilidad %',
@@ -181,6 +217,19 @@ const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRe
     {
       title: 'OCF',
       dataIndex: 'ocf',
+      width: 80,
+      render: (value) =>
+        value ? (
+          <IconButton color="error" component="a" href={value} target="_blank" size="small">
+            <PictureAsPdf />
+          </IconButton>
+        ) : (
+          <span>-</span>
+        ),
+    },
+    {
+      title: 'Carta Ampliación',
+      dataIndex: 'carta_ampliacion',
       width: 80,
       render: (value) =>
         value ? (

@@ -126,6 +126,41 @@ export const TrackingsTable = ({ data, loading, onRowClick, onReload }: Tracking
     { title: 'Descripción Catálogo', dataIndex: 'catalogoDescripcion', width: 150, filter: true, sort: true },
     { title: 'Fecha Emisión', dataIndex: 'fechaEmision', width: 150, filter: true, sort: true },
     { title: 'Fecha Máxima Entrega', dataIndex: 'fechaMaxForm', width: 150, filter: true, sort: true },
+    {
+      title: 'Fuera de plazo',
+      dataIndex: 'fuera_plazo',
+      width: 140,
+      align: 'center',
+      render: (_: unknown, record: TrackingsDataTable) => {
+        const entrega = record.rawdata?.fechaEntregaOc || record.rawdata?.fechaEntrega;
+        const max = record.rawdata?.fechaMaxForm;
+        if (!entrega || !max) {
+          return <span>-</span>;
+        }
+        const entregaTime = new Date(entrega).getTime();
+        const maxTime = new Date(max).getTime();
+        if (Number.isNaN(entregaTime) || Number.isNaN(maxTime)) {
+          return <span>-</span>;
+        }
+        const fuera = entregaTime > maxTime;
+        return (
+          <Box
+            sx={{
+              bgcolor: fuera ? '#ef4444' : '#22c55e',
+              color: '#fff',
+              borderRadius: '4px',
+              px: 1.25,
+              py: 0.5,
+              fontWeight: 600,
+              fontSize: '0.75rem',
+              textAlign: 'center',
+            }}
+          >
+            {fuera ? 'Sí' : 'No'}
+          </Box>
+        );
+      },
+    },
     { title: 'Monto Venta', dataIndex: 'montoVenta', width: 150, filter: true, sort: true },
     { title: 'CUE', dataIndex: 'cue', width: 150, filter: true, sort: true },
     {
@@ -153,6 +188,19 @@ export const TrackingsTable = ({ data, loading, onRowClick, onReload }: Tracking
       render: (_, record) =>
         record.rawdata?.documentoOcf ? (
           <IconButton color="error" component="a" href={record.rawdata?.documentoOcf} target="_blank">
+            <PictureAsPdf />
+          </IconButton>
+        ) : (
+          defaultText
+        ),
+    },
+    {
+      title: 'Carta Ampliación',
+      dataIndex: 'id',
+      width: 100,
+      render: (_, record) =>
+        record.rawdata?.cartaAmpliacion ? (
+          <IconButton color="error" component="a" href={record.rawdata?.cartaAmpliacion} target="_blank">
             <PictureAsPdf />
           </IconButton>
         ) : (

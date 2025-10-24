@@ -58,6 +58,7 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }
       codigo_ocf: item.codigoOcf || defaultText,
       oce: item.documentoOce || null,
       ocf: item.documentoOcf || null,
+      carta_ampliacion: item.cartaAmpliacion || null,
       estado_facturacion: String(item.estadoFacturacion || 'PENDIENTE'),
       estado_indicador: String(item.estadoFacturacion || 'PENDIENTE'),
       refact: item.ventaPrivada ? 'Sí' : 'No',
@@ -65,7 +66,31 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }
     }));
   }, [data]);
 
-  const columns: Array<AntColumnType<any>> = [
+  interface BillingsRow {
+    id: string | number | undefined;
+    rawdata: SaleProps;
+    codigo_venta: string;
+    estado_indicador: string;
+    razon_social_cliente: string;
+    ruc_cliente: string;
+    ruc_empresa: string;
+    razon_social_empresa: string;
+    contacto: string;
+    fecha_formalizacion: string;
+    fecha_max_entrega: string;
+    fecha_programacion: string;
+    monto_venta: string;
+    fecha_factura: string;
+    fecha_entrega_oc: string;
+    numero_factura: string;
+    etapa_siaf: string;
+    grr: string;
+    codigo_ocf: string;
+    oce: string | null;
+    ocf: string | null;
+    carta_ampliacion: string | null;
+  }
+  const columns: Array<AntColumnType<BillingsRow>> = [
     {
       title: '',
       dataIndex: 'estado_indicador',
@@ -92,7 +117,7 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }
       title: 'Código OC',
       dataIndex: 'codigo_venta',
       width: 200,
-      render: (value, record) => {
+      render: (value, record: BillingsRow) => {
         if (!record?.rawdata?.id) {
           return <span>{value}</span>;
         }
@@ -119,6 +144,41 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }
     { title: 'Fecha Registro', dataIndex: 'fecha_formalizacion', width: 150, sort: true, filter: true },
     { title: 'Fecha Programación', dataIndex: 'fecha_programacion', width: 150, sort: true, filter: true },
     { title: 'Fecha Entrega OC', dataIndex: 'fecha_entrega_oc', width: 150, sort: true, filter: true },
+    {
+      title: 'Fuera de plazo',
+      dataIndex: 'fuera_plazo',
+      width: 140,
+      align: 'center',
+      render: (_: unknown, record: BillingsRow) => {
+        const entrega = record.rawdata?.fechaEntregaOc || record.rawdata?.fechaEntrega;
+        const max = record.rawdata?.fechaMaxForm;
+        if (!entrega || !max) {
+          return <span>-</span>;
+        }
+        const entregaTime = new Date(entrega).getTime();
+        const maxTime = new Date(max).getTime();
+        if (Number.isNaN(entregaTime) || Number.isNaN(maxTime)) {
+          return <span>-</span>;
+        }
+        const fuera = entregaTime > maxTime;
+        return (
+          <Box
+            sx={{
+              bgcolor: fuera ? '#ef4444' : '#22c55e',
+              color: '#fff',
+              borderRadius: '4px',
+              px: 1.25,
+              py: 0.5,
+              fontWeight: 600,
+              fontSize: '0.75rem',
+              textAlign: 'center',
+            }}
+          >
+            {fuera ? 'Sí' : 'No'}
+          </Box>
+        );
+      },
+    },
     { title: 'Monto Venta', dataIndex: 'monto_venta', width: 130, sort: true, filter: true },
     { title: 'Fecha Factura', dataIndex: 'fecha_factura', width: 150, sort: true, filter: true },
     { title: 'Etapa SIAF', dataIndex: 'etapa_siaf', width: 150, sort: true, filter: true },
@@ -177,7 +237,35 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }
           <Box sx={{ color: '#94a3b8', fontSize: '0.75rem' }}>-</Box>
         ),
     },
+
     { title: 'Código OCF', dataIndex: 'codigo_ocf', width: 120, sort: true, filter: true },
+    {
+      title: 'Carta Ampliación',
+      dataIndex: 'carta_ampliacion',
+      width: 120,
+      align: 'center',
+      render: (value) =>
+        value ? (
+          <Tooltip title="Ver Carta de Ampliación" placement="top">
+            <IconButton
+              color="error"
+              component="a"
+              href={value}
+              target="_blank"
+              size="small"
+              sx={{
+                '&:hover': {
+                  bgcolor: 'rgba(211, 47, 47, 0.08)'
+                }
+              }}
+            >
+              <PictureAsPdf />
+            </IconButton>
+          </Tooltip>
+        ) : (
+          <Box sx={{ color: '#94a3b8', fontSize: '0.75rem' }}>-</Box>
+        ),
+    },
     {
       title: 'Estado Facturación',
       dataIndex: 'estado_facturacion',
