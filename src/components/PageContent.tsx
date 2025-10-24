@@ -1,5 +1,6 @@
 import { ReactNode, useEffect } from 'react';
 import { Box, Breadcrumbs, Fade, Link as MuiLink, Typography } from '@mui/material';
+import ProfileButton from '@/layouts/PrivateLayout/components/ProfileButton';
 
 import Scrollbar from './Scrollbar';
 import { Apps } from '@mui/icons-material';
@@ -7,7 +8,6 @@ import { Link, useLocation } from 'react-router-dom';
 import sidebarConfig from '@/layouts/PrivateLayout/sidebarConfig';
 
 interface PageContentProps {
-  component?: ReactNode;
   children?: ReactNode;
   title?: string;
   helper?: string;
@@ -15,7 +15,7 @@ interface PageContentProps {
 
 const appName = 'MULTILIMP';
 
-const PageContent = ({ component, children, title, helper }: PageContentProps) => {
+const PageContent = ({ children, title }: PageContentProps) => {
   const location = useLocation();
 
   useEffect(() => {
@@ -39,13 +39,12 @@ const PageContent = ({ component, children, title, helper }: PageContentProps) =
   );
 
   const displayTitle = title || module || 'Módulo no definido';
-  const displayHelper = helper || '';
 
   return (
     <Fade in={true} timeout={300}>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' }}>
-          <Box sx={{ width: { xs: '100%', md: component ? '50%' : '100%' } }}>
+          <Box sx={{ width: { xs: '100%', md: '50%' } }}>
             <Breadcrumbs sx={{ mb: 2 }}>
               <MuiLink
                 underline="hover"
@@ -124,7 +123,9 @@ const PageContent = ({ component, children, title, helper }: PageContentProps) =
             </Typography>
           </Box>
 
-          {<Box sx={{ width: { xs: '100%', md: '50%' }, display: 'flex', justifyContent: 'flex-end' }}>{component}</Box>}
+          <Box sx={{ width: { xs: '100%', md: '50%' }, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 1 }}>
+            <ProfileButton showName={false} />
+          </Box>
         </Box>
 
         <Scrollbar sx={{ height: 'calc((100vh) - 270px)', pr: 2 }}>

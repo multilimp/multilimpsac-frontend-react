@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import PageContent from '@/components/PageContent';
 import ClientsTable from './components/ClientsTable';
-import { Button } from '@mui/material';
+import { Button, Stack } from '@mui/material';
 import ClientsModal from './components/ClientsModal';
 import { ModalStateEnum } from '@/types/global.enum';
 import { ClientProps } from '@/services/clients/clients';
@@ -20,7 +20,21 @@ const ClientsPage = () => {
   };
 
   return (
-    <PageContent component={<Button onClick={() => setModalState({ mode: ModalStateEnum.BOX })}>Agregar</Button>}>
+    <PageContent>
+      <Stack direction="row" spacing={1} justifyContent="flex-end" mb={2}>
+        <Button
+          variant="contained"
+          onClick={() => setModalState({ mode: ModalStateEnum.BOX })}
+          sx={{
+            backgroundColor: '#161e2a',
+            '&:hover': {
+              backgroundColor: '#1e2936'
+            }
+          }}
+        >
+          Agregar Cliente
+        </Button>
+      </Stack>
       <ClientsTable
         data={clients}
         loading={loadingClients}

@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { Button, Stack, IconButton, Tooltip } from '@mui/material';
-import { Refresh } from '@mui/icons-material';
+import { Button, Stack } from '@mui/material';
 import PageContent from '@/components/PageContent';
 import CompaniesTable from './components/CompaniesTable';
 import { CompanyProps } from '@/services/companies/company';
@@ -22,23 +21,21 @@ const Companies = () => {
 
   return (
     <PageContent
-      component={
-        <Stack direction="row" spacing={1} alignItems="center">
-          <Button
-            variant="contained"
-            onClick={() => setModal({ mode: ModalStateEnum.BOX })}
-            sx={{
-              backgroundColor: '#161e2a',
-              '&:hover': {
-                backgroundColor: '#1e2936'
-              }
-            }}
-          >
-            Agregar Empresa
-          </Button>
-        </Stack>
-      }
     >
+      <Stack direction="row" spacing={1} justifyContent="flex-end" mb={2}>
+        <Button
+          variant="contained"
+          onClick={() => setModal({ mode: ModalStateEnum.BOX })}
+          sx={{
+            backgroundColor: '#161e2a',
+            '&:hover': {
+              backgroundColor: '#1e2936'
+            }
+          }}
+        >
+          Agregar Empresa
+        </Button>
+      </Stack>
       <CompaniesTable data={companies} loading={loadingCompanies} onRecordAction={handleRecordAction} onReload={obtainCompanies} />
 
       {modal?.mode === ModalStateEnum.BOX ? (

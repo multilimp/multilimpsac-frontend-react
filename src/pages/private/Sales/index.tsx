@@ -1,13 +1,13 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { Tabs, Tab, Box } from '@mui/material';
+import { Tabs, Tab, Box, Stack } from '@mui/material';
 import { AccountBalance, Business } from '@mui/icons-material';
 import PageContent from '@/components/PageContent';
 import SalesTable from './components/SalesTable';
 import { Button } from '@mui/material';
 import { Add } from '@mui/icons-material';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const SalesPage = () => {
   const { sales, loadingSales, obtainSales, setSaleInputValues } = useGlobalInformation();
@@ -43,7 +43,9 @@ const SalesPage = () => {
 
   return (
     <PageContent
-      component={
+      title="Ventas"
+    >
+      <Stack direction="row" spacing={1} justifyContent="flex-end" mb={2}>
         <Button
           variant="contained"
           color="primary"
@@ -52,8 +54,7 @@ const SalesPage = () => {
         >
           Agregar Venta
         </Button>
-      }
-    >
+      </Stack>
       <Box sx={{ width: '100%' }}>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs

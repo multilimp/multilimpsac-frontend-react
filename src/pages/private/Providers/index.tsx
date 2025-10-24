@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import PageContent from '@/components/PageContent';
-import { Button } from '@mui/material';
+import { Button, Stack } from '@mui/material';
 import { ModalStateEnum } from '@/types/global.enum';
 import { ModalStateProps } from '@/types/global';
 import ConfirmDelete from '@/components/ConfirmDelete';
@@ -15,7 +15,7 @@ import { ContactTypeEnum } from '@/services/contacts/contacts.enum';
 const Providers = () => {
   const { providers, obtainProviders, loadingProviders } = useGlobalInformation();
   const [modal, setModal] = useState<ModalStateProps<ProviderProps>>(null);
-  const [saldosDrawerData, setSaldosDrawerData] = useState<ProviderProps | null>(null);
+  const [setSaldosDrawerData] = useState<ProviderProps | null>(null);
   const [pagosModalData, setPagosModalData] = useState<{ open: boolean; entidad: ProviderProps | null }>({
     open: false,
     entidad: null
@@ -36,7 +36,21 @@ const Providers = () => {
   };
 
   return (
-    <PageContent component={<Button onClick={() => setModal({ mode: ModalStateEnum.BOX })}>Agregar</Button>}>
+    <PageContent>
+      <Stack direction="row" spacing={1} justifyContent="flex-end" mb={2}>
+        <Button
+          variant="contained"
+          onClick={() => setModal({ mode: ModalStateEnum.BOX })}
+          sx={{
+            backgroundColor: '#161e2a',
+            '&:hover': {
+              backgroundColor: '#1e2936'
+            }
+          }}
+        >
+          Agregar Proveedor
+        </Button>
+      </Stack>
       <ProvidersTable
         data={providers}
         loading={loadingProviders}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Box, Tabs, Tab, Button } from '@mui/material';
+import { Box, Tabs, Tab, Button, Stack } from '@mui/material';
 import { Add, Warehouse, Inventory } from '@mui/icons-material';
 import PageContent from '@/components/PageContent';
 import AlmacenesTable from './components/AlmacenesTable';
@@ -202,8 +202,10 @@ const WarehousePage = () => {
     return (
         <PageContent
             title="Gestión de Almacén"
-            component={getActionButton()}
         >
+            <Stack direction="row" spacing={1} justifyContent="flex-end" mb={2}>
+                {getActionButton()}
+            </Stack>
             <Box sx={{ width: '100%' }}>
                 <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                     <Tabs

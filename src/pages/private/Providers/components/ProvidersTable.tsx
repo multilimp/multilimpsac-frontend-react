@@ -60,10 +60,9 @@ const ProvidersTable = ({ data, loading, onRecordAction, hideActions, modalMode,
         const value = Number(record.saldo || 0);
         const isFavor = record.saldoTipo === 'A_FAVOR';
         const color = isFavor ? 'success.main' : value < 0 ? 'error.main' : 'text.primary';
-        const label = record.saldoTipo === 'A_FAVOR' ? 'A favor' : record.saldoTipo === 'DEBE' ? 'Debe' : 'Neutro';
         return (
           <Typography variant="body2" sx={{ color }}>
-            S/ {Math.abs(value).toFixed(2)} {label}
+            S/ {Math.abs(value).toFixed(2)}
           </Typography>
         );
       },
