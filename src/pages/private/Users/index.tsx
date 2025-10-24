@@ -8,7 +8,7 @@ import { getUsers } from '@/services/users/users.request';
 import { useEffect, useState } from 'react';
 import { UserProps } from '@/services/users/users';
 import { notification } from 'antd';
-import { Button } from '@mui/material';
+import { Button, Stack } from '@mui/material';
 import { ModalStateEnum } from '@/types/global.enum';
 import { ModalStateProps } from '@/types/global';
 import { useAppContext } from '@/context';
@@ -43,7 +43,21 @@ const Users = () => {
   };
 
   return (
-    <PageContent component={<Button onClick={() => setModal({ mode: ModalStateEnum.BOX })}>Agregar</Button>}>
+    <PageContent>
+      <Stack direction="row" spacing={1} justifyContent="flex-end" mb={2}>
+        <Button
+          variant="contained"
+          onClick={() => setModal({ mode: ModalStateEnum.BOX })}
+          sx={{
+            backgroundColor: '#161e2a',
+            '&:hover': {
+              backgroundColor: '#1e2936'
+            }
+          }}
+        >
+          Agregar Usuario
+        </Button>
+      </Stack>
       <UsersTable
         data={data}
         loading={loading}
