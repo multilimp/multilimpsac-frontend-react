@@ -1785,7 +1785,6 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
           tipo={ContactTypeEnum.CLIENTE}
           referenceId={sale.cliente.id}
           title={`${sale.cliente.razonSocial} - ${sale.cliente.ruc}`}
-          readOnly={true}
         />
       )}
 
