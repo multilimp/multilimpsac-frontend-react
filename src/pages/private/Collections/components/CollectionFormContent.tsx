@@ -93,8 +93,8 @@ const estadosCobranzaOptions = [
 
 // Opciones para el selector de Estado de Cobranza (Rol) usando enum EstadoRol
 const estadosCobranzaRolOptions = [
-  { label: 'En Proceso', value: 'EN_PROCESO' },
-  { label: 'Completo', value: 'COMPLETO' },
+  { label: 'Pendiente', value: 'PENDIENTE' },
+  { label: 'Completado', value: 'COMPLETADO' },
 ];
 
 const etapasSiafOptions = [

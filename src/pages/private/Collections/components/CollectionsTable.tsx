@@ -1,6 +1,6 @@
 // src/pages/private/Collections/components/CollectionsTable.tsx
 import React, { useMemo } from 'react';
-import { IconButton, Button, Typography } from '@mui/material';
+import { IconButton, Button, Typography, Box } from '@mui/material';
 import { PictureAsPdf, Visibility } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import { formatCurrency, formattedDate } from '@/utils/functions';
@@ -9,6 +9,8 @@ import AntTable, { AntColumnType } from '@/components/AntTable';
 import { SaleProps } from '@/services/sales/sales';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 import { calcularUtilidadCompleta } from '@/utils/utilidadCalculator';
+import { ESTADO_ROL_COLORS } from '@/utils/constants';
+import { ProviderOrderProps } from '@/services/providerOrders/providerOrders';
 
 interface CollectionsTableProps {
   data: SaleProps[];
@@ -21,6 +23,19 @@ const defaultText = 'N/A';
 
 const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRecordAction, onReload }) => {
   const { setSelectedSale } = useGlobalInformation();
+
+  const getStatusBackgroundColor = (status: string | null | undefined) => {
+    console.log(status);
+    if (!status || typeof status !== 'string') {
+      return ESTADO_ROL_COLORS.PENDIENTE;
+    }
+
+    if (status === "COMPLETO") {
+      return ESTADO_ROL_COLORS.COMPLETADO;
+    }
+    const normalizedStatus = status.toUpperCase() as keyof typeof ESTADO_ROL_COLORS;
+    return ESTADO_ROL_COLORS[normalizedStatus] || ESTADO_ROL_COLORS.PENDIENTE;
+  };
 
   const formattedData = useMemo(() => {
     if (!Array.isArray(data) || data.length === 0) {
@@ -47,16 +62,45 @@ const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRe
       fecha_proxima_gestion: formattedDate(item.fechaProximaGestion, undefined, defaultText),
       oce: item.documentoOce || null,
       ocf: item.documentoOcf || null,
+      estado_indicador: String(item.estadoRolSeguimiento || 'PENDIENTE'),
       rawdata: item,
     }));
   }, [data]);
 
-  const columns: Array<AntColumnType<any>> = [
+  interface CollectionsRow {
+    id?: number;
+    rawdata?: SaleProps;
+    codigo_venta?: string;
+    estado_indicador?: string;
+    [key: string]: unknown;
+  }
+  const columns: Array<AntColumnType<CollectionsRow>> = [
+    {
+      title: '',
+      dataIndex: 'estado_indicador',
+      width: 30,
+      render: (value: string) => (
+        <Box
+          sx={{
+            width: '100%',
+            height: '100%',
+            minHeight: '60px',
+            backgroundColor: `${getStatusBackgroundColor(value)} !important`,
+            margin: '-16px !important',
+            padding: '6px !important',
+            '&:hover': {
+              backgroundColor: `${getStatusBackgroundColor(value)} !important`,
+              opacity: '0.9 !important',
+            }
+          }}
+        />
+      ),
+    },
     {
       title: 'Código OC',
       dataIndex: 'codigo_venta',
       width: 200,
-      render: (value, record) => {
+      render: (value, record: CollectionsRow) => {
         if (!record?.rawdata?.id) {
           return <span>{value}</span>;
         }
@@ -88,15 +132,16 @@ const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRe
       dataIndex: 'utilidad',
       width: 180,
       align: 'center',
-      render: (_: any, record: any) => {
+      render: (_: unknown, record: CollectionsRow) => {
         const montoVenta = record.rawdata?.montoVenta;
 
-        const totalProveedores = record.rawdata?.ordenesProveedor?.reduce((sum: number, op: any) => {
-          const total = typeof op.totalProveedor === 'string'
-            ? parseFloat(op.totalProveedor)
-            : (op.totalProveedor || 0);
+        const totalProveedores = record.rawdata?.ordenesProveedor?.reduce((sum: number, op: ProviderOrderProps) => {
+          const totalRaw = op.totalProveedor as unknown;
+          const total = typeof totalRaw === 'string'
+            ? parseFloat(totalRaw)
+            : (typeof totalRaw === 'number' ? totalRaw : 0);
           return sum + total;
-        }, 0) || 0;
+        }, 0) ?? 0;
 
         const utilidad = calcularUtilidadCompleta(montoVenta, totalProveedores);
 
@@ -146,6 +191,7 @@ const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRe
           <span>-</span>
         ),
     },
+    { title: 'Estado', dataIndex: 'estado_indicador', width: 120, sort: true, filter: true },
   ];
 
   return (
