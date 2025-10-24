@@ -83,7 +83,7 @@ const TrackingsPage = () => {
               iconPosition="start"
             />
             <Tab
-              label={`Tabla Reporte de Programación`}
+              label={`Reporte de Programación`}
               icon={<Business />}
               iconPosition="start"
             />

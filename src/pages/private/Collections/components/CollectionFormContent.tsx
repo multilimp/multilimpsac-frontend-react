@@ -97,7 +97,7 @@ const etapasSiafOptions = [
   { label: 'PAG', value: 'PAG' },
   { label: 'SSIAF', value: 'SSIAF' },
   { label: 'RES', value: 'RES' },
-  { label: 'GIR', value: 'GIR' },
+  { label: 'DEV-F', value: 'DEV-F' },
   { label: 'GIR-F', value: 'GIR-F' },
   { label: 'GIR-V', value: 'GIR-V' },
   { label: 'GIR-A', value: 'GIR-A' },
@@ -1284,7 +1284,7 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                   </Form.Item>
                 </Col>
                 <Col span={8}>
-                  <Form.Item label="Fecha Estado de Cobranzas" name="fechaEstadoCobranza">
+                  <Form.Item label="Fecha de Cobranza" name="fechaEstadoCobranza">
                     <DatePickerAntd placeholder="Seleccionar fecha" />
                   </Form.Item>
                 </Col>
