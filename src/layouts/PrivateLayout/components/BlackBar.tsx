@@ -626,8 +626,11 @@ const BlackBar = memo(() => {
             <Divider sx={{ borderBottomColor: '#3c4351', my: 0 }} />
 
             <AccordionStyled title="Datos generales">
-              Lorem ipsum dolor sit amet consectetur, adipisicing elit. Maxime, error quaerat aliquam nesciunt cum totam odit, illum possimus ea iusto
-              ducimus voluptatum nostrum nam. Corporis fuga ea totam quos illum.
+              RUC: {selectedSale?.cliente?.ruc ?? '-'} <br />
+              Cliente: {selectedSale?.cliente?.razonSocial ?? '-'}  <br />
+              CUE: {selectedSale?.cliente?.codigoUnidadEjecutora ?? '-'} <br />
+              Sede: {selectedSale?.cliente?.sede ?? '-'} <br />
+              OCF: {selectedSale?.codigoOcf ?? '-'} <br />
             </AccordionStyled>
             <Divider sx={{ borderBottomColor: '#3c4351', my: 0, py: 0 }} />
 
