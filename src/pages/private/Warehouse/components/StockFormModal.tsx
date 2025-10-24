@@ -9,7 +9,7 @@ import {
     Typography,
     Alert,
 } from '@mui/material';
-import { Form, Select, InputNumber, notification } from 'antd';
+import { Form, Select, InputNumber, Input, notification } from 'antd';
 import { Save, Cancel } from '@mui/icons-material';
 import {
     StockWithDetails,
@@ -28,6 +28,13 @@ interface StockFormModalProps {
     productos: Producto[];
 }
 
+type StockFormValues = {
+  productoId: number;
+  almacenId: number;
+  cantidad: number;
+  referencia?: string;
+};
+
 const StockFormModal: React.FC<StockFormModalProps> = ({
     open,
     onClose,
@@ -45,18 +52,20 @@ const StockFormModal: React.FC<StockFormModalProps> = ({
                     productoId: editingStock.productoId,
                     almacenId: editingStock.almacenId,
                     cantidad: editingStock.cantidad,
+                    referencia: 'Actualización de stock',
                 });
             } else {
-                form.resetFields();
+                form.setFieldsValue({ referencia: 'Creación de stock' });
             }
         }
     }, [open, editingStock, form]);
 
-    const handleSubmit = async (values: any) => {
+    const handleSubmit = async (values: StockFormValues) => {
         try {
             if (isEditing && editingStock) {
                 const updateData: UpdateStockData = {
                     cantidad: values.cantidad,
+                    referencia: values.referencia,
                 };
 
                 await updateStock(editingStock.productoId, editingStock.almacenId, updateData);
@@ -69,6 +78,7 @@ const StockFormModal: React.FC<StockFormModalProps> = ({
                     productoId: values.productoId,
                     almacenId: values.almacenId,
                     cantidad: values.cantidad,
+                    referencia: values.referencia,
                 };
 
                 await createOrUpdateStock(createData);
@@ -213,7 +223,18 @@ const StockFormModal: React.FC<StockFormModalProps> = ({
                                 style={{ width: '100%' }}
                                 min={0}
                                 formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                parser={(value) => Number(value!.replace(/\$\s?|(,*)/g, '')) as any}
+                            />
+                        </Form.Item>
+
+                        <Form.Item
+                            name="referencia"
+                            label="Referencia"
+                            tooltip="Describe el motivo del movimiento (editable por el usuario)"
+                        >
+                            <Input
+                                placeholder={isEditing ? 'Actualización de stock' : 'Creación de stock'}
+                                size="large"
+                                allowClear
                             />
                         </Form.Item>
 

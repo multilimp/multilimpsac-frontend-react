@@ -20,6 +20,40 @@ import ProductoFormModal from './components/ProductoFormModal';
 import AlmacenFormModal from './components/AlmacenFormModal';
 import StockFormModal from './components/StockFormModal';
 
+// Caché local simple con TTL para almacenes/productos/stock
+const CACHE_KEY = 'warehouse_cache_v1';
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutos
+
+type WarehouseCache = {
+  almacenes?: { data: Almacen[]; timestamp: number };
+  productos?: { data: Producto[]; timestamp: number };
+  stock?: { data: StockWithDetails[]; timestamp: number };
+};
+
+function loadCache(): WarehouseCache | null {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    return raw ? (JSON.parse(raw) as WarehouseCache) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveCache(next: WarehouseCache) {
+  try {
+    const current = loadCache() || {};
+    const merged = { ...current, ...next };
+    localStorage.setItem(CACHE_KEY, JSON.stringify(merged));
+  } catch {
+    // noop
+  }
+}
+
+function isFresh(ts?: number): boolean {
+  if (!ts) return false;
+  return Date.now() - ts < CACHE_TTL_MS;
+}
+
 const WarehousePage = () => {
     const [activeTab, setActiveTab] = useState<number>(0);
     const [loading, setLoading] = useState(false);
@@ -40,11 +74,20 @@ const WarehousePage = () => {
     const [editingStock, setEditingStock] = useState<StockWithDetails | null>(null);
 
     // Cargar datos
-    const loadAlmacenes = useCallback(async () => {
+    const loadAlmacenes = useCallback(async (force: boolean = false) => {
         try {
             setLoading(true);
+            if (!force) {
+              const cache = loadCache();
+              const cached = cache?.almacenes;
+              if (cached && isFresh(cached.timestamp)) {
+                setAlmacenes(cached.data);
+                return;
+              }
+            }
             const data = await getAlmacenes();
             setAlmacenes(data);
+            saveCache({ almacenes: { data, timestamp: Date.now() } });
         } catch (error) {
             console.error('Error al cargar almacenes:', error);
             notification.error({
@@ -56,11 +99,20 @@ const WarehousePage = () => {
         }
     }, []);
 
-    const loadProductos = useCallback(async () => {
+    const loadProductos = useCallback(async (force: boolean = false) => {
         try {
             setLoading(true);
+            if (!force) {
+              const cache = loadCache();
+              const cached = cache?.productos;
+              if (cached && isFresh(cached.timestamp)) {
+                setProductos(cached.data);
+                return;
+              }
+            }
             const data = await getProductos();
             setProductos(data);
+            saveCache({ productos: { data, timestamp: Date.now() } });
         } catch (error) {
             console.error('Error al cargar productos:', error);
             notification.error({
@@ -72,11 +124,20 @@ const WarehousePage = () => {
         }
     }, []);
 
-    const loadStock = useCallback(async () => {
+    const loadStock = useCallback(async (force: boolean = false) => {
         try {
             setLoading(true);
+            if (!force) {
+              const cache = loadCache();
+              const cached = cache?.stock;
+              if (cached && isFresh(cached.timestamp)) {
+                setStock(cached.data);
+                return;
+              }
+            }
             const data = await getStock();
             setStock(data);
+            saveCache({ stock: { data, timestamp: Date.now() } });
         } catch (error) {
             console.error('Error al cargar stock:', error);
             notification.error({
@@ -139,23 +200,23 @@ const WarehousePage = () => {
         setStockModalOpen(true);
     }, []);
 
-    // Handlers para cerrar modales y recargar datos
+    // Handlers para cerrar modales y recargar datos (forzar refresh para invalidar caché local)
     const handleCloseAlmacenModal = useCallback(() => {
         setAlmacenModalOpen(false);
         setEditingAlmacen(null);
-        loadAlmacenes();
+        loadAlmacenes(true);
     }, [loadAlmacenes]);
 
     const handleCloseProductoModal = useCallback(() => {
         setProductoModalOpen(false);
         setEditingProducto(null);
-        loadProductos();
+        loadProductos(true);
     }, [loadProductos]);
 
     const handleCloseStockModal = useCallback(() => {
         setStockModalOpen(false);
         setEditingStock(null);
-        loadStock();
+        loadStock(true);
     }, [loadStock]);
 
     // Función para obtener el botón apropiado según el tab activo

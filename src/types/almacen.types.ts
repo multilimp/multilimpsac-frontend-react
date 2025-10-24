@@ -56,10 +56,12 @@ export interface CreateStockData {
     productoId: number;
     almacenId: number;
     cantidad: number;
+    referencia?: string; // nueva referencia opcional al crear/actualizar stock
 }
 
 export interface UpdateStockData {
     cantidad: number;
+    referencia?: string; // nueva referencia opcional al actualizar stock
 }
 
 // Tipos combinados para visualización
