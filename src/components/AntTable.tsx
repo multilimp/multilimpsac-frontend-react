@@ -140,6 +140,24 @@ const AntTable = <T extends Record<string, any>>(props: AntTablePropsProps<T>) =
     [columnsCloned, showInputs]
   );
 
+  // Fijar las dos primeras columnas a la izquierda y calcular scroll horizontal
+  const columnsWithFixed = useMemo(() => {
+    return columnsFiltered.map((col, idx) => {
+      if (idx <= 1) {
+        const next = { ...col } as AntColumnType<any>;
+        if (!next.fixed) next.fixed = 'left';
+        if (!next.width) next.width = idx === 0 ? 50 : 150;
+        return next;
+      }
+      return col;
+    });
+  }, [columnsFiltered]);
+
+  const scrollX = useMemo(() => {
+    const base = columnsFiltered.reduce((sum, col) => sum + (Number(col.width) || 150), 0);
+    return Math.max(base, 1200);
+  }, [columnsFiltered]);
+
   const handleDownloadCSV = () => {
     const headers = columns.map((item) => ({ label: String(item.title), key: String(item.dataIndex) }));
 
@@ -249,10 +267,12 @@ const AntTable = <T extends Record<string, any>>(props: AntTablePropsProps<T>) =
 
       <Paper sx={{ border: '1px solid #f2f2f2' }}>
         <Table
-          columns={columnsFiltered}
+          columns={columnsWithFixed}
           dataSource={filteredData}
-          scroll={{ x: '100%' }}
+          scroll={{ x: scrollX }}
+          sticky
           rowKey="id"
+          size='small'
           rowClassName={showInputs ? 'table-filter-row' : ''}
           title={() => (
             <Stack direction="row" spacing={2} alignItems="center">
@@ -314,7 +334,7 @@ const AntTable = <T extends Record<string, any>>(props: AntTablePropsProps<T>) =
             pageSizeOptions: ['5', '10', '20', '50', '100', '250', '500'],
             hideOnSinglePage: true,
             showTotal: (total, [from, to]) => `Mostrando del ${from} al ${to} de ${total} registros`,
-            defaultPageSize: 10,
+            defaultPageSize: 20,
           }}
           {...rest}
         />
