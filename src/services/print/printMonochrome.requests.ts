@@ -111,7 +111,7 @@ export const printCargosEntregaMonochrome = async (fechaInicio: string, fechaFin
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reporte de Cargos de Entrega - ${data.fechaInicio} al ${data.fechaFin}</title>
+    <title>Reporte de Reporte de Programación - ${data.fechaInicio} al ${data.fechaFin}</title>
     <style>
         * {
             margin: 0;
@@ -476,12 +476,12 @@ export const printCargosEntregaMonochrome = async (fechaInicio: string, fechaFin
     }
 
   } catch (error) {
-    console.error('Error al imprimir reporte monocromatico de cargos de entrega:', error);
-    throw new Error('Error al generar el reporte monocromatico de cargos de entrega');
+    console.error('Error al imprimir reporte monocromatico de Reporte de Programación:', error);
+    throw new Error('Error al generar el reporte monocromatico de Reporte de Programación');
   }
 };
 
-// Función para obtener datos JSON de cargos de entrega (para tabla)
+// Función para obtener datos JSON de Reporte de Programación (para tabla)
 export const getCargosEntregaData = async (fechaInicio: string, fechaFin: string): Promise<CargosEntregaData> => {
   try {
     const response = await apiClient.get(`/print/cargos-entrega/data`, {
@@ -490,7 +490,7 @@ export const getCargosEntregaData = async (fechaInicio: string, fechaFin: string
 
     return response.data.data;
   } catch (error) {
-    console.error('Error al obtener datos de cargos de entrega:', error);
-    throw new Error('Error al obtener los datos de cargos de entrega');
+    console.error('Error al obtener datos de Reporte de Programación:', error);
+    throw new Error('Error al obtener los datos de Reporte de Programación');
   }
 };

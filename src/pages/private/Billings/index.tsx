@@ -13,7 +13,7 @@ const BillingsPage = () => {
   const { sales, loadingSales, obtainSales } = useGlobalInformation();
   const [activeTab, setActiveTab] = useState('facturaciones');
 
-  // Estados para el tab de Cargos de Entrega
+  // Estados para el tab de Reporte de Programación
   const [fechaInicio, setFechaInicio] = useState(dayjs().startOf('month').format('YYYY-MM-DD'));
   const [fechaFin, setFechaFin] = useState(dayjs().format('YYYY-MM-DD'));
 
@@ -31,7 +31,7 @@ const BillingsPage = () => {
     },
     {
       key: 'cargos',
-      label: 'Cargos de Entrega',
+      label: 'Reporte de Programación',
       children: (
         <>
           <Box sx={{ mb: 3 }}>
@@ -71,7 +71,7 @@ const BillingsPage = () => {
   return (
     <PageContent
       title="Facturaciones"
-      helper="GESTIÓN DE FACTURAS Y CARGOS DE ENTREGA"
+      helper="GESTIÓN DE FACTURAS Y Reporte de Programación"
     >
       <Tabs
         activeKey={activeTab}

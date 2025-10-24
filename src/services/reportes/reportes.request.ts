@@ -28,7 +28,7 @@ export const generateCargosEntregaReport = async (params: CargosEntregaParams): 
         window.URL.revokeObjectURL(url);
 
     } catch (error) {
-        console.error('Error generando reporte de cargos de entrega:', error);
+        console.error('Error generando reporte de Reporte de Programación:', error);
         throw error;
     }
 };
@@ -65,7 +65,7 @@ export const previewCargosEntregaReport = async (params: CargosEntregaParams): P
         }
 
     } catch (error) {
-        console.error('Error imprimiendo reporte de cargos de entrega:', error);
+        console.error('Error imprimiendo reporte de Reporte de Programación:', error);
         throw error;
     }
 };

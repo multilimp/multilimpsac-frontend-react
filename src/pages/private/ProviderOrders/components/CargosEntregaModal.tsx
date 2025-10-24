@@ -81,7 +81,7 @@ const CargosEntregaModal: React.FC<CargosEntregaModalProps> = ({
             title={
                 <Space>
                     <Print />
-                    <span>Imprimir Reporte de Cargos de Entrega</span>
+                    <span>Imprimir Reporte de Reporte de Programación</span>
                 </Space>
             }
             open={visible}

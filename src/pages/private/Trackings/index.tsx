@@ -9,6 +9,10 @@ import { useNavigate } from 'react-router-dom';
 import { ProviderOrderProps } from '@/services/providerOrders/providerOrders';
 import { getAllOrderProviders } from '@/services/providerOrders/providerOrders.requests';
 import { notification } from 'antd';
+import CargosEntregaTable from '@/components/CargosEntregaTable';
+import dayjs from 'dayjs';
+import { DatePicker, Space } from 'antd';
+import { SaleProps } from '@/services/sales/sales';
 
 const TrackingsPage = () => {
   const { sales, loadingSales, obtainSales } = useGlobalInformation();
@@ -16,6 +20,10 @@ const TrackingsPage = () => {
   const navigate = useNavigate();
   const [ops, setOps] = useState<Array<ProviderOrderProps>>([]);
   const [loadingOps, setLoadingOps] = useState(false);
+  const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null]>([
+    dayjs().startOf('month'),
+    dayjs().endOf('month'),
+  ]);
 
   // Cargar OPs cuando se cambia a la pestaña de OP
   const loadOps = useCallback(async () => {
@@ -44,7 +52,7 @@ const TrackingsPage = () => {
   }, [loadOps, ops.length]);
 
   // Handler para OC
-  const handleOcRowClick = useCallback((sale: any) => {
+  const handleOcRowClick = useCallback((sale: SaleProps) => {
     navigate(`/tracking/${sale.id}`);
   }, [navigate]);
 
@@ -52,15 +60,6 @@ const TrackingsPage = () => {
   const handleOpRowClick = useCallback((op: ProviderOrderProps) => {
     navigate(`/provider-orders/${op.id}`);
   }, [navigate]);
-
-  // Filtrar ventas por tipo
-  const ventasEstado = useMemo(() => {
-    return sales.filter(sale => !sale.ventaPrivada);
-  }, [sales]);
-
-  const ventasPrivadas = useMemo(() => {
-    return sales.filter(sale => sale.ventaPrivada);
-  }, [sales]);
 
   return (
     <PageContent
@@ -81,6 +80,11 @@ const TrackingsPage = () => {
             <Tab
               label={`Tabla OP`}
               icon={<Assignment />}
+              iconPosition="start"
+            />
+            <Tab
+              label={`Tabla Reporte de Programación`}
+              icon={<Business />}
               iconPosition="start"
             />
           </Tabs>
@@ -123,6 +127,34 @@ const TrackingsPage = () => {
             </Box>
           )}
         </div>
+
+        {/* Tab Panel: Reporte de Programación */}
+        <div
+          role="tabpanel"
+          hidden={activeTab !== 2}
+          id="tabpanel-programacion"
+          aria-labelledby="tab-programacion"
+        >
+          {activeTab === 2 && (
+            <Box sx={{ py: 3 }}>
+              <Space direction="horizontal" style={{ marginBottom: 12 }}>
+                <DatePicker.RangePicker
+                  onChange={(values) => {
+                    if (!values || values.length !== 2) return;
+                    setDateRange([values[0], values[1]]);
+                  }}
+                  allowClear={false}
+                />
+              </Space>
+
+              <CargosEntregaTable
+                fechaInicio={dateRange[0]!.format('YYYY-MM-DD')}
+                fechaFin={dateRange[1]!.format('YYYY-MM-DD')}
+              />
+            </Box>
+          )}
+        </div>
+
       </Box>
     </PageContent>
   );

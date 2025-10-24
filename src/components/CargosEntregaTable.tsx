@@ -120,7 +120,7 @@ const CargosEntregaTable: React.FC<CargosEntregaTableProps> = ({ fechaInicio, fe
                 const result = await getCargosEntregaData(fechaInicio, fechaFin);
                 setData(result);
             } catch (error) {
-                console.error('Error al cargar datos de cargos de entrega:', error);
+                console.error('Error al cargar datos de Reporte de Programación:', error);
             } finally {
                 setLoading(false);
             }
@@ -185,7 +185,7 @@ const CargosEntregaTable: React.FC<CargosEntregaTableProps> = ({ fechaInicio, fe
             <Card>
                 <CardContent>
                     <Typography variant="h6" align="center">
-                        Cargando datos de cargos de entrega...
+                        Cargando datos de Reporte de Programación...
                     </Typography>
                 </CardContent>
             </Card>
@@ -197,7 +197,7 @@ const CargosEntregaTable: React.FC<CargosEntregaTableProps> = ({ fechaInicio, fe
             <Card>
                 <CardContent>
                     <Typography variant="h6" align="center" color="text.secondary">
-                        No se encontraron datos de cargos de entrega para el período seleccionado
+                        No se encontraron datos de Reporte de Programación para el período seleccionado
                     </Typography>
                 </CardContent>
             </Card>
@@ -211,7 +211,7 @@ const CargosEntregaTable: React.FC<CargosEntregaTableProps> = ({ fechaInicio, fe
                     <Box display="flex" alignItems="center" gap={1}>
                         <LocalShipping color="primary" />
                         <Typography variant="h6">
-                            Reporte de Cargos de Entrega
+                            Reporte de Programación
                         </Typography>
                     </Box>
                 }
