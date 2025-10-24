@@ -42,7 +42,7 @@ const PageContent = ({ children, title }: PageContentProps) => {
 
   return (
     <Fade in={true} timeout={300}>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0, height: '100%', minHeight: 'calc(100vh - 140px)' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' }}>
           <Box sx={{ width: { xs: '100%', md: '50%' } }}>
             <Breadcrumbs sx={{ mb: 2 }}>
@@ -128,7 +128,7 @@ const PageContent = ({ children, title }: PageContentProps) => {
           </Box>
         </Box>
 
-        <Scrollbar sx={{ height: 'calc((100vh) - 270px)', pr: 2 }}>
+        <Scrollbar sx={{ flex: 1, minHeight: 0, pr: 2 }}>
           <Box sx={{ width: '100%' }}>{children}</Box>
         </Scrollbar>
       </Box>
