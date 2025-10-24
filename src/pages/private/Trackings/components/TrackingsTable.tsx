@@ -33,7 +33,7 @@ interface TrackingsDataTable {
   estadoRolSeguimiento: EstadoSeguimientoType;
 }
 
-const defaultText = 'N/A';
+const defaultText = '';
 export const TrackingsTable = ({ data, loading, onRowClick, onReload }: TrackingsTableProps) => {
   const navigate = useNavigate();
 
@@ -69,6 +69,8 @@ export const TrackingsTable = ({ data, loading, onRowClick, onReload }: Tracking
       fechaEmision: formattedDate(item?.fechaEmision, undefined, defaultText),
       fechaMaxForm: formattedDate(item?.fechaMaxForm, undefined, defaultText),
       montoVenta: formatCurrency(parseInt(item?.montoVenta ?? '0', 10)),
+      cartaAmpliacion: item?.cartaAmpliacion,
+      codigoOcf: item?.codigoOcf,
       cue: item?.cliente?.codigoUnidadEjecutora ?? defaultText,
       departamentoEntrega: item?.departamentoEntrega ?? defaultText,
       estadoRolSeguimiento: (item?.estadoRolSeguimiento ?? 'PENDIENTE') as EstadoSeguimientoType,
@@ -194,6 +196,7 @@ export const TrackingsTable = ({ data, loading, onRowClick, onReload }: Tracking
           defaultText
         ),
     },
+    { title: 'Codigo OCF', dataIndex: 'id', width: 'auto', render: (_, record) => record.rawdata?.codigoOcf || defaultText },
     {
       title: 'Carta Ampliación',
       dataIndex: 'id',
