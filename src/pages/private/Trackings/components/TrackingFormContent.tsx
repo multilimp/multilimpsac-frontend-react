@@ -74,6 +74,9 @@ import { RegionProps, ProvinceProps, DistrictProps } from '@/services/ubigeo/ubi
 import { useAppContext } from '@/context';
 import { PermissionsEnum } from '@/services/users/permissions.enum';
 import { RolesEnum } from '@/services/users/user.enum';
+import BillingHistory from '@/components/BillingHistory';
+import { BillingProps } from '@/services/billings/billings';
+import { getBillingHistoryByOrdenCompraId } from '@/services/billings/billings.request';
 
 interface TrackingFormContentProps {
   sale: SaleProps;
@@ -168,6 +171,22 @@ const getUbigeoName = (val: RegionProps | ProvinceProps | DistrictProps | string
 };
 
 const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
+  const [billingHistory, setBillingHistory] = useState<BillingProps[]>([]);
+
+  useEffect(() => {
+    let mounted = true;
+    const loadHistory = async () => {
+      try {
+        const history = await getBillingHistoryByOrdenCompraId(sale.id);
+        if (mounted) setBillingHistory(history || []);
+      } catch (e) {
+        console.error('Error al cargar historial de facturación:', e);
+        if (mounted) setBillingHistory([]);
+      }
+    };
+    if (sale?.id) loadHistory();
+    return () => { mounted = false; };
+  }, [sale?.id]);
   const { user } = useAppContext();
   const canEditSchedule = user?.role === RolesEnum.ADMIN || (user?.permisos || []).includes(PermissionsEnum.TRACKING);
   const [form] = Form.useForm();
@@ -2313,6 +2332,10 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
             </Stack>
           )}
 
+          <Box sx={{ mt: 3 }}>
+            <BillingHistory billings={billingHistory} readOnly={true} />
+          </Box>
+
           {/* Sección OC Conforme */}
           <Card
             sx={{
@@ -3147,7 +3170,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
 
               return null;
             })()}
-              </Box>
+          </Box>
         </MuiBox>
       </Modal>
     </Box>

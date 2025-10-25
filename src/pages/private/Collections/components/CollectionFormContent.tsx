@@ -75,6 +75,9 @@ import SimpleFileUpload from '@/components/SimpleFileUpload';
 import ContactsDrawer from '@/components/ContactsDrawer';
 import { ContactTypeEnum } from '@/services/contacts/contacts.enum';
 import apiClient from '@/services/apiClient';
+import BillingHistory from '@/components/BillingHistory';
+import { BillingProps } from '@/services/billings/billings';
+import { getBillingHistoryByOrdenCompraId } from '@/services/billings/billings.request';
 
 interface CollectionFormContentProps {
   sale: SaleProps;
@@ -171,6 +174,7 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
 
   // Estado para el drawer de contactos
   const [contactsDrawerOpen, setContactsDrawerOpen] = useState(false);
+  const [billingHistory, setBillingHistory] = useState<BillingProps[]>([]);
 
   // Estados para promedio de cobranza editable
   const [promedioEditable, setPromedioEditable] = useState<number | null>(null);
@@ -299,6 +303,19 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
 
     setHasFacturacionChanges(hasRetencionChanged || hasDetraccionChanged);
   }, [porcentajeRetencionEditable, porcentajeDetraccionEditable, sale.facturacion]);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        if (!sale?.id) return;
+        const hist = await getBillingHistoryByOrdenCompraId(sale.id);
+        setBillingHistory(hist || []);
+      } catch (error) {
+        console.error('Error loading billing history:', error);
+      }
+    };
+    load();
+  }, [sale?.id]);
 
   const loadInitialData = async () => {
     setLoading(true);
@@ -1207,6 +1224,10 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
             </CardContent>
           </Card>
         )}
+
+        <Box sx={{ mt: 3 }}>
+          <BillingHistory billings={billingHistory} readOnly={true} />
+        </Box>
 
         {/* Gestiones - Grid 3x3 */}
         <Card sx={{ my: 3, width: '100%' }}>

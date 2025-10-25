@@ -53,6 +53,7 @@ import ProviderOrdersTableSkeleton from './ProviderOrdersTableSkeleton';
 import ProviderOrderFormSkeleton from '@/components/ProviderOrderFormSkeleton';
 import { BillingProps, BillingData, BillingUpdateData } from '@/services/billings/billings.d';
 import RefactorBillingModal from './RefactorBillingModal';
+import BillingHistory from '@/components/BillingHistory';
 
 interface BillingFormContentProps {
   sale: SaleProps;
@@ -242,23 +243,6 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
     setFacturacionId(null);
     form.resetFields();
   }, [form]);
-
-  const handleDeleteBilling = useCallback(async (billing: BillingProps) => {
-    try {
-      await deleteBilling(billing.id);
-      notification.success({
-        message: 'Facturación eliminada',
-        description: 'La facturación se ha eliminado correctamente'
-      });
-      await loadBillingHistory();
-    } catch (error) {
-      console.error('Error deleting billing:', error instanceof Error ? error.message : String(error));
-      notification.error({
-        message: 'Error al eliminar',
-        description: 'No se pudo eliminar la facturación'
-      });
-    }
-  }, [loadBillingHistory]);
 
   const handleViewFile = useCallback((fileUrl: string | null | undefined) => {
     if (fileUrl) {
@@ -605,236 +589,13 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
           </CardContent>
         </Card>
 
-        {/* Historial de Facturaciones - Carta Separada */}
-        <Card sx={{
-          border: '1px solid #e2e8f0',
-          borderRadius: 2,
-          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
-        }}>
-          <CardContent sx={{ p: 4 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Typography
-                variant="h6"
-                sx={{
-                  fontWeight: 600,
-                  color: '#667eea',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1
-                }}
-              >
-                <ReceiptIcon sx={{ fontSize: 24 }} />
-                Historial de Facturaciones
-              </Typography>
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={handleOpenCreateModal}
-                sx={{
-                  bgcolor: '#667eea',
-                  '&:hover': {
-                    bgcolor: '#5a67d8'
-                  }
-                }}
-              >
-                Nueva Facturación
-              </Button>
-            </Box>
-
-            {billingHistory.length > 0 ? (
-              <TableContainer sx={{
-                bgcolor: '#f8fafc',
-                borderRadius: 2,
-                maxHeight: '400px',
-                overflowY: 'auto'
-              }}>
-                <Table size="small">
-                  <TableHead>
-                    <TableRow sx={{ bgcolor: '#e2e8f0' }}>
-                      <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Factura</TableCell>
-                      <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Fecha</TableCell>
-                      <TableCell sx={{ fontWeight: 600, color: '#475569' }}>GRR</TableCell>
-                      <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Retención</TableCell>
-                      <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Detracción</TableCell>
-                      <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Forma Envío</TableCell>
-                      <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Archivos</TableCell>
-                      <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Motivo Refact</TableCell>
-                      <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Tipo</TableCell>
-                      <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Acciones</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {billingHistory.map((billing) => (
-                      <TableRow
-                        key={billing.id}
-                        sx={{
-                          '&:hover': {
-                            bgcolor: '#f1f5f9'
-                          }
-                        }}
-                      >
-                        <TableCell sx={{ color: '#475569', fontWeight: 500 }}>
-                          {billing.factura || 'Sin número'}
-                        </TableCell>
-                        <TableCell sx={{ color: '#64748b' }}>
-                          {billing.fechaFactura ? dayjs(billing.fechaFactura).format('DD/MM/YYYY') : 'Sin fecha'}
-                        </TableCell>
-                        <TableCell sx={{ color: '#64748b' }}>
-                          {billing.grr || 'Sin GRR'}
-                        </TableCell>
-                        <TableCell sx={{ color: '#64748b' }}>
-                          {billing.retencion ? `${billing.retencion}%` : '0%'}
-                        </TableCell>
-                        <TableCell sx={{ color: '#64748b' }}>
-                          {billing.detraccion ? `${billing.detraccion}%` : '0%'}
-                        </TableCell>
-                        <TableCell sx={{ color: '#64748b' }}>
-                          {billing.formaEnvioFactura || 'No especificado'}
-                        </TableCell>
-                        <TableCell sx={{ color: '#64748b' }}>
-                          <Box sx={{ display: 'flex', gap: 1 }}>
-                            {billing.facturaArchivo && (
-                              <Chip
-                                label="Factura"
-                                size="small"
-                                variant="outlined"
-                                sx={{ fontSize: '0.7rem', height: '20px' }}
-                                onClick={() => handleViewFile(billing.facturaArchivo)}
-                              />
-                            )}
-                            {billing.grrArchivo && (
-                              <Chip
-                                label="GRR"
-                                size="small"
-                                variant="outlined"
-                                sx={{ fontSize: '0.7rem', height: '20px' }}
-                                onClick={() => handleViewFile(billing.grrArchivo)}
-                              />
-                            )}
-                            {billing.notaCreditoArchivo && (
-                              <Chip
-                                label="Nota Crédito"
-                                size="small"
-                                variant="outlined"
-                                sx={{ fontSize: '0.7rem', height: '20px' }}
-                                onClick={() => handleViewFile(billing.notaCreditoArchivo)}
-                              />
-                            )}
-                            {!billing.facturaArchivo && !billing.grrArchivo && (
-                              <Typography variant="caption" sx={{ color: '#94a3b8' }}>
-                                Sin archivos
-                              </Typography>
-                            )}
-                          </Box>
-                        </TableCell>
-                        <TableCell sx={{ color: '#64748b' }}>
-                          {billing.motivoRefacturacion || 'Sin motivo'}
-                        </TableCell>
-                        <TableCell sx={{ color: '#64748b' }}>
-                          {billing.esRefacturacion ? 'Refacturación' : 'Facturación'}
-                        </TableCell>
-                        <TableCell>
-                          <Stack direction="row" spacing={1.5}>
-                            {/* <Tooltip title="Visualizar" arrow placement="top">
-                              <IconButton
-                                size="small"
-                                onClick={() => handleOpenViewModal(billing)}
-                                type="button"
-                                sx={{
-                                  border: '1px solid #10b981',
-                                  color: '#10b981',
-                                  '&:hover': {
-                                    bgcolor: 'rgba(16, 185, 129, 0.08)'
-                                  }
-                                }}
-                                aria-label="Visualizar facturación"
-                              >
-                                <VisibilityIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip> */}
-                            {!billing.esRefacturacion && (
-                              <>
-                                {/* <Tooltip title="Editar" arrow placement="top">
-                                  <IconButton
-                                    size="small"
-                                    onClick={() => handleOpenEditModal(billing)}
-                                    type="button"
-                                    sx={{
-                                      border: '1px solid #6366f1',
-                                      color: '#6366f1',
-                                      '&:hover': {
-                                        bgcolor: 'rgba(99, 102, 241, 0.08)'
-                                      }
-                                    }}
-                                    aria-label="Editar facturación"
-                                  >
-                                    <EditIcon fontSize="small" />
-                                  </IconButton>
-                                </Tooltip> */}
-                                <Tooltip title="Refacturar" arrow placement="top">
-                                  <IconButton
-                                    size="small"
-                                    onClick={() => {
-                                      handleOpenRefactorModal(billing);
-                                    }}
-                                    type="button"
-                                    sx={{
-                                      border: '1px solid #0ea5e9',
-                                      color: '#0ea5e9',
-                                      '&:hover': {
-                                        bgcolor: 'rgba(14, 165, 233, 0.1)'
-                                      }
-                                    }}
-                                    aria-label="Refacturar"
-                                  >
-                                    <RefreshIcon fontSize="small" />
-                                  </IconButton>
-                                </Tooltip>
-                              </>
-                            )}
-                            {/* <Tooltip title="Eliminar" arrow placement="top">
-                              <IconButton
-                                size="small"
-                                onClick={() => handleDeleteBilling(billing)}
-                                type="button"
-                                sx={{
-                                  border: '1px solid #ef4444',
-                                  color: '#ef4444',
-                                  '&:hover': {
-                                    bgcolor: 'rgba(239, 68, 68, 0.1)'
-                                  }
-                                }}
-                                aria-label="Eliminar"
-                              >
-                                <DeleteIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip> */}
-                          </Stack>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            ) : (
-              <Box sx={{
-                textAlign: 'center',
-                py: 4,
-                bgcolor: '#f8fafc',
-                borderRadius: 2,
-                border: '2px dashed #e2e8f0'
-              }}>
-                <ReceiptIcon sx={{ fontSize: 48, color: '#cbd5e1', mb: 2 }} />
-                <Typography variant="h6" sx={{ color: '#64748b', mb: 1 }}>
-                  No hay facturaciones
-                </Typography>
-                <Typography variant="body2" sx={{ color: '#94a3b8', mb: 3 }}>
-                  Complete el formulario para crear su primera facturación
-                </Typography>
-              </Box>
-            )}
-          </CardContent>
-        </Card>
+        <BillingHistory
+          billings={billingHistory}
+          readOnly={false}
+          onCreateNew={handleOpenCreateModal}
+          onRefactor={handleOpenRefactorModal}
+          onViewFile={handleViewFile}
+        />
       </>
     );
   });
