@@ -138,11 +138,22 @@ const TrackingsPage = () => {
           {activeTab === 2 && (
             <Box sx={{ py: 3 }}>
               <Space direction="horizontal" style={{ marginBottom: 12 }}>
-                <DatePicker.RangePicker
-                  onChange={(values) => {
-                    if (!values || values.length !== 2) return;
-                    setDateRange([values[0], values[1]]);
+                <DatePicker
+                  value={dateRange[0]}
+                  onChange={(value) => {
+                    if (!value) return;
+                    setDateRange([value, dateRange[1]]);
                   }}
+                  format="DD/MM/YYYY"
+                  allowClear={false}
+                />
+                <DatePicker
+                  value={dateRange[1]}
+                  onChange={(value) => {
+                    if (!value) return;
+                    setDateRange([dateRange[0], value]);
+                  }}
+                  format="DD/MM/YYYY"
                   allowClear={false}
                 />
               </Space>
