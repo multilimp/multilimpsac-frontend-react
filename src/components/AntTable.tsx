@@ -201,6 +201,9 @@ const AntTable = <T,>(props: AntTablePropsProps<T>) => {
     return Math.max(base, 1200);
   }, [columnsFiltered]);
 
+  // Merge horizontal scroll with consumer-provided vertical scroll (if any)
+  const finalScroll = useMemo(() => ({ x: scrollX, ...(rest.scroll ?? {}) }), [scrollX, rest.scroll]);
+
   const handleDownloadCSV = () => {
     const headers = columns.map((item) => ({ label: String(item.title), key: String(item.dataIndex) }));
 
@@ -315,9 +318,9 @@ const AntTable = <T,>(props: AntTablePropsProps<T>) => {
 
       <Paper sx={{ border: '1px solid #f2f2f2' }}>
         <Table
-          columns={columnsFiltered as ColumnType<T>[]}
+          columns={columnsWithFixed as ColumnType<T>[]}
           dataSource={filteredData}
-          scroll={{ x: scrollX }}
+          scroll={finalScroll}
           sticky
           rowKey="id"
           size='small'
