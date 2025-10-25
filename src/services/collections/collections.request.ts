@@ -93,12 +93,3 @@ export const updateCollection = async (
   }
 };
 
-export const deleteCollection = async (id: number): Promise<void> => {
-  try {
-    // Por ahora solo loggeamos hasta implementar endpoint de eliminación
-    console.log('Eliminando collection:', id);
-  } catch (error) {
-    console.error('Error al eliminar collection:', error);
-    throw error;
-  }
-};

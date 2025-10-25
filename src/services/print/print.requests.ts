@@ -30,6 +30,16 @@ export interface CargosEntregaData {
       fechaProgramada: string | null;
       cartaCci?: string | null;
       cartaGarantia?: string | null;
+      ordenCompraFisica?: string | null;
+      ordenCompraElectronica?: string | null;
+      facturasArchivo?: string[];
+      grrsArchivo?: string[];
+      documentosFacturacion?: Array<{
+        facturaNumero?: string | null;
+        facturaArchivo?: string | null;
+        grrNumero?: string | null;
+        grrArchivo?: string | null;
+      }>;
       productos: Array<{
         codigo: string;
         descripcion: string;

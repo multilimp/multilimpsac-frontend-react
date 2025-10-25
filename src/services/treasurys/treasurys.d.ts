@@ -15,7 +15,3 @@ export const getTreasurys = async (): Promise<Array<TreasurysProps>> => {
   const res = await apiClient.get('/treasurys');
   return res.data;
 };
-
-export const postTreasury = () => {
-  console.log('CREAR');
-};

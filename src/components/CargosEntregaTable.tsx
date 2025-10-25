@@ -53,10 +53,20 @@ interface OpRow {
     fechaProgramada: string | null;
     cartaCci?: string | null;
     cartaGarantia?: string | null;
+    ordenCompraFisica?: string | null;
+    ordenCompraElectronica?: string | null;
+    facturasArchivo?: string[];
+    grrsArchivo?: string[];
+    documentosFacturacion?: Array<{
+      facturaNumero?: string | null;
+      facturaArchivo?: string | null;
+      grrNumero?: string | null;
+      grrArchivo?: string | null;
+    }>;
     productos: Array<{
-        codigo: string;
-        descripcion: string;
-        cantidad: number;
+      codigo: string;
+      descripcion: string;
+      cantidad: number;
     }>;
     proveedor: {
         razonSocial: string;
@@ -118,6 +128,7 @@ const CargosEntregaTable: React.FC<CargosEntregaTableProps> = ({ fechaInicio, fe
             try {
                 setLoading(true);
                 const result = await getCargosEntregaData(fechaInicio, fechaFin);
+                console.log(result);
                 setData(result);
             } catch (error) {
                 console.error('Error al cargar datos de Reporte de Programación:', error);
@@ -183,8 +194,8 @@ const CargosEntregaTable: React.FC<CargosEntregaTableProps> = ({ fechaInicio, fe
     if (loading) {
         return (
             <Card>
-                <CardContent>
-                    <Typography variant="h6" align="center">
+                <CardContent sx={{ py: 1.5 }}>
+                    <Typography variant="body2" align="center">
                         Cargando datos de Reporte de Programación...
                     </Typography>
                 </CardContent>
@@ -195,8 +206,8 @@ const CargosEntregaTable: React.FC<CargosEntregaTableProps> = ({ fechaInicio, fe
     if (!data || !data.fechasConCargos || data.fechasConCargos.length === 0) {
         return (
             <Card>
-                <CardContent>
-                    <Typography variant="h6" align="center" color="text.secondary">
+                <CardContent sx={{ py: 1.5 }}>
+                    <Typography variant="body2" align="center" color="text.secondary">
                         No se encontraron datos de Reporte de Programación para el período seleccionado
                     </Typography>
                 </CardContent>
@@ -207,15 +218,17 @@ const CargosEntregaTable: React.FC<CargosEntregaTableProps> = ({ fechaInicio, fe
     return (
         <Card>
             <CardHeader
+                sx={{ p: 4 }}
                 title={
-                    <Box display="flex" alignItems="center" gap={1}>
+                    <Box display="flex" alignItems="center" gap={0.75}>
                         <LocalShipping color="primary" />
-                        <Typography variant="h6">
+                        <Typography variant="subtitle1">
                             Reporte de Programación
                         </Typography>
                     </Box>
                 }
                 subheader={`Período: ${data.fechaInicio} al ${data.fechaFin}`}
+                subheaderTypographyProps={{ variant: 'caption' }}
                 action={
                     <Button
                         variant="contained"
@@ -229,9 +242,9 @@ const CargosEntregaTable: React.FC<CargosEntregaTableProps> = ({ fechaInicio, fe
                     </Button>
                 }
             />
-            <CardContent>
+            <CardContent sx={{ pt: 1.5, px: 2 }}>
                 {/* Campo de búsqueda */}
-                <Box sx={{ mb: 3 }}>
+                <Box sx={{ mb: 2 }}>
                     <TextField
                         fullWidth
                         variant="outlined"
@@ -266,13 +279,13 @@ const CargosEntregaTable: React.FC<CargosEntregaTableProps> = ({ fechaInicio, fe
                 </Box>
 
                 {filteredData && filteredData.fechasConCargos.map((fechaGroup, fechaIndex) => (
-                    <Box key={fechaIndex} mb={4}>
+                    <Box key={fechaIndex} mb={3}>
                         <Typography
-                            variant="h6"
+                            variant="subtitle1"
                             sx={{
-                                mb: 2,
-                                pb: 1,
-                                borderBottom: '2px solid',
+                                mb: 1.5,
+                                pb: 0.5,
+                                borderBottom: '1px solid',
                                 borderColor: 'primary.main',
                                 color: 'primary.main'
                             }}
@@ -284,13 +297,13 @@ const CargosEntregaTable: React.FC<CargosEntregaTableProps> = ({ fechaInicio, fe
                             <Table size="small">
                                 <TableHead>
                                     <TableRow sx={{ bgcolor: 'grey.50' }}>
-                                        <TableCell sx={{ fontWeight: 'bold', width: 50 }}></TableCell>
-                                        <TableCell sx={{ fontWeight: 'bold' }}>Código OP</TableCell>
-                                        <TableCell sx={{ fontWeight: 'bold' }}>Fecha Programada</TableCell>
-                                        <TableCell sx={{ fontWeight: 'bold' }}>Proveedor</TableCell>
-                                        <TableCell sx={{ fontWeight: 'bold' }}>Transporte</TableCell>
-                                        <TableCell sx={{ fontWeight: 'bold' }}>Destino</TableCell>
-                                        <TableCell sx={{ fontWeight: 'bold', textAlign: 'right' }}>Flete</TableCell>
+                                        <TableCell sx={{ fontWeight: 'bold', width: 50, py: 0.75 }}></TableCell>
+                                        <TableCell sx={{ fontWeight: 'bold', py: 0.75 }}>Código OP</TableCell>
+                                        <TableCell sx={{ fontWeight: 'bold', py: 0.75 }}>Fecha Programada</TableCell>
+                                        <TableCell sx={{ fontWeight: 'bold', py: 0.75 }}>Proveedor</TableCell>
+                                        <TableCell sx={{ fontWeight: 'bold', py: 0.75 }}>Transporte</TableCell>
+                                        <TableCell sx={{ fontWeight: 'bold', py: 0.75 }}>Destino</TableCell>
+                                        <TableCell sx={{ fontWeight: 'bold', textAlign: 'right', py: 0.75 }}>Flete</TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
@@ -299,7 +312,8 @@ const CargosEntregaTable: React.FC<CargosEntregaTableProps> = ({ fechaInicio, fe
                                             <TableRow
                                                 sx={{
                                                     '&:hover': { bgcolor: 'grey.50' },
-                                                    cursor: 'pointer'
+                                                    cursor: 'pointer',
+                                                    '& td': { py: 0.75 }
                                                 }}
                                                 onClick={() => toggleRowExpansion(op.id)}
                                             >
@@ -366,8 +380,8 @@ const CargosEntregaTable: React.FC<CargosEntregaTableProps> = ({ fechaInicio, fe
                                             <TableRow>
                                                 <TableCell colSpan={10} sx={{ py: 0 }}>
                                                     <Collapse in={expandedRows.has(op.id)} timeout="auto" unmountOnExit>
-                                                        <Box sx={{ p: 2, bgcolor: 'grey.25' }}>
-                                                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+                                                        <Box sx={{ p: 1.5, bgcolor: 'grey.25' }}>
+                                                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
                                                                 {/* Productos */}
                                                                 <Box sx={{ flex: '1 1 45%', minWidth: '300px' }}>
                                                                     <Card variant="outlined" sx={{ height: 'fit-content' }}>
@@ -378,13 +392,13 @@ const CargosEntregaTable: React.FC<CargosEntregaTableProps> = ({ fechaInicio, fe
                                                                                     <Typography variant="subtitle2">Productos</Typography>
                                                                                 </Box>
                                                                             }
-                                                                            sx={{ pb: 1 }}
+                                                                            sx={{ py: 0.75, px: 1.5 }}
                                                                         />
-                                                                        <CardContent sx={{ pt: 0 }}>
+                                                                        <CardContent sx={{ pt: 0, pb: 1, px: 1.5 }}>
                                                                             {op.productos && op.productos.length > 0 ? (
                                                                                 <Stack spacing={1}>
                                                                                     {op.productos.map((producto, idx) => (
-                                                                                        <Box key={idx} sx={{ p: 1, bgcolor: 'grey.50', borderRadius: 1 }}>
+                                                                                        <Box key={idx} sx={{ p: 0.75, bgcolor: 'grey.50', borderRadius: 1 }}>
                                                                                             <Typography variant="body2" fontWeight="medium">
                                                                                                 {producto.codigo} - {producto.descripcion}
                                                                                             </Typography>
@@ -413,9 +427,9 @@ const CargosEntregaTable: React.FC<CargosEntregaTableProps> = ({ fechaInicio, fe
                                                                                     <Typography variant="subtitle2">Transporte</Typography>
                                                                                 </Box>
                                                                             }
-                                                                            sx={{ pb: 1 }}
+                                                                            sx={{ py: 0.75, px: 1.5 }}
                                                                         />
-                                                                        <CardContent sx={{ pt: 0 }}>
+                                                                        <CardContent sx={{ pt: 0, pb: 1, px: 1.5 }}>
                                                                             {op.transporteAsignado ? (
                                                                                 <Stack spacing={1}>
                                                                                     <Box>
@@ -477,10 +491,10 @@ const CargosEntregaTable: React.FC<CargosEntregaTableProps> = ({ fechaInicio, fe
                                                                                     <Typography variant="subtitle2">Destino de Entrega</Typography>
                                                                                 </Box>
                                                                             }
-                                                                            sx={{ pb: 1 }}
+                                                                            sx={{ py: 0.75, px: 1.5 }}
                                                                         />
-                                                                        <CardContent sx={{ pt: 0 }}>
-                                                                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                                                                        <CardContent sx={{ pt: 0, pb: 1, px: 1.5 }}>
+                                                                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
                                                                                 <Box sx={{ flex: '1 1 45%', minWidth: '250px' }}>
                                                                                     <Typography variant="body2" fontWeight="medium">
                                                                                         Tipo: {op.destino.tipo}
@@ -528,94 +542,121 @@ const CargosEntregaTable: React.FC<CargosEntregaTableProps> = ({ fechaInicio, fe
                                                                     </Card>
                                                                 </Box>
 
-                                                                {/* Documentos: Carta CCI y Carta de Garantía */}
-                                                                {(op.cartaCci || op.cartaGarantia) && (
-                                                                    <Box sx={{ flex: '1 1 100%', minWidth: '300px' }}>
-                                                                        <Card variant="outlined">
-                                                                            <CardHeader
-                                                                                title={
-                                                                                    <Box display="flex" alignItems="center" gap={1}>
-                                                                                        <Description fontSize="small" />
-                                                                                        <Typography variant="subtitle2">Documentos</Typography>
-                                                                                    </Box>
-                                                                                }
-                                                                                sx={{ pb: 1 }}
-                                                                            />
-                                                                            <CardContent sx={{ pt: 0 }}>
-                                                                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-                                                                                    {op.cartaCci && (
-                                                                                        <Box sx={{ flex: '1 1 45%', minWidth: '200px' }}>
-                                                                                            <Box sx={{
-                                                                                                display: 'flex',
-                                                                                                alignItems: 'center',
-                                                                                                gap: 1,
-                                                                                                p: 1.5,
-                                                                                                bgcolor: 'grey.50',
-                                                                                                borderRadius: 1,
-                                                                                                border: '1px solid',
-                                                                                                borderColor: 'grey.300'
-                                                                                            }}>
-                                                                                                <PictureAsPdf color="error" />
-                                                                                                <Box sx={{ flex: 1 }}>
-                                                                                                    <Typography variant="body2" fontWeight="medium">
-                                                                                                        Carta CCI
-                                                                                                    </Typography>
-                                                                                                    <Button
-                                                                                                        size="small"
-                                                                                                        variant="text"
-                                                                                                        color="primary"
-                                                                                                        href={op.cartaCci}
-                                                                                                        target="_blank"
-                                                                                                        sx={{ p: 0, minWidth: 'auto', textTransform: 'none' }}
-                                                                                                    >
-                                                                                                        Ver documento
-                                                                                                    </Button>
-                                                                                                </Box>
-                                                                                            </Box>
-                                                                                        </Box>
-                                                                                    )}
-                                                                                    {op.cartaGarantia && (
-                                                                                        <Box sx={{ flex: '1 1 45%', minWidth: '200px' }}>
-                                                                                            <Box sx={{
-                                                                                                display: 'flex',
-                                                                                                alignItems: 'center',
-                                                                                                gap: 1,
-                                                                                                p: 1.5,
-                                                                                                bgcolor: 'grey.50',
-                                                                                                borderRadius: 1,
-                                                                                                border: '1px solid',
-                                                                                                borderColor: 'grey.300'
-                                                                                            }}>
-                                                                                                <PictureAsPdf color="error" />
-                                                                                                <Box sx={{ flex: 1 }}>
-                                                                                                    <Typography variant="body2" fontWeight="medium">
-                                                                                                        Carta de Garantía
-                                                                                                    </Typography>
-                                                                                                    <Button
-                                                                                                        size="small"
-                                                                                                        variant="text"
-                                                                                                        color="primary"
-                                                                                                        href={op.cartaGarantia}
-                                                                                                        target="_blank"
-                                                                                                        sx={{ p: 0, minWidth: 'auto', textTransform: 'none' }}
-                                                                                                    >
-                                                                                                        Ver documento
-                                                                                                    </Button>
-                                                                                                </Box>
-                                                                                            </Box>
-                                                                                        </Box>
-                                                                                    )}
+
+                                                                {/* Documentos */}
+                                                                <Box sx={{ flex: '1 1 100%', minWidth: '300px' }}>
+                                                                    <Card variant="outlined">
+                                                                        <CardHeader
+                                                                            title={
+                                                                                <Box display="flex" alignItems="center" gap={1}>
+                                                                                    <Description fontSize="small" />
+                                                                                    <Typography variant="subtitle2">Documentos</Typography>
                                                                                 </Box>
-                                                                            </CardContent>
-                                                                        </Card>
-                                                                    </Box>
-                                                                )}
+                                                                            }
+                                                                            sx={{ py: 0.75, px: 1.5 }}
+                                                                        />
+                                                                        <CardContent sx={{ pt: 0, pb: 1, px: 1.5 }}>
+                                                                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
+                                                                                {(op.ordenCompraFisica || op.ocf) && (
+                                                                                    <Box sx={{ flex: '1 1 45%', minWidth: '200px' }}>
+                                                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1, bgcolor: 'grey.50', borderRadius: 1, border: '1px solid', borderColor: 'grey.300' }}>
+                                                                                            <PictureAsPdf color="error" />
+                                                                                            <Box sx={{ flex: 1 }}>
+                                                                                                <Typography variant="body2" fontWeight="medium">OC Física</Typography>
+                                                                                                <Button size="small" variant="text" color="primary" href={op.ordenCompraFisica || op.ocf!} target="_blank" sx={{ p: 0, minWidth: 'auto', textTransform: 'none' }}>
+                                                                                                    Ver documento
+                                                                                                </Button>
+                                                                                            </Box>
+                                                                                        </Box>
+                                                                                    </Box>
+                                                                                )}
+                                                                                {op.ordenCompraElectronica && (
+                                                                                    <Box sx={{ flex: '1 1 45%', minWidth: '200px' }}>
+                                                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1, bgcolor: 'grey.50', borderRadius: 1, border: '1px solid', borderColor: 'grey.300' }}>
+                                                                                            <PictureAsPdf color="error" />
+                                                                                            <Box sx={{ flex: 1 }}>
+                                                                                                <Typography variant="body2" fontWeight="medium">OC Electrónica</Typography>
+                                                                                                <Button size="small" variant="text" color="primary" href={op.ordenCompraElectronica} target="_blank" sx={{ p: 0, minWidth: 'auto', textTransform: 'none' }}>
+                                                                                                    Ver documento
+                                                                                                </Button>
+                                                                                            </Box>
+                                                                                        </Box>
+                                                                                    </Box>
+                                                                                )}
+                                                                                {op.documentosFacturacion && op.documentosFacturacion.length > 0 && op.documentosFacturacion.map((doc, idx) => (
+                                                                                    <Box key={`df-${idx}`} sx={{ flex: '1 1 100%', minWidth: '200px', display: 'flex', gap: 1.5 }}>
+                                                                                        {(doc.grrNumero || doc.grrArchivo) && (
+                                                                                            <Box sx={{ flex: '1 1 45%', minWidth: '200px' }}>
+                                                                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1, bgcolor: 'grey.50', borderRadius: 1, border: '1px solid', borderColor: 'grey.300' }}>
+                                                                                                    <PictureAsPdf color="error" />
+                                                                                                    <Box sx={{ flex: 1 }}>
+                                                                                                        <Typography variant="body2" fontWeight="medium">GRR {doc.grrNumero || idx + 1}</Typography>
+                                                                                                        {doc.grrArchivo ? (
+                                                                                                            <Button size="small" variant="text" color="primary" href={doc.grrArchivo} target="_blank" sx={{ p: 0, minWidth: 'auto', textTransform: 'none' }}>
+                                                                                                                Ver documento
+                                                                                                            </Button>
+                                                                                                        ) : (
+                                                                                                            <Typography variant="caption" color="text.secondary">Sin archivo</Typography>
+                                                                                                        )}
+                                                                                                    </Box>
+                                                                                                </Box>
+                                                                                            </Box>
+                                                                                        )}
+                                                                                        {(doc.facturaNumero || doc.facturaArchivo) && (
+                                                                                            <Box sx={{ flex: '1 1 45%', minWidth: '200px' }}>
+                                                                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1, bgcolor: 'grey.50', borderRadius: 1, border: '1px solid', borderColor: 'grey.300' }}>
+                                                                                                    <PictureAsPdf color="error" />
+                                                                                                    <Box sx={{ flex: 1 }}>
+                                                                                                        <Typography variant="body2" fontWeight="medium">Factura {doc.facturaNumero || idx + 1}</Typography>
+                                                                                                        {doc.facturaArchivo ? (
+                                                                                                            <Button size="small" variant="text" color="primary" href={doc.facturaArchivo} target="_blank" sx={{ p: 0, minWidth: 'auto', textTransform: 'none' }}>
+                                                                                                                Ver documento
+                                                                                                            </Button>
+                                                                                                        ) : (
+                                                                                                            <Typography variant="caption" color="text.secondary">Sin archivo</Typography>
+                                                                                                        )}
+                                                                                                    </Box>
+                                                                                                </Box>
+                                                                                            </Box>
+                                                                                        )}
+                                                                                    </Box>
+                                                                                ))}
+                                                                                {op.cartaCci && (
+                                                                                    <Box sx={{ flex: '1 1 45%', minWidth: '200px' }}>
+                                                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1, bgcolor: 'grey.50', borderRadius: 1, border: '1px solid', borderColor: 'grey.300' }}>
+                                                                                            <PictureAsPdf color="error" />
+                                                                                            <Box sx={{ flex: 1 }}>
+                                                                                                <Typography variant="body2" fontWeight="medium">CCI</Typography>
+                                                                                                <Button size="small" variant="text" color="primary" href={op.cartaCci} target="_blank" sx={{ p: 0, minWidth: 'auto', textTransform: 'none' }}>
+                                                                                                    Ver documento
+                                                                                                </Button>
+                                                                                            </Box>
+                                                                                        </Box>
+                                                                                    </Box>
+                                                                                )}
+                                                                                {op.cartaGarantia && (
+                                                                                    <Box sx={{ flex: '1 1 45%', minWidth: '200px' }}>
+                                                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1, bgcolor: 'grey.50', borderRadius: 1, border: '1px solid', borderColor: 'grey.300' }}>
+                                                                                            <PictureAsPdf color="error" />
+                                                                                            <Box sx={{ flex: 1 }}>
+                                                                                                <Typography variant="body2" fontWeight="medium">Garantía</Typography>
+                                                                                                <Button size="small" variant="text" color="primary" href={op.cartaGarantia} target="_blank" sx={{ p: 0, minWidth: 'auto', textTransform: 'none' }}>
+                                                                                                    Ver documento
+                                                                                                </Button>
+                                                                                            </Box>
+                                                                                        </Box>
+                                                                                    </Box>
+                                                                                )}
+                                                                            </Box>
+                                                                        </CardContent>
+                                                                    </Card>
+                                                                </Box>
 
                                                                 {/* Observaciones */}
                                                                 {op.observacion && (
                                                                     <Box sx={{ flex: '1 1 100%', minWidth: '300px' }}>
                                                                         <Card variant="outlined">
-                                                                            <CardContent>
+                                                                            <CardContent sx={{ py: 1, px: 1.5 }}>
                                                                                 <Typography variant="body2" fontWeight="medium" gutterBottom>
                                                                                     Observaciones:
                                                                                 </Typography>

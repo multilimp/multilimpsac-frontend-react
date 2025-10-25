@@ -70,7 +70,7 @@ const Transports = () => {
         entidadNombre={pagosModalData.entidad?.razonSocial || ''}
         onSuccess={() => {
           // Aquí podrías recargar datos si es necesario
-          console.log('Pago registrado para transporte:', pagosModalData.entidad?.id);
+          obtainTransports();
         }}
       />
     </PageContent>

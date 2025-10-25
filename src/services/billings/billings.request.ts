@@ -167,18 +167,9 @@ export const createOrUpdateBilling = async (ordenCompraId: number, billingData: 
 // Función para obtener historial de facturaciones por orden de compra ID
 export const getBillingHistoryByOrdenCompraId = async (ordenCompraId: number): Promise<BillingProps[]> => {
   try {
-    console.log('🔍 Backend: Solicitando historial para orden:', ordenCompraId);
-    // Cambiar a usar el endpoint directo de facturaciones
+
     const response = await apiClient.get(`/facturacion/orden-compra/${ordenCompraId}`);
     const facturaciones = response.data;
-    console.log('📦 Backend: Facturaciones encontradas:', facturaciones);
-
-    if (!Array.isArray(facturaciones)) {
-      console.log('⚠️ Backend: No es array o no hay facturaciones');
-      return [];
-    }
-
-    console.log('✅ Backend: Procesando', facturaciones.length, 'facturaciones');
 
     // Necesitamos obtener la información de la orden de compra para completar los datos
     const ordenResponse = await apiClient.get(`/ordenes-compra/${ordenCompraId}?include=cliente,empresa,contactoCliente`);

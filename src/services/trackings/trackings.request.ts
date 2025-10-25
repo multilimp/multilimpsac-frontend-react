@@ -79,16 +79,6 @@ export const updateTracking = async (
   }
 };
 
-export const deleteTracking = async (id: number): Promise<void> => {
-  try {
-    // Por ahora solo loggeamos hasta implementar endpoint de eliminación
-    console.log('Eliminando tracking:', id);
-  } catch (error) {
-    console.error('Error al eliminar tracking:', error);
-    throw error;
-  }
-};
-
 // Servicios específicos para TrackingsOrdersPage
 export const getOrdenCompraByTrackingId = async (trackingId: number) => {
   try {
