@@ -658,6 +658,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                       <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Detracción</TableCell>
                       <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Forma Envío</TableCell>
                       <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Archivos</TableCell>
+                      <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Motivo Refact</TableCell>
                       <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Tipo</TableCell>
                       <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Acciones</TableCell>
                     </TableRow>
@@ -710,6 +711,15 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                                 onClick={() => handleViewFile(billing.grrArchivo)}
                               />
                             )}
+                            {billing.notaCreditoArchivo && (
+                              <Chip
+                                label="Nota Crédito"
+                                size="small"
+                                variant="outlined"
+                                sx={{ fontSize: '0.7rem', height: '20px' }}
+                                onClick={() => handleViewFile(billing.notaCreditoArchivo)}
+                              />
+                            )}
                             {!billing.facturaArchivo && !billing.grrArchivo && (
                               <Typography variant="caption" sx={{ color: '#94a3b8' }}>
                                 Sin archivos
@@ -718,11 +728,14 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                           </Box>
                         </TableCell>
                         <TableCell sx={{ color: '#64748b' }}>
+                          {billing.motivoRefacturacion || 'Sin motivo'}
+                        </TableCell>
+                        <TableCell sx={{ color: '#64748b' }}>
                           {billing.esRefacturacion ? 'Refacturación' : 'Facturación'}
                         </TableCell>
                         <TableCell>
                           <Stack direction="row" spacing={1.5}>
-                            <Tooltip title="Visualizar" arrow placement="top">
+                            {/* <Tooltip title="Visualizar" arrow placement="top">
                               <IconButton
                                 size="small"
                                 onClick={() => handleOpenViewModal(billing)}
@@ -738,7 +751,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                               >
                                 <VisibilityIcon fontSize="small" />
                               </IconButton>
-                            </Tooltip>
+                            </Tooltip> */}
                             {!billing.esRefacturacion && (
                               <>
                                 {/* <Tooltip title="Editar" arrow placement="top">
