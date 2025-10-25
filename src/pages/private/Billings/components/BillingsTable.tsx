@@ -1,11 +1,13 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Button, Box, IconButton, Tooltip } from '@mui/material';
-import { Visibility, PictureAsPdf } from '@mui/icons-material';
+import { Visibility, PictureAsPdf, Contacts } from '@mui/icons-material';
 import { useNavigate, Link } from 'react-router-dom';
 import { formatCurrency, formattedDate } from '@/utils/functions';
 import AntTable, { AntColumnType } from '@/components/AntTable';
 import { SaleProps } from '@/services/sales/sales';
 import { ESTADO_ROL_COLORS, ESTADO_ROL_LABELS } from '@/utils/constants';
+import ContactsDrawer from '@/components/ContactsDrawer';
+import { ContactTypeEnum } from '@/services/contacts/contacts.enum';
 
 interface BillingsTableProps {
   data: SaleProps[];
@@ -16,6 +18,15 @@ interface BillingsTableProps {
 const defaultText = '-';
 
 const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }) => {
+  const [contactsDrawerOpen, setContactsDrawerOpen] = useState(false);
+  const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
+  const [selectedTitle, setSelectedTitle] = useState<string>('');
+
+  const handleOpenContactsDrawer = (clientId: number, title: string) => {
+    setSelectedClientId(clientId);
+    setSelectedTitle(title);
+    setContactsDrawerOpen(true);
+  };
 
   const getStatusBackgroundColor = (status: string | null | undefined) => {
     if (!status || typeof status !== 'string') {
@@ -140,54 +151,34 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }
     { title: 'RUC Cliente', dataIndex: 'ruc_cliente', width: 150, sort: true, filter: true },
     { title: 'RUC Empresa', dataIndex: 'ruc_empresa', width: 150, sort: true, filter: true },
     { title: 'Razón Social Empresa', dataIndex: 'razon_social_empresa', width: 200, sort: true, filter: true },
-    { title: 'Contacto', dataIndex: 'contacto', width: 200, sort: true, filter: true },
-    { title: 'Fecha Registro', dataIndex: 'fecha_formalizacion', width: 150, sort: true, filter: true },
-    { title: 'Fecha Programación', dataIndex: 'fecha_programacion', width: 150, sort: true, filter: true },
+    {
+      title: 'Contactos',
+      dataIndex: 'id',
+      width: 120,
+      align: 'center',
+      render: (_: unknown, record) => (
+        <Tooltip title="Ver contactos del cliente">
+          <Button
+            variant="outlined"
+            startIcon={<Contacts />}
+            onClick={() => handleOpenContactsDrawer(record.rawdata.clienteId, `${record.razon_social_cliente} - ${record.ruc_cliente}`)}
+            size="small"
+            color="primary"
+          >
+            Ver
+          </Button>
+        </Tooltip>
+      ),
+    },
+    { title: 'Fecha Form', dataIndex: 'fecha_formalizacion', width: 150, sort: true, filter: true },
+    { title: 'Fecha Max Entrega', dataIndex: 'fecha_max_entrega', width: 150, sort: true, filter: true },
+
     { title: 'Fecha Entrega OC', dataIndex: 'fecha_entrega_oc', width: 150, sort: true, filter: true },
     {
-      title: 'Fuera de plazo',
-      dataIndex: 'fuera_plazo',
-      width: 140,
-      align: 'center',
-      render: (_: unknown, record: BillingsRow) => {
-        const entrega = record.rawdata?.fechaEntregaOc || record.rawdata?.fechaEntrega;
-        const max = record.rawdata?.fechaMaxForm;
-        if (!entrega || !max) {
-          return <span>-</span>;
-        }
-        const entregaTime = new Date(entrega).getTime();
-        const maxTime = new Date(max).getTime();
-        if (Number.isNaN(entregaTime) || Number.isNaN(maxTime)) {
-          return <span>-</span>;
-        }
-        const fuera = entregaTime > maxTime;
-        return (
-          <Box
-            sx={{
-              bgcolor: fuera ? '#ef4444' : '#22c55e',
-              color: '#fff',
-              borderRadius: '4px',
-              px: 1.25,
-              py: 0.5,
-              fontWeight: 600,
-              fontSize: '0.75rem',
-              textAlign: 'center',
-            }}
-          >
-            {fuera ? 'Sí' : 'No'}
-          </Box>
-        );
-      },
+      title: 'Monto Venta', dataIndex: 'monto_venta', width: 150, sort: true, filter: true,
     },
-    { title: 'Monto Venta', dataIndex: 'monto_venta', width: 130, sort: true, filter: true },
-    { title: 'Fecha Factura', dataIndex: 'fecha_factura', width: 150, sort: true, filter: true },
-    { title: 'Etapa SIAF', dataIndex: 'etapa_siaf', width: 150, sort: true, filter: true },
-    { title: 'GRR', dataIndex: 'grr', width: 100, sort: true, filter: true },
     {
-      title: 'OCE',
-      dataIndex: 'oce',
-      width: 80,
-      align: 'center',
+      title: 'OCE', dataIndex: 'oce', width: 80, sort: true, filter: true, align: 'center',
       render: (value) =>
         value ? (
           <Tooltip title="Ver Orden de Compra Electrónica" placement="top">
@@ -266,6 +257,9 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }
           <Box sx={{ color: '#94a3b8', fontSize: '0.75rem' }}>-</Box>
         ),
     },
+    { title: 'Fecha Recepción', dataIndex: 'fecha_recepcion', width: 120, sort: true, filter: true },
+    { title: 'Fecha Programación', dataIndex: 'fecha_programacion', width: 150, sort: true, filter: true },
+    { title: 'Etapa SIAF', dataIndex: 'etapa_siaf', width: 150, sort: true, filter: true },
     {
       title: 'Estado Facturación',
       dataIndex: 'estado_facturacion',
@@ -306,15 +300,26 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }
   ];
 
   return (
-    <AntTable
-      data={formattedData}
-      columns={columns}
-      loading={loading}
-      scroll={{ x: 2650 }}
-      size="small"
-      onReload={onReload}
-      rowKey="id"
-    />
+    <>
+      <AntTable
+        data={formattedData}
+        columns={columns}
+        loading={loading}
+        scroll={{ x: 2650 }}
+        size="small"
+        onReload={onReload}
+        rowKey="id"
+      />
+      {contactsDrawerOpen && selectedClientId && (
+        <ContactsDrawer
+          handleClose={() => setContactsDrawerOpen(false)}
+          tipo={ContactTypeEnum.CLIENTE}
+          referenceId={selectedClientId}
+          title={selectedTitle}
+          readOnly={true}
+        />
+      )}
+    </>
   );
 };
 

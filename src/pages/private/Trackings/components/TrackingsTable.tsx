@@ -1,10 +1,14 @@
 import AntTable, { AntColumnType } from '@/components/AntTable';
 import { SaleProps } from '@/services/sales/sales';
 import { formatCurrency, formattedDate } from '@/utils/functions';
-import { IconButton, Button, Box, Chip } from '@mui/material';
-import { PictureAsPdf, Visibility } from '@mui/icons-material';
+import { IconButton, Button, Box, Chip, Tooltip } from '@mui/material';
+import { PictureAsPdf, Visibility, Contacts } from '@mui/icons-material';
 import { useNavigate, Link } from 'react-router-dom';
 import { ESTADOS_SEGUIMIENTO, ESTADO_SEGUIMIENTO_COLORS, EstadoSeguimientoType } from '@/utils/constants';
+import { useState } from 'react';
+import ContactsDrawer from '@/components/ContactsDrawer';
+import { ContactTypeEnum } from '@/services/contacts/contacts.enum';
+import { calcularUtilidadCompleta } from '@/utils/utilidadCalculator';
 
 interface TrackingsTableProps {
   data: Array<SaleProps>;
@@ -21,36 +25,24 @@ interface TrackingsDataTable {
   clienteNombre: string;
   empresaRuc: string;
   empresaNombre: string;
-  contactoCargo: string;
-  contactoNombre: string;
-  catalogoNombre: string;
-  catalogoDescripcion: string;
-  fechaEmision: string;
   fechaMaxForm: string;
+  fechaPeruCompras: string;
+  fechaEntregaOc: string;
   montoVenta: string;
-  cue: string;
-  departamentoEntrega?: string;
+  departamentoCliente?: string;
   estadoRolSeguimiento: EstadoSeguimientoType;
 }
 
 const defaultText = '';
 export const TrackingsTable = ({ data, loading, onRowClick, onReload }: TrackingsTableProps) => {
-  const navigate = useNavigate();
+  const [contactsDrawerOpen, setContactsDrawerOpen] = useState(false);
+  const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
+  const [selectedTitle, setSelectedTitle] = useState<string>('');
 
-  const handleRowClick = (sale: SaleProps) => {
-    if (onRowClick) {
-      onRowClick(sale);
-    } else {
-      navigate(`/tracking/${sale.id}`);
-    }
-  };
-
-  const getStatusBackgroundColor = (status: string | null | undefined) => {
-    if (!status || typeof status !== 'string') {
-      return ESTADO_SEGUIMIENTO_COLORS.PENDIENTE;
-    }
-    const normalizedStatus = status.toUpperCase() as keyof typeof ESTADO_SEGUIMIENTO_COLORS;
-    return ESTADO_SEGUIMIENTO_COLORS[normalizedStatus] || ESTADO_SEGUIMIENTO_COLORS.PENDIENTE;
+  const handleOpenContactsDrawer = (clientId: number, title: string) => {
+    setSelectedClientId(clientId);
+    setSelectedTitle(title);
+    setContactsDrawerOpen(true);
   };
 
   const formattedData: Array<TrackingsDataTable> = data.map((item) => {
@@ -68,14 +60,22 @@ export const TrackingsTable = ({ data, loading, onRowClick, onReload }: Tracking
       catalogoDescripcion: item?.catalogoEmpresa?.descripcion ?? defaultText,
       fechaEmision: formattedDate(item?.fechaEmision, undefined, defaultText),
       fechaMaxForm: formattedDate(item?.fechaMaxForm, undefined, defaultText),
+      fechaPeruCompras: formattedDate(item?.fechaPeruCompras, undefined, defaultText),
+      fechaEntregaOc: formattedDate(item?.fechaEntregaOc, undefined, defaultText),
       montoVenta: formatCurrency(parseInt(item?.montoVenta ?? '0', 10)),
       cartaAmpliacion: item?.cartaAmpliacion,
       codigoOcf: item?.codigoOcf,
       cue: item?.cliente?.codigoUnidadEjecutora ?? defaultText,
       departamentoEntrega: item?.departamentoEntrega ?? defaultText,
+      departamentoCliente: item?.cliente?.departamento ?? defaultText,
       estadoRolSeguimiento: (item?.estadoRolSeguimiento ?? 'PENDIENTE') as EstadoSeguimientoType,
-    };
+    } as any;
   });
+
+  const getStatusBackgroundColor = (value: EstadoSeguimientoType | string | null | undefined) => {
+    const key = (value || 'PENDIENTE') as EstadoSeguimientoType;
+    return ESTADO_SEGUIMIENTO_COLORS[key] || '#64748b';
+  };
 
   const columns: Array<AntColumnType<TrackingsDataTable>> = [
     {
@@ -119,15 +119,81 @@ export const TrackingsTable = ({ data, loading, onRowClick, onReload }: Tracking
       )
     },
     { title: 'RUC Cliente', dataIndex: 'clienteRuc', width: 150, filter: true, sort: true },
-    { title: 'Nombre Cliente', dataIndex: 'clienteNombre', width: 150, filter: true, sort: true },
+    { title: 'Razón social Cliente', dataIndex: 'clienteNombre', width: 250, filter: true, sort: true },
     { title: 'RUC Empresa', dataIndex: 'empresaRuc', width: 150, filter: true, sort: true },
-    { title: 'Nombre Empresa', dataIndex: 'empresaNombre', width: 150, filter: true, sort: true },
-    { title: 'Cargo Contacto', dataIndex: 'contactoCargo', width: 150, filter: true, sort: true },
-    { title: 'Nombre Contacto', dataIndex: 'contactoNombre', width: 150, filter: true, sort: true },
-    { title: 'Nombre Catálogo', dataIndex: 'catalogoNombre', width: 150, filter: true, sort: true },
-    { title: 'Descripción Catálogo', dataIndex: 'catalogoDescripcion', width: 150, filter: true, sort: true },
-    { title: 'Fecha Emisión', dataIndex: 'fechaEmision', width: 150, filter: true, sort: true },
+    { title: 'Razón social Empresa', dataIndex: 'empresaNombre', width: 250, filter: true, sort: true },
+    {
+      title: 'Cargo Contacto',
+      dataIndex: 'contactoCargo',
+      width: 180,
+      filter: true,
+      sort: true,
+      align: 'center',
+      render: (_: unknown, record) => (
+        <Tooltip title="Ver contactos del cliente">
+          <Button
+            variant="outlined"
+            startIcon={<Contacts />}
+            onClick={() => handleOpenContactsDrawer(record.rawdata.clienteId, `${record.clienteNombre} - ${record.clienteRuc}`)}
+            size="small"
+            color="primary"
+          >
+            Ver
+          </Button>
+        </Tooltip>
+      ),
+    },
     { title: 'Fecha Máxima Entrega', dataIndex: 'fechaMaxForm', width: 150, filter: true, sort: true },
+    { title: 'Monto Venta', dataIndex: 'montoVenta', width: 150, filter: true, sort: true },
+    {
+      title: 'OCE',
+      dataIndex: 'id',
+      width: 100,
+      render: (_, record) =>
+        record.rawdata?.documentoOce ? (
+          <IconButton color="error" component="a" href={record.rawdata?.documentoOce} target="_blank">
+            <PictureAsPdf />
+          </IconButton>
+        ) : (
+          defaultText
+        ),
+    },
+    {
+      title: 'OCF',
+      dataIndex: 'id',
+      width: 100,
+      render: (_, record) =>
+        record.rawdata?.documentoOcf ? (
+          <IconButton color="error" component="a" href={record.rawdata?.documentoOcf} target="_blank">
+            <PictureAsPdf />
+          </IconButton>
+        ) : (
+          defaultText
+        ),
+    },
+    { title: 'Codigo OCF', dataIndex: 'id', width: 'auto', render: (_, record) => record.rawdata?.codigoOcf || defaultText },
+    {
+      title: 'Perú Compras', dataIndex: 'id', width: 150,
+      render: (_, record) => record.rawdata?.documentoPeruCompras ?
+        <IconButton color="error" component="a" href={record.rawdata?.documentoPeruCompras} target="_blank">
+          <PictureAsPdf />
+        </IconButton> : defaultText
+    },
+    {
+      title: 'Carta Ampliación',
+      dataIndex: 'id',
+      width: 100,
+      render: (_, record) =>
+        record.rawdata?.cartaAmpliacion ? (
+          <IconButton color="error" component="a" href={record.rawdata?.cartaAmpliacion} target="_blank">
+            <PictureAsPdf />
+          </IconButton>
+        ) : (
+          defaultText
+        ),
+    },
+    { title: 'Fecha Perú Compras', dataIndex: 'fechaPeruCompras', width: 150, filter: true, sort: true },
+    { title: 'Fecha Entrega OC', dataIndex: 'fechaEntregaOc', width: 150, filter: true, sort: true },
     {
       title: 'Fuera de plazo',
       dataIndex: 'fuera_plazo',
@@ -163,52 +229,44 @@ export const TrackingsTable = ({ data, loading, onRowClick, onReload }: Tracking
         );
       },
     },
-    { title: 'Monto Venta', dataIndex: 'montoVenta', width: 150, filter: true, sort: true },
-    { title: 'CUE', dataIndex: 'cue', width: 150, filter: true, sort: true },
     {
-      title: 'Departamento Entrega',
-      dataIndex: 'departamentoEntrega',
-      width: 150,
-    },
-    {
-      title: 'OCE',
-      dataIndex: 'id',
-      width: 100,
-      render: (_, record) =>
-        record.rawdata?.documentoOce ? (
-          <IconButton color="error" component="a" href={record.rawdata?.documentoOce} target="_blank">
-            <PictureAsPdf />
-          </IconButton>
-        ) : (
-          defaultText
-        ),
-    },
-    {
-      title: 'OCF',
-      dataIndex: 'id',
-      width: 100,
-      render: (_, record) =>
-        record.rawdata?.documentoOcf ? (
-          <IconButton color="error" component="a" href={record.rawdata?.documentoOcf} target="_blank">
-            <PictureAsPdf />
-          </IconButton>
-        ) : (
-          defaultText
-        ),
-    },
-    { title: 'Codigo OCF', dataIndex: 'id', width: 'auto', render: (_, record) => record.rawdata?.codigoOcf || defaultText },
-    {
-      title: 'Carta Ampliación',
-      dataIndex: 'id',
-      width: 100,
-      render: (_, record) =>
-        record.rawdata?.cartaAmpliacion ? (
-          <IconButton color="error" component="a" href={record.rawdata?.cartaAmpliacion} target="_blank">
-            <PictureAsPdf />
-          </IconButton>
-        ) : (
-          defaultText
-        ),
+      title: 'Utilidad %',
+      dataIndex: 'utilidad',
+      filter: false,
+      width: 220,
+      align: 'center',
+      render: (_: unknown, record: TrackingsDataTable) => {
+        if (!record?.rawdata) {
+          return <span>-</span>;
+        }
+
+        const montoVenta = record.rawdata.montoVenta;
+        const totalProveedores = record.rawdata.ordenesProveedor?.reduce((sum, op) => {
+          const total = typeof op.totalProveedor === 'string'
+            ? parseFloat(op.totalProveedor)
+            : (op.totalProveedor || 0);
+          return sum + total;
+        }, 0) || 0;
+
+        const utilidad = calcularUtilidadCompleta(montoVenta, totalProveedores);
+
+        return (
+          <Chip
+            label={utilidad.mensaje}
+            sx={{
+              backgroundColor: utilidad.color === 'success' ? '#22c55e' :
+                utilidad.color === 'error' ? '#ef4444' : '#9ca3af',
+              color: '#fff',
+              fontWeight: 600,
+              fontSize: '0.75rem',
+              height: 28,
+              borderRadius: 1.5,
+              boxShadow: utilidad.color === 'success' ? '0 0 10px #22c55e60' :
+                utilidad.color === 'error' ? '0 0 10px #ef444460' : 'none',
+            }}
+          />
+        );
+      },
     },
     {
       title: 'Estado Seguimiento',
@@ -237,12 +295,23 @@ export const TrackingsTable = ({ data, loading, onRowClick, onReload }: Tracking
   ];
 
   return (
-    <AntTable
-      columns={columns}
-      data={formattedData}
-      loading={loading}
-      onReload={onReload}
-    />
+    <>
+      <AntTable
+        columns={columns}
+        data={formattedData}
+        loading={loading}
+        onReload={onReload}
+      />
+      {contactsDrawerOpen && selectedClientId && (
+        <ContactsDrawer
+          handleClose={() => setContactsDrawerOpen(false)}
+          tipo={ContactTypeEnum.CLIENTE}
+          referenceId={selectedClientId}
+          title={selectedTitle}
+          readOnly={true}
+        />
+      )}
+    </>
   );
 };
 
