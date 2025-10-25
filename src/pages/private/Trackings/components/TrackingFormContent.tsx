@@ -100,6 +100,7 @@ type TransporteFormData = {
   archivoFactura: string | null;
   guiaRemision: string | null;
   guiaTransporte: string | null;
+  grt: string;
 };
 
 const createDefaultPaymentsState = (): TransportePaymentsState => ({
@@ -208,6 +209,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
     archivoFactura: null,
     guiaRemision: null,
     guiaTransporte: null,
+    grt: '',
   });
   const [originalTransporteValues, setOriginalTransporteValues] = useState<{
     montoFletePagado: number;
@@ -215,6 +217,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
     archivoFactura: string | null;
     guiaRemision: string | null;
     guiaTransporte: string | null;
+    grt: string;
   } | null>(null);
   const [changedTransporteFields, setChangedTransporteFields] = useState<Set<string>>(new Set());
   const [savingTransporte, setSavingTransporte] = useState(false);
@@ -238,6 +241,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
         archivoFactura: transporteModal.transporteData.archivoFactura || null,
         guiaRemision: transporteModal.transporteData.guiaRemision || null,
         guiaTransporte: transporteModal.transporteData.guiaTransporte || null,
+        grt: transporteModal.transporteData.grt || '',
       };
       setTransporteFormData(initialValues);
       setOriginalTransporteValues(initialValues);
@@ -451,6 +455,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
         archivoFactura: mergedTransporte.archivoFactura ?? null,
         guiaRemision: mergedTransporte.guiaRemision ?? null,
         guiaTransporte: mergedTransporte.guiaTransporte ?? null,
+        grt: mergedTransporte.grt || '',
       };
 
       notification.success({
@@ -2629,135 +2634,14 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
               </Tabs>
             </Box>
 
-            {/* Tab Panel: Información Básica */}
-            {activeTab === 0 && (
-              <Box>
-                <Grid container spacing={4}>
-                  {/* Empresa de Transporte */}
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <Typography variant="body2" sx={{
-                      fontWeight: 600,
-                      mb: 2,
-                      color: '#374151',
-                      fontSize: '0.875rem',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em'
-                    }}>
-                      Empresa de Transporte
-                    </Typography>
-                    <Box sx={{
-                      p: 2,
-                      bgcolor: '#f8fafc',
-                      borderRadius: 1,
-                      border: '1px solid #e2e8f0'
-                    }}>
-                      <Typography variant="body1" sx={{ fontWeight: 600, color: '#1f2937' }}>
-                        {transporteModal.transporteData?.transporte?.razonSocial || 'N/A'}
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: '#6b7280', mt: 0.5 }}>
-                        RUC: {transporteModal.transporteData?.transporte?.ruc || 'N/A'}
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: '#6b7280', fontSize: '0.875rem' }}>
-                        {getUbigeoName(transporteModal.transporteData?.transporte?.departamento) || 'N/A'} - {getUbigeoName(transporteModal.transporteData?.transporte?.provincia) || 'N/A'} - {getUbigeoName(transporteModal.transporteData?.transporte?.distrito) || 'N/A'}
-                      </Typography>
-                    </Box>
-                  </Grid>
-
-                  {/* Contacto */}
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <Typography variant="body2" sx={{
-                      fontWeight: 600,
-                      mb: 2,
-                      color: '#374151',
-                      fontSize: '0.875rem',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em'
-                    }}>
-                      Contacto
-                    </Typography>
-                    <Box sx={{
-                      p: 2,
-                      bgcolor: '#f8fafc',
-                      borderRadius: 1,
-                      border: '1px solid #e2e8f0'
-                    }}>
-                      <Typography variant="body1" sx={{ fontWeight: 600, color: '#1f2937' }}>
-                        {transporteModal.transporteData?.contactoTransporte?.nombre || 'N/A'}
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: '#6b7280', mt: 0.5 }}>
-                        Cargo: {transporteModal.transporteData?.contactoTransporte?.cargo || 'N/A'}
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: '#6b7280', fontSize: '0.875rem' }}>
-                        Teléfono: {transporteModal.transporteData?.contactoTransporte?.telefono || 'N/A'}
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: '#6b7280', fontSize: '0.875rem' }}>
-                        Email: {transporteModal.transporteData?.contactoTransporte?.email || 'N/A'}
-                      </Typography>
-                    </Box>
-                  </Grid>
-
-                  {/* Tipo de Destino */}
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <Typography variant="body2" sx={{
-                      fontWeight: 600,
-                      mb: 2,
-                      color: '#374151',
-                      fontSize: '0.875rem',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em'
-                    }}>
-                      Tipo de Destino
-                    </Typography>
-                    <Box sx={{
-                      p: 2,
-                      bgcolor: '#f8fafc',
-                      borderRadius: 1,
-                      border: '1px solid #e2e8f0'
-                    }}>
-                      <Typography variant="body1" sx={{ fontWeight: 600, color: '#1f2937' }}>
-                        {transporteModal.transporteData?.tipoDestino === 'AGENCIA' ? 'Agencia' :
-                          transporteModal.transporteData?.tipoDestino === 'CLIENTE' ? 'Cliente' :
-                            transporteModal.transporteData?.tipoDestino === 'ALMACEN' ? 'Almacén' : 'N/A'}
-                      </Typography>
-                    </Box>
-                  </Grid>
-
-                  {/* Almacén (solo si tipoDestino es ALMACEN) */}
-                  {transporteModal.transporteData?.tipoDestino === 'ALMACEN' && (
-                    <Grid size={{ xs: 12, md: 6 }}>
-                      <Typography variant="body2" sx={{
-                        fontWeight: 600,
-                        mb: 2,
-                        color: '#374151',
-                        fontSize: '0.875rem',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em'
-                      }}>
-                        Almacén
-                      </Typography>
-                      <Box sx={{
-                        p: 2,
-                        bgcolor: '#f8fafc',
-                        borderRadius: 1,
-                        border: '1px solid #e2e8f0'
-                      }}>
-                        <Typography variant="body1" sx={{ fontWeight: 600, color: '#1f2937' }}>
-                          {almacenes.find(a => a.id === transporteModal.transporteData?.almacenId)?.nombre || 'N/A'}
-                        </Typography>
-                      </Box>
-                    </Grid>
-                  )}
-                  <Grid size={{ xs: 12 }}>
-                    <Box sx={{
-                      display: 'flex',
-                      gap: 3,
-                      flexWrap: 'nowrap',
-                      overflowX: 'auto'
-                    }}>
-                      <Box sx={{
-                        minWidth: 260,
-                        flex: '1 1 50%'
-                      }}>
+            {/* Tab Panels */}
+            {(() => {
+              if (activeTab === 0) {
+                return (
+                  <Box>
+                    <Grid container spacing={4}>
+                      {/* Empresa de Transporte */}
+                      <Grid size={{ xs: 12, md: 6 }}>
                         <Typography variant="body2" sx={{
                           fontWeight: 600,
                           mb: 2,
@@ -2766,7 +2650,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                           textTransform: 'uppercase',
                           letterSpacing: '0.05em'
                         }}>
-                          Archivo de Cotización
+                          Empresa de Transporte
                         </Typography>
                         <Box sx={{
                           p: 2,
@@ -2774,363 +2658,496 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                           borderRadius: 1,
                           border: '1px solid #e2e8f0'
                         }}>
-                          {transporteModal.transporteData?.archivoCotizacion ? (
+                          <Typography variant="body1" sx={{ fontWeight: 600, color: '#1f2937' }}>
+                            {transporteModal.transporteData?.transporte?.razonSocial || 'N/A'}
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: '#6b7280', mt: 0.5 }}>
+                            RUC: {transporteModal.transporteData?.transporte?.ruc || 'N/A'}
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: '#6b7280', fontSize: '0.875rem' }}>
+                            {getUbigeoName(transporteModal.transporteData?.transporte?.departamento) || 'N/A'} - {getUbigeoName(transporteModal.transporteData?.transporte?.provincia) || 'N/A'} - {getUbigeoName(transporteModal.transporteData?.transporte?.distrito) || 'N/A'}
+                          </Typography>
+                        </Box>
+                      </Grid>
+
+                      {/* Contacto */}
+                      <Grid size={{ xs: 12, md: 6 }}>
+                        <Typography variant="body2" sx={{
+                          fontWeight: 600,
+                          mb: 2,
+                          color: '#374151',
+                          fontSize: '0.875rem',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em'
+                        }}>
+                          Contacto
+                        </Typography>
+                        <Box sx={{
+                          p: 2,
+                          bgcolor: '#f8fafc',
+                          borderRadius: 1,
+                          border: '1px solid #e2e8f0'
+                        }}>
+                          <Typography variant="body1" sx={{ fontWeight: 600, color: '#1f2937' }}>
+                            {transporteModal.transporteData?.contactoTransporte?.nombre || 'N/A'}
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: '#6b7280', mt: 0.5 }}>
+                            Cargo: {transporteModal.transporteData?.contactoTransporte?.cargo || 'N/A'}
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: '#6b7280', fontSize: '0.875rem' }}>
+                            Teléfono: {transporteModal.transporteData?.contactoTransporte?.telefono || 'N/A'}
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: '#6b7280', fontSize: '0.875rem' }}>
+                            Email: {transporteModal.transporteData?.contactoTransporte?.email || 'N/A'}
+                          </Typography>
+                        </Box>
+                      </Grid>
+
+                      {/* Tipo de Destino */}
+                      <Grid size={{ xs: 12, md: 6 }}>
+                        <Typography variant="body2" sx={{
+                          fontWeight: 600,
+                          mb: 2,
+                          color: '#374151',
+                          fontSize: '0.875rem',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em'
+                        }}>
+                          Tipo de Destino
+                        </Typography>
+                        <Box sx={{
+                          p: 2,
+                          bgcolor: '#f8fafc',
+                          borderRadius: 1,
+                          border: '1px solid #e2e8f0'
+                        }}>
+                          <Typography variant="body1" sx={{ fontWeight: 600, color: '#1f2937' }}>
+                            {transporteModal.transporteData?.tipoDestino === 'AGENCIA' ? 'Agencia' :
+                              transporteModal.transporteData?.tipoDestino === 'CLIENTE' ? 'Cliente' :
+                                transporteModal.transporteData?.tipoDestino === 'ALMACEN' ? 'Almacén' : 'N/A'}
+                          </Typography>
+                        </Box>
+                      </Grid>
+
+                      {/* Almacén (solo si tipoDestino es ALMACEN) */}
+                      {transporteModal.transporteData?.tipoDestino === 'ALMACEN' && (
+                        <Grid size={{ xs: 12, md: 6 }}>
+                          <Typography variant="body2" sx={{
+                            fontWeight: 600,
+                            mb: 2,
+                            color: '#374151',
+                            fontSize: '0.875rem',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.05em'
+                          }}>
+                            Almacén
+                          </Typography>
+                          <Box sx={{
+                            p: 2,
+                            bgcolor: '#f8fafc',
+                            borderRadius: 1,
+                            border: '1px solid #e2e8f0'
+                          }}>
+                            <Typography variant="body1" sx={{ fontWeight: 600, color: '#1f2937' }}>
+                              {almacenes.find(a => a.id === transporteModal.transporteData?.almacenId)?.nombre || 'N/A'}
+                            </Typography>
+                          </Box>
+                        </Grid>
+                      )}
+                      <Grid size={{ xs: 12 }}>
+                        <Box sx={{
+                          display: 'flex',
+                          gap: 3,
+                          flexWrap: 'nowrap',
+                          overflowX: 'auto'
+                        }}>
+                          <Box sx={{
+                            minWidth: 260,
+                            flex: '1 1 50%'
+                          }}>
+                            <Typography variant="body2" sx={{
+                              fontWeight: 600,
+                              mb: 2,
+                              color: '#374151',
+                              fontSize: '0.875rem',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.05em'
+                            }}>
+                              Archivo de Cotización
+                            </Typography>
+                            <Box sx={{
+                              p: 2,
+                              bgcolor: '#f8fafc',
+                              borderRadius: 1,
+                              border: '1px solid #e2e8f0'
+                            }}>
+                              {transporteModal.transporteData?.archivoCotizacion ? (
+                                <Button
+                                  variant="outlined"
+                                  startIcon={<DownloadIcon />}
+                                  onClick={() => {
+                                    const fileUrl = transporteModal.transporteData?.archivoCotizacion ?? null;
+                                    if (fileUrl) {
+                                      window.open(fileUrl, '_blank');
+                                    }
+                                  }}
+                                  sx={{
+                                    borderColor: '#10b981',
+                                    color: '#10b981',
+                                    '&:hover': {
+                                      borderColor: '#059669',
+                                      bgcolor: 'rgba(16, 185, 129, 0.04)',
+                                    }
+                                  }}
+                                >
+                                  Ver Archivo
+                                </Button>
+                              ) : (
+                                <Typography variant="body1" sx={{ color: '#6b7280' }}>
+                                  Sin archivo de cotización
+                                </Typography>
+                              )}
+                            </Box>
+                          </Box>
+                          <Box sx={{
+                            minWidth: 260,
+                            flex: '1 1 50%'
+                          }}>
+                            <Typography variant="body2" sx={{
+                              fontWeight: 600,
+                              mb: 2,
+                              color: '#374151',
+                              fontSize: '0.875rem',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.05em'
+                            }}>
+                              Flete Cotizado
+                            </Typography>
+                            <Box sx={{
+                              p: 2,
+                              bgcolor: '#f8fafc',
+                              borderRadius: 1,
+                              border: '1px solid #e2e8f0'
+                            }}>
+                              <Typography variant="body1" sx={{ fontWeight: 600, color: '#10b981', fontSize: '1.1rem' }}>
+                                {transporteModal.transporteData?.montoFlete ? formatCurrency(parseFloat(String(transporteModal.transporteData.montoFlete))) : 'N/A'}
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </Box>
+                      </Grid>
+                    </Grid>
+                  </Box>
+                );
+              }
+
+              if (activeTab === 1) {
+                return (
+                  <Box>
+                    {/* Sección de Costos */}
+                    <Box sx={{ mb: 4 }}>
+                      <Typography variant="h6" sx={{
+                        fontWeight: 600,
+                        mb: 3,
+                        color: '#1f2937',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1.5,
+                        '&::before': {
+                          content: '""',
+                          width: 4,
+                          height: 20,
+                          bgcolor: '#667eea',
+                          borderRadius: 2,
+                        }
+                      }}>
+                        💰 Información de Costos
+                      </Typography>
+                      <Box sx={{
+                        display: 'flex',
+                        flexDirection: { xs: 'column', md: 'row' },
+                        gap: 3,
+                        bgcolor: '#f9fafb',
+                        borderRadius: 2,
+                        border: '1px solid #f3f4f6'
+                      }}>
+                        <Box sx={{ flex: 1 }}>
+                          <Box sx={{
+                            p: 2,
+                            borderRadius: 1,
+                            transition: 'all 0.2s ease',
+                          }}>
+                            <Typography variant="body2" sx={{
+                              fontWeight: 600,
+                              mb: 1,
+                              color: '#6b7280',
+                              fontSize: '0.875rem',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.05em',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 1,
+                            }}>
+                              Flete Cotizado
+                            </Typography>
+                            <InputNumberAntd
+                              isCurrency
+                              disabled
+                              value={transporteModal.transporteData?.montoFlete || 0}
+                            />
+                          </Box>
+                        </Box>
+                        <Box sx={{ flex: 1 }}>
+                          <Box sx={{
+                            p: 2,
+                            borderRadius: 1,
+                            transition: 'all 0.2s ease',
+                          }}>
+                            <Typography variant="body2" sx={{
+                              fontWeight: 600,
+                              mb: 1,
+                              color: '#6b7280',
+                              fontSize: '0.875rem',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.05em',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 1,
+                            }}>
+                              Flete Pagado
+                            </Typography>
+                            <InputNumberAntd
+                              isCurrency
+                              value={transporteFormData.montoFletePagado}
+                              onChange={(value) => updateTransporteField('montoFletePagado', Number(value) || 0)}
+                            />
+                          </Box>
+                        </Box>
+                      </Box>
+                    </Box>
+
+                    {/* Sección de Documentos */}
+                    <Box>
+                      <Typography variant="h6" sx={{
+                        fontWeight: 600,
+                        mb: 3,
+                        color: '#1f2937',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1.5,
+                        '&::before': {
+                          content: '""',
+                          width: 4,
+                          height: 20,
+                          bgcolor: '#667eea',
+                          borderRadius: 2,
+                        }
+                      }}>
+                        📄 Documentos y Facturación
+                      </Typography>
+                      <Box sx={{
+                        display: 'flex',
+                        flexDirection: { xs: 'column', md: 'row' },
+                        flexWrap: 'wrap',
+                        gap: 3,
+                        bgcolor: '#f9fafb',
+                        borderRadius: 2,
+                        border: '1px solid #f3f4f6'
+                      }}>
+                        <Box sx={{
+                          p: 3,
+                          flex: { xs: '1 1 100%', md: '1 1 calc(50% - 24px)' },
+                          minWidth: { xs: '100%', md: 'calc(50% - 24px)' }
+                        }}>
+                          <Typography variant="body2" sx={{
+                            fontWeight: 600,
+                            mb: 2,
+                            color: '#374151',
+                            fontSize: '0.875rem',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.05em',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                          }}>
+                            📋 Número de Factura
+                          </Typography>
+                          <InputAntd
+                            placeholder="Ingrese número de factura"
+                            value={transporteFormData.numeroFactura}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateTransporteField('numeroFactura', e.target.value)}
+                          />
+                        </Box>
+                        <Box sx={{
+                          p: 3,
+                          flex: { xs: '1 1 100%', md: '1 1 calc(50% - 24px)' },
+                          minWidth: { xs: '100%', md: 'calc(50% - 24px)' }
+                        }}>
+                          <Typography variant="body2" sx={{
+                            fontWeight: 600,
+                            mb: 2,
+                            color: '#374151',
+                            fontSize: '0.875rem',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.05em',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                          }}>
+                            📄 Archivo de Factura
+                          </Typography>
+                          <SimpleFileUpload
+                            value={transporteFormData.archivoFactura}
+                            onChange={(file) => updateTransporteField('archivoFactura', file)}
+                            accept="application/pdf"
+                          />
+                        </Box>
+                        <Box sx={{
+                          p: 3,
+                          flex: { xs: '1 1 100%', md: '1 1 calc(50% - 24px)' },
+                          minWidth: { xs: '100%', md: 'calc(50% - 24px)' }
+                        }}>
+                          <Typography variant="body2" sx={{
+                            fontWeight: 600,
+                            mb: 2,
+                            color: '#374151',
+                            fontSize: '0.875rem',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.05em',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                          }}>
+                            🔢 Número de Guía (GRT)
+                          </Typography>
+                          <InputAntd
+                            placeholder="Ingrese número de guía (GRT)"
+                            value={transporteFormData.grt}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateTransporteField('grt', e.target.value)}
+                          />
+                        </Box>
+                        <Box sx={{
+                          p: 3,
+                          flex: { xs: '1 1 100%', md: '1 1 calc(50% - 24px)' },
+                          minWidth: { xs: '100%', md: 'calc(50% - 24px)' }
+                        }}>
+                          <Typography variant="body2" sx={{
+                            fontWeight: 600,
+                            mb: 2,
+                            color: '#374151',
+                            fontSize: '0.875rem',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.05em',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                          }}>
+                            🚛 Archivo de guía
+                          </Typography>
+                          <SimpleFileUpload
+                            value={transporteFormData.guiaRemision}
+                            onChange={(file) => updateTransporteField('guiaRemision', file)}
+                            accept="application/pdf"
+                          />
+                        </Box>
+                        {/* Submit form */}
+                        <Box sx={{ mt: 2, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+                          {changedTransporteFields.size > 0 && (
                             <Button
                               variant="outlined"
-                              startIcon={<DownloadIcon />}
-                              onClick={() => {
-                                const fileUrl = transporteModal.transporteData?.archivoCotizacion ?? null;
-                                if (fileUrl) {
-                                  window.open(fileUrl, '_blank');
-                                }
-                              }}
+                              onClick={cancelTransporteChanges}
+                              disabled={savingTransporte}
                               sx={{
-                                borderColor: '#10b981',
-                                color: '#10b981',
+                                borderColor: '#d1d5db',
+                                color: '#6b7280',
                                 '&:hover': {
-                                  borderColor: '#059669',
-                                  bgcolor: 'rgba(16, 185, 129, 0.04)',
+                                  borderColor: '#9ca3af',
+                                  backgroundColor: 'rgba(243, 244, 246, 0.5)',
                                 }
                               }}
                             >
-                              Ver Archivo
+                              Cancelar
                             </Button>
-                          ) : (
-                            <Typography variant="body1" sx={{ color: '#6b7280' }}>
-                              Sin archivo de cotización
-                            </Typography>
                           )}
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={handleSaveTransporte}
+                            disabled={savingTransporte || changedTransporteFields.size === 0}
+                            sx={{
+                              bgcolor: '#10b981',
+                              '&:hover': {
+                                bgcolor: '#059669'
+                              },
+                              '&:disabled': {
+                                bgcolor: '#6b7280'
+                              }
+                            }}
+                          >
+                            {savingTransporte ? 'Guardando...' : 'Guardar Cambios'}
+                          </Button>
                         </Box>
-                      </Box>
-                      <Box sx={{
-                        minWidth: 260,
-                        flex: '1 1 50%'
-                      }}>
-                        <Typography variant="body2" sx={{
-                          fontWeight: 600,
-                          mb: 2,
-                          color: '#374151',
-                          fontSize: '0.875rem',
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.05em'
-                        }}>
-                          Flete Cotizado
-                        </Typography>
-                        <Box sx={{
-                          p: 2,
-                          bgcolor: '#f8fafc',
-                          borderRadius: 1,
-                          border: '1px solid #e2e8f0'
-                        }}>
-                          <Typography variant="body1" sx={{ fontWeight: 600, color: '#10b981', fontSize: '1.1rem' }}>
-                            {transporteModal.transporteData?.montoFlete ? formatCurrency(parseFloat(String(transporteModal.transporteData.montoFlete))) : 'N/A'}
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </Box>
-                  </Grid>
-                </Grid>
-              </Box>
-            )}
-            {activeTab === 1 && (
-              <Box>
-                {/* Sección de Costos */}
-                <Box sx={{ mb: 4 }}>
-                  <Typography variant="h6" sx={{
-                    fontWeight: 600,
-                    mb: 3,
-                    color: '#1f2937',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1.5,
-                    '&::before': {
-                      content: '""',
-                      width: 4,
-                      height: 20,
-                      bgcolor: '#667eea',
-                      borderRadius: 2,
-                    }
-                  }}>
-                    💰 Información de Costos
-                  </Typography>
-                  <Box sx={{
-                    display: 'flex',
-                    flexDirection: { xs: 'column', md: 'row' },
-                    gap: 3,
-                    bgcolor: '#f9fafb',
-                    borderRadius: 2,
-                    border: '1px solid #f3f4f6'
-                  }}>
-                    <Box sx={{ flex: 1 }}>
-                      <Box sx={{
-                        p: 2,
-                        borderRadius: 1,
-                        transition: 'all 0.2s ease',
-                      }}>
-                        <Typography variant="body2" sx={{
-                          fontWeight: 600,
-                          mb: 1,
-                          color: '#6b7280',
-                          fontSize: '0.875rem',
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.05em',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 1,
-                        }}>
-                          Flete Cotizado
-                        </Typography>
-                        <InputNumberAntd
-                          isCurrency
-                          disabled
-                          value={transporteModal.transporteData?.montoFlete || 0}
-                        />
-                      </Box>
-                    </Box>
-                    <Box sx={{ flex: 1 }}>
-                      <Box sx={{
-                        p: 2,
-                        borderRadius: 1,
-                        transition: 'all 0.2s ease',
-                      }}>
-                        <Typography variant="body2" sx={{
-                          fontWeight: 600,
-                          mb: 1,
-                          color: '#6b7280',
-                          fontSize: '0.875rem',
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.05em',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 1,
-                        }}>
-                          Flete Pagado
-                        </Typography>
-                        <InputNumberAntd
-                          isCurrency
-                          value={transporteFormData.montoFletePagado}
-                          onChange={(value) => updateTransporteField('montoFletePagado', Number(value) || 0)}
-                        />
                       </Box>
                     </Box>
                   </Box>
-                </Box>
+                );
+              }
 
-                {/* Sección de Documentos */}
-                <Box>
-                  <Typography variant="h6" sx={{
-                    fontWeight: 600,
-                    mb: 3,
-                    color: '#1f2937',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1.5,
-                    '&::before': {
-                      content: '""',
-                      width: 4,
-                      height: 20,
-                      bgcolor: '#667eea',
-                      borderRadius: 2,
-                    }
-                  }}>
-                    📄 Documentos y Facturación
-                  </Typography>
-                  <Box sx={{
-                    display: 'flex',
-                    flexDirection: { xs: 'column', md: 'row' },
-                    flexWrap: 'wrap',
-                    gap: 3,
-                    bgcolor: '#f9fafb',
-                    borderRadius: 2,
-                    border: '1px solid #f3f4f6'
-                  }}>
-                    <Box sx={{
-                      p: 3,
-                      flex: { xs: '1 1 100%', md: '1 1 calc(50% - 24px)' },
-                      minWidth: { xs: '100%', md: 'calc(50% - 24px)' }
-                    }}>
-                      <Typography variant="body2" sx={{
-                        fontWeight: 600,
-                        mb: 2,
-                        color: '#374151',
-                        fontSize: '0.875rem',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1,
-                      }}>
-                        📋 Número de Factura
-                      </Typography>
-                      <InputAntd
-                        placeholder="Ingrese número de factura"
-                        value={transporteFormData.numeroFactura}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateTransporteField('numeroFactura', e.target.value)}
-                      />
-                    </Box>
-                    <Box sx={{
-                      p: 3,
-                      flex: { xs: '1 1 100%', md: '1 1 calc(50% - 24px)' },
-                      minWidth: { xs: '100%', md: 'calc(50% - 24px)' }
-                    }}>
-                      <Typography variant="body2" sx={{
-                        fontWeight: 600,
-                        mb: 2,
-                        color: '#374151',
-                        fontSize: '0.875rem',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1,
-                      }}>
-                        📄 Archivo de Factura
-                      </Typography>
-                      <SimpleFileUpload
-                        value={transporteFormData.archivoFactura}
-                        onChange={(file) => updateTransporteField('archivoFactura', file)}
-                        accept="application/pdf"
-                      />
-                    </Box>
-                    <Box sx={{
-                      p: 3,
-                      flex: { xs: '1 1 100%', md: '1 1 calc(50% - 24px)' },
-                      minWidth: { xs: '100%', md: 'calc(50% - 24px)' }
-                    }}>
-                      <Typography variant="body2" sx={{
-                        fontWeight: 600,
-                        mb: 2,
-                        color: '#374151',
-                        fontSize: '0.875rem',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1,
-                      }}>
-                        🚛 Guía de Remisión
-                      </Typography>
-                      <SimpleFileUpload
-                        value={transporteFormData.guiaRemision}
-                        onChange={(file) => updateTransporteField('guiaRemision', file)}
-                        accept="application/pdf"
-                      />
-                    </Box>
-                    <Box sx={{
-                      p: 3,
-                      flex: { xs: '1 1 100%', md: '1 1 calc(50% - 24px)' },
-                      minWidth: { xs: '100%', md: 'calc(50% - 24px)' }
-                    }}>
-                      <Typography variant="body2" sx={{
-                        fontWeight: 600,
-                        mb: 2,
-                        color: '#374151',
-                        fontSize: '0.875rem',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1,
-                      }}>
-                        📦 Guía de Transporte
-                      </Typography>
-                      <SimpleFileUpload
-                        value={transporteFormData.guiaTransporte}
-                        onChange={(file) => updateTransporteField('guiaTransporte', file)}
-                        accept="application/pdf"
-                      />
-                    </Box>
-                  </Box>
-                  {/* Submit form */}
-                  <Box sx={{ mt: 2, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-                    {changedTransporteFields.size > 0 && (
+              if (activeTab === 2) {
+                return (
+                  <Box>
+                    <PaymentsList
+                      title="Pagos del Transporte"
+                      payments={transportePaymentsState.payments}
+                      tipoPago={transportePaymentsState.tipoPago}
+                      notaPago={transportePaymentsState.notaPago}
+                      mode="readonly"
+                      montoTotal={transporteModal.transporteData?.montoFlete ? Number(transporteModal.transporteData.montoFlete) : 0}
+                      onTipoPagoChange={handleTransporteTipoPagoChange}
+                      onNotaPagoChange={handleTransporteNotaPagoChange}
+                    />
+                    <Box sx={{ mt: 2, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+                      {transportePaymentsChanged && (
+                        <Button
+                          variant="outlined"
+                          onClick={cancelTransportePaymentsChanges}
+                          disabled={savingTransportePayments}
+                          sx={{
+                            borderColor: '#d1d5db',
+                            color: '#6b7280',
+                            '&:hover': {
+                              borderColor: '#9ca3af',
+                              backgroundColor: 'rgba(243, 244, 246, 0.5)'
+                            }
+                          }}
+                        >
+                          Cancelar
+                        </Button>
+                      )}
                       <Button
-                        variant="outlined"
-                        onClick={cancelTransporteChanges}
-                        disabled={savingTransporte}
+                        variant="contained"
+                        onClick={handleSaveTransportePayments}
+                        disabled={!transportePaymentsChanged || savingTransportePayments}
                         sx={{
-                          borderColor: '#d1d5db',
-                          color: '#6b7280',
+                          bgcolor: '#10b981',
                           '&:hover': {
-                            borderColor: '#9ca3af',
-                            backgroundColor: 'rgba(243, 244, 246, 0.5)',
+                            bgcolor: '#059669'
+                          },
+                          '&:disabled': {
+                            bgcolor: '#6b7280'
                           }
                         }}
                       >
-                        Cancelar
+                        {savingTransportePayments ? 'Guardando...' : 'Guardar Pagos'}
                       </Button>
-                    )}
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={handleSaveTransporte}
-                      disabled={savingTransporte || changedTransporteFields.size === 0}
-                      sx={{
-                        bgcolor: '#10b981',
-                        '&:hover': {
-                          bgcolor: '#059669'
-                        },
-                        '&:disabled': {
-                          bgcolor: '#6b7280'
-                        }
-                      }}
-                    >
-                      {savingTransporte ? 'Guardando...' : 'Guardar Cambios'}
-                    </Button>
+                    </Box>
                   </Box>
-                </Box>
+                );
+              }
+
+              return null;
+            })()}
               </Box>
-            )}
-            {activeTab === 2 && (
-              <Box>
-                <PaymentsList
-                  title="Pagos del Transporte"
-                  payments={transportePaymentsState.payments}
-                  tipoPago={transportePaymentsState.tipoPago}
-                  notaPago={transportePaymentsState.notaPago}
-                  mode="readonly"
-                  montoTotal={transporteModal.transporteData?.montoFlete ? Number(transporteModal.transporteData.montoFlete) : 0}
-                  onTipoPagoChange={handleTransporteTipoPagoChange}
-                  onNotaPagoChange={handleTransporteNotaPagoChange}
-                />
-                <Box sx={{ mt: 2, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-                  {transportePaymentsChanged && (
-                    <Button
-                      variant="outlined"
-                      onClick={cancelTransportePaymentsChanges}
-                      disabled={savingTransportePayments}
-                      sx={{
-                        borderColor: '#d1d5db',
-                        color: '#6b7280',
-                        '&:hover': {
-                          borderColor: '#9ca3af',
-                          backgroundColor: 'rgba(243, 244, 246, 0.5)'
-                        }
-                      }}
-                    >
-                      Cancelar
-                    </Button>
-                  )}
-                  <Button
-                    variant="contained"
-                    onClick={handleSaveTransportePayments}
-                    disabled={!transportePaymentsChanged || savingTransportePayments}
-                    sx={{
-                      bgcolor: '#10b981',
-                      '&:hover': {
-                        bgcolor: '#059669'
-                      },
-                      '&:disabled': {
-                        bgcolor: '#6b7280'
-                      }
-                    }}
-                  >
-                    {savingTransportePayments ? 'Guardando...' : 'Guardar Pagos'}
-                  </Button>
-                </Box>
-              </Box>
-            )}
-          </Box>
         </MuiBox>
       </Modal>
     </Box>
