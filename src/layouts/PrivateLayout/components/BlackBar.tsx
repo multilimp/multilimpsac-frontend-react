@@ -123,9 +123,14 @@ const BlackBar = memo(() => {
         field: 'documentoOcf',
         value: selectedSale?.documentoOcf,
       },
+      {
+        label: 'Codigo OCF',
+        field: 'codigoOcf',
+        value: selectedSale?.codigoOcf,
+      }
     ] : []),
     ...(selectedSale?.id ? [{
-      label: 'PeruCompras',
+      label: 'Cargo de Entrega OC',
       field: 'documentoPeruCompras',
       value: selectedSale?.documentoPeruCompras,
     }] : []),
