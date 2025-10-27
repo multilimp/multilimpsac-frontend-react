@@ -120,9 +120,25 @@ const ProviderOrdersTable = ({ data, loading, onRowClick }: ProviderOrdersTableP
       filter: false,
       width: 180,
       align: 'center',
-      render: (_: any, record: ProviderOrdersDataTable) => {
+      render: (_: unknown, record: ProviderOrdersDataTable) => {
         if (!record?.rawdata) {
-          return <Typography variant="body2" sx={{ color: 'gray' }}>-</Typography>;
+          return (
+            <Typography
+              variant="body2"
+              sx={{
+                color: '#374151',
+                bgcolor: '#e5e7eb',
+                borderRadius: 1,
+                px: 1,
+                py: 0.5,
+                display: 'inline-block',
+                fontWeight: 'medium',
+                fontSize: '0.875rem',
+              }}
+            >
+              -
+            </Typography>
+          );
         }
 
         const montoVenta = record.rawdata.montoVenta;
@@ -135,17 +151,26 @@ const ProviderOrdersTable = ({ data, loading, onRowClick }: ProviderOrdersTableP
 
         const utilidad = calcularUtilidadCompleta(montoVenta, totalProveedores);
 
+        const isSuccess = utilidad.color === 'success';
+        const isError = utilidad.color === 'error';
+        const bgColor = isSuccess ? '#dcfce7' : isError ? '#fee2e2' : '#e5e7eb';
+        const textColor = isSuccess ? '#166534' : isError ? '#991b1b' : '#374151';
+
         return (
           <Typography
             variant="body2"
             sx={{
-              color: utilidad.color === 'success' ? 'green' :
-                utilidad.color === 'error' ? 'red' : 'gray',
-              fontWeight: 'medium',
+              color: textColor,
+              bgcolor: bgColor,
+              borderRadius: 1,
+              px: 1,
+              py: 0.5,
+              display: 'inline-block',
+              fontWeight: 'bold',
               fontSize: '0.875rem',
             }}
           >
-            {utilidad.mensaje}
+            {`${utilidad.mensaje}${utilidad.porcentaje ? ` (${utilidad.porcentaje.toFixed(2)}%)` : ''}`}
           </Typography>
         );
       },
