@@ -8,6 +8,7 @@ import { SaleProps } from '@/services/sales/sales';
 import { ESTADO_ROL_COLORS, ESTADO_ROL_LABELS } from '@/utils/constants';
 import ContactsDrawer from '@/components/ContactsDrawer';
 import { ContactTypeEnum } from '@/services/contacts/contacts.enum';
+// import { BillingProps } from '@/services/billings/billings';
 
 interface BillingsTableProps {
   data: SaleProps[];
@@ -21,6 +22,7 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }
   const [contactsDrawerOpen, setContactsDrawerOpen] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
   const [selectedTitle, setSelectedTitle] = useState<string>('');
+  // Eliminado cache de billing, usaremos facturaciones[0] provistas en ventas
 
   const handleOpenContactsDrawer = (clientId: number, title: string) => {
     setSelectedClientId(clientId);
@@ -49,32 +51,45 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }
       return [];
     }
 
-    return data.map((item) => ({
-      id: item.id,
-      codigo_venta: item.codigoVenta || defaultText,
-      razon_social_cliente: item?.cliente?.razonSocial ?? defaultText,
-      ruc_cliente: item?.cliente?.ruc ?? defaultText,
-      ruc_empresa: item?.empresa?.ruc ?? defaultText,
-      razon_social_empresa: item?.empresa?.razonSocial ?? defaultText,
-      contacto: item?.contactoCliente?.nombre ?? defaultText,
-      fecha_formalizacion: formattedDate(item.fechaForm, undefined, defaultText),
-      fecha_max_entrega: formattedDate(item.fechaEntrega, undefined, defaultText),
-      fecha_programacion: formattedDate(item.fechaPeruCompras, undefined, defaultText),
-      monto_venta: formatCurrency(item.montoVenta ? parseInt(item.montoVenta, 10) : 0),
-      fecha_factura: formattedDate(item.fechaEmision, undefined, defaultText),
-      fecha_entrega_oc: formattedDate(item.fechaEntregaOc, undefined, defaultText),
-      numero_factura: item.codigoVenta || defaultText,
-      etapa_siaf: item.etapaSiaf || defaultText,
-      grr: item.siaf || defaultText,
-      codigo_ocf: item.codigoOcf || defaultText,
-      oce: item.documentoOce || null,
-      ocf: item.documentoOcf || null,
-      carta_ampliacion: item.cartaAmpliacion || null,
-      estado_facturacion: String(item.estadoFacturacion || 'PENDIENTE'),
-      estado_indicador: String(item.estadoFacturacion || 'PENDIENTE'),
-      refact: item.ventaPrivada ? 'Sí' : 'No',
-      rawdata: item,
-    }));
+    return data.map((item) => {
+      const firstBilling = Array.isArray(item.facturaciones) && item.facturaciones.length > 0
+        ? item.facturaciones[0]
+        : item.facturacion
+          ? { factura: item.facturacion.factura, fechaFactura: item.facturacion.fechaFactura, grr: item.facturacion.grr }
+          : null;
+
+      const numeroFactura = firstBilling?.factura ?? defaultText;
+      const fechaFactura = formattedDate(firstBilling?.fechaFactura, undefined, defaultText);
+      const grrValue = firstBilling?.grr ?? defaultText;
+
+      return {
+        id: item.id,
+        codigo_venta: item.codigoVenta || defaultText,
+        razon_social_cliente: item?.cliente?.razonSocial ?? defaultText,
+        ruc_cliente: item?.cliente?.ruc ?? defaultText,
+        ruc_empresa: item?.empresa?.ruc ?? defaultText,
+        razon_social_empresa: item?.empresa?.razonSocial ?? defaultText,
+        contacto: item?.contactoCliente?.nombre ?? defaultText,
+        fecha_formalizacion: formattedDate(item.fechaForm, undefined, defaultText),
+        fecha_max_entrega: formattedDate(item.fechaEntrega, undefined, defaultText),
+        fecha_programacion: formattedDate(item.fechaPeruCompras, undefined, defaultText),
+        monto_venta: formatCurrency(item.montoVenta ? parseInt(item.montoVenta, 10) : 0),
+        fecha_recepcion: formattedDate(item.fechaEntrega, undefined, defaultText),
+        fecha_factura: fechaFactura,
+        fecha_entrega_oc: formattedDate(item.fechaEntregaOc, undefined, defaultText),
+        numero_factura: numeroFactura,
+        etapa_siaf: item.etapaSiaf || defaultText,
+        grr: grrValue,
+        codigo_ocf: item.codigoOcf || defaultText,
+        oce: item.documentoOce || null,
+        ocf: item.documentoOcf || null,
+        carta_ampliacion: item.cartaAmpliacion || null,
+        estado_facturacion: String(item.estadoFacturacion || 'PENDIENTE'),
+        estado_indicador: String(item.estadoFacturacion || 'PENDIENTE'),
+        refact: item.ventaPrivada ? 'Sí' : 'No',
+        rawdata: item,
+      };
+    });
   }, [data]);
 
   interface BillingsRow {
@@ -261,6 +276,15 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }
     { title: 'Fecha Programación', dataIndex: 'fecha_programacion', width: 150, sort: true, filter: true },
     { title: 'Etapa SIAF', dataIndex: 'etapa_siaf', width: 150, sort: true, filter: true },
     {
+      title: 'Número Factura',
+      dataIndex: 'numero_factura',
+      width: 150,
+      sort: true,
+      filter: true,
+    },
+    { title: 'Fecha Factura', dataIndex: 'fecha_factura', width: 150, sort: true, filter: true },
+    { title: 'GRR', dataIndex: 'grr', width: 150, sort: true, filter: true },
+    {
       title: 'Estado Facturación',
       dataIndex: 'estado_facturacion',
       width: 150,
@@ -314,7 +338,7 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }
         <ContactsDrawer
           handleClose={() => setContactsDrawerOpen(false)}
           tipo={ContactTypeEnum.CLIENTE}
-          referenceId={selectedClientId}
+          referenceId={selectedClientId!}
           title={selectedTitle}
           readOnly={true}
         />

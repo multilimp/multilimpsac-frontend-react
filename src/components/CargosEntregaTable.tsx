@@ -58,15 +58,16 @@ interface OpRow {
     facturasArchivo?: string[];
     grrsArchivo?: string[];
     documentosFacturacion?: Array<{
-      facturaNumero?: string | null;
-      facturaArchivo?: string | null;
-      grrNumero?: string | null;
-      grrArchivo?: string | null;
+        fechaFactura?: string | null;
+        facturaNumero?: string | null;
+        facturaArchivo?: string | null;
+        grrNumero?: string | null;
+        grrArchivo?: string | null;
     }>;
     productos: Array<{
-      codigo: string;
-      descripcion: string;
-      cantidad: number;
+        codigo: string;
+        descripcion: string;
+        cantidad: number;
     }>;
     proveedor: {
         razonSocial: string;
@@ -583,44 +584,7 @@ const CargosEntregaTable: React.FC<CargosEntregaTableProps> = ({ fechaInicio, fe
                                                                                         </Box>
                                                                                     </Box>
                                                                                 )}
-                                                                                {op.documentosFacturacion && op.documentosFacturacion.length > 0 && op.documentosFacturacion.map((doc, idx) => (
-                                                                                    <Box key={`df-${idx}`} sx={{ flex: '1 1 100%', minWidth: '200px', display: 'flex', gap: 1.5 }}>
-                                                                                        {(doc.grrNumero || doc.grrArchivo) && (
-                                                                                            <Box sx={{ flex: '1 1 45%', minWidth: '200px' }}>
-                                                                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1, bgcolor: 'grey.50', borderRadius: 1, border: '1px solid', borderColor: 'grey.300' }}>
-                                                                                                    <PictureAsPdf color="error" />
-                                                                                                    <Box sx={{ flex: 1 }}>
-                                                                                                        <Typography variant="body2" fontWeight="medium">GRR {doc.grrNumero || idx + 1}</Typography>
-                                                                                                        {doc.grrArchivo ? (
-                                                                                                            <Button size="small" variant="text" color="primary" href={doc.grrArchivo} target="_blank" sx={{ p: 0, minWidth: 'auto', textTransform: 'none' }}>
-                                                                                                                Ver documento
-                                                                                                            </Button>
-                                                                                                        ) : (
-                                                                                                            <Typography variant="caption" color="text.secondary">Sin archivo</Typography>
-                                                                                                        )}
-                                                                                                    </Box>
-                                                                                                </Box>
-                                                                                            </Box>
-                                                                                        )}
-                                                                                        {(doc.facturaNumero || doc.facturaArchivo) && (
-                                                                                            <Box sx={{ flex: '1 1 45%', minWidth: '200px' }}>
-                                                                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1, bgcolor: 'grey.50', borderRadius: 1, border: '1px solid', borderColor: 'grey.300' }}>
-                                                                                                    <PictureAsPdf color="error" />
-                                                                                                    <Box sx={{ flex: 1 }}>
-                                                                                                        <Typography variant="body2" fontWeight="medium">Factura {doc.facturaNumero || idx + 1}</Typography>
-                                                                                                        {doc.facturaArchivo ? (
-                                                                                                            <Button size="small" variant="text" color="primary" href={doc.facturaArchivo} target="_blank" sx={{ p: 0, minWidth: 'auto', textTransform: 'none' }}>
-                                                                                                                Ver documento
-                                                                                                            </Button>
-                                                                                                        ) : (
-                                                                                                            <Typography variant="caption" color="text.secondary">Sin archivo</Typography>
-                                                                                                        )}
-                                                                                                    </Box>
-                                                                                                </Box>
-                                                                                            </Box>
-                                                                                        )}
-                                                                                    </Box>
-                                                                                ))}
+
                                                                                 {op.cartaCci && (
                                                                                     <Box sx={{ flex: '1 1 45%', minWidth: '200px' }}>
                                                                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1, bgcolor: 'grey.50', borderRadius: 1, border: '1px solid', borderColor: 'grey.300' }}>
@@ -645,6 +609,65 @@ const CargosEntregaTable: React.FC<CargosEntregaTableProps> = ({ fechaInicio, fe
                                                                                                 </Button>
                                                                                             </Box>
                                                                                         </Box>
+                                                                                    </Box>
+                                                                                )}
+                                                                                {/* Tabla de resumen: Fecha, Factura y GRR (al final) */}
+                                                                                {op.documentosFacturacion && op.documentosFacturacion.length > 0 && (
+                                                                                    <Box sx={{ flex: '1 1 100%', mt: 1 }}>
+                                                                                        <Table size="small">
+                                                                                            <TableHead>
+                                                                                                <TableRow sx={{ bgcolor: 'grey.50' }}>
+                                                                                                    <TableCell sx={{ fontWeight: 'bold', py: 0.75 }}>Fecha Factura</TableCell>
+                                                                                                    <TableCell sx={{ fontWeight: 'bold', py: 0.75 }}>Factura</TableCell>
+                                                                                                    <TableCell sx={{ fontWeight: 'bold', py: 0.75 }}>Archivo Factura</TableCell>
+                                                                                                    <TableCell sx={{ fontWeight: 'bold', py: 0.75 }}>GRR</TableCell>
+                                                                                                    <TableCell sx={{ fontWeight: 'bold', py: 0.75 }}>Archivo GRR</TableCell>
+                                                                                                </TableRow>
+                                                                                            </TableHead>
+                                                                                            <TableBody>
+                                                                                                {op.documentosFacturacion
+                                                                                                    .filter((d) => d.facturaNumero || d.grrNumero)
+                                                                                                    .map((doc, idx) => (
+                                                                                                        <TableRow key={`df-row-${idx}`}>
+                                                                                                            <TableCell sx={{ py: 0.75 }}>
+                                                                                                                {doc.fechaFactura ? new Date(doc.fechaFactura).toLocaleDateString('es-PE') : '-'}
+                                                                                                            </TableCell>
+                                                                                                            <TableCell sx={{ py: 0.75 }}>
+                                                                                                                {doc.facturaNumero || '-'}
+                                                                                                            </TableCell>
+                                                                                                            <TableCell sx={{ py: 0.75 }}>
+                                                                                                                {doc.facturaArchivo ? (
+                                                                                                                    <Button
+                                                                                                                        variant="outlined"
+                                                                                                                        size="small"
+                                                                                                                        startIcon={<PictureAsPdf />}
+                                                                                                                        onClick={() => window.open(`${doc.facturaArchivo}`, '_blank')}
+                                                                                                                        sx={{ fontSize: '0.75rem', py: 0.25, px: 1 }}
+                                                                                                                    >
+                                                                                                                        Ver PDF
+                                                                                                                    </Button>
+                                                                                                                ) : '-'}
+                                                                                                            </TableCell>
+                                                                                                            <TableCell sx={{ py: 0.75 }}>
+                                                                                                                {doc.grrNumero || '-'}
+                                                                                                            </TableCell>
+                                                                                                            <TableCell sx={{ py: 0.75 }}>
+                                                                                                                {doc.grrArchivo ? (
+                                                                                                                    <Button
+                                                                                                                        variant="outlined"
+                                                                                                                        size="small"
+                                                                                                                        startIcon={<PictureAsPdf />}
+                                                                                                                        onClick={() => window.open(`${doc.grrArchivo}`, '_blank')}
+                                                                                                                        sx={{ fontSize: '0.75rem', py: 0.25, px: 1 }}
+                                                                                                                    >
+                                                                                                                        Ver PDF
+                                                                                                                    </Button>
+                                                                                                                ) : '-'}
+                                                                                                            </TableCell>
+                                                                                                        </TableRow>
+                                                                                                    ))}
+                                                                                            </TableBody>
+                                                                                        </Table>
                                                                                     </Box>
                                                                                 )}
                                                                             </Box>

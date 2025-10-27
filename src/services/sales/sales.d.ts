@@ -61,6 +61,13 @@ export interface SaleProps {
   contactoCliente: ContactProps;
   catalogoEmpresa: CatalogProps;
   ordenesProveedor: Array<ProviderOrderProps>;
+  // Relación plural de facturaciones devuelta por el backend
+  facturaciones?: Array<{
+    id: number;
+    factura?: string | null;
+    fechaFactura?: string | null;
+    grr?: string | null;
+  }>;
   facturacion?: {
     factura: string;
     fechaFactura: string;

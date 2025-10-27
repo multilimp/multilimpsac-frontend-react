@@ -35,6 +35,7 @@ export interface CargosEntregaData {
       facturasArchivo?: string[];
       grrsArchivo?: string[];
       documentosFacturacion?: Array<{
+        fechaFactura?: string | null;
         facturaNumero?: string | null;
         facturaArchivo?: string | null;
         grrNumero?: string | null;
