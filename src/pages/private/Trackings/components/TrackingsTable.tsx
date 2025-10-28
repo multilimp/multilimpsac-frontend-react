@@ -76,6 +76,10 @@ export const TrackingsTable = ({ data, loading, onRowClick, onReload }: Tracking
       ? (((refactFirst as { factura?: string | null }).factura) ?? defaultText)
       : defaultText;
 
+    const departamentoCliente = typeof item?.cliente?.departamento === 'string'
+      ? item?.cliente?.departamento
+      : ((item?.cliente?.departamento as { nombre?: string } | undefined)?.nombre ?? defaultText);
+
     return {
       id: item.id,
       rawdata: item,
@@ -97,7 +101,7 @@ export const TrackingsTable = ({ data, loading, onRowClick, onReload }: Tracking
       codigoOcf: item?.codigoOcf,
       cue: item?.cliente?.codigoUnidadEjecutora ?? defaultText,
       departamentoEntrega: item?.departamentoEntrega ?? defaultText,
-      departamentoCliente: item?.cliente?.departamento ?? defaultText,
+      departamentoCliente,
       estadoRolSeguimiento: (item?.estadoRolSeguimiento ?? 'PENDIENTE') as EstadoSeguimientoType,
       numeroFactura,
       fechaFactura,

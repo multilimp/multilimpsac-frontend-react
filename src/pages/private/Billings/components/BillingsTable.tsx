@@ -174,10 +174,10 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }
         );
       }
     },
-    { title: 'Razón Social Cliente', dataIndex: 'razon_social_cliente', width: 200, sort: true, filter: true },
+    { title: 'Razón Social Cliente', dataIndex: 'razon_social_cliente', width: 250, sort: true, filter: true },
     { title: 'RUC Cliente', dataIndex: 'ruc_cliente', width: 150, sort: true, filter: true },
     { title: 'RUC Empresa', dataIndex: 'ruc_empresa', width: 150, sort: true, filter: true },
-    { title: 'Razón Social Empresa', dataIndex: 'razon_social_empresa', width: 200, sort: true, filter: true },
+    { title: 'Razón Social Empresa', dataIndex: 'razon_social_empresa', width: 250, sort: true, filter: true },
     {
       title: 'Contactos',
       dataIndex: 'id',
@@ -256,8 +256,16 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }
         ),
     },
 
-    { title: 'Código OCF', dataIndex: 'codigo_ocf', width: 120, sort: true, filter: true },
     {
+      title: 'Codigo OCF',
+      dataIndex: 'id',
+      width: 'auto',
+      render: (_: unknown, record: BillingsRow) => {
+        const full = record.rawdata?.codigoOcf || '';
+        const afterHyphen = full.includes('-') ? full.split('-').slice(1).join('-').trim() : full;
+        return afterHyphen || defaultText;
+      }
+    }, {
       title: 'Carta Ampliación',
       dataIndex: 'carta_ampliacion',
       width: 120,
