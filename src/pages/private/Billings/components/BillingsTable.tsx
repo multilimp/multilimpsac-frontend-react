@@ -72,6 +72,12 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }
       const fechaFactura = formattedDate(firstBilling?.fechaFactura, undefined, defaultText);
       const grrValue = firstBilling?.grr ?? defaultText;
 
+      // Normalizar código OCF: usar sólo el texto posterior al primer guion
+      const fullCodigoOcf = item.codigoOcf || '';
+      const codigoOcfValue = fullCodigoOcf.includes('-')
+        ? fullCodigoOcf.split('-').slice(1).join('-').trim()
+        : fullCodigoOcf;
+
 
       return {
         id: item.id,
@@ -91,12 +97,12 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }
         numero_factura: numeroFactura,
         etapa_siaf: item.etapaSiaf || defaultText,
         grr: grrValue,
-        codigo_ocf: item.codigoOcf || defaultText,
+        codigo_ocf: codigoOcfValue,
         oce: item.documentoOce || null,
         ocf: item.documentoOcf || null,
         carta_ampliacion: item.cartaAmpliacion || null,
-        estado_facturacion: String(item.estadoFacturacion || 'PENDIENTE'),
-        estado_indicador: String(item.estadoFacturacion || 'PENDIENTE'),
+        estado_facturacion: String(item.estadoFacturacion),
+        estado_indicador: String(item.estadoFacturacion),
         refact: refactFirst?.factura ?? defaultText,
         rawdata: item,
       };
@@ -155,6 +161,8 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }
       title: 'Código OC',
       dataIndex: 'codigo_venta',
       width: 200,
+      filter: true,
+      sort: true,
       render: (value, record: BillingsRow) => {
         if (!record?.rawdata?.id) {
           return <span>{value}</span>;
@@ -183,19 +191,25 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }
       dataIndex: 'id',
       width: 120,
       align: 'center',
-      render: (_: unknown, record) => (
-        <Tooltip title="Ver contactos del cliente">
-          <Button
-            variant="outlined"
-            startIcon={<Contacts />}
-            onClick={() => handleOpenContactsDrawer(record.rawdata.clienteId, `${record.razon_social_cliente} - ${record.ruc_cliente}`)}
-            size="small"
-            color="primary"
-          >
-            Ver
-          </Button>
-        </Tooltip>
-      ),
+      render: (_: unknown, record: BillingsRow) => {
+        if (!record?.rawdata?.id) {
+          return <span>{record.contacto}</span>;
+        }
+        return (
+          <Tooltip title="Ver contactos del cliente">
+            <Button
+              variant="outlined"
+              startIcon={<Contacts />}
+              onClick={() => handleOpenContactsDrawer(record.rawdata.clienteId, `${record.razon_social_cliente} - ${record.ruc_cliente}`)}
+              size="small"
+              color="primary"
+            >
+              Ver
+            </Button>
+          </Tooltip>
+        );
+      }
+      ,
     },
     { title: 'Fecha Form', dataIndex: 'fecha_formalizacion', width: 150, sort: true, filter: true },
     { title: 'Fecha Max Entrega', dataIndex: 'fecha_max_entrega', width: 150, sort: true, filter: true },
@@ -205,7 +219,7 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }
       title: 'Monto Venta', dataIndex: 'monto_venta', width: 150, sort: true, filter: true,
     },
     {
-      title: 'OCE', dataIndex: 'oce', width: 80, sort: true, filter: true, align: 'center',
+      title: 'OCE', dataIndex: 'oce', width: 80, align: 'center',
       render: (value) =>
         value ? (
           <Tooltip title="Ver Orden de Compra Electrónica" placement="top">
@@ -258,13 +272,11 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }
 
     {
       title: 'Codigo OCF',
-      dataIndex: 'id',
-      width: 120,
-      render: (_: unknown, record: BillingsRow) => {
-        const full = record.rawdata?.codigoOcf || '';
-        const afterHyphen = full.includes('-') ? full.split('-').slice(1).join('-').trim() : full;
-        return afterHyphen || defaultText;
-      }
+      dataIndex: 'codigo_ocf',
+      width: 150,
+      sort: true,
+      filter: true,
+      // Usar valor directo ya normalizado en formattedData, sin render
     }, {
       title: 'Carta Ampliación',
       dataIndex: 'carta_ampliacion',
@@ -312,13 +324,14 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }
       sort: true,
       filter: true,
       render: (value: string) => {
-        const bgColor = getStatusBackgroundColor(value);
-
+        if (!value) {
+          return <span>{value}</span>;
+        }
         return (
           <Box
             sx={{
               width: '100%',
-              backgroundColor: bgColor,
+              backgroundColor: getStatusBackgroundColor(value),
               color: 'white',
               textAlign: 'center',
               borderRadius: '4px',
@@ -326,14 +339,14 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }
               fontWeight: 600,
               fontSize: '0.8125rem',
               textTransform: 'none',
-              boxShadow: `0 2px 8px ${bgColor}40`,
+              boxShadow: `0 2px 8px ${getStatusBackgroundColor(value)}40`,
               cursor: 'default',
               transition: 'all 0.2s ease',
 
               '&:hover': {
                 opacity: 0.9,
                 transform: 'translateY(-1px)',
-                boxShadow: `0 4px 12px ${bgColor}60`,
+                boxShadow: `0 4px 12px ${getStatusBackgroundColor(value)}60`,
               }
             }}
           >

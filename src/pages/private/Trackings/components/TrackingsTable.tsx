@@ -80,6 +80,12 @@ export const TrackingsTable = ({ data, loading, onRowClick, onReload }: Tracking
       ? item?.cliente?.departamento
       : ((item?.cliente?.departamento as { nombre?: string } | undefined)?.nombre ?? defaultText);
 
+    // Normalizar codigoOcf para que el filtro actúe sobre el texto posterior al primer guion
+    const fullCodigoOcf = item?.codigoOcf || '';
+    const codigoOcfValue = fullCodigoOcf.includes('-')
+      ? fullCodigoOcf.split('-').slice(1).join('-').trim()
+      : fullCodigoOcf;
+
     return {
       id: item.id,
       rawdata: item,
@@ -98,7 +104,7 @@ export const TrackingsTable = ({ data, loading, onRowClick, onReload }: Tracking
       fechaEntregaOc: formattedDate(item?.fechaEntregaOc, undefined, defaultText),
       montoVenta: formatCurrency(parseInt(item?.montoVenta ?? '0', 10)),
       cartaAmpliacion: item?.cartaAmpliacion,
-      codigoOcf: item?.codigoOcf,
+      codigoOcf: codigoOcfValue,
       cue: item?.cliente?.codigoUnidadEjecutora ?? defaultText,
       departamentoEntrega: item?.departamentoEntrega ?? defaultText,
       departamentoCliente,
@@ -142,19 +148,24 @@ export const TrackingsTable = ({ data, loading, onRowClick, onReload }: Tracking
       title: 'Código OC',
       dataIndex: 'codigoVenta',
       width: 200,
-      render: (value, record) => (
-        <Button
+      filter: true,
+      sort: true,
+      render: (value, record) => {
+        if (!record?.rawdata?.id) {
+          return <span>{value}</span>;
+        }
+        return (<Button
           variant="contained"
           component={Link}
           to={`/tracking/${record.id}`}
-          startIcon={<Visibility />}
+          startIcon={< Visibility />}
           size="small"
           color="info"
           style={{ width: '100%' }}
         >
           {value}
-        </Button>
-      )
+        </Button >)
+      }
     },
     { title: 'RUC Cliente', dataIndex: 'clienteRuc', width: 150, filter: true, sort: true },
     { title: 'Razón social Cliente', dataIndex: 'clienteNombre', width: 250, filter: true, sort: true },
@@ -164,9 +175,9 @@ export const TrackingsTable = ({ data, loading, onRowClick, onReload }: Tracking
       title: 'Cargo Contacto',
       dataIndex: 'contactoCargo',
       width: 180,
-      filter: true,
-      sort: true,
       align: 'center',
+      filter: false,
+      sort: false,
       render: (_: unknown, record) => (
         <Tooltip title="Ver contactos del cliente">
           <Button
@@ -211,13 +222,11 @@ export const TrackingsTable = ({ data, loading, onRowClick, onReload }: Tracking
     },
     {
       title: 'Codigo OCF',
-      dataIndex: 'id',
+      dataIndex: 'codigoOcf',
       width: 'auto',
-      render: (_: unknown, record: TrackingsDataTable) => {
-        const full = record.rawdata?.codigoOcf || '';
-        const afterHyphen = full.includes('-') ? full.split('-').slice(1).join('-').trim() : full;
-        return afterHyphen || defaultText;
-      }
+      sort: true,
+      filter: true,
+      // Sin render: se usa directamente el valor normalizado de formattedData
     },
     {
       title: 'Perú Compras', dataIndex: 'id', width: 150,
