@@ -154,7 +154,7 @@ export interface OrdenProveedorData {
 }
 export const printOrdenProveedor = async (id: number): Promise<void> => {
   try {
-    const printWindow = window.open('', '_blank', 'width=800,height=600');
+    const printWindow = window.open('', '_blank');
 
     const response = await apiClient.get(`/print/orden-proveedor/${id}`);
 

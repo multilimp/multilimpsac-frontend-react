@@ -1105,7 +1105,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                       }}
                     >
                       <AssignmentIcon sx={{ fontSize: 24 }} />
-                      Órdenes de Proveedor ({ordenesProveedor.length})
+                      Órdenes de Proveedor
                     </Typography>
                   </Box>
 
