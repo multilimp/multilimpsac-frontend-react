@@ -67,6 +67,7 @@ export interface SaleProps {
     factura?: string | null;
     fechaFactura?: string | null;
     grr?: string | null;
+    esRefacturacion?: boolean | null;
   }>;
   facturacion?: {
     factura: string;

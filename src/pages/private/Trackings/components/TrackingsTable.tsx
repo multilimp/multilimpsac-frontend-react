@@ -25,12 +25,25 @@ interface TrackingsDataTable {
   clienteNombre: string;
   empresaRuc: string;
   empresaNombre: string;
+  contactoCargo: string;
+  contactoNombre: string;
+  catalogoNombre: string;
+  catalogoDescripcion: string;
+  fechaEmision: string;
   fechaMaxForm: string;
   fechaPeruCompras: string;
   fechaEntregaOc: string;
   montoVenta: string;
+  cartaAmpliacion?: string | null;
+  codigoOcf?: string | undefined;
+  cue: string;
+  departamentoEntrega: string;
   departamentoCliente?: string;
   estadoRolSeguimiento: EstadoSeguimientoType;
+  numeroFactura: string;
+  fechaFactura: string;
+  grr: string;
+  refact: string;
 }
 
 const defaultText = '';
@@ -46,6 +59,23 @@ export const TrackingsTable = ({ data, loading, onRowClick, onReload }: Tracking
   };
 
   const formattedData: Array<TrackingsDataTable> = data.map((item) => {
+    const firstBilling = Array.isArray(item.facturaciones) && item.facturaciones.length > 0
+      ? item.facturaciones[0]
+      : item.facturacion
+        ? { factura: item.facturacion.factura, fechaFactura: item.facturacion.fechaFactura, grr: item.facturacion.grr }
+        : null;
+
+    const numeroFactura = firstBilling?.factura ?? defaultText;
+    const fechaFactura = formattedDate(firstBilling?.fechaFactura, undefined, defaultText);
+    const grrValue = firstBilling?.grr ?? defaultText;
+
+    const refactFirst = Array.isArray(item.facturaciones)
+      ? item.facturaciones.find((f) => !!f?.esRefacturacion)
+      : undefined;
+    const refactNumero = refactFirst && typeof refactFirst === 'object' && refactFirst !== null && 'factura' in refactFirst
+      ? (((refactFirst as { factura?: string | null }).factura) ?? defaultText)
+      : defaultText;
+
     return {
       id: item.id,
       rawdata: item,
@@ -69,7 +99,11 @@ export const TrackingsTable = ({ data, loading, onRowClick, onReload }: Tracking
       departamentoEntrega: item?.departamentoEntrega ?? defaultText,
       departamentoCliente: item?.cliente?.departamento ?? defaultText,
       estadoRolSeguimiento: (item?.estadoRolSeguimiento ?? 'PENDIENTE') as EstadoSeguimientoType,
-    } as any;
+      numeroFactura,
+      fechaFactura,
+      grr: grrValue,
+      refact: refactNumero,
+    };
   });
 
   const getStatusBackgroundColor = (value: EstadoSeguimientoType | string | null | undefined) => {
@@ -171,7 +205,16 @@ export const TrackingsTable = ({ data, loading, onRowClick, onReload }: Tracking
           defaultText
         ),
     },
-    { title: 'Codigo OCF', dataIndex: 'id', width: 'auto', render: (_, record) => record.rawdata?.codigoOcf || defaultText },
+    {
+      title: 'Codigo OCF',
+      dataIndex: 'id',
+      width: 'auto',
+      render: (_: unknown, record: TrackingsDataTable) => {
+        const full = record.rawdata?.codigoOcf || '';
+        const afterHyphen = full.includes('-') ? full.split('-').slice(1).join('-').trim() : full;
+        return afterHyphen || defaultText;
+      }
+    },
     {
       title: 'Perú Compras', dataIndex: 'id', width: 150,
       render: (_, record) => record.rawdata?.documentoPeruCompras ?
@@ -194,6 +237,10 @@ export const TrackingsTable = ({ data, loading, onRowClick, onReload }: Tracking
     },
     { title: 'Fecha Perú Compras', dataIndex: 'fechaPeruCompras', width: 150, filter: true, sort: true },
     { title: 'Fecha Entrega OC', dataIndex: 'fechaEntregaOc', width: 150, filter: true, sort: true },
+    { title: 'Número Factura', dataIndex: 'numeroFactura', width: 150, filter: true, sort: true },
+    { title: 'Fecha Factura', dataIndex: 'fechaFactura', width: 150, filter: true, sort: true },
+    { title: 'GRR', dataIndex: 'grr', width: 150, filter: true, sort: true },
+    { title: 'Refact', dataIndex: 'refact', width: 150, filter: true, sort: true },
     {
       title: 'Fuera de plazo',
       dataIndex: 'fuera_plazo',

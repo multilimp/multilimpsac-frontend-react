@@ -16,7 +16,7 @@ interface BillingsTableProps {
   onReload?: () => void;
 }
 
-const defaultText = '-';
+const defaultText = '';
 
 const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }) => {
   const [contactsDrawerOpen, setContactsDrawerOpen] = useState(false);
@@ -58,9 +58,20 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }
           ? { factura: item.facturacion.factura, fechaFactura: item.facturacion.fechaFactura, grr: item.facturacion.grr }
           : null;
 
+      const refactFirst = Array.isArray(item.facturaciones) && item.facturaciones.length > 0
+        ? item.facturaciones.find((f: unknown) => {
+          if (typeof f === 'object' && f !== null && 'esRefacturacion' in f) {
+            const v = f as { esRefacturacion?: boolean };
+            return !!v.esRefacturacion;
+          }
+          return false;
+        })
+        : undefined;
+
       const numeroFactura = firstBilling?.factura ?? defaultText;
       const fechaFactura = formattedDate(firstBilling?.fechaFactura, undefined, defaultText);
       const grrValue = firstBilling?.grr ?? defaultText;
+
 
       return {
         id: item.id,
@@ -86,7 +97,7 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }
         carta_ampliacion: item.cartaAmpliacion || null,
         estado_facturacion: String(item.estadoFacturacion || 'PENDIENTE'),
         estado_indicador: String(item.estadoFacturacion || 'PENDIENTE'),
-        refact: item.ventaPrivada ? 'Sí' : 'No',
+        refact: refactFirst?.factura ?? defaultText,
         rawdata: item,
       };
     });
@@ -115,6 +126,7 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }
     oce: string | null;
     ocf: string | null;
     carta_ampliacion: string | null;
+    refact: string;
   }
   const columns: Array<AntColumnType<BillingsRow>> = [
     {
@@ -284,6 +296,7 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }
     },
     { title: 'Fecha Factura', dataIndex: 'fecha_factura', width: 150, sort: true, filter: true },
     { title: 'GRR', dataIndex: 'grr', width: 150, sort: true, filter: true },
+    { title: 'Refact', dataIndex: 'refact', width: 150, sort: true, filter: true },
     {
       title: 'Estado Facturación',
       dataIndex: 'estado_facturacion',

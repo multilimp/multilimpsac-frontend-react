@@ -175,7 +175,6 @@ const RefactorBillingModal: React.FC<RefactorBillingModalProps> = ({
                             </Box>
                             <Form.Item
                                 name="numeroFactura"
-                                rules={[{ required: true, message: 'Número de factura requerido' }]}
                                 style={{ marginBottom: 0 }}
                             >
                                 <InputAntd
@@ -195,7 +194,6 @@ const RefactorBillingModal: React.FC<RefactorBillingModalProps> = ({
                             </Box>
                             <Form.Item
                                 name="fechaFactura"
-                                rules={[{ required: true, message: 'Fecha requerida' }]}
                                 style={{ marginBottom: 0 }}
                             >
                                 <DatePickerAntd
@@ -213,7 +211,6 @@ const RefactorBillingModal: React.FC<RefactorBillingModalProps> = ({
                             </Box>
                             <Form.Item
                                 name="facturaArchivo"
-                                rules={[{ required: true, message: 'Archivo de factura requerido' }]}
                                 style={{ marginBottom: 0 }}
                             >
                                 <SimpleFileUpload />
@@ -228,7 +225,6 @@ const RefactorBillingModal: React.FC<RefactorBillingModalProps> = ({
                             </Box>
                             <Form.Item
                                 name="grrArchivo"
-                                rules={[{ required: true, message: 'Archivo de factura requerido' }]}
                                 style={{ marginBottom: 0 }}
                             >
                                 <SimpleFileUpload />
@@ -243,7 +239,6 @@ const RefactorBillingModal: React.FC<RefactorBillingModalProps> = ({
                             </Box>
                             <Form.Item
                                 name="retencion"
-                                rules={[{ required: true, message: 'Número de factura requerido' }]}
                                 style={{ marginBottom: 0 }}
                             >
                                 <InputAntd
@@ -263,7 +258,6 @@ const RefactorBillingModal: React.FC<RefactorBillingModalProps> = ({
                             </Box>
                             <Form.Item
                                 name="detraccion"
-                                rules={[{ required: true, message: 'Fecha requerida' }]}
                                 style={{ marginBottom: 0 }}
                             >
                                 <InputAntd
@@ -282,7 +276,6 @@ const RefactorBillingModal: React.FC<RefactorBillingModalProps> = ({
                             </Box>
                             <Form.Item
                                 name="grr"
-                                rules={[{ required: true, message: 'Número de factura requerido' }]}
                                 style={{ marginBottom: 0 }}
                             >
                                 <InputAntd
@@ -302,7 +295,6 @@ const RefactorBillingModal: React.FC<RefactorBillingModalProps> = ({
                             </Box>
                             <Form.Item
                                 name="formaEnvioFactura"
-                                rules={[{ required: true, message: 'Fecha requerida' }]}
                                 style={{ marginBottom: 0 }}
                             >
                                 <InputAntd
@@ -321,7 +313,6 @@ const RefactorBillingModal: React.FC<RefactorBillingModalProps> = ({
                             </Box>
                             <Form.Item
                                 name="notaCreditoTexto"
-                                rules={[{ required: true, message: 'Motivo requerido' }]}
                                 style={{ marginBottom: 0 }}
                             >
                                 <InputAntd
@@ -355,7 +346,6 @@ const RefactorBillingModal: React.FC<RefactorBillingModalProps> = ({
                             </Box>
                             <Form.Item
                                 name="motivoRefacturacion"
-                                rules={[{ required: true, message: 'Motivo requerido' }]}
                                 style={{ marginBottom: 0 }}
                             >
                                 <Input.TextArea rows={4} placeholder="Explique el motivo de la refacturación" style={{ borderRadius: 8 }} />
