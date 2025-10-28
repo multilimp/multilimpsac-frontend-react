@@ -259,7 +259,7 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }
     {
       title: 'Codigo OCF',
       dataIndex: 'id',
-      width: 'auto',
+      width: 120,
       render: (_: unknown, record: BillingsRow) => {
         const full = record.rawdata?.codigoOcf || '';
         const afterHyphen = full.includes('-') ? full.split('-').slice(1).join('-').trim() : full;
