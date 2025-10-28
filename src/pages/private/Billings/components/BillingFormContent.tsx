@@ -976,7 +976,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                       {sale?.cliente?.razonSocial || 'Cliente no especificado'}
                     </Typography>
                     <Typography fontWeight={300}>
-                      RUC: {sale?.cliente?.ruc || 'N/A'}
+                      RUC: {sale?.cliente?.ruc || ' '}
                     </Typography>
                   </Box>
                 }

@@ -32,7 +32,7 @@ interface OpDataTable {
   estadoRolOp: EstadoVentaType;
 }
 
-const defaultText = 'N/A';
+const defaultText = ' ';
 
 const OpTable = ({ data, loading, onRowClick, onReload }: OpTableProps) => {
   const formattedData: Array<OpDataTable> = data.map((item) => ({

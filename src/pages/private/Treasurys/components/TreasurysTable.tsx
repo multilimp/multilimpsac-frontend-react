@@ -14,7 +14,7 @@ interface ProviderOrdersTreasuryTableProps {
   onReload?: () => void | Promise<void>;
 }
 
-const defaultText = 'N/A';
+const defaultText = ' ';
 
 export default function ProviderOrdersTreasuryTable({
   data,

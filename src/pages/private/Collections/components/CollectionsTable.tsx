@@ -19,7 +19,7 @@ interface CollectionsTableProps {
   onReload?: () => void;
 }
 
-const defaultText = 'N/A';
+const defaultText = ' ';
 
 const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRecordAction, onReload }) => {
   const { setSelectedSale } = useGlobalInformation();

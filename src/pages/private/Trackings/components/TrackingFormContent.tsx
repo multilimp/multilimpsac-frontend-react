@@ -1369,7 +1369,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                     showHeader
                     ResumeIcon={AssignmentIcon}
                     color="#3b82f6"
-                    headerLeft={sale.empresa?.razonSocial || 'Empresa N/A'}
+                    headerLeft={sale.empresa?.razonSocial || 'Empresa  '}
                     resumeContent={
                       <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2 }}>
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
@@ -1377,10 +1377,10 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                             {op.codigoOp || `OP-${op.id}`}
                           </Typography>
                           <Typography sx={{ fontWeight: 500, color: '#ffffff', opacity: 0.8, fontSize: '0.875rem' }}>
-                            {op.proveedor?.razonSocial || 'Proveedor N/A'}
+                            {op.proveedor?.razonSocial || 'Proveedor  '}
                           </Typography>
                           <Typography sx={{ fontWeight: 500, color: '#d1d5db', fontSize: '0.875rem' }}>
-                            RUC: {op.proveedor?.ruc || 'RUC N/A'}
+                            RUC: {op.proveedor?.ruc || 'RUC  '}
                           </Typography>
                         </Box>
                         <Box sx={{ flexGrow: 1 }} />
@@ -1389,10 +1389,10 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                             {op.contactoProveedor?.cargo || 'Contacto'}
                           </Typography>
                           <Typography sx={{ fontWeight: 500, color: '#d1d5db', fontSize: '0.875rem' }}>
-                            Nombre: {op.contactoProveedor?.nombre || 'N/A'}
+                            Nombre: {op.contactoProveedor?.nombre || ' '}
                           </Typography>
                           <Typography sx={{ fontWeight: 500, color: '#d1d5db', fontSize: '0.875rem' }}>
-                            Teléfono: {op.contactoProveedor?.telefono || 'N/A'}
+                            Teléfono: {op.contactoProveedor?.telefono || ' '}
                           </Typography>
                         </Box>
                       </Box>
@@ -1749,7 +1749,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                                           fontWeight: 600,
                                           color: '#1f2937'
                                         }}>
-                                          {producto.codigo || 'N/A'}
+                                          {producto.codigo || ' '}
                                         </TableCell>
                                         <TableCell sx={{
                                           fontSize: '0.875rem',
@@ -1758,7 +1758,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                                           overflow: 'hidden',
                                           textOverflow: 'ellipsis',
                                         }}>
-                                          {producto.descripcion || 'N/A'}
+                                          {producto.descripcion || ' '}
                                         </TableCell>
                                         <TableCell sx={{
                                           fontSize: '0.875rem',
@@ -1767,7 +1767,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                                           fontWeight: 500,
                                           color: '#6b7280'
                                         }}>
-                                          {producto.unidadMedida || 'N/A'}
+                                          {producto.unidadMedida || ' '}
                                         </TableCell>
                                         <TableCell sx={{
                                           fontSize: '0.875rem',
@@ -1776,7 +1776,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                                           fontWeight: 600,
                                           color: '#1f2937'
                                         }}>
-                                          {producto.cantidad || 'N/A'}
+                                          {producto.cantidad || ' '}
                                         </TableCell>
                                         <TableCell sx={{
                                           fontSize: '0.875rem',
@@ -1931,14 +1931,14 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                                           fontWeight: 500,
                                           color: '#1f2937'
                                         }}>
-                                          {transporteAsignado.transporte?.razonSocial || 'N/A'}
+                                          {transporteAsignado.transporte?.razonSocial || ' '}
                                         </TableCell>
                                         <TableCell sx={{
                                           fontSize: '0.875rem',
                                           p: 1.5,
                                           color: '#6b7280'
                                         }}>
-                                          {transporteAsignado.transporte?.ruc || 'N/A'}
+                                          {transporteAsignado.transporte?.ruc || ' '}
                                         </TableCell>
                                         <TableCell sx={{
                                           fontSize: '0.875rem',
@@ -1955,7 +1955,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                                         }}>
                                           {transporteAsignado.montoFlete !== null && transporteAsignado.montoFlete !== undefined
                                             ? formatCurrency(parseFloat(String(transporteAsignado.montoFlete)))
-                                            : 'N/A'
+                                            : ' '
                                           }
                                         </TableCell>
                                         <TableCell sx={{
@@ -1965,7 +1965,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                                           color: heroUIColors.secondary[500],
                                           textAlign: 'right'
                                         }}>
-                                          {transporteAsignado.estadoPago || 'N/A'}
+                                          {transporteAsignado.estadoPago || ' '}
                                         </TableCell>
                                         <TableCell sx={{
                                           p: 1,
@@ -2682,13 +2682,13 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                           border: '1px solid #e2e8f0'
                         }}>
                           <Typography variant="body1" sx={{ fontWeight: 600, color: '#1f2937' }}>
-                            {transporteModal.transporteData?.transporte?.razonSocial || 'N/A'}
+                            {transporteModal.transporteData?.transporte?.razonSocial || ' '}
                           </Typography>
                           <Typography variant="body2" sx={{ color: '#6b7280', mt: 0.5 }}>
-                            RUC: {transporteModal.transporteData?.transporte?.ruc || 'N/A'}
+                            RUC: {transporteModal.transporteData?.transporte?.ruc || ' '}
                           </Typography>
                           <Typography variant="body2" sx={{ color: '#6b7280', fontSize: '0.875rem' }}>
-                            {getUbigeoName(transporteModal.transporteData?.transporte?.departamento) || 'N/A'} - {getUbigeoName(transporteModal.transporteData?.transporte?.provincia) || 'N/A'} - {getUbigeoName(transporteModal.transporteData?.transporte?.distrito) || 'N/A'}
+                            {getUbigeoName(transporteModal.transporteData?.transporte?.departamento) || ' '} - {getUbigeoName(transporteModal.transporteData?.transporte?.provincia) || ' '} - {getUbigeoName(transporteModal.transporteData?.transporte?.distrito) || ' '}
                           </Typography>
                         </Box>
                       </Grid>
@@ -2712,16 +2712,16 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                           border: '1px solid #e2e8f0'
                         }}>
                           <Typography variant="body1" sx={{ fontWeight: 600, color: '#1f2937' }}>
-                            {transporteModal.transporteData?.contactoTransporte?.nombre || 'N/A'}
+                            {transporteModal.transporteData?.contactoTransporte?.nombre || ' '}
                           </Typography>
                           <Typography variant="body2" sx={{ color: '#6b7280', mt: 0.5 }}>
-                            Cargo: {transporteModal.transporteData?.contactoTransporte?.cargo || 'N/A'}
+                            Cargo: {transporteModal.transporteData?.contactoTransporte?.cargo || ' '}
                           </Typography>
                           <Typography variant="body2" sx={{ color: '#6b7280', fontSize: '0.875rem' }}>
-                            Teléfono: {transporteModal.transporteData?.contactoTransporte?.telefono || 'N/A'}
+                            Teléfono: {transporteModal.transporteData?.contactoTransporte?.telefono || ' '}
                           </Typography>
                           <Typography variant="body2" sx={{ color: '#6b7280', fontSize: '0.875rem' }}>
-                            Email: {transporteModal.transporteData?.contactoTransporte?.email || 'N/A'}
+                            Email: {transporteModal.transporteData?.contactoTransporte?.email || ' '}
                           </Typography>
                         </Box>
                       </Grid>
@@ -2747,7 +2747,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                           <Typography variant="body1" sx={{ fontWeight: 600, color: '#1f2937' }}>
                             {transporteModal.transporteData?.tipoDestino === 'AGENCIA' ? 'Agencia' :
                               transporteModal.transporteData?.tipoDestino === 'CLIENTE' ? 'Cliente' :
-                                transporteModal.transporteData?.tipoDestino === 'ALMACEN' ? 'Almacén' : 'N/A'}
+                                transporteModal.transporteData?.tipoDestino === 'ALMACEN' ? 'Almacén' : ' '}
                           </Typography>
                         </Box>
                       </Grid>
@@ -2772,7 +2772,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                             border: '1px solid #e2e8f0'
                           }}>
                             <Typography variant="body1" sx={{ fontWeight: 600, color: '#1f2937' }}>
-                              {almacenes.find(a => a.id === transporteModal.transporteData?.almacenId)?.nombre || 'N/A'}
+                              {almacenes.find(a => a.id === transporteModal.transporteData?.almacenId)?.nombre || ' '}
                             </Typography>
                           </Box>
                         </Grid>
@@ -2853,7 +2853,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                               border: '1px solid #e2e8f0'
                             }}>
                               <Typography variant="body1" sx={{ fontWeight: 600, color: '#10b981', fontSize: '1.1rem' }}>
-                                {transporteModal.transporteData?.montoFlete ? formatCurrency(parseFloat(String(transporteModal.transporteData.montoFlete))) : 'N/A'}
+                                {transporteModal.transporteData?.montoFlete ? formatCurrency(parseFloat(String(transporteModal.transporteData.montoFlete))) : ' '}
                               </Typography>
                             </Box>
                           </Box>

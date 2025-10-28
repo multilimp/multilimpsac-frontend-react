@@ -30,7 +30,7 @@ interface ProviderOrdersDataTable {
   departamentoEntrega?: string;
 }
 
-const defaultText = 'N/A';
+const defaultText = ' ';
 const ProviderOrdersTable = ({ data, loading, onRowClick }: ProviderOrdersTableProps) => {
   const formattedData: Array<ProviderOrdersDataTable> = data.map((item) => ({
     id: item.id,
@@ -46,6 +46,7 @@ const ProviderOrdersTable = ({ data, loading, onRowClick }: ProviderOrdersTableP
     catalogoDescripcion: item?.catalogoEmpresa?.descripcion ?? defaultText,
     fechaEmision: formattedDate(item.fechaEmision, undefined, defaultText),
     fechaMaxForm: formattedDate(item.fechaMaxForm, undefined, defaultText),
+    codigoOcf: item.codigoOcf ?? defaultText,
     montoVenta: formatCurrency(parseInt(item.montoVenta, 10)),
     cue: item.cliente?.codigoUnidadEjecutora ?? defaultText,
     departamentoEntrega: item.departamentoEntrega ?? defaultText,
@@ -113,6 +114,13 @@ const ProviderOrdersTable = ({ data, loading, onRowClick }: ProviderOrdersTableP
         ) : (
           defaultText
         ),
+    },
+    {
+      title: 'Código OCF',
+      dataIndex: 'codigoOcf',
+      width: 200,
+      filter: true,
+      sort: true,
     },
     {
       title: 'Utilidad %',

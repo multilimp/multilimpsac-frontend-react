@@ -198,7 +198,7 @@ export const printOrdenProveedor = async (id: number): Promise<void> => {
     const productosRows = productos.map((producto: Producto) => `
 
       <tr>
-        <td class="product-cell">${escapeHtml(producto.codigo || 'N/A')}</td>
+        <td class="product-cell">${escapeHtml(producto.codigo || ' ')}</td>
         <td class="product-cell">${producto.cantidad || 0}</td>
         <td class="product-cell">${escapeHtml(producto.unidadMedida || 'UND')}</td>
         <td class="product-cell-description">${escapeHtml(producto.descripcion || 'Sin descripción')}</td>
@@ -233,7 +233,7 @@ export const printOrdenProveedor = async (id: number): Promise<void> => {
             <td class="section-content">
               <div>${escapeHtml(transporteData?.razonSocial || 'Sin información')}</div>
               <div><b>Dirección: </b>${transporteDireccion}</div>
-              <div><b>RUC: </b>${escapeHtml(transporteData?.ruc || 'N/A')}</div>
+              <div><b>RUC: </b>${escapeHtml(transporteData?.ruc || ' ')}</div>
             </td>
           </tr>
         `;

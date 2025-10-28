@@ -1726,7 +1726,7 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                           </TableCell>
                           <TableCell>
                             <Typography variant="body2" color="text.secondary">
-                              {file.createdAt ? formattedDate(file.createdAt) : 'N/A'}
+                              {file.createdAt ? formattedDate(file.createdAt) : ' '}
                             </Typography>
                           </TableCell>
                           <TableCell align="center">

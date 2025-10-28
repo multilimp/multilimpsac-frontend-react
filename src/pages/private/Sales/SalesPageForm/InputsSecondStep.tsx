@@ -52,7 +52,7 @@ const InputsSecondStep = ({ form, isEditing = false, currentSale, isPrivateSale 
                       clienteEstado.provincia,
                       clienteEstado.distrito,
                       clienteEstado.direccion
-                    ].filter(Boolean).join(' - ') || 'N/A'}
+                    ].filter(Boolean).join(' - ') || ' '}
                   </Typography>
                 </Box>
               )}
@@ -63,7 +63,7 @@ const InputsSecondStep = ({ form, isEditing = false, currentSale, isPrivateSale 
                   Código UE:
                 </Typography>
                 <Typography component="span" fontSize={13} color="#fff" sx={{ ml: 1, fontWeight: 500 }}>
-                  {clienteEstado?.codigoUnidadEjecutora || 'N/A'}
+                  {clienteEstado?.codigoUnidadEjecutora || ' '}
                 </Typography>
               </Box>
             </Box>

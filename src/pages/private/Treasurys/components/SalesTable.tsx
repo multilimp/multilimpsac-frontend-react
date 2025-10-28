@@ -14,7 +14,7 @@ interface SalesTreasuryTableProps {
     onReload?: () => void | Promise<void>;
 }
 
-const defaultText = 'N/A';
+const defaultText = ' ';
 
 export default function SalesTreasuryTable({
     data,
