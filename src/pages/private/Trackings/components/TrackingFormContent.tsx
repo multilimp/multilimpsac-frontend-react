@@ -40,7 +40,7 @@ import {
   GetApp as DownloadIcon,
   Payment as PaymentIcon,
 } from '@mui/icons-material';
-import { notification, Form, Input, Select } from 'antd';
+import { notification, Form, Input, Select, Card as AntCard, Button as AntButton, Space } from 'antd';
 import TextArea from 'antd/lib/input/TextArea';
 import dayjs, { Dayjs } from 'dayjs';
 import Grid from '@mui/material/Grid';
@@ -77,6 +77,7 @@ import { RolesEnum } from '@/services/users/user.enum';
 import BillingHistory from '@/components/BillingHistory';
 import { BillingProps } from '@/services/billings/billings';
 import { getBillingHistoryByOrdenCompraId } from '@/services/billings/billings.request';
+import { getGestionesCobranza, createGestionCobranza, updateGestionCobranza, type GestionCobranza } from '@/services/cobranza/cobranza.service';
 
 interface TrackingFormContentProps {
   sale: SaleProps;
@@ -245,11 +246,19 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
   const [originalTransportePaymentsState, setOriginalTransportePaymentsState] = useState<TransportePaymentsState | null>(null);
   const [transportePaymentsChanged, setTransportePaymentsChanged] = useState(false);
   const [savingTransportePayments, setSavingTransportePayments] = useState(false);
+  
+  // Estados para gestión de cobranzas por OC
+  const [gestionesCobranza, setGestionesCobranza] = useState<GestionCobranza[]>([]);
+  const [notaCobranzaOC, setNotaCobranzaOC] = useState('');
+  const [originalNotaCobranzaOC, setOriginalNotaCobranzaOC] = useState('');
+  const [notaCobranzaChanged, setNotaCobranzaChanged] = useState(false);
+  const [savingNotaCobranza, setSavingNotaCobranza] = useState(false);
 
   useEffect(() => {
     loadProviderOrders();
     initializeOCValues();
     loadTransportCompanies();
+    loadGestionesCobranza();
   }, [sale.id]);
 
   useEffect(() => {
@@ -1108,6 +1117,80 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
     } finally {
       setSavingOC(false);
     }
+  };
+
+  // Funciones para gestión de cobranzas por OC
+  const loadGestionesCobranza = async () => {
+    try {
+      const gestiones = await getGestionesCobranza(sale.id);
+      setGestionesCobranza(gestiones);
+      
+      // Cargar la nota de cobranza más reciente si existe
+      const ultimaGestion = gestiones.find(g => g.notaGestion);
+      if (ultimaGestion?.notaGestion) {
+        setNotaCobranzaOC(ultimaGestion.notaGestion);
+        setOriginalNotaCobranzaOC(ultimaGestion.notaGestion);
+      }
+    } catch (error) {
+      console.error('Error loading gestiones cobranza:', error);
+      setGestionesCobranza([]);
+    }
+  };
+
+  const handleNotaCobranzaChange = (value: string) => {
+    setNotaCobranzaOC(value);
+    setNotaCobranzaChanged(value !== originalNotaCobranzaOC);
+  };
+
+  const saveNotaCobranza = async () => {
+    if (!notaCobranzaChanged || !notaCobranzaOC.trim()) {
+      return;
+    }
+
+    setSavingNotaCobranza(true);
+    try {
+      const gestionData: Partial<GestionCobranza> = {
+        ordenCompraId: sale.id,
+        fechaGestion: dayjs().format('YYYY-MM-DD'),
+        notaGestion: notaCobranzaOC.trim(),
+        usuarioId: 1 // TODO: Obtener del contexto de usuario
+      };
+
+      // Buscar si ya existe una gestión con nota
+      const existingGestion = gestionesCobranza.find(g => g.notaGestion);
+      
+      if (existingGestion) {
+        // Actualizar gestión existente
+        await updateGestionCobranza(existingGestion.id!, gestionData);
+      } else {
+        // Crear nueva gestión
+        await createGestionCobranza(gestionData as Omit<GestionCobranza, 'id' | 'createdAt' | 'updatedAt'>);
+      }
+
+      setOriginalNotaCobranzaOC(notaCobranzaOC);
+      setNotaCobranzaChanged(false);
+      
+      // Recargar gestiones
+      await loadGestionesCobranza();
+
+      notification.success({
+        message: 'Nota de cobranza guardada',
+        description: 'La nota de cobranza se ha guardado correctamente'
+      });
+    } catch (error) {
+      notification.error({
+        message: 'Error al guardar',
+        description: 'No se pudo guardar la nota de cobranza'
+      });
+      console.error('Error saving nota cobranza:', error);
+    } finally {
+      setSavingNotaCobranza(false);
+    }
+  };
+
+  const cancelNotaCobranzaChanges = () => {
+    setNotaCobranzaOC(originalNotaCobranzaOC);
+    setNotaCobranzaChanged(false);
   };
 
   const cancelOCChanges = () => {
@@ -2296,31 +2379,6 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                                   />
                                 </Form.Item>
                               </Grid>
-
-                              {/* Cuarta fila: Nota de Cobranzas */}
-                              <Grid size={{ xs: 12 }}>
-                                <Typography variant="body2" sx={{
-                                  fontWeight: 600,
-                                  mb: 1.5,
-                                  color: '#374151',
-                                  fontSize: '0.875rem',
-                                  textTransform: 'uppercase',
-                                  letterSpacing: '0.05em'
-                                }}>
-                                  Nota de Cobranzas
-                                </Typography>
-                                <Form.Item
-                                  name={[`op_${op.id}`, 'notaCobranzas']}
-                                  initialValue={op.notaCobranzas}
-                                  style={{ marginBottom: 0 }}
-                                >
-                                  <TextArea
-                                    placeholder="Ingrese información de cobranzas"
-                                    rows={3}
-                                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleFieldChange(op.id.toString(), 'notaCobranzas', e.target.value)}
-                                  />
-                                </Form.Item>
-                              </Grid>
                             </Grid>
                           </Box>
                         </Grid>
@@ -2335,6 +2393,41 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
           <Box sx={{ mt: 3 }}>
             <BillingHistory billings={billingHistory} readOnly={true} />
           </Box>
+
+          {/* Sección Nota de Cobranzas en Seguimiento por OC */}
+          <AntCard 
+            title="Nota de Cobranzas en Seguimiento por OC"
+            style={{ marginBottom: 24 }}
+            headStyle={{ backgroundColor: '#f0f2f5', fontWeight: 'bold' }}
+          >
+            <div style={{ marginBottom: 16 }}>
+              <TextArea
+                placeholder="Ingrese la nota de cobranza para esta orden de compra..."
+                value={notaCobranzaOC}
+                onChange={(e) => handleNotaCobranzaChange(e.target.value)}
+                rows={4}
+                style={{ width: '100%' }}
+              />
+            </div>
+            {notaCobranzaChanged && (
+              <Space style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <AntButton
+                  onClick={cancelNotaCobranzaChanges}
+                  disabled={savingNotaCobranza}
+                >
+                  Cancelar
+                </AntButton>
+                <AntButton
+                  type="primary"
+                  onClick={saveNotaCobranza}
+                  disabled={savingNotaCobranza}
+                  loading={savingNotaCobranza}
+                >
+                  Guardar
+                </AntButton>
+              </Space>
+            )}
+          </AntCard>
 
           {/* Sección OC Conforme */}
           <Card
