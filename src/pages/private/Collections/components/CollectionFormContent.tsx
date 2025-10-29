@@ -38,7 +38,8 @@ import {
   ViewModule,
   People
 } from '@mui/icons-material';
-import { notification, Spin, Form, Input, DatePicker, Select, Modal, Row, Col, Checkbox } from 'antd';
+import { notification, Spin, Form, Input, DatePicker, Select, Modal, Row, Col, Checkbox, Card as AntCard, Button as AntButton, Space } from 'antd';
+import TextArea from 'antd/lib/input/TextArea';
 import { SaleProps } from '@/services/sales/sales';
 import { formatCurrency, formattedDate } from '@/utils/functions';
 import { StepItemContent } from '../../Sales/SalesPageForm/smallcomponents';
@@ -181,6 +182,12 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
   const [editandoPromedio, setEditandoPromedio] = useState(false);
   const [promedioLocal, setPromedioLocal] = useState<number | null>(sale.cliente?.promedioCobranza ? Number(sale.cliente.promedioCobranza) : null);
 
+  // Estados para nota de cobranza por OC
+  const [notaCobranzaOC, setNotaCobranzaOC] = useState('');
+  const [originalNotaCobranzaOC, setOriginalNotaCobranzaOC] = useState('');
+  const [notaCobranzaChanged, setNotaCobranzaChanged] = useState(false);
+  const [savingNotaCobranza, setSavingNotaCobranza] = useState(false);
+
   // Función para guardar solo el cobrador
   const handleCobradorFinish = async (values: { cobradorId?: number }) => {
     try {
@@ -315,6 +322,13 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
       }
     };
     load();
+  }, [sale?.id]);
+
+  // Cargar nota de cobranza por OC
+  useEffect(() => {
+    if (sale?.id) {
+      loadNotaCobranzaOC();
+    }
   }, [sale?.id]);
 
   const loadInitialData = async () => {
@@ -825,6 +839,79 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
     return option ? option.label : tipo;
   };
 
+  // Funciones para gestión de nota de cobranza por OC
+  const loadNotaCobranzaOC = async () => {
+    try {
+      const gestionesCobranza = await getGestionesCobranza(sale.id);
+
+      // Cargar la nota de cobranza más reciente si existe
+      const ultimaGestion = gestionesCobranza.find(g => g.notaGestion);
+      if (ultimaGestion?.notaGestion) {
+        setNotaCobranzaOC(ultimaGestion.notaGestion);
+        setOriginalNotaCobranzaOC(ultimaGestion.notaGestion);
+      }
+    } catch (error) {
+      console.error('Error loading nota cobranza OC:', error);
+    }
+  };
+
+  const handleNotaCobranzaChange = (value: string) => {
+    setNotaCobranzaOC(value);
+    setNotaCobranzaChanged(value !== originalNotaCobranzaOC);
+  };
+
+  const saveNotaCobranza = async () => {
+    if (!notaCobranzaChanged || !notaCobranzaOC.trim()) {
+      return;
+    }
+
+    setSavingNotaCobranza(true);
+    try {
+      const gestionData: Partial<GestionCobranza> = {
+        ordenCompraId: sale.id,
+        fechaGestion: dayjs().format('YYYY-MM-DD'),
+        notaGestion: notaCobranzaOC.trim(),
+        usuarioId: user?.id || 1
+      };
+
+      // Buscar si ya existe una gestión con nota
+      const gestionesCobranza = await getGestionesCobranza(sale.id);
+      const existingGestion = gestionesCobranza.find(g => g.notaGestion);
+
+      if (existingGestion) {
+        // Actualizar gestión existente
+        await updateGestionCobranza(existingGestion.id!, gestionData);
+      } else {
+        // Crear nueva gestión
+        await createGestionCobranza(gestionData as Omit<GestionCobranza, 'id' | 'createdAt' | 'updatedAt'>);
+      }
+
+      setOriginalNotaCobranzaOC(notaCobranzaOC);
+      setNotaCobranzaChanged(false);
+
+      // Recargar gestiones
+      await loadGestiones();
+
+      notification.success({
+        message: 'Nota de cobranza guardada',
+        description: 'La nota de cobranza se ha guardado correctamente'
+      });
+    } catch (error) {
+      notification.error({
+        message: 'Error al guardar',
+        description: 'No se pudo guardar la nota de cobranza'
+      });
+      console.error('Error saving nota cobranza:', error);
+    } finally {
+      setSavingNotaCobranza(false);
+    }
+  };
+
+  const cancelNotaCobranzaChanges = () => {
+    setNotaCobranzaOC(originalNotaCobranzaOC);
+    setNotaCobranzaChanged(false);
+  };
+
   return (
     <Box sx={{ p: 3 }}>
       {/* Asignación de Cobrador - Solo visible para usuarios con permiso de jefe de cobranzas */}
@@ -1047,141 +1134,6 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                   </CardContent>
                 </Card>
               </Box>
-
-              {/* Sección de documentos - Solo si hay documentos disponibles */}
-              {(sale?.documentoPeruCompras || sale?.documentoOce || sale?.documentoOcf) && (
-                <Box sx={{
-                  borderTop: '1px solid rgba(255, 255, 255, 0.2)'
-                }}>
-                  <Typography variant="caption" sx={{
-                    color: '#BDBDBD',
-                    fontSize: '0.75rem',
-                    fontWeight: 600,
-                    mb: 1,
-                    pl: 1,
-                    display: 'block'
-                  }}>
-                    DOCUMENTOS DISPONIBLES
-                  </Typography>
-
-                  <Box sx={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(3, 1fr)',
-                    gap: 1
-                  }}>
-                    {/* Perú Compras */}
-                    {sale?.documentoPeruCompras && (
-                      <Card sx={{
-                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                        border: '1px solid #e0e0e0',
-                        minHeight: '60px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        boxShadow: 'none'
-                      }}>
-                        <CardContent sx={{ py: 1, px: 1.5, '&:last-child': { pb: 1 }, width: '100%' }}>
-                          <Stack direction="row" spacing={1} alignItems="center">
-                            <Box sx={{ flex: 1 }}>
-                              <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, fontSize: '0.7rem' }}>
-                                PERÚ COMPRAS
-                              </Typography>
-                              <Typography variant="body2" sx={{ fontWeight: 500, color: '#424242', fontSize: '0.85rem' }}>
-                                Documento disponible
-                              </Typography>
-                            </Box>
-                            <IconButton
-                              size="small"
-                              onClick={() => window.open(sale.documentoPeruCompras, '_blank')}
-                              sx={{
-                                color: '#424242',
-                                bgcolor: 'rgba(0, 0, 0, 0.04)',
-                                '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.08)' }
-                              }}
-                              title="Ver documento Perú Compras"
-                            >
-                              <ReceiptIcon fontSize="small" />
-                            </IconButton>
-                          </Stack>
-                        </CardContent>
-                      </Card>
-                    )}
-
-                    {/* OCE */}
-                    {sale?.documentoOce && (
-                      <Card sx={{
-                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                        border: '1px solid #e0e0e0',
-                        minHeight: '60px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        boxShadow: 'none'
-                      }}>
-                        <CardContent sx={{ py: 1, px: 1.5, '&:last-child': { pb: 1 }, width: '100%' }}>
-                          <Stack direction="row" spacing={1} alignItems="center">
-                            <Box sx={{ flex: 1 }}>
-                              <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, fontSize: '0.7rem' }}>
-                                DOCUMENTO OCE
-                              </Typography>
-                              <Typography variant="body2" sx={{ fontWeight: 500, color: '#424242', fontSize: '0.85rem' }}>
-                                OCE disponible
-                              </Typography>
-                            </Box>
-                            <IconButton
-                              size="small"
-                              onClick={() => window.open(sale.documentoOce, '_blank')}
-                              sx={{
-                                color: '#424242',
-                                bgcolor: 'rgba(0, 0, 0, 0.04)',
-                                '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.08)' }
-                              }}
-                              title="Ver documento OCE"
-                            >
-                              <ReceiptIcon fontSize="small" />
-                            </IconButton>
-                          </Stack>
-                        </CardContent>
-                      </Card>
-                    )}
-
-                    {/* OCF */}
-                    {sale?.documentoOcf && (
-                      <Card sx={{
-                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                        border: '1px solid #e0e0e0',
-                        minHeight: '60px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        boxShadow: 'none'
-                      }}>
-                        <CardContent sx={{ py: 1, px: 1.5, '&:last-child': { pb: 1 }, width: '100%' }}>
-                          <Stack direction="row" spacing={1} alignItems="center">
-                            <Box sx={{ flex: 1 }}>
-                              <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, fontSize: '0.7rem' }}>
-                                DOCUMENTO OCF
-                              </Typography>
-                              <Typography variant="body2" sx={{ fontWeight: 500, color: '#424242', fontSize: '0.85rem' }}>
-                                OCF disponible
-                              </Typography>
-                            </Box>
-                            <IconButton
-                              size="small"
-                              onClick={() => window.open(sale.documentoOcf, '_blank')}
-                              sx={{
-                                color: '#424242',
-                                bgcolor: 'rgba(0, 0, 0, 0.04)',
-                                '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.08)' }
-                              }}
-                              title="Ver documento OCF"
-                            >
-                              <ReceiptIcon fontSize="small" />
-                            </IconButton>
-                          </Stack>
-                        </CardContent>
-                      </Card>
-                    )}
-                  </Box>
-                </Box>
-              )}
             </Box>
           }
         >
@@ -1499,6 +1451,35 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
             </TableContainer>
           </CardContent>
         </Card>
+
+        {/* Nota de Cobranza por OC */}
+        <AntCard
+          title="Nota de Cobranzas en Seguimiento por OC"
+          style={{ marginTop: 24 }}
+        >
+          <TextArea
+            value={notaCobranzaOC}
+            onChange={(e) => handleNotaCobranzaChange(e.target.value)}
+            placeholder="Ingrese la nota de cobranza para esta orden de compra..."
+            rows={4}
+            style={{ marginBottom: 16 }}
+          />
+
+          {notaCobranzaChanged && (
+            <Space>
+              <AntButton
+                type="primary"
+                onClick={saveNotaCobranza}
+                loading={savingNotaCobranza}
+              >
+                Guardar Nota
+              </AntButton>
+              <AntButton onClick={cancelNotaCobranzaChanges}>
+                Cancelar
+              </AntButton>
+            </Space>
+          )}
+        </AntCard>
       </Spin>
 
       {/* Modal para gestiones */}
