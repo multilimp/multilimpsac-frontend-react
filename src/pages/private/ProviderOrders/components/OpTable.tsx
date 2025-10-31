@@ -35,6 +35,7 @@ interface OpDataTable {
   fechaProgramada: string;
   fechaRecepcion: string;
   totalProveedor: string;
+  totalVenta: string;
   transporteRuc: string;
   transporteNombre: string;
   numeroFacturaTransporte: string;
@@ -45,6 +46,8 @@ interface OpDataTable {
   fechaMaximaEntrega: string;
   tipoEntrega: string;
   tipoPago: string | null;
+  ordenCompraElectronica: string;
+  ordenCompraFisica: string;
   estadoRolOp: EstadoVentaType;
 }
 
@@ -81,6 +84,7 @@ const OpTable = ({ data, loading, onRowClick, onReload }: OpTableProps) => {
       fechaProgramada: formattedDate(item.fechaProgramada, undefined, defaultText),
       fechaRecepcion: formattedDate(item.fechaRecepcion, undefined, defaultText),
       totalProveedor: item.totalProveedor ? formatCurrency(parseFloat(item.totalProveedor)) : defaultText,
+      totalVenta: item.ordenCompra?.montoVenta ? formatCurrency(parseFloat(item.ordenCompra?.montoVenta)) : defaultText,
       transporteRuc: transporte?.transporte?.ruc ?? defaultText,
       transporteNombre: transporte?.transporte?.razonSocial ?? defaultText,
       numeroFacturaTransporte: defaultText,
@@ -92,8 +96,8 @@ const OpTable = ({ data, loading, onRowClick, onReload }: OpTableProps) => {
       tipoEntrega: item.tipoEntrega ?? defaultText,
       estadoRolOp: item.estadoRolOp,
       tipoPago: item.tipoPago || null,
-      ordenCompraElectronica: item.ordenCompra ?? false,
-      ordenCompraFisica: item.ordenCompra ?? false,
+      ordenCompraElectronica: item.ordenCompra?.documentoOce ?? "Sin documento",
+      ordenCompraFisica: item.ordenCompra?.documentoOcf ?? "Sin documento",
     } as OpDataTable;
   });
 
@@ -148,9 +152,9 @@ const OpTable = ({ data, loading, onRowClick, onReload }: OpTableProps) => {
     { title: 'RUC Cliente', dataIndex: 'clienteRuc', width: 150, filter: true, sort: true },
     { title: 'Razón Social Cliente', dataIndex: 'clienteNombre', width: 200, filter: true, sort: true },
 
-    { title: 'OCE', dataIndex: 'ordenCompraElectronica', width: 150, filter: true, sort: true },
-    { title: 'OCF', dataIndex: 'ordenCompraFisica', width: 150, filter: true, sort: true },
-    { title: 'OC Importe Total', dataIndex: 'totalProveedor', width: 150, filter: true, sort: true },
+    { title: 'OCE', dataIndex: 'ordenCompraElectronica', width: 150 },
+    { title: 'OCF', dataIndex: 'ordenCompraFisica', width: 150 },
+    { title: 'OC Importe Total', dataIndex: 'totalVenta', width: 150, filter: true, sort: true },
     { title: 'Cliente Departamento', dataIndex: 'clienteDepartamento', width: 150, filter: true, sort: true },
     { title: 'RUC Proveedor', dataIndex: 'proveedorRuc', width: 150, filter: true, sort: true },
     { title: 'Razón Social Proveedor', dataIndex: 'proveedorNombre', width: 200, filter: true, sort: true },
