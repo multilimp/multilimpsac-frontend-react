@@ -7,6 +7,7 @@ import TrackingFormContent from './components/TrackingFormContent';
 import { BlackBarKeyEnum } from '@/types/global.enum';
 import { getSaleById } from '@/services/sales/sales.request';
 import { SaleProps } from '@/services/sales/sales';
+import { Spin } from 'antd/lib';
 
 const TrackingForm = () => {
   const { setBlackBarKey, setSelectedSale } = useGlobalInformation();
@@ -16,6 +17,9 @@ const TrackingForm = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Activar BlackBar inmediatamente al cargar el componente
+    setBlackBarKey(BlackBarKeyEnum.OP);
+
     const loadSale = async () => {
       if (!trackingId) {
         navigate('/tracking');
@@ -29,7 +33,6 @@ const TrackingForm = () => {
         if (saleData) {
           setSale(saleData);
           setSelectedSale(saleData);
-          setBlackBarKey(BlackBarKeyEnum.OP);
         } else {
           message.error('No se encontró la venta');
           navigate('/tracking');
@@ -53,9 +56,9 @@ const TrackingForm = () => {
 
   if (loading) {
     return (
-      <Stack direction="column" spacing={2} alignItems="center" justifyContent="center" sx={{ minHeight: '200px' }}>
-        <div>Cargando seguimiento...</div>
-      </Stack>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+        <Spin size="large" />
+      </div>
     );
   }
 

@@ -316,7 +316,7 @@ const DashboardTesoreria: React.FC = () => {
         return (
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}>
                 <CircularProgress size={60} />
-                <Typography sx={{ ml: 2 }} variant="h6">Cargando dashboard...</Typography>
+                <Typography sx={{ ml: 2 }} variant="h6">Cargando datos...</Typography>
             </Box>
         );
     }

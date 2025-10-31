@@ -55,7 +55,7 @@ const Treasury = () => {
             onChange={(_, newValue) => setActiveTab(newValue)}
             aria-label="tabs de tesorería"
           >
-            <Tab label="Dashboard Pagos" />
+            <Tab label="Tabla de Pagos" />
             <Tab label="Órdenes de Proveedor (OP)" />
             <Tab label="Órdenes de Compra (OC)" />
           </Tabs>

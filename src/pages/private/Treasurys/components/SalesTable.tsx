@@ -1,7 +1,7 @@
 // src/components/treasurys/SalesTable.tsx
 import { useMemo } from 'react';
-import { Button } from '@mui/material';
-import { Visibility } from '@mui/icons-material';
+import { Button, Chip } from '@mui/material';
+import { Visibility, CheckCircle, Schedule, Cancel, HourglassEmpty, Assignment } from '@mui/icons-material';
 import AntTable, { AntColumnType } from '@/components/AntTable';
 import { SaleProps } from '@/services/sales/sales';
 import { formatCurrency, formattedDate } from '@/utils/functions';
@@ -15,6 +15,57 @@ interface SalesTreasuryTableProps {
 }
 
 const defaultText = ' ';
+
+// Helper function para obtener las propiedades del estado OC
+const getEstadoOCProps = (estado: string) => {
+    const estadoUpper = (estado || 'PENDIENTE').toUpperCase();
+    
+    switch (estadoUpper) {
+        case 'COMPLETADO':
+        case 'FINALIZADO':
+        case 'ENTREGADO':
+            return {
+                color: 'success' as const,
+                icon: <CheckCircle sx={{ fontSize: 16 }} />,
+                label: 'COMPLETADO'
+            };
+        case 'PENDIENTE':
+        case 'EN_PROCESO':
+        case 'PROCESANDO':
+            return {
+                color: 'warning' as const,
+                icon: <Schedule sx={{ fontSize: 16 }} />,
+                label: 'PENDIENTE'
+            };
+        case 'CANCELADO':
+        case 'ANULADO':
+            return {
+                color: 'error' as const,
+                icon: <Cancel sx={{ fontSize: 16 }} />,
+                label: 'CANCELADO'
+            };
+        case 'EN_ESPERA':
+        case 'ESPERANDO':
+            return {
+                color: 'info' as const,
+                icon: <HourglassEmpty sx={{ fontSize: 16 }} />,
+                label: 'EN ESPERA'
+            };
+        case 'BORRADOR':
+        case 'DRAFT':
+            return {
+                color: 'default' as const,
+                icon: <Assignment sx={{ fontSize: 16 }} />,
+                label: 'BORRADOR'
+            };
+        default:
+            return {
+                color: 'primary' as const,
+                icon: <Assignment sx={{ fontSize: 16 }} />,
+                label: estadoUpper
+            };
+    }
+};
 
 export default function SalesTreasuryTable({
     data,
@@ -78,17 +129,29 @@ export default function SalesTreasuryTable({
         {
             title: 'Estado OC',
             dataIndex: 'estadoVenta',
-            width: 120,
+            width: 140,
             sort: true,
             filter: true,
-            render: (value) => (
-                <span style={{
-                    color: value === 'COMPLETADO' ? 'green' : value === 'PENDIENTE' ? 'orange' : 'red',
-                    fontWeight: 'bold'
-                }}>
-                    {value || 'PENDIENTE'}
-                </span>
-            )
+            render: (value) => {
+                const estadoProps = getEstadoOCProps(value);
+                return (
+                    <Chip
+                        icon={estadoProps.icon}
+                        label={estadoProps.label}
+                        color={estadoProps.color}
+                        variant="filled"
+                        size="small"
+                        sx={{
+                            fontWeight: 600,
+                            fontSize: '0.75rem',
+                            minWidth: '120px',
+                            '& .MuiChip-icon': {
+                                marginLeft: '8px'
+                            }
+                        }}
+                    />
+                );
+            }
         }
     ];
 

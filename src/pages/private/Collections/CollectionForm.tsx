@@ -14,10 +14,19 @@ const CollectionForm = () => {
   const { setSelectedSale, setBlackBarKey } = useGlobalInformation();
 
   useEffect(() => {
+    // Activar la BlackBar inmediatamente (igual que en BillingsForm)
+    setBlackBarKey(BlackBarKeyEnum.OP);
+    
     if (saleId) {
       loadSale();
     }
-  }, [saleId]);
+    
+    // Cleanup: Limpiar barra negra al desmontar
+    return () => {
+      setBlackBarKey(null);
+      setSelectedSale(null);
+    };
+  }, [saleId, setBlackBarKey, setSelectedSale]);
 
   const loadSale = async () => {
     try {
@@ -27,9 +36,8 @@ const CollectionForm = () => {
       
       setSale(saleData);
       
-      // Configurar la barra negra con datos de la venta para cobranza
+      // Configurar la venta seleccionada para la BlackBar
       setSelectedSale(saleData);
-      setBlackBarKey(BlackBarKeyEnum.OP); // Usar OP para cobranzas como especificado
       
     } catch (error) {
       notification.error({
@@ -41,14 +49,6 @@ const CollectionForm = () => {
       setLoading(false);
     }
   };
-
-  // Cleanup: Limpiar barra negra al desmontar
-  useEffect(() => {
-    return () => {
-      setBlackBarKey(null);
-      setSelectedSale(null);
-    };
-  }, [setBlackBarKey, setSelectedSale]);
 
   if (loading) {
     return (
