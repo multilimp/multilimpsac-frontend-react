@@ -31,14 +31,14 @@ import {
   Image as ImageIcon,
   PictureAsPdf as PdfIcon,
   Description as DocumentIcon,
-  GetApp as DownloadIcon,
   EditOutlined,
   VisibilityOutlined,
   ViewList,
   ViewModule,
-  People
+  People,
+  ArrowBack
 } from '@mui/icons-material';
-import { notification, Spin, Form, Input, DatePicker, Select, Modal, Row, Col, Checkbox, Card as AntCard, Button as AntButton, Space } from 'antd';
+import { notification, Spin, Form, Input, Modal, Row, Col, Card as AntCard, Button as AntButton, Space } from 'antd';
 import TextArea from 'antd/lib/input/TextArea';
 import { SaleProps } from '@/services/sales/sales';
 import { formatCurrency, formattedDate } from '@/utils/functions';
@@ -243,6 +243,42 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
         description: 'No se pudo asignar el cobrador seleccionado'
       });
       console.error('Error assigning cobrador:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Función para guardar automáticamente el estado de cobranza rol
+  const handleEstadoCobranzaRolChange = async (estadoCobranzaRol: string) => {
+    try {
+      setLoading(true);
+
+      // Actualizar el campo en el formulario
+      form.setFieldsValue({ estadoCobranzaRol });
+
+      // Verificar si el valor ha cambiado
+      const currentEstado = estadoCobranzaRol;
+      const originalEstado = originalCobranzaData?.estadoCobranzaRol;
+
+      if (currentEstado !== originalEstado) {
+        const changedFields = { estadoCobranzaRol: currentEstado };
+
+        await updateCobranzaFields(sale.id, changedFields);
+
+        // Actualizar los datos originales
+        setOriginalCobranzaData(prev => ({ ...prev, ...changedFields }));
+
+        notification.success({
+          message: 'Estado actualizado',
+          description: 'El estado de cobranza se ha actualizado correctamente'
+        });
+      }
+    } catch (error) {
+      notification.error({
+        message: 'Error al actualizar estado',
+        description: 'No se pudo actualizar el estado de cobranza'
+      });
+      console.error('Error updating estado cobranza rol:', error);
     } finally {
       setLoading(false);
     }
@@ -950,7 +986,7 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
         </Card>
       )}
 
-      <Spin spinning={loading}>
+      <Box>
         {/* Barra Negra de OP */}
         <StepItemContent
           showHeader={true}
@@ -1280,12 +1316,7 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                     <DatePickerAntd placeholder="Seleccionar fecha" />
                   </Form.Item>
                 </Col>
-                {/* Nueva fila: Estado de Cobranza (Rol) */}
-                <Col span={8}>
-                  <Form.Item label="Estado de Cobranza (Rol)" name="estadoCobranzaRol">
-                    <SelectGeneric placeholder="Seleccionar estado" options={estadosCobranzaRolOptions} />
-                  </Form.Item>
-                </Col>
+
               </Row>
 
               <Box sx={{ mt: 3, display: 'flex', justifyContent: 'right', alignItems: 'center' }}>
@@ -1480,7 +1511,7 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
             </Space>
           )}
         </AntCard>
-      </Spin>
+      </Box>
 
       {/* Modal para gestiones */}
       <Modal
@@ -1919,6 +1950,41 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                 </Typography>
               </CardContent>
             </Card>
+          </Box>
+        </CardContent>
+      </Card>
+
+      {/* Selector de Estado de Cobranza Rol */}
+      <Card sx={{ my: 3, width: '100%' }}>
+        <CardContent>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            {/* Botón de regresar al lado izquierdo */}
+            <Button
+              variant="outlined"
+              startIcon={<ArrowBack />}
+              onClick={() => window.history.back()}
+              sx={{
+                color: '#666',
+                borderColor: '#ddd',
+                '&:hover': {
+                  borderColor: '#999',
+                  backgroundColor: '#f5f5f5'
+                }
+              }}
+            >
+              Regresar
+            </Button>
+
+            {/* Selector de estado al lado derecho */}
+            <Box sx={{ minWidth: 250 }}>
+              <SelectGeneric
+                placeholder="Seleccionar estado"
+                showSearch={false}
+                options={estadosCobranzaRolOptions}
+                value={form.getFieldValue('estadoCobranzaRol')}
+                onChange={(value) => handleEstadoCobranzaRolChange(value)}
+              />
+            </Box>
           </Box>
         </CardContent>
       </Card>

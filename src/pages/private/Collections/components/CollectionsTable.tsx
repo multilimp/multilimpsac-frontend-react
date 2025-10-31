@@ -22,7 +22,7 @@ interface CollectionsTableProps {
 const defaultText = ' ';
 
 const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onReload }) => {
-  const [filtroTipoVenta, setFiltroTipoVenta] = useState<string>('todos');
+  const [filtroTipoVenta, setFiltroTipoVenta] = useState<string>('estado');
   const [contactsDrawerOpen, setContactsDrawerOpen] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
   const [selectedTitle, setSelectedTitle] = useState<string>('');
@@ -66,7 +66,7 @@ const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRe
     let filteredData = data;
     if (filtroTipoVenta === 'privada') {
       filteredData = data.filter(item => item.ventaPrivada === true);
-    } else {
+    } else if (filtroTipoVenta === 'estado') {
       filteredData = data.filter(item => item.ventaPrivada === false || item.ventaPrivada === null || item.ventaPrivada === undefined);
     }
 
@@ -113,7 +113,7 @@ const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRe
         oce: item.documentoOce || null,
         ocf: item.documentoOcf || null,
         carta_ampliacion: item.cartaAmpliacion || null,
-        estado_indicador: String(item.estadoRolSeguimiento || 'PENDIENTE'),
+        estado_indicador: String(item.estadoCobranzaRol || 'PENDIENTE'),
         rawdata: item,
       };
     });
@@ -216,14 +216,7 @@ const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRe
         const fuera = entregaTime > maxTime;
         return (
           <Box
-            sx={{
-              borderRadius: '4px',
-              px: 1.25,
-              py: 0.5,
-              fontWeight: 600,
-              fontSize: '0.75rem',
-              textAlign: 'center',
-            }}
+
           >
             {fuera ? 'Sí' : 'No'}
           </Box>
@@ -267,7 +260,7 @@ const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRe
     },
     { title: 'Código OCF', dataIndex: 'codigo_ocf_numero', width: 120, sort: true, filter: true },
     {
-      title: 'Perú Compras', dataIndex: 'documento_peru_compras', width: 160, render: (value) => value ? (
+      title: 'Perú Compras', dataIndex: 'documento_peru_compras', width: 120, render: (value) => value ? (
         <IconButton color="error" component="a" href={value} target="_blank" size="small">
           <PictureAsPdf />
         </IconButton>

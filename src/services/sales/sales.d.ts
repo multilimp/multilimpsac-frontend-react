@@ -53,6 +53,7 @@ export interface SaleProps {
   estadoVenta: EstadoVentaType;
   estadoFacturacion: EstadoVentaType;
   estadoRolSeguimiento: EstadoSeguimientoType;
+  estadoCobranzaRol?: EstadoSeguimientoType;
   estadoActivo: boolean;
   createdAt: string;
   updatedAt: string;
