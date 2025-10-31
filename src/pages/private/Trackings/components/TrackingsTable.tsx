@@ -107,7 +107,7 @@ export const TrackingsTable = ({ data, loading, onRowClick, onReload }: Tracking
       codigoOcf: codigoOcfValue,
       cue: item?.cliente?.codigoUnidadEjecutora ?? defaultText,
       departamentoEntrega: item?.departamentoEntrega ?? defaultText,
-      departamentoCliente,
+      departamentoCliente: departamentoCliente,
       estadoRolSeguimiento: (item?.estadoRolSeguimiento ?? 'PENDIENTE') as EstadoSeguimientoType,
       numeroFactura,
       fechaFactura,
@@ -192,8 +192,8 @@ export const TrackingsTable = ({ data, loading, onRowClick, onReload }: Tracking
         </Tooltip>
       ),
     },
-    { title: 'Fecha Máxima Entrega', dataIndex: 'fechaMaxForm', width: 150, filter: true, sort: true },
     { title: 'Monto Venta', dataIndex: 'montoVenta', width: 150, filter: true, sort: true },
+    { title: 'Departamento Cliente', dataIndex: 'departamentoCliente', width: 150, filter: true, sort: true },
     {
       title: 'OCE',
       dataIndex: 'id',
@@ -228,6 +228,13 @@ export const TrackingsTable = ({ data, loading, onRowClick, onReload }: Tracking
       filter: true,
       // Sin render: se usa directamente el valor normalizado de formattedData
     },
+    { title: 'Número Factura', dataIndex: 'numeroFactura', width: 150, filter: true, sort: true },
+    { title: 'Fecha Factura', dataIndex: 'fechaFactura', width: 150, filter: true, sort: true },
+    { title: 'GRR', dataIndex: 'grr', width: 150, filter: true, sort: true },
+    { title: 'Refact', dataIndex: 'refact', width: 150, filter: true, sort: true },
+    { title: 'Fecha Máxima Entrega', dataIndex: 'fechaMaxForm', width: 150, filter: true, sort: true },
+    { title: 'Fecha Entrega OC', dataIndex: 'fechaEntregaOc', width: 150, filter: true, sort: true },
+    { title: 'Fecha Perú Compras', dataIndex: 'fechaPeruCompras', width: 150, filter: true, sort: true },
     {
       title: 'Perú Compras', dataIndex: 'id', width: 150,
       render: (_, record) => record.rawdata?.documentoPeruCompras ?
@@ -248,12 +255,6 @@ export const TrackingsTable = ({ data, loading, onRowClick, onReload }: Tracking
           defaultText
         ),
     },
-    { title: 'Fecha Perú Compras', dataIndex: 'fechaPeruCompras', width: 150, filter: true, sort: true },
-    { title: 'Fecha Entrega OC', dataIndex: 'fechaEntregaOc', width: 150, filter: true, sort: true },
-    { title: 'Número Factura', dataIndex: 'numeroFactura', width: 150, filter: true, sort: true },
-    { title: 'Fecha Factura', dataIndex: 'fechaFactura', width: 150, filter: true, sort: true },
-    { title: 'GRR', dataIndex: 'grr', width: 150, filter: true, sort: true },
-    { title: 'Refact', dataIndex: 'refact', width: 150, filter: true, sort: true },
     {
       title: 'Fuera de plazo',
       dataIndex: 'fuera_plazo',

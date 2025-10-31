@@ -1,10 +1,15 @@
 import AntTable, { AntColumnType } from '@/components/AntTable';
 import { ProviderOrderProps } from '@/services/providerOrders/providerOrders';
 import { formatCurrency, formattedDate } from '@/utils/functions';
-import { IconButton, Button, Box, Chip } from '@mui/material';
-import { PictureAsPdf, Visibility } from '@mui/icons-material';
+import { Button, Box, Chip } from '@mui/material';
+import { Visibility } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import { ESTADOS, EstadoVentaType, ESTADO_ROL_COLORS } from '@/utils/constants';
+
+type TransportePagoItem = {
+  fechaPago?: string | null;
+  montoPago?: number | null;
+};
 
 interface OpTableProps {
   data: Array<ProviderOrderProps>;
@@ -23,39 +28,76 @@ interface OpDataTable {
   codigoVenta: string;
   clienteRuc: string;
   clienteNombre: string;
+  clienteDepartamento: string;
   contactoProveedorNombre: string;
   contactoProveedorCargo: string;
   fechaDespacho: string;
   fechaProgramada: string;
   fechaRecepcion: string;
   totalProveedor: string;
+  transporteRuc: string;
+  transporteNombre: string;
+  numeroFacturaTransporte: string;
+  numeroGuiaTransporte: string;
+  fleteCotizado: string;
+  fletePagado: string;
+  transporteFechaPago: string;
+  fechaMaximaEntrega: string;
+  tipoEntrega: string;
+  tipoPago: string | null;
   estadoRolOp: EstadoVentaType;
 }
 
 const defaultText = ' ';
 
 const OpTable = ({ data, loading, onRowClick, onReload }: OpTableProps) => {
-  const formattedData: Array<OpDataTable> = data.map((item) => ({
-    id: item.id,
-    rawdata: item,
-    codigoOp: item.codigoOp,
-    proveedorRuc: item.proveedor?.ruc ?? defaultText,
-    proveedorNombre: item.proveedor?.razonSocial ?? defaultText,
-    ordenCompraId: item.ordenCompraId ?? 0,
-    codigoVenta: item.ordenCompra?.codigoVenta ?? defaultText,
-    clienteRuc: item.ordenCompra?.cliente?.ruc ?? defaultText,
-    clienteNombre: item.ordenCompra?.cliente?.razonSocial ?? defaultText,
-    contactoProveedorNombre: item.contactoProveedor?.nombre ?? defaultText,
-    contactoProveedorCargo: item.contactoProveedor?.cargo ?? defaultText,
-    fechaDespacho: formattedDate(item.fechaDespacho, undefined, defaultText),
-    fechaProgramada: formattedDate(item.fechaProgramada, undefined, defaultText),
-    fechaRecepcion: formattedDate(item.fechaRecepcion, undefined, defaultText),
-    totalProveedor: item.totalProveedor ? formatCurrency(parseFloat(item.totalProveedor)) : defaultText,
-    tipoPago: item.tipoPago,
-    estadoRolOp: item.estadoRolOp,
-  }));
+  const formattedData: Array<OpDataTable> = data.map((item) => {
+    const transporte = Array.isArray(item.transportesAsignados) && item.transportesAsignados.length > 0 ? item.transportesAsignados[0] : undefined;
+    const pagosTransporte: TransportePagoItem[] = Array.isArray(transporte?.pagos) ? (transporte?.pagos as TransportePagoItem[]) : [];
+    const fletePagadoTotal = pagosTransporte.reduce((sum, p) => sum + (p.montoPago ? Number(p.montoPago) : 0), 0);
+    let fechaPagoUltima = '';
+    for (const p of pagosTransporte) {
+      const d = p.fechaPago ? new Date(p.fechaPago) : null;
+      if (!d) continue;
+      const accDate = fechaPagoUltima ? new Date(fechaPagoUltima) : null;
+      if (!accDate || d > accDate) fechaPagoUltima = d.toISOString();
+    }
 
-  const getStatusBackgroundColor = (status: any) => {
+    return {
+      id: item.id,
+      rawdata: item,
+      codigoOp: item.codigoOp,
+      proveedorRuc: item.proveedor?.ruc ?? defaultText,
+      proveedorNombre: item.proveedor?.razonSocial ?? defaultText,
+      ordenCompraId: item.ordenCompraId ?? 0,
+      codigoVenta: item.ordenCompra?.codigoVenta ?? defaultText,
+      clienteRuc: item.ordenCompra?.cliente?.ruc ?? defaultText,
+      clienteNombre: item.ordenCompra?.cliente?.razonSocial ?? defaultText,
+      clienteDepartamento: item.ordenCompra?.departamentoEntrega ?? defaultText,
+      ordenCompraCodigo: item.ordenCompra?.codigoVenta ?? defaultText,
+      contactoProveedorNombre: item.contactoProveedor?.nombre ?? defaultText,
+      contactoProveedorCargo: item.contactoProveedor?.cargo ?? defaultText,
+      fechaDespacho: formattedDate(item.fechaDespacho, undefined, defaultText),
+      fechaProgramada: formattedDate(item.fechaProgramada, undefined, defaultText),
+      fechaRecepcion: formattedDate(item.fechaRecepcion, undefined, defaultText),
+      totalProveedor: item.totalProveedor ? formatCurrency(parseFloat(item.totalProveedor)) : defaultText,
+      transporteRuc: transporte?.transporte?.ruc ?? defaultText,
+      transporteNombre: transporte?.transporte?.razonSocial ?? defaultText,
+      numeroFacturaTransporte: defaultText,
+      numeroGuiaTransporte: transporte?.grt ?? defaultText,
+      fleteCotizado: typeof transporte?.montoFlete === 'number' ? formatCurrency(Number(transporte?.montoFlete)) : defaultText,
+      fletePagado: fletePagadoTotal ? formatCurrency(fletePagadoTotal) : defaultText,
+      transporteFechaPago: formattedDate(fechaPagoUltima, undefined, defaultText),
+      fechaMaximaEntrega: formattedDate(item.fechaEntrega, undefined, defaultText),
+      tipoEntrega: item.tipoEntrega ?? defaultText,
+      estadoRolOp: item.estadoRolOp,
+      tipoPago: item.tipoPago || null,
+      ordenCompraElectronica: item.ordenCompra ?? false,
+      ordenCompraFisica: item.ordenCompra ?? false,
+    } as OpDataTable;
+  });
+
+  const getStatusBackgroundColor = (status: string) => {
     const normalizedStatus = typeof status === 'string' ? status.toUpperCase() as keyof typeof ESTADO_ROL_COLORS : 'PENDIENTE';
     return ESTADO_ROL_COLORS[normalizedStatus] || ESTADO_ROL_COLORS.PENDIENTE;
   };
@@ -102,18 +144,32 @@ const OpTable = ({ data, loading, onRowClick, onReload }: OpTableProps) => {
         </Button>
       )
     },
-    { title: 'RUC Proveedor', dataIndex: 'proveedorRuc', width: 150, filter: true, sort: true },
-    { title: 'Nombre Proveedor', dataIndex: 'proveedorNombre', width: 200, filter: true, sort: true },
     { title: 'Código OC', dataIndex: 'codigoVenta', width: 150, filter: true, sort: true },
     { title: 'RUC Cliente', dataIndex: 'clienteRuc', width: 150, filter: true, sort: true },
-    { title: 'Nombre Cliente', dataIndex: 'clienteNombre', width: 200, filter: true, sort: true },
-    { title: 'Contacto Proveedor', dataIndex: 'contactoProveedorNombre', width: 150, filter: true, sort: true },
-    { title: 'Cargo Contacto', dataIndex: 'contactoProveedorCargo', width: 150, filter: true, sort: true },
-    { title: 'Fecha Despacho', dataIndex: 'fechaDespacho', width: 150, filter: true, sort: true },
-    { title: 'Fecha Programada', dataIndex: 'fechaProgramada', width: 150, filter: true, sort: true },
-    { title: 'Fecha Recepción', dataIndex: 'fechaRecepcion', width: 150, filter: true, sort: true },
-    { title: 'Total Proveedor', dataIndex: 'totalProveedor', width: 150, filter: true, sort: true },
+    { title: 'Razón Social Cliente', dataIndex: 'clienteNombre', width: 200, filter: true, sort: true },
+
+    { title: 'OCE', dataIndex: 'ordenCompraElectronica', width: 150, filter: true, sort: true },
+    { title: 'OCF', dataIndex: 'ordenCompraFisica', width: 150, filter: true, sort: true },
+    { title: 'OC Importe Total', dataIndex: 'totalProveedor', width: 150, filter: true, sort: true },
+    { title: 'Cliente Departamento', dataIndex: 'clienteDepartamento', width: 150, filter: true, sort: true },
+    { title: 'RUC Proveedor', dataIndex: 'proveedorRuc', width: 150, filter: true, sort: true },
+    { title: 'Razón Social Proveedor', dataIndex: 'proveedorNombre', width: 200, filter: true, sort: true },
     { title: 'Estado Pago Proveedor', dataIndex: 'tipoPago', width: 150, filter: true, sort: true },
+
+    { title: 'RUC Transporte', dataIndex: 'transporteRuc', width: 150, filter: true, sort: true },
+    { title: 'Transporte Razón Social', dataIndex: 'transporteNombre', width: 200, filter: true, sort: true },
+    { title: 'Numero de Factura Transporte', dataIndex: 'numeroFacturaTransporte', width: 180, filter: true, sort: true },
+    { title: 'Número de Guia Transporte', dataIndex: 'numeroGuiaTransporte', width: 180, filter: true, sort: true },
+    { title: 'Flete Cotizado', dataIndex: 'fleteCotizado', width: 150, filter: true, sort: true },
+    { title: 'Flete Pagado', dataIndex: 'fletePagado', width: 150, filter: true, sort: true },
+    { title: 'Transporte Fecha de Pago', dataIndex: 'transporteFechaPago', width: 180, filter: true, sort: true },
+
+    { title: 'Fecha Maxima de Entrega', dataIndex: 'fechaMaximaEntrega', width: 180, filter: true, sort: true },
+    { title: 'Fecha Recepción', dataIndex: 'fechaRecepcion', width: 150, filter: true, sort: true },
+    { title: 'Fecha de Programación', dataIndex: 'fechaProgramada', width: 150, filter: true, sort: true },
+    { title: 'Fecha Despacho', dataIndex: 'fechaDespacho', width: 150, filter: true, sort: true },
+    { title: 'Fecha de Entrega', dataIndex: 'fechaMaximaEntrega', width: 150, filter: true, sort: true },
+    { title: 'Tipo de Entrega', dataIndex: 'tipoEntrega', width: 150, filter: true, sort: true },
     {
       title: 'Estado',
       dataIndex: 'estadoRolOp',

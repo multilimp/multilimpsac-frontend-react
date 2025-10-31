@@ -52,6 +52,8 @@ export interface ProviderOrderProps {
     direccionEntrega: string;
     referenciaEntrega: string;
     montoVenta?: string | null;
+    ordenCompraElectronica: string;
+    ordenCompraFisica: string;
     cliente: {
       id: number;
       razonSocial: string;
