@@ -53,6 +53,21 @@ const TransportsTable = ({ data, loading, onRecordAction, hideActions, modalMode
         </div>
       ),
     },
+    {
+      title: 'Saldo',
+      dataIndex: 'saldo',
+      width: 140,
+      render: (_: unknown, record: TransportProps) => {
+        const value = Number(record.saldo || 0);
+        const isFavor = record.saldoTipo === 'A_FAVOR';
+        const color = isFavor ? 'success.main' : value < 0 ? 'error.main' : 'text.primary';
+        return (
+          <Typography variant="body2" sx={{ color }}>
+            S/ {Math.abs(value).toFixed(2)}
+          </Typography>
+        );
+      },
+    },
     !hideActions && {
       title: 'Contactos',
       dataIndex: 'contactos',

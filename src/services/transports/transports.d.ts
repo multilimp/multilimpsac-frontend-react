@@ -39,4 +39,8 @@ export interface TransportProps {
 
   // Información bancaria para pagos - múltiples cuentas
   cuentasBancarias?: BankAccount[];
+
+  // Información de saldos
+  saldo?: number;
+  saldoTipo?: 'A_FAVOR' | 'DEBE';
 }

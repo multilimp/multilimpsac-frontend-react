@@ -22,7 +22,7 @@ import { getCotizaciones } from '@/services/quotes/quotes.request';
 import { BlackBarKeyEnum } from '@/types/global.enum';
 import { ProviderOrderProps } from '@/services/providerOrders/providerOrders';
 import { getAllOrderProviders } from '@/services/providerOrders/providerOrders.requests';
-import { getProviderFinancialData } from '@/services/saldos/saldos.request';
+import { getProviderFinancialData, getTransportFinancialData } from '@/services/saldos/saldos.request';
 
 export type SaleInputsType = { enterprise: null | CompanyProps; tipoVenta: 'directa' | 'privada'; file: null | File };
 export type QuoteInputsType = { enterprise: null | CompanyProps };
@@ -198,7 +198,23 @@ const GlobalInformationProvider = ({ children }: { children: ReactNode }) => {
     try {
       setLoadingTransports(true);
       const res = await getTransports();
-      setTransports(res);
+
+      // Enriquecer cada transporte con su resumen de saldo
+      const enriched: TransportProps[] = await Promise.all(
+        res.map(async (t) => {
+          try {
+            const fin = await getTransportFinancialData(t.id);
+            const { saldoFavor, saldoDeuda, saldoNeto, tipoSaldo } = fin.resumenSaldo;
+            const signedSaldo = tipoSaldo === 'A_FAVOR' ? saldoNeto : tipoSaldo === 'DEBE' ? -saldoNeto : 0;
+            const mappedTipoSaldo = tipoSaldo === 'NEUTRO' ? undefined : tipoSaldo as 'A_FAVOR' | 'DEBE';
+            return { ...t, saldo: signedSaldo, saldoTipo: mappedTipoSaldo };
+          } catch (e) {
+            return { ...t, saldo: 0, saldoTipo: undefined };
+          }
+        })
+      );
+
+      setTransports(enriched);
     } catch (error) {
       notification.error({
         message: 'Error al obtener los transportes',
