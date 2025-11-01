@@ -14,6 +14,7 @@ const facturaStatusOptions = [
   { label: 'Pendiente', value: 'PENDIENTE' },
   { label: 'Pagado', value: 'PAGADO' },
   { label: 'Urgente', value: 'URGENTE' },
+  { label: 'Pago Enviado - Verificado', value: 'PAGO_ENVIADO_VERIFICADO' },
 ];
 
 const InputsFirstStep = ({
