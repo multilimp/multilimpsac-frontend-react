@@ -15,9 +15,13 @@ export interface TransporteAsignadoProps {
     direccion: string;
     notaTransporte: string;
     cotizacionTransporte: string;
+    tipoDestino: string;
+    numeroFactura: string | null;
+    grt: string | null;
     notaPago: string;
     estadoPago: string | null;
     montoFlete: number | null;
+    montoFletePagado: number | null;
     grt: string | null;
     almacenId: number | null;
     createdAt: string;

@@ -54,6 +54,8 @@ export interface ProviderOrderProps {
     montoVenta?: string | null;
     documentoOce: string;
     documentoOcf: string;
+    fechaMaxForm: string;
+    fechaEntregaOc: string;
     cliente: {
       id: number;
       razonSocial: string;

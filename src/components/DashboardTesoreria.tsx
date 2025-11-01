@@ -113,18 +113,18 @@ const PaymentTable = React.memo<{
                     />
                 ),
             },
-            {
-                title: 'Monto',
-                dataIndex: 'monto',
-                key: 'monto',
-                width: 150,
-                sort: true,
-                render: (monto: number) => (
-                    <Typography variant="body2" fontFamily="monospace">
-                        {formatCurrency(monto)}
-                    </Typography>
-                ),
-            },
+            // {
+            //     title: 'Monto',
+            //     dataIndex: 'monto',
+            //     key: 'monto',
+            //     width: 150,
+            //     sort: true,
+            //     render: (monto: number) => (
+            //         <Typography variant="body2" fontFamily="monospace">
+            //             {formatCurrency(monto)}
+            //         </Typography>
+            //     ),
+            // },
             {
                 title: 'Nota',
                 dataIndex: 'notaPago',

@@ -2,7 +2,7 @@ import AntTable, { AntColumnType } from '@/components/AntTable';
 import { ProviderOrderProps } from '@/services/providerOrders/providerOrders';
 import { formatCurrency, formattedDate } from '@/utils/functions';
 import { Button, Box, Chip } from '@mui/material';
-import { Visibility } from '@mui/icons-material';
+import { Visibility, PictureAsPdf } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import { ESTADOS, EstadoVentaType, ESTADO_ROL_COLORS } from '@/utils/constants';
 
@@ -57,7 +57,6 @@ const OpTable = ({ data, loading, onRowClick, onReload }: OpTableProps) => {
   const formattedData: Array<OpDataTable> = data.map((item) => {
     const transporte = Array.isArray(item.transportesAsignados) && item.transportesAsignados.length > 0 ? item.transportesAsignados[0] : undefined;
     const pagosTransporte: TransportePagoItem[] = Array.isArray(transporte?.pagos) ? (transporte?.pagos as TransportePagoItem[]) : [];
-    const fletePagadoTotal = pagosTransporte.reduce((sum, p) => sum + (p.montoPago ? Number(p.montoPago) : 0), 0);
     let fechaPagoUltima = '';
     for (const p of pagosTransporte) {
       const d = p.fechaPago ? new Date(p.fechaPago) : null;
@@ -82,18 +81,20 @@ const OpTable = ({ data, loading, onRowClick, onReload }: OpTableProps) => {
       contactoProveedorCargo: item.contactoProveedor?.cargo ?? defaultText,
       fechaDespacho: formattedDate(item.fechaDespacho, undefined, defaultText),
       fechaProgramada: formattedDate(item.fechaProgramada, undefined, defaultText),
+      fechaEntrega: formattedDate(item.fechaEntrega, undefined, defaultText),
       fechaRecepcion: formattedDate(item.fechaRecepcion, undefined, defaultText),
       totalProveedor: item.totalProveedor ? formatCurrency(parseFloat(item.totalProveedor)) : defaultText,
       totalVenta: item.ordenCompra?.montoVenta ? formatCurrency(parseFloat(item.ordenCompra?.montoVenta)) : defaultText,
       transporteRuc: transporte?.transporte?.ruc ?? defaultText,
       transporteNombre: transporte?.transporte?.razonSocial ?? defaultText,
-      numeroFacturaTransporte: defaultText,
+      numeroFacturaTransporte: transporte?.numeroFactura ?? defaultText,
       numeroGuiaTransporte: transporte?.grt ?? defaultText,
-      fleteCotizado: typeof transporte?.montoFlete === 'number' ? formatCurrency(Number(transporte?.montoFlete)) : defaultText,
-      fletePagado: fletePagadoTotal ? formatCurrency(fletePagadoTotal) : defaultText,
+      fleteCotizado: transporte?.montoFlete ? formatCurrency(Number(transporte?.montoFlete)) : defaultText,
+      fletePagado: transporte?.montoFlete ? formatCurrency(Number(transporte?.montoFletePagado)) : defaultText,
+      fechaEntregaOc: formattedDate(item.ordenCompra?.fechaEntregaOc, undefined, defaultText),
       transporteFechaPago: formattedDate(fechaPagoUltima, undefined, defaultText),
-      fechaMaximaEntrega: formattedDate(item.fechaEntrega, undefined, defaultText),
-      tipoEntrega: item.tipoEntrega ?? defaultText,
+      fechaMaximaEntrega: formattedDate(item.ordenCompra?.fechaMaxForm, undefined, defaultText),
+      tipoEntrega: transporte?.tipoDestino ?? defaultText,
       estadoRolOp: item.estadoRolOp,
       tipoPago: item.tipoPago || null,
       ordenCompraElectronica: item.ordenCompra?.documentoOce ?? "Sin documento",
@@ -152,8 +153,48 @@ const OpTable = ({ data, loading, onRowClick, onReload }: OpTableProps) => {
     { title: 'RUC Cliente', dataIndex: 'clienteRuc', width: 150, filter: true, sort: true },
     { title: 'Razón Social Cliente', dataIndex: 'clienteNombre', width: 200, filter: true, sort: true },
 
-    { title: 'OCE', dataIndex: 'ordenCompraElectronica', width: 150 },
-    { title: 'OCF', dataIndex: 'ordenCompraFisica', width: 150 },
+    {
+      title: 'OCE',
+      dataIndex: 'ordenCompraElectronica',
+      width: 150,
+      render: (value: string, record: OpDataTable) => {
+        if (value && value !== "Sin documento") {
+          return (
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<PictureAsPdf />}
+              onClick={() => window.open(value, '_blank')}
+              sx={{ fontSize: '0.75rem', py: 0.25, px: 1 }}
+            >
+              Ver OCE
+            </Button>
+          );
+        }
+        return "Sin documento";
+      }
+    },
+    {
+      title: 'OCF',
+      dataIndex: 'ordenCompraFisica',
+      width: 150,
+      render: (value: string, record: OpDataTable) => {
+        if (value && value !== "Sin documento") {
+          return (
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<PictureAsPdf />}
+              onClick={() => window.open(value, '_blank')}
+              sx={{ fontSize: '0.75rem', py: 0.25, px: 1 }}
+            >
+              Ver OCF
+            </Button>
+          );
+        }
+        return "Sin documento";
+      }
+    },
     { title: 'OC Importe Total', dataIndex: 'totalVenta', width: 150, filter: true, sort: true },
     { title: 'Cliente Departamento', dataIndex: 'clienteDepartamento', width: 150, filter: true, sort: true },
     { title: 'RUC Proveedor', dataIndex: 'proveedorRuc', width: 150, filter: true, sort: true },
@@ -172,7 +213,7 @@ const OpTable = ({ data, loading, onRowClick, onReload }: OpTableProps) => {
     { title: 'Fecha Recepción', dataIndex: 'fechaRecepcion', width: 150, filter: true, sort: true },
     { title: 'Fecha de Programación', dataIndex: 'fechaProgramada', width: 150, filter: true, sort: true },
     { title: 'Fecha Despacho', dataIndex: 'fechaDespacho', width: 150, filter: true, sort: true },
-    { title: 'Fecha de Entrega', dataIndex: 'fechaMaximaEntrega', width: 150, filter: true, sort: true },
+    { title: 'Fecha de Entrega', dataIndex: 'fechaEntregaOc', width: 150, filter: true, sort: true },
     { title: 'Tipo de Entrega', dataIndex: 'tipoEntrega', width: 150, filter: true, sort: true },
     {
       title: 'Estado',
