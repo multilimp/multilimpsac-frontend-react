@@ -1,6 +1,7 @@
 import apiClient from '../apiClient';
 import { fillTemplate } from './template-loader';
 import opTemplate from './print-op-template.html?raw';
+import quoteTemplate from './print-quote-template.html?raw';
 
 export interface PrintInvoiceData {
   ordenCompraId: number;
@@ -136,6 +137,34 @@ export interface TransporteAsignado {
   embalaje?: string;
   notaTransporte?: string;
   otros?: string;
+}
+
+export interface Cliente {
+  razonSocial?: string;
+  ruc?: string;
+}
+
+export interface CotizacionData {
+  id?: string | number;
+  codigoCotizacion?: string;
+  empresa?: Empresa;
+  cliente?: Cliente;
+  productos?: Producto[];
+  montoTotal?: number;
+  tipoPago?: string;
+  fechaCotizacion?: string;
+  fechaEntrega?: string;
+  direccionEntrega?: string;
+  distritoEntrega?: string;
+  provinciaEntrega?: string;
+  departamentoEntrega?: string;
+  referenciaEntrega?: string;
+  notaPedido?: string;
+  contactoCliente?: {
+    nombre?: string;
+    telefono?: string;
+    cargo?: string;
+  };
 }
 
 export interface OrdenProveedorData {
@@ -363,5 +392,123 @@ export const printOrdenProveedor = async (id: number): Promise<void> => {
   } catch (error) {
     console.error('Error al imprimir orden de proveedor:', error);
     throw new Error('Error al generar la orden de proveedor para impresión');
+  }
+};
+
+export const printCotizacion = async (id: number): Promise<void> => {
+  try {
+    const printWindow = window.open('', '_blank');
+
+    const response = await apiClient.get(`/print/cotizacion/${id}`);
+
+    if (!response.data || !response.data.data || !response.data.data.cotizacion) {
+      throw new Error('Datos de cotización no disponibles');
+    }
+
+    const data = response.data.data.cotizacion;
+     const productos = (data.productos || []) as Producto[];
+
+    const formatCurrency = (value: unknown): string => {
+      if (value === null || value === undefined || value === '') return '';
+      const num = typeof value === 'number' ? value : Number(value);
+      if (Number.isNaN(num)) return '';
+      return new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN', minimumFractionDigits: 2 }).format(num);
+    };
+
+    const escapeHtml = (text: string): string => {
+      const div = document.createElement('div');
+      div.textContent = text ?? '';
+      return div.innerHTML;
+    };
+
+    const formatDate = (dateString: string): string => {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return '';
+      return new Intl.DateTimeFormat('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(date);
+    };
+
+    const template = quoteTemplate;
+
+    const logoHtml = data.empresa?.logo
+      ? `<img class="company-logo" src="${data.empresa.logo}" alt="Logo Empresa">`
+      : '';
+
+    const empresaDirecciones = data.empresa?.direcciones || data.empresa?.direccion || 'Sin dirección';
+
+    const productosRows = productos.map((producto: Producto) => `
+      <tr>
+        <td class="product-cell">${escapeHtml(producto.codigo || ' ')}</td>
+        <td class="product-cell">${producto.cantidad || 0}</td>
+        <td class="product-cell">${escapeHtml(producto.unidadMedida || 'UND')}</td>
+        <td class="product-cell-description">${escapeHtml(producto.descripcion || 'Sin descripción')}</td>
+        <td class="product-cell">${formatCurrency(Number(producto.precioUnitario) || 0)}</td>
+        <td class="product-cell-last">${formatCurrency(Number(producto.total) || 0)}</td>
+      </tr>
+    `).join('');
+
+    const total = productos.reduce((sum: number, p: Producto) => sum + (Number(p.total) || 0), 0);
+    const plazoEntrega = data.fechaEntrega ? formatDate(data.fechaEntrega) : 'No especificado';
+
+    const direccionCompleta = [
+       data.direccionEntrega,
+       data.distritoEntrega,
+       data.provinciaEntrega,
+       data.departamentoEntrega
+     ].filter(Boolean).join(' / ') || 'No especificada';
+
+     const destinoInfo = `
+       <div><b>${escapeHtml(data.cliente?.razonSocial || 'Sin cliente')}</b></div>
+       <div><b>Dirección: </b>${escapeHtml(direccionCompleta)}</div>
+       ${data.referenciaEntrega ? `<div><b>Referencia: </b>${escapeHtml(data.referenciaEntrega)}</div>` : ''}
+       ${data.contactoCliente ? `<div><b>Contacto: </b>${escapeHtml(data.contactoCliente.nombre || '')} - ${escapeHtml(data.contactoCliente.telefono || '')}</div>` : ''}
+     `;
+
+    const validezCotizacion = '30 días';
+
+    const htmlFinal = fillTemplate(template, {
+       CODIGO_COTIZACION: escapeHtml(data.codigoCotizacion || ''),
+       LOGO: logoHtml,
+       EMPRESA_TELEFONO: escapeHtml(data.empresa?.telefono || ''),
+       EMPRESA_DIRECCIONES: escapeHtml(empresaDirecciones),
+       FECHA_EMISION: formatDate(data.fechaCotizacion || new Date().toISOString()),
+       RUC_EMPRESA: escapeHtml(data.empresa?.ruc || ''),
+       CLIENTE_RAZON_SOCIAL: escapeHtml(data.cliente?.razonSocial || ''),
+       CLIENTE_RUC: escapeHtml(data.cliente?.ruc || ''),
+       PRODUCTOS_ROWS: productosRows,
+       TOTAL_INCLUYE_IGV: formatCurrency(total),
+       VALIDEZ_COTIZACION: validezCotizacion,
+       PLAZO_ENTREGA: plazoEntrega,
+       SECCION_TRANSPORTE: '',
+       DESTINO_INFO: destinoInfo,
+       OBSERVACIONES_ADICIONALES: escapeHtml(data.notaPedido || ''),
+       RUC_FACTURACION: escapeHtml(data.empresa?.ruc || ''),
+       RAZON_SOCIAL_FACTURACION: escapeHtml(data.empresa?.razonSocial || ''),
+       EMAIL_FACTURACION: escapeHtml(data.empresa?.email || '')
+     });
+
+    if (!printWindow) {
+      const blob = new Blob([htmlFinal], { type: 'text/html' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `cotizacion-${data.codigoCotizacion || 'sin-codigo'}.html`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      throw new Error('No se pudo abrir la ventana de impresión. Verifica que los popups estén habilitados.');
+    }
+
+    printWindow.document.open();
+    printWindow.document.write(htmlFinal);
+    printWindow.document.close();
+
+    printWindow.onafterprint = function () {
+      printWindow.close();
+    };
+  } catch (error) {
+    console.error('Error al imprimir cotización:', error);
+    throw new Error('Error al generar la cotización para impresión');
   }
 };

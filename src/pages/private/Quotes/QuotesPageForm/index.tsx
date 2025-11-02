@@ -198,7 +198,7 @@ const QuotesPageForm = () => {
       <Spin spinning={loading} size="large" tip="..:: Espere mientras finaliza la operación ::..">
         <Form form={form} onFinish={handleFinish}>
           <Stack direction="column" spacing={2}>
-            <QuotesFormFirstStep form={form} isEditing={isEditing} />
+            <QuotesFormFirstStep form={form} isEditing={isEditing} quoteId={id} />
             <QuotesFormSecondStep form={form} />
             <QuotesFormThirdStep form={form} />
 

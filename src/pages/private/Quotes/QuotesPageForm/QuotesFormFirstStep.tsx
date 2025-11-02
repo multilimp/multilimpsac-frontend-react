@@ -1,9 +1,9 @@
 import { Fragment, useState } from 'react';
-import { Form, FormInstance } from 'antd';
-import { Box, Grid, Stack, Typography } from '@mui/material';
+import { Form, FormInstance, notification } from 'antd';
+import { Box, IconButton, Grid, Stack, Typography } from '@mui/material';
 import { StepItemContent } from '../../Sales/SalesPageForm/smallcomponents';
 import SelectCompanies from '@/components/selects/SelectCompanies';
-import { Handshake } from '@mui/icons-material';
+import { Handshake, Print } from '@mui/icons-material';
 import DatePickerAntd from '@/components/DatePickerAnt';
 import ClientSelectorModal from '../../Clients/components/ClientSelectorModal';
 import SelectContactsByClient from '@/components/selects/SelectContactsByClient';
@@ -15,7 +15,7 @@ import { useEffect } from 'react';
 
 export const requiredField = { required: true, message: 'Campo requerido' };
 
-const QuotesFormFirstStep = ({ form, isEditing }: { form: FormInstance; isEditing: boolean }) => {
+const QuotesFormFirstStep = ({ form, isEditing, quoteId }: { form: FormInstance; isEditing: boolean; quoteId?: string }) => {
   const [openClients, setOpenClients] = useState(false);
 
   useEffect(() => {
@@ -28,6 +28,26 @@ const QuotesFormFirstStep = ({ form, isEditing }: { form: FormInstance; isEditin
 
   const updateFechaActualizacion = () => {
     form.setFieldValue('fechaActualizacion', new Date());
+  };
+
+  const printQuote = async () => {
+    if (!quoteId) {
+      notification.error({
+        message: 'Error',
+        description: 'No se puede imprimir: ID de cotización no disponible',
+      });
+      return;
+    }
+    
+    try {
+      const { printCotizacion } = await import('../../../../services/print/print.requests');
+      await printCotizacion(Number(quoteId));
+    } catch (error) {
+      notification.error({
+        message: 'Error de impresión',
+        description: 'No se pudo generar la cotización para impresión',
+      });
+    }
   };
 
   const renderFooterContent = () => (
@@ -118,6 +138,29 @@ const QuotesFormFirstStep = ({ form, isEditing }: { form: FormInstance; isEditin
         </Form.Item>
       }
       footerContent={renderFooterContent()}
+      resumeButtons={
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <IconButton
+            sx={{
+              border: '1px solid',
+              borderRadius: 1,
+              color: '#04BA6B',
+              zIndex: 900,
+              padding: 1.5,
+              minWidth: 44,
+              minHeight: 44,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+            onClick={() => {
+              printQuote();
+            }}
+          >
+            <Print sx={{ fontSize: 20 }} />
+          </IconButton>
+        </Box>
+      }
     >
       <Form.Item name="cliente" noStyle />
       <Typography variant="h6" sx={{ margin: 1, mb: 2 }}>
