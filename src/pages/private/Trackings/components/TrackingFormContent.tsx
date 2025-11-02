@@ -156,8 +156,6 @@ const mapPaymentItemsToPayload = (payments: TransportePaymentItem[]): PaymentDat
 }));
 
 interface TransporteAsignadoUI extends TransporteAsignadoProps {
-  montoFletePagado?: number;
-  numeroFactura?: string;
   archivoFactura?: string | null;
   guiaRemision?: string | null;
   guiaTransporte?: string | null;
