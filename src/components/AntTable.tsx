@@ -51,6 +51,8 @@ const AntTable = <T,>(props: AntTablePropsProps<T>) => {
   const [showDrawer, setShowDrawer] = useState(false);
   const [columnsCloned, setColumnsCloned] = useState<Array<AntColumnType<T> & { selected: boolean }>>([]);
 
+  console.log('🚀 AntTable renderizado. showInputs:', showInputs, 'columns con filter:', columns.filter(c => c.filter).length);
+
   // Clave de almacenamiento única por tabla
   const storageKey = useMemo(() => {
     const base = persistKey || `${typeof window !== 'undefined' ? window.location.pathname : 'unknown'}::${columns
@@ -97,29 +99,6 @@ const AntTable = <T,>(props: AntTablePropsProps<T>) => {
   const clean = (value: string): string => removeAccents(value).toLowerCase();
 
   const filteredData = useMemo(() => {
-    const firstRecord = data[0];
-    const filterRecord: Record<string, unknown> = {};
-
-    if (firstRecord && showInputs) {
-      filterRecord.id = '10012931823612536123';
-      columnsCloned.forEach((item) => {
-        const key = String(item.dataIndex);
-
-        filterRecord[key] = item.filter ? (
-          <TextField
-            fullWidth
-            size="small"
-            sx={{ '.MuiInputBase-root': { bgcolor: '#fff' } }}
-            placeholder={item.title?.toString()}
-            value={filters[key] ?? ''}
-            onChange={(e) => handleFilterChange(key, e.target.value)}
-          />
-        ) : (
-          ''
-        );
-      });
-    }
-
     const filtered = (data as Array<Record<string, unknown>>)
       .filter((item) => Object.keys(filters).every((key) => clean(String(item[key] ?? '')).includes(clean(filters[key]))))
       .filter((row) => {
@@ -127,61 +106,102 @@ const AntTable = <T,>(props: AntTablePropsProps<T>) => {
         return search ? Object.values(rest).some((v) => clean(String(v ?? '')).includes(clean(search))) : true;
       }) as T[];
 
-    if (Object.values(filterRecord).length) {
-      filtered.unshift(filterRecord as T);
+    return filtered;
+  }, [filters, data, search]);
+
+  // Filtrar y procesar columnas
+  const columnsFiltered = useMemo(() => {
+    console.log('🔄 Recalculando columnas. showInputs:', showInputs, 'columnsCloned length:', columnsCloned.length);
+
+    if (!columnsCloned.length) {
+      console.log('⚠️ columnsCloned está vacío, retornando array vacío');
+      return [];
     }
 
-    return filtered;
-  }, [filters, data, showInputs, search, columnsCloned]);
+    const processedColumns = columnsCloned
+      .filter((item) => item.selected)
+      .map((item, index) => {
+        console.log(`📋 Procesando columna ${index}:`, item.title, 'filter:', item.filter, 'showInputs:', showInputs);
 
-  const columnsFiltered = useMemo(
-    () =>
-      columnsCloned
-        .filter((item) => item.selected)
-        .map((item) => {
-          const newItemProperties: AntColumnType<T> = {};
+        // Crear una copia del item para evitar mutaciones
+        const newColumn: AntColumnType<T> = { ...item };
 
-          if (item.sort) {
-            const sortProperties: AntColumnType<T> = {
-              sorter: (a: T, b: T) => {
-                const aObj = a as Record<string, unknown>;
-                const bObj = b as Record<string, unknown>;
-                const key = item.dataIndex as string;
-                const valA = aObj[key];
-                const valB = bObj[key];
+        // Agregar ordenamiento si está habilitado
+        if (item.sort) {
+          newColumn.sorter = (a: T, b: T) => {
+            const aObj = a as Record<string, unknown>;
+            const bObj = b as Record<string, unknown>;
+            const key = item.dataIndex as string;
+            const valA = aObj[key];
+            const valB = bObj[key];
 
-                if (!valTypes(valA) || !valTypes(valB)) return 0;
-                if (typeof valA === 'number') return valA - (valB as number);
+            if (!valTypes(valA) || !valTypes(valB)) return 0;
+            if (typeof valA === 'number') return valA - (valB as number);
 
-                return String(valA).localeCompare(String(valB), undefined, { sensitivity: 'base' });
-              },
-              sortIcon(props: { sortOrder: SortOrder }) {
-                if (!props.sortOrder) return <SwapVert color="disabled" />;
-                if (props.sortOrder === 'ascend') return <North color="success" />;
-                return <South color="success" />;
-              },
-              ellipsis: true,
-            };
+            return String(valA).localeCompare(String(valB), undefined, { sensitivity: 'base' });
+          };
 
-            Object.assign(newItemProperties, sortProperties);
-          }
+          // newColumn.sortIcon = (props: { sortOrder: SortOrder }) => {
+          //   if (!props.sortOrder) return <SwapVert color="disabled" />;
+          //   if (props.sortOrder === 'ascend') return <North color="success" />;
+          //   return <South color="success" />;
+          // };
 
-          if (showInputs) {
-            const filterProperties: AntColumnType<T> = {
-              onCell: (_: T, index) => ({
-                style: {
-                  backgroundColor: index === 0 ? theme.palette.secondary.main : '#fff',
-                },
-              }),
-            };
+          newColumn.ellipsis = true;
+        }
 
-            Object.assign(newItemProperties, filterProperties);
-          }
+        // Agregar filtro en la cabecera si está habilitado
+        if (showInputs && item.filter) {
+          console.log('🔍 Creando filtro para columna:', item.title, 'showInputs:', showInputs);
+          const key = String(item.dataIndex);
 
-          return { ...newItemProperties, ...item };
-        }),
-    [columnsCloned, showInputs, theme]
-  );
+          // Crear el título con filtro
+          const titleWithFilter = (
+            <Stack direction="column" spacing={1} sx={{ minWidth: 120 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, fontSize: '13px' }}>
+                {item.title?.toString()}
+              </Typography>
+              <TextField
+                size="small"
+                placeholder={`Filtrar ${item.title?.toString()}`}
+                value={filters[key] ?? ''}
+                onChange={(e) => {
+                  e.stopPropagation();
+                  console.log('🔍 Filtro cambiado:', key, e.target.value);
+                  handleFilterChange(key, e.target.value);
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  console.log('🔍 Click en filtro:', key);
+                }}
+                sx={{
+                  '.MuiInputBase-root': {
+                    bgcolor: '#fff',
+                    fontSize: '12px',
+                    height: '28px',
+                    '& input': {
+                      padding: '4px 8px',
+                    },
+                  },
+                }}
+              />
+            </Stack>
+          );
+
+          newColumn.title = titleWithFilter;
+          console.log('✅ Filtro creado para columna:', item.title);
+        } else {
+          console.log('❌ NO creando filtro para columna:', item.title, 'showInputs:', showInputs, 'item.filter:', item.filter);
+          // Mantener el título original si no hay filtro
+          newColumn.title = item.title;
+        }
+
+        return newColumn;
+      });
+
+    console.log('🏁 Columnas procesadas:', processedColumns.length, 'con filtros:', processedColumns.filter(c => showInputs && c.filter).length);
+    return processedColumns;
+  }, [columnsCloned, showInputs, filters, handleFilterChange]);
 
   // Fijar las dos primeras columnas a la izquierda y calcular scroll horizontal
   const columnsWithFixed = useMemo(() => {
@@ -208,7 +228,6 @@ const AntTable = <T,>(props: AntTablePropsProps<T>) => {
     const headers = columns.map((item) => ({ label: String(item.title), key: String(item.dataIndex) }));
 
     const rows = (filteredData as Array<Record<string, unknown>>)
-      .filter((_, index) => (showInputs ? index > 0 : true))
       .map((row) => headers.map((field) => `"${clean(String(row[field.key] ?? '')).replace(/\n/g, ' ')}"`).join(','));
     const csvString = [headers.map((item) => clean(item.label)).join(','), ...rows].join('\n');
 
@@ -324,7 +343,7 @@ const AntTable = <T,>(props: AntTablePropsProps<T>) => {
           sticky
           rowKey="id"
           size='small'
-          rowClassName={showInputs ? 'table-filter-row' : ''}
+          rowClassName=""
           title={() => (
             <Stack direction="row" spacing={2} alignItems="center">
               {!hideToolbar && (
@@ -354,7 +373,15 @@ const AntTable = <T,>(props: AntTablePropsProps<T>) => {
               {!hideToolbar && (
                 <>
                   <Tooltip title="Filtros avanzados">
-                    <IconButton color="primary" size="small" onClick={() => setShowInputs(!showInputs)} sx={{ border: showInputs ? '1px solid' : '0' }}>
+                    <IconButton
+                      color="primary"
+                      size="small"
+                      onClick={() => {
+                        console.log('🔧 Toggling filtros avanzados. Actual:', showInputs, 'Nuevo:', !showInputs);
+                        setShowInputs(!showInputs);
+                      }}
+                      sx={{ border: showInputs ? '1px solid' : '0' }}
+                    >
                       <Bolt />
                     </IconButton>
                   </Tooltip>

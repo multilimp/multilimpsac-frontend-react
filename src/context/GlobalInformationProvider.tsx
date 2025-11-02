@@ -168,22 +168,7 @@ const GlobalInformationProvider = ({ children }: { children: ReactNode }) => {
     try {
       setLoadingProviders(true);
       const res = await getProviders();
-
-      // Enriquecer cada proveedor con su resumen de saldo
-      const enriched: ProviderProps[] = await Promise.all(
-        res.map(async (p) => {
-          try {
-            const fin = await getProviderFinancialData(p.id);
-            const { saldoFavor, saldoDeuda, saldoNeto, tipoSaldo } = fin.resumenSaldo;
-            const signedSaldo = tipoSaldo === 'A_FAVOR' ? saldoNeto : tipoSaldo === 'DEBE' ? -saldoNeto : 0;
-            return { ...p, saldo: signedSaldo, saldoTipo: tipoSaldo };
-          } catch (e) {
-            return { ...p, saldo: 0, saldoTipo: 'NEUTRO' };
-          }
-        })
-      );
-
-      setProviders(enriched);
+      setProviders(res);
     } catch (error) {
       notification.error({
         message: 'Error al obtener los proveedores',
@@ -199,22 +184,8 @@ const GlobalInformationProvider = ({ children }: { children: ReactNode }) => {
       setLoadingTransports(true);
       const res = await getTransports();
 
-      // Enriquecer cada transporte con su resumen de saldo
-      const enriched: TransportProps[] = await Promise.all(
-        res.map(async (t) => {
-          try {
-            const fin = await getTransportFinancialData(t.id);
-            const { saldoFavor, saldoDeuda, saldoNeto, tipoSaldo } = fin.resumenSaldo;
-            const signedSaldo = tipoSaldo === 'A_FAVOR' ? saldoNeto : tipoSaldo === 'DEBE' ? -saldoNeto : 0;
-            const mappedTipoSaldo = tipoSaldo === 'NEUTRO' ? undefined : tipoSaldo as 'A_FAVOR' | 'DEBE';
-            return { ...t, saldo: signedSaldo, saldoTipo: mappedTipoSaldo };
-          } catch (e) {
-            return { ...t, saldo: 0, saldoTipo: undefined };
-          }
-        })
-      );
 
-      setTransports(enriched);
+      setTransports(res);
     } catch (error) {
       notification.error({
         message: 'Error al obtener los transportes',
