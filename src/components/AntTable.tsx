@@ -37,12 +37,16 @@ interface AntTablePropsProps<T = unknown> extends Omit<TableProps<T>, 'columns'>
   onReload?: () => void | Promise<void>;
   hideToolbar?: boolean;
   persistKey?: string; // clave opcional para persistencia por tabla
+  autoRefreshMs?: number;
+  refetchOnFocus?: boolean;
+  refetchOnReconnect?: boolean;
+  refreshEvents?: string[];
 }
 
 const valTypes = (value: unknown): value is number | string => typeof value === 'number' || typeof value === 'string';
 
 const AntTable = <T,>(props: AntTablePropsProps<T>) => {
-  const { columns, data, onReload, hideToolbar, persistKey, ...rest } = props;
+  const { columns, data, onReload, hideToolbar, persistKey, autoRefreshMs, refetchOnFocus, refetchOnReconnect, refreshEvents, ...rest } = props;
   const theme = useTheme();
   const [filters, setFilters] = useState<{ [key: string]: string }>({});
   const [showInputs, setShowInputs] = useState(false);
@@ -258,6 +262,37 @@ const AntTable = <T,>(props: AntTablePropsProps<T>) => {
       }
     }
   };
+
+  useEffect(() => {
+    if (!onReload) return;
+    const interval = autoRefreshMs && autoRefreshMs > 0 ? setInterval(() => {
+      handleReload();
+    }, autoRefreshMs) : undefined;
+    const handleVisibility = () => {
+      if (refetchOnFocus && document.visibilityState === 'visible') handleReload();
+    };
+    const handleOnline = () => {
+      if (refetchOnReconnect) handleReload();
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    window.addEventListener('online', handleOnline);
+    const eventHandlers: Array<{ name: string; handler: () => void }> = [];
+    if (refreshEvents && refreshEvents.length) {
+      refreshEvents.forEach((name) => {
+        const h = () => handleReload();
+        window.addEventListener(name, h as EventListener);
+        eventHandlers.push({ name, handler: h });
+      });
+    }
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('online', handleOnline);
+      eventHandlers.forEach(({ name, handler }) => {
+        window.removeEventListener(name, handler as EventListener);
+      });
+      if (interval) clearInterval(interval);
+    };
+  }, [autoRefreshMs, refetchOnFocus, refetchOnReconnect, refreshEvents, onReload]);
 
   const handleChange = (str: string) => {
     clearTimeout(wait);

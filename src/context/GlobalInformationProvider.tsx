@@ -183,8 +183,6 @@ const GlobalInformationProvider = ({ children }: { children: ReactNode }) => {
     try {
       setLoadingTransports(true);
       const res = await getTransports();
-
-
       setTransports(res);
     } catch (error) {
       notification.error({

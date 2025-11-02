@@ -126,6 +126,9 @@ const ProvidersTable = ({ data, loading, onRecordAction, hideActions, modalMode,
         data={data}
         loading={loading}
         onReload={onReload}
+        autoRefreshMs={300000}
+        refetchOnFocus
+        refetchOnReconnect
         hideToolbar={modalMode}
         onRow={(record) => {
           if (!hideActions) return {};
