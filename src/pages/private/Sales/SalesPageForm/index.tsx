@@ -8,6 +8,7 @@ import InputsFourthStep from './InputsFourthStep';
 import InputsFifthStep from './InputsFifthStep';
 import { createDirectSale, processPdfSales, getSaleById, updateSale } from '@/services/sales/sales.request';
 import dayjs from 'dayjs';
+import type { Dayjs } from 'dayjs';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 import { BlackBarKeyEnum } from '@/types/global.enum';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -26,15 +27,25 @@ const SalesPageForm = () => {
   const isEditing = Boolean(id);
   const [currentSale, setCurrentSale] = useState<SaleProps | null>(null);
 
-  // Estados para PaymentsList
-  const [payments, setPayments] = useState<any[]>([{
-    date: null,
-    bank: '',
-    description: '',
-    file: null,
-    amount: '',
-    status: true,
-  }]);
+  type PaymentItem = {
+    date: Dayjs | null;
+    bank: string;
+    description: string;
+    file: string | null;
+    amount: string;
+    status: boolean;
+  };
+
+  const [payments, setPayments] = useState<PaymentItem[]>([
+    {
+      date: null,
+      bank: '',
+      description: '',
+      file: null,
+      amount: '',
+      status: true,
+    },
+  ]);
   const [tipoPago, setTipoPago] = useState<string>('PENDIENTE');
   const [notaPago, setNotaPago] = useState<string>('');
 
@@ -118,8 +129,8 @@ const SalesPageForm = () => {
 
           // Si es venta privada, cargar datos específicos
           if (isPrivateSale && saleData.ordenCompraPrivada) {
-            formValues.facturaStatus = saleData.ordenCompraPrivada.estadoPago || 'PENDIENTE';
-            formValues.dateFactura = saleData.ordenCompraPrivada.fechaPago ? dayjs(saleData.ordenCompraPrivada.fechaPago) : null;
+            formValues.facturaStatus = (saleData.ordenCompraPrivada as any).estadoFactura || 'PENDIENTE';
+            formValues.fechaFactura = saleData.ordenCompraPrivada.fechaFactura ? dayjs(saleData.ordenCompraPrivada.fechaFactura) : null;
             formValues.documentoFactura = saleData.ordenCompraPrivada.documentoPago || null;
             formValues.documentoCotizacion = (saleData.ordenCompraPrivada as any).documentoCotizacion || null;
             formValues.cotizacion = (saleData.ordenCompraPrivada as any).cotizacion || null; // Campo cotización
@@ -274,7 +285,8 @@ const SalesPageForm = () => {
             multipleFuentesFinanciamiento: values.multipleFuentesFinanciamiento || false,
             ventaPrivada: {
               estadoPago: tipoPago || 'PENDIENTE',
-              fechaPago: values.dateFactura && dayjs(values.dateFactura).isValid() ? dayjs(values.dateFactura).toISOString() : undefined,
+              estadoFactura: values.facturaStatus || 'PENDIENTE',
+              fechaFactura: values.fechaFactura && dayjs(values.fechaFactura).isValid() ? dayjs(values.fechaFactura).toISOString() : undefined,
               documentoPago: values.documentoFactura,
               documentoCotizacion: values.documentoCotizacion, // Campo de cotización
               cotizacion: values.cotizacion || null, // Campo cotización
@@ -325,7 +337,8 @@ const SalesPageForm = () => {
 
           bodyVentaPrivada = {
             estadoPago: tipoPago || 'PENDIENTE',
-            fechaPago: dayjs(values.dateFactura).isValid() ? dayjs(values.dateFactura).toISOString() : undefined,
+            estadoFactura: values.facturaStatus || 'PENDIENTE',
+            fechaFactura: dayjs(values.fechaFactura).isValid() ? dayjs(values.fechaFactura).toISOString() : undefined,
             documentoPago: values.documentoFactura,
             documentoCotizacion: values.documentoCotizacion, // Campo de cotización
             cotizacion: values.cotizacion || null, // Campo cotización
@@ -439,7 +452,7 @@ const SalesPageForm = () => {
 
             <InputsThirdStep
               form={form}
-              companyId={saleInputValues.enterprise?.id!}
+              companyId={saleInputValues.enterprise ? saleInputValues.enterprise.id : undefined}
               isPrivateSale={saleInputValues.tipoVenta === 'privada'}
             />
 

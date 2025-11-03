@@ -89,7 +89,7 @@ export interface SaleProps {
     clienteId?: number;
     contactoClienteId?: number;
     estadoPago?: string;
-    fechaPago?: string;
+    fechaFactura?: string;
     documentoPago?: string;
     documentoCotizacion?: string; // Documento de cotización
     cotizacion?: string; // Campo de cotización

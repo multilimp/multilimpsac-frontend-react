@@ -14,7 +14,7 @@ import InputNumberAntd from '@/components/InputNumberAntd';
 
 interface InputsThirdStepProps {
   form: FormInstance;
-  companyId: number;
+  companyId?: number;
   isPrivateSale?: boolean;
 }
 
@@ -77,16 +77,18 @@ const InputsThirdStep = ({ form, companyId, isPrivateSale = false }: InputsThird
             {/* Solo mostrar catálogo y fecha formalización si NO es venta privada */}
             {!isPrivateSale && (
               <>
-                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                  <Form.Item name="catalogoComplete" noStyle />
-                  <Form.Item shouldUpdate noStyle>
-                    {({ setFieldsValue }) => (
-                      <Form.Item name="catalogo" rules={conditionalRules}>
-                        <SelectCatalogs companyId={companyId} label="Catálogo" />
-                      </Form.Item>
-                    )}
-                  </Form.Item>
-                </Grid>
+                {companyId ? (
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <Form.Item name="catalogoComplete" noStyle />
+                    <Form.Item shouldUpdate noStyle>
+                      {({ setFieldsValue }) => (
+                        <Form.Item name="catalogo" rules={conditionalRules}>
+                          <SelectCatalogs companyId={companyId} label="Catálogo" />
+                        </Form.Item>
+                      )}
+                    </Form.Item>
+                  </Grid>
+                ) : null}
 
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                   <Form.Item name="fechaFormalizacion" rules={conditionalRules}>

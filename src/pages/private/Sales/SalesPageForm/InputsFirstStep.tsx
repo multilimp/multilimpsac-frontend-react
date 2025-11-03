@@ -7,15 +7,24 @@ import SelectGeneric from '@/components/selects/SelectGeneric';
 import DatePickerAntd from '@/components/DatePickerAnt';
 import SimpleFileUpload from '@/components/SimpleFileUpload';
 import PaymentsList from '@/components/PaymentsList';
+import type { Dayjs } from 'dayjs';
 
 export const requiredField = { required: false, message: 'Campo requerido' };
 
 const facturaStatusOptions = [
   { label: 'Pendiente', value: 'PENDIENTE' },
-  { label: 'Pagado', value: 'PAGADO' },
+  { label: 'Completado', value: 'COMPLETADO' },
   { label: 'Urgente', value: 'URGENTE' },
-  { label: 'Pago Enviado - Verificado', value: 'PAGO_ENVIADO_VERIFICADO' },
 ];
+
+type PaymentItem = {
+  date: Dayjs | null;
+  bank: string;
+  description: string;
+  file: string | null;
+  amount: string;
+  status: boolean;
+};
 
 const InputsFirstStep = ({
   form,
@@ -29,10 +38,10 @@ const InputsFirstStep = ({
   isEditing = false
 }: {
   form: FormInstance;
-  payments?: any[];
+  payments?: PaymentItem[];
   tipoPago?: string;
   notaPago?: string;
-  onPaymentsChange?: (payments: any[]) => void;
+  onPaymentsChange?: (payments: PaymentItem[]) => void;
   onTipoPagoChange?: (tipoPago: string) => void;
   onNotaPagoChange?: (notaPago: string) => void;
   isPrivateSale?: boolean;
@@ -52,7 +61,6 @@ const InputsFirstStep = ({
             <Receipt />
             Datos de Factura
           </Typography>
-
           <Grid container columnSpacing={2} rowSpacing={2}>
             {/* Fila única: Estado de Factura, Fecha Factura y Documento PDF */}
             <Grid size={{ xs: 12, md: 4 }}>
@@ -70,7 +78,7 @@ const InputsFirstStep = ({
               </Form.Item>
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
-              <Form.Item name="dateFactura" rules={conditionalRules}>
+              <Form.Item name="fechaFactura" rules={conditionalRules}>
                 <DatePickerAntd label="Fecha factura" />
               </Form.Item>
             </Grid>
