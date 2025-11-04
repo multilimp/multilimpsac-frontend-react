@@ -69,7 +69,7 @@ const InputsFirstStep = ({
             {/* Fila única: Estado de Factura, Fecha Factura y Documento PDF */}
             <Grid size={{ xs: 12, md: 4 }}>
               <Form.Item name="facturaStatus" rules={conditionalRules}>
-                <SelectGeneric showSearch={false} label="Estado de Factura" options={facturaStatusOptions} disabled={fromBilling} />
+                <SelectGeneric showSearch={false} label="Estado de Factura" options={facturaStatusOptions} disabled={disableInvoiceFields} />
               </Form.Item>
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>

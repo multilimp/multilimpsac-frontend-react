@@ -30,6 +30,18 @@ const BillingsPage = () => {
       ),
     },
     {
+      key: 'ordenCompraPrivada',
+      label: 'Compras Privadas',
+      children: (
+        <BillingsTable
+          data={sales}
+          loading={loadingSales}
+          onReload={obtainSales}
+          privateMode={true}
+        />
+      ),
+    },
+    {
       key: 'cargos',
       label: 'Reporte de Programación',
       children: (

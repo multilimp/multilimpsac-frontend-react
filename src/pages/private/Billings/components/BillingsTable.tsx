@@ -14,11 +14,12 @@ interface BillingsTableProps {
   data: SaleProps[];
   loading: boolean;
   onReload?: () => void;
+  privateMode?: boolean;
 }
 
 const defaultText = '';
 
-const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }) => {
+const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload, privateMode = false }) => {
   const [contactsDrawerOpen, setContactsDrawerOpen] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
   const [selectedTitle, setSelectedTitle] = useState<string>('');
@@ -51,7 +52,9 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }
       return [];
     }
 
-    return data.map((item) => {
+    const source = privateMode ? data.filter((item) => item.ventaPrivada === true) : data;
+
+    return source.map((item) => {
       const firstBilling = Array.isArray(item.facturaciones) && item.facturaciones.length > 0
         ? item.facturaciones[0]
         : item.facturacion
@@ -170,7 +173,7 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload }
         return (
           <Button
             component={Link}
-            to={`/billing/${record.rawdata.id}`}
+            to={privateMode ? `/sales/${record.rawdata.id}/edit?from=billing` : `/billing/${record.rawdata.id}`}
             variant="contained"
             startIcon={<Visibility />}
             size="small"
