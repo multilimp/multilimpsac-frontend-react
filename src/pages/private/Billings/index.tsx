@@ -31,7 +31,7 @@ const BillingsPage = () => {
     },
     {
       key: 'ordenCompraPrivada',
-      label: 'Compras Privadas',
+      label: 'Ventas Privadas',
       children: (
         <BillingsTable
           data={sales}

@@ -21,12 +21,22 @@ const DatePickerAntd = ({ label, isFloating, isAddonBefore, hasError, size = 'la
   // Determine format based on showTime prop
   const format = rest.showTime ? "DD/MM/YYYY HH:mm" : "DD/MM/YYYY";
 
+  const isDisabled = Boolean(rest?.disabled);
+  const disabledStyles = isDisabled
+    ? {
+        cursor: 'not-allowed',
+        background: 'linear-gradient(135deg, #f7f8fa 0%, #f0f2f5 100%)',
+        border: '1px dashed #d1d5db',
+        color: '#6b7280',
+        WebkitTextFillColor: '#6b7280',
+      }
+    : {};
   return (
     <div className={`input-form ${size}`}>
       <div className="float-label" onBlur={() => setFocus(false)} onFocus={() => setFocus(true)}>
         <DatePicker
           size={size}
-          style={{ width: '100%', height: '50px' }}
+          style={{ width: '100%', height: '50px', ...disabledStyles }}
           format={format}
           variant="outlined"
           allowClear
@@ -34,7 +44,7 @@ const DatePickerAntd = ({ label, isFloating, isAddonBefore, hasError, size = 'la
           placeholder=""
           {...rest}
         />
-        <label htmlFor={label} className={labelClass}>
+        <label htmlFor={label} className={labelClass} style={isDisabled ? { color: '#333a45ff', opacity: 1, fontWeight: 600 } : undefined}>
           {label}
         </label>
       </div>

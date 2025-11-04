@@ -108,7 +108,7 @@ const InputAntd = (props: InputAntdProps) => {
           <label
             htmlFor={label}
             className={labelClass}
-            style={isDisabled ? { color: '#0962f1ff', opacity: 1, fontWeight: 600 } : {}}
+            style={isDisabled ? { color: '#333a45ff', opacity: 1, fontWeight: 600 } : {}}
           >
             {label}
           </label>

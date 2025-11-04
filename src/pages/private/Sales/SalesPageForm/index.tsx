@@ -90,7 +90,8 @@ const SalesPageForm = () => {
             tipoVenta: isPrivateSale ? 'privada' : 'directa'
           }));
 
-          const formValues = {
+          // Prellenar el formulario con los datos de la venta
+          const formValues: any = {
             // Información básica
             clienteEstado: saleData.cliente,
             // Solo incluir catálogo si no es venta privada y existe
@@ -116,7 +117,8 @@ const SalesPageForm = () => {
               celularContacto: saleData.contactoCliente.telefono,
             }),
 
-            productos: (Array.isArray(saleData.productos) ? saleData.productos : parseJSON(saleData.productos) || []).map((producto) => ({
+            // Productos - asegurar que siempre sea un array usando parseJSON y agregar isCompleted si no existe
+            productos: (Array.isArray(saleData.productos) ? saleData.productos : parseJSON(saleData.productos) || []).map((producto: any) => ({
               ...producto,
               isCompleted: producto.isCompleted ?? false, // Preservar si existe, o false por defecto
             })),
@@ -133,23 +135,23 @@ const SalesPageForm = () => {
 
           // Si es venta privada, cargar datos específicos
           if (isPrivateSale && saleData.ordenCompraPrivada) {
-            formValues.facturaStatus = saleData.ordenCompraPrivada.estadoFactura || 'PENDIENTE';
+            formValues.facturaStatus = (saleData.ordenCompraPrivada as any).estadoFactura || 'PENDIENTE';
             formValues.fechaFactura = saleData.ordenCompraPrivada.fechaFactura ? dayjs(saleData.ordenCompraPrivada.fechaFactura) : null;
             formValues.documentoFactura = saleData.ordenCompraPrivada.documentoPago || null;
-            formValues.documentoCotizacion = saleData.ordenCompraPrivada.documentoCotizacion || null;
-            formValues.cotizacion = saleData.ordenCompraPrivada.cotizacion || null;
+            formValues.documentoCotizacion = (saleData.ordenCompraPrivada as any).documentoCotizacion || null;
+            formValues.cotizacion = (saleData.ordenCompraPrivada as any).cotizacion || null; // Campo cotización
             formValues.notaPago = saleData.ordenCompraPrivada.notaPago || '';
 
             // Campos de tipo de entrega
-            formValues.tipoEntrega = saleData.ordenCompraPrivada.tipoDestino || null;
-            formValues.nombreAgencia = saleData.ordenCompraPrivada.nombreAgencia || null;
-            formValues.destinoFinal = saleData.ordenCompraPrivada.destinoFinal || null;
-            formValues.destinoEntidad = saleData.ordenCompraPrivada.nombreEntidad || null;
-            formValues.multipleFuentesFinanciamiento = saleData.ordenCompraPrivada.multipleFuentesFinanciamiento || false;
+            formValues.tipoEntrega = (saleData.ordenCompraPrivada as any).tipoDestino || null;
+            formValues.nombreAgencia = (saleData.ordenCompraPrivada as any).nombreAgencia || null;
+            formValues.destinoFinal = (saleData.ordenCompraPrivada as any).destinoFinal || null;
+            formValues.destinoEntidad = (saleData.ordenCompraPrivada as any).nombreEntidad || null;
+            formValues.multipleFuentesFinanciamiento = (saleData.ordenCompraPrivada as any).multipleFuentesFinanciamiento || false;
 
             // Mapeo explícito de pagos desde backend a frontend
             const mappedPayments = Array.isArray(saleData.ordenCompraPrivada.pagos) && saleData.ordenCompraPrivada.pagos.length > 0
-              ? saleData.ordenCompraPrivada.pagos.map((pago: { fechaPago: string; bancoPago: string; descripcionPago: string; archivoPago?: string; montoPago: number; estadoPago: boolean; }) => ({
+              ? saleData.ordenCompraPrivada.pagos.map((pago: any) => ({
                 date: pago.fechaPago && pago.fechaPago !== '1970-01-01T00:00:00.000Z' ? dayjs(pago.fechaPago) : null,
                 bank: pago.bancoPago || '',
                 description: pago.descripcionPago || '',
@@ -238,43 +240,7 @@ const SalesPageForm = () => {
     }
   };
 
-  type FormValues = {
-    catalogo?: number | { id: number };
-    catalogoComplete?: { id: number };
-    clienteEstado?: { id: number } | number | null;
-    cargoContactoComplete?: { id: number } | null;
-    cargoContacto?: number | { id: number } | null;
-    direccionEntrega?: string | null;
-    distritoEntrega?: string | null;
-    provinciaEntrega?: string | null;
-    regionEntrega?: string | null;
-    referenciaEntrega?: string | null;
-    fechaEntrega?: Dayjs | null;
-    fechaFormalizacion?: Dayjs | null;
-    fechaMaxEntrega?: Dayjs | null;
-    montoVenta?: number | string | null;
-    numeroSIAF?: string | number | null;
-    etapaSIAF?: string | null;
-    fechaSIAF?: Dayjs | null;
-    estadoVenta?: string;
-    multipleFuentesFinanciamiento?: boolean;
-    ordenCompraElectronica?: string | null;
-    ordenCompraFisica?: string | null;
-    codigoOcf?: string | null;
-    productos?: Producto[];
-    facturaStatus?: string;
-    fechaFactura?: Dayjs | null;
-    documentoFactura?: string | null;
-    documentoCotizacion?: string | null;
-    cotizacion?: string | null;
-    notaPago?: string | null;
-    tipoEntrega?: string | null;
-    nombreAgencia?: string | null;
-    destinoFinal?: string | null;
-    destinoEntidad?: string | null;
-  };
-
-  const handleFinish = async (values: FormValues) => {
+  const handleFinish = async (values: Record<string, any>) => {
     try {
       setLoading(true);
 
@@ -437,7 +403,7 @@ const SalesPageForm = () => {
           documentoOce: values.ordenCompraElectronica || null,
           documentoOcf: values.ordenCompraFisica || null,
           codigoOcf: values.codigoOcf || null,
-          productos: (values.productos || []).map((producto: Producto) => ({
+          productos: (values.productos || []).map((producto: any) => ({
             ...producto,
             isCompleted: false,
           })),
@@ -448,9 +414,9 @@ const SalesPageForm = () => {
         notification.success({ message: `La venta fue registrada correctamente` });
         navigate(`/sales/${nuevaVenta.id}/edit`);
       }
-    } catch (error: unknown) {
-      const e = error as { response?: { data?: { message?: string } }; message?: string };
-      const errorMessage = e?.response?.data?.message || e?.message || 'Error desconocido';
+    } catch (error: any) {
+      console.error('Error al guardar venta:', error);
+      const errorMessage = error?.response?.data?.message || error?.message || 'Error desconocido';
       notification.error({
         message: 'Error al guardar la venta',
         description: errorMessage,
