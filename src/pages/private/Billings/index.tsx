@@ -17,13 +17,15 @@ const BillingsPage = () => {
   const [fechaInicio, setFechaInicio] = useState(dayjs().startOf('month').format('YYYY-MM-DD'));
   const [fechaFin, setFechaFin] = useState(dayjs().format('YYYY-MM-DD'));
 
+  const salesEstado = useMemo(() => Array.isArray(sales) ? sales.filter((s) => !s.ventaPrivada) : [], [sales]);
+  const salesPrivadas = useMemo(() => Array.isArray(sales) ? sales.filter((s) => s.ventaPrivada === true) : [], [sales]);
   const items: TabsProps['items'] = useMemo(() => [
     {
       key: 'facturaciones',
       label: 'Facturaciones',
       children: (
         <BillingsTable
-          data={sales}
+          data={salesEstado}
           loading={loadingSales}
           onReload={obtainSales}
         />
@@ -34,7 +36,7 @@ const BillingsPage = () => {
       label: 'Ventas Privadas',
       children: (
         <BillingsTable
-          data={sales}
+          data={salesPrivadas}
           loading={loadingSales}
           onReload={obtainSales}
           privateMode={true}
@@ -78,7 +80,7 @@ const BillingsPage = () => {
         </>
       ),
     },
-  ], [sales, loadingSales, obtainSales, fechaInicio, fechaFin]);
+  ], [salesEstado, salesPrivadas, loadingSales, obtainSales, fechaInicio, fechaFin]);
 
   return (
     <PageContent
