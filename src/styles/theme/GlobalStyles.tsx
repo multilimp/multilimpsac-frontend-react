@@ -171,10 +171,12 @@ export default function GlobalStyles() {
           top: '14px',
           transition: '0.2s ease all',
           color: '#272a2c',
-          zIndex: '20',
+          zIndex: '300',
+          backgroundColor: 'white',
+          padding: '0 6px',
+          borderRadius: 6,
           maxWidth: 'calc((100%) - 22px)',
           whiteSpace: 'nowrap',
-          overflow: 'hidden',
           textOverflow: 'ellipsis',
         },
         '.float-label .label.error': {
@@ -187,7 +189,7 @@ export default function GlobalStyles() {
           color: '#272a2c !important',
           backgroundColor: 'white',
           padding: '0 6px',
-          zIndex: '20',
+          zIndex: '30',
           borderRadius: 6,
         },
         '.float-label .label-float.focus': {
@@ -202,6 +204,10 @@ export default function GlobalStyles() {
         },
         '.ant-form-item-has-error .float-label .label-float': {
           color: `${theme.palette.error.main} !important`,
+        },
+        '.float-label input, .float-label .ant-input, .float-label .ant-input-affix-wrapper, .float-label textarea, .float-label .ant-input-textarea, .float-label .ant-input-number, .float-label .ant-select-selector': {
+          position: 'relative',
+          zIndex: '10',
         },
         '.MuiTableRow-root': {
           '&:hover': {

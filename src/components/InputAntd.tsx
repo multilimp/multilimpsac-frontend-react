@@ -71,16 +71,14 @@ const InputAntd = (props: InputAntdProps) => {
   ].filter(Boolean).join(' ');
 
   const disabledStyles = isDisabled ? {
-    opacity: 0.6,
     cursor: 'not-allowed',
-    backgroundColor: '#f5f5f5',
-    color: '#999999',
-    borderColor: '#d9d9d9'
+    background: 'linear-gradient(135deg, #f7f8fa 0%, #f0f2f5 100%)',
+    border: '1px dashed #d1d5db',
+    color: '#6b7280',
+    WebkitTextFillColor: '#6b7280'
   } : {};
 
-  const containerStyle = isDisabled ? {
-    opacity: 0.7
-  } : {};
+  const containerStyle = isDisabled ? {} : {};
 
   return (
     <div className={containerClasses} style={containerStyle}>
@@ -110,7 +108,7 @@ const InputAntd = (props: InputAntdProps) => {
           <label
             htmlFor={label}
             className={labelClass}
-            style={isDisabled ? { color: '#666666', opacity: 0.9, fontWeight: 500 } : {}}
+            style={isDisabled ? { color: '#0962f1ff', opacity: 1, fontWeight: 600 } : {}}
           >
             {label}
           </label>

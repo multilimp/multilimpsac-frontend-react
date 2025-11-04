@@ -1,32 +1,49 @@
 import React, { useState } from 'react';
 
 export interface SelectContainerProps {
-  children: any;
+  children: React.ReactElement<unknown>;
   label: string;
   isFloating?: boolean;
   hasError?: boolean;
-  context?: any;
+  context?: Record<string, unknown>;
   isAddonBefore?: boolean;
   labelColor?: string;
 }
 
 const SelectContainer = ({ children, label, isFloating, hasError, isAddonBefore, labelColor, ...context }: SelectContainerProps) => {
   const [focus, setFocus] = useState(false);
-  const isFloatingAux = focus || (children?.props?.value && children.props.value.length !== 0);
+  const childProps = children.props as {
+    value?: unknown;
+    size?: 'small' | 'middle' | 'large';
+    disabled?: boolean;
+    ['aria-invalid']?: string;
+  };
+  const hasValue = (() => {
+    if (childProps?.value === undefined || childProps?.value === null) return false;
+    const str = String(childProps.value);
+    return str.length !== 0;
+  })();
+  const isFloatingAux = focus || hasValue;
   let labelClass = isFloatingAux || isFloating ? 'label label-float' : 'label';
-  labelClass += children.props.size ? ` ${children.props.size}` : ' middle';
+  labelClass += childProps.size ? ` ${childProps.size}` : ' middle';
   labelClass += focus ? ' focus' : '';
-  labelClass += hasError || children.props['aria-invalid'] === 'true' ? ' error' : '';
-  labelClass += children.props.disabled ? ' disabled' : '';
+  labelClass += hasError || childProps['aria-invalid'] === 'true' ? ' error' : '';
+  labelClass += childProps.disabled ? ' disabled' : '';
   labelClass += isAddonBefore ? ` label-addon-before${focus ? '-focus' : ''}` : '';
 
-  const contextAux = { ...context, ...children?.props };
+  const contextAux = { ...context, ...childProps };
+  const isDisabled = Boolean(childProps?.disabled);
+  const labelStyle = labelColor
+    ? { color: labelColor }
+    : isDisabled
+    ? { color: '#374151', opacity: 1, fontWeight: 600 }
+    : undefined;
 
   return (
-    <div className={`input-select-form ${children.props.size}`}>
+    <div className={`input-select-form ${childProps.size ?? 'middle'}`}>
       <div className="float-label" onBlur={() => setFocus(false)} onFocus={() => setFocus(true)}>
-        {React.cloneElement(children, { value: children.props.value, ...contextAux })}
-        <label htmlFor={label} className={labelClass} style={labelColor ? { color: labelColor } : undefined}>
+        {React.cloneElement(children, { value: childProps.value, ...contextAux })}
+        <label htmlFor={label} className={labelClass} style={labelStyle}>
           {label}
         </label>
       </div>
