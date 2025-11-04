@@ -16,11 +16,12 @@ interface InputsThirdStepProps {
   form: FormInstance;
   companyId?: number;
   isPrivateSale?: boolean;
+  disabledAll?: boolean;
 }
 
 const etapaSIAFOptions = ['COM', 'DEV', 'PAG', 'SSIAF', 'RES', 'GIR', 'GIR-F', 'GIR-V', 'GIR-A', 'GIR-R'].map((value) => ({ label: value, value }));
 
-const InputsThirdStep = ({ form, companyId, isPrivateSale = false }: InputsThirdStepProps) => {
+const InputsThirdStep = ({ form, companyId, isPrivateSale = false, disabledAll = false }: InputsThirdStepProps) => {
   // Reglas condicionales: si es venta privada, ningún campo es obligatorio
   const conditionalRules = isPrivateSale ? [] : [requiredField];
   const siafRules = isPrivateSale ? [] : [requiredField];
@@ -83,7 +84,7 @@ const InputsThirdStep = ({ form, companyId, isPrivateSale = false }: InputsThird
                     <Form.Item shouldUpdate noStyle>
                       {({ setFieldsValue }) => (
                         <Form.Item name="catalogo" rules={conditionalRules}>
-                          <SelectCatalogs companyId={companyId} label="Catálogo" />
+                          <SelectCatalogs companyId={companyId} label="Catálogo" disabled={disabledAll} />
                         </Form.Item>
                       )}
                     </Form.Item>
@@ -92,7 +93,7 @@ const InputsThirdStep = ({ form, companyId, isPrivateSale = false }: InputsThird
 
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                   <Form.Item name="fechaFormalizacion" rules={conditionalRules}>
-                    <DatePickerAntd label="Fecha formalización" />
+                    <DatePickerAntd label="Fecha formalización" disabled={disabledAll} />
                   </Form.Item>
                 </Grid>
               </>
@@ -101,13 +102,13 @@ const InputsThirdStep = ({ form, companyId, isPrivateSale = false }: InputsThird
             {/* Campos principales - fecha máxima, monto y campos de cotización */}
             <Grid size={{ xs: 12, sm: 6, md: isPrivateSale ? 3 : 3 }}>
               <Form.Item name="fechaMaxEntrega" rules={conditionalRules}>
-                <DatePickerAntd label="Fecha máxima de entrega" />
+                <DatePickerAntd label="Fecha máxima de entrega" disabled={disabledAll} />
               </Form.Item>
             </Grid>
 
             <Grid size={{ xs: 12, sm: 6, md: isPrivateSale ? 3 : 3 }}>
               <Form.Item name="montoVenta" rules={conditionalRules}>
-                <InputNumberAntd label="Monto de venta" isCurrency />
+                <InputNumberAntd label="Monto de venta" isCurrency disabled={disabledAll} />
               </Form.Item>
             </Grid>
 
@@ -116,7 +117,7 @@ const InputsThirdStep = ({ form, companyId, isPrivateSale = false }: InputsThird
               <>
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                   <Form.Item name="cotizacion">
-                    <InputAntd label="Cod. Cotización" />
+                    <InputAntd label="Cod. Cotización" disabled={disabledAll} />
                   </Form.Item>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
@@ -127,6 +128,7 @@ const InputsThirdStep = ({ form, companyId, isPrivateSale = false }: InputsThird
                         accept="application/pdf"
                         value={getFieldValue('documentoCotizacion')}
                         onChange={(file) => setFieldValue('documentoCotizacion', file)}
+                        editable={!disabledAll}
                       />
                     )}
                   </Form.Item>
@@ -142,19 +144,19 @@ const InputsThirdStep = ({ form, companyId, isPrivateSale = false }: InputsThird
             <Grid container columnSpacing={2} rowSpacing={2} sx={{ mt: 1 }}>
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <Form.Item name="numeroSIAF" rules={siafRules}>
-                  <InputAntd label="Número de SIAF" />
+                  <InputAntd label="Número de SIAF" disabled={disabledAll} />
                 </Form.Item>
               </Grid>
 
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <Form.Item name="etapaSIAF" rules={siafRules}>
-                  <SelectGeneric label="Etapa SIAF" options={etapaSIAFOptions} />
+                  <SelectGeneric label="Etapa SIAF" options={etapaSIAFOptions} disabled={disabledAll} />
                 </Form.Item>
               </Grid>
 
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <Form.Item name="fechaSIAF" rules={siafRules}>
-                  <DatePickerAntd label="Fecha de SIAF" />
+                  <DatePickerAntd label="Fecha de SIAF" disabled={disabledAll} />
                 </Form.Item>
               </Grid>
 
@@ -163,6 +165,7 @@ const InputsThirdStep = ({ form, companyId, isPrivateSale = false }: InputsThird
                 <Form.Item name="codigoOcf" rules={siafRules}>
                   <InputAntd
                     label="OCF"
+                    disabled={disabledAll}
                   />
                 </Form.Item>
               </Grid>
@@ -179,6 +182,7 @@ const InputsThirdStep = ({ form, companyId, isPrivateSale = false }: InputsThird
                     accept="pdf"
                     value={form.getFieldValue('ordenCompraElectronica')}
                     onChange={(file) => form.setFieldsValue({ ordenCompraElectronica: file })}
+                    editable={!disabledAll}
                   />
                 </Form.Item>
               </Grid>
@@ -190,6 +194,7 @@ const InputsThirdStep = ({ form, companyId, isPrivateSale = false }: InputsThird
                     accept="pdf"
                     value={form.getFieldValue('ordenCompraFisica')}
                     onChange={(file) => form.setFieldsValue({ ordenCompraFisica: file })}
+                    editable={!disabledAll}
                   />
                 </Form.Item>
               </Grid>

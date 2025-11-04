@@ -11,7 +11,7 @@ import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 import { BlackBarKeyEnum } from '@/types/global.enum';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { SaleProps } from '@/services/sales/sales';
 import { parseJSON } from '@/utils/functions';
 import { Save } from '@mui/icons-material';
@@ -24,6 +24,7 @@ const SalesPageForm = () => {
   const [loading, setLoading] = useState(false);
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const isEditing = Boolean(id);
   const [currentSale, setCurrentSale] = useState<SaleProps | null>(null);
 
@@ -48,6 +49,11 @@ const SalesPageForm = () => {
   ]);
   const [tipoPago, setTipoPago] = useState<string>('PENDIENTE');
   const [notaPago, setNotaPago] = useState<string>('');
+
+  const searchParams = new URLSearchParams(location.search);
+  const fromParam = searchParams.get('from');
+  const isBillingMode = fromParam === 'billing';
+  const isSalesMode = !fromParam || fromParam === 'sales';
 
   // Inicializar valores por defecto si no están configurados
   useEffect(() => {
@@ -433,6 +439,7 @@ const SalesPageForm = () => {
               isEditing={isEditing}
               currentSale={currentSale}
               isPrivateSale={saleInputValues.tipoVenta === 'privada'}
+              disabledAll={isBillingMode}
             />
 
             {/* Campos de Venta Privada - Movidos después de lugar de entrega */}
@@ -447,6 +454,8 @@ const SalesPageForm = () => {
                 onNotaPagoChange={setNotaPago}
                 isPrivateSale={saleInputValues.tipoVenta === 'privada'}
                 isEditing={isEditing}
+                disableInvoiceFields={isSalesMode}
+                fromBilling={isBillingMode}
               />
             </Collapse>
 
@@ -454,15 +463,18 @@ const SalesPageForm = () => {
               form={form}
               companyId={saleInputValues.enterprise ? saleInputValues.enterprise.id : undefined}
               isPrivateSale={saleInputValues.tipoVenta === 'privada'}
+              disabledAll={isBillingMode}
             />
 
             <InputsFourthStep
               form={form}
               isPrivateSale={saleInputValues.tipoVenta === 'privada'}
+              disabledAll={isBillingMode}
             />
 
             <InputsFifthStep
               isPrivateSale={saleInputValues.tipoVenta === 'privada'}
+              disabledAll={isBillingMode}
             />
 
             {/* Estado de venta y botón de submit por separado */}
@@ -502,6 +514,7 @@ const SalesPageForm = () => {
                         boxShadow: '0 10px 25px rgba(0,0,0,0.10)',
                         fontSize: 16,
                       }}
+                      disabled={isBillingMode}
                     >
                       {estadoOptions.map(option => (
                         <Select.Option
@@ -541,7 +554,7 @@ const SalesPageForm = () => {
                   size="large"
                   startIcon={<Save />}
                   onClick={() => form.submit()}
-                  disabled={loading}
+                  disabled={loading || isBillingMode}
                   sx={{
                     minWidth: 180,
                     height: 56,

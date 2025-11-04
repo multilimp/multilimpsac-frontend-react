@@ -16,7 +16,7 @@ const generateEmptyProductRecord = () => ({
   cantidad: '',
 });
 
-const InputsFifthStep = ({ isPrivateSale = false }: { isPrivateSale?: boolean }) => {
+const InputsFifthStep = ({ isPrivateSale = false, disabledAll = false }: { isPrivateSale?: boolean; disabledAll?: boolean }) => {
   // Reglas condicionales: si es venta privada, ningún campo es obligatorio
   const conditionalRules = isPrivateSale ? [] : [requiredField];
 
@@ -75,6 +75,7 @@ const InputsFifthStep = ({ isPrivateSale = false }: { isPrivateSale?: boolean })
                           <InputAntd
                             placeholder="Código del producto"
                             size="large"
+                            disabled={disabledAll}
                           />
                         </Form.Item>
                       </Col>
@@ -92,6 +93,7 @@ const InputsFifthStep = ({ isPrivateSale = false }: { isPrivateSale?: boolean })
                             placeholder="Descripción detallada del producto"
                             rows={2}
                             size="large"
+                            disabled={disabledAll}
                           />
                         </Form.Item>
                       </Col>
@@ -108,6 +110,7 @@ const InputsFifthStep = ({ isPrivateSale = false }: { isPrivateSale?: boolean })
                           <InputAntd
                             placeholder="Marca"
                             size="large"
+                            disabled={disabledAll}
                           />
                         </Form.Item>
                       </Col>
@@ -125,13 +128,14 @@ const InputsFifthStep = ({ isPrivateSale = false }: { isPrivateSale?: boolean })
                             type="number"
                             placeholder="0"
                             size="large"
+                            disabled={disabledAll}
                           />
                         </Form.Item>
                       </Col>
 
                       {/* Eliminar */}
                       <Col span={2}>
-                        {fields.length > 1 && (
+                        {fields.length > 1 && !disabledAll && (
                           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-end', height: '100%', paddingTop: '20px' }}>
                             <AntButton
                               type="text"
@@ -149,6 +153,7 @@ const InputsFifthStep = ({ isPrivateSale = false }: { isPrivateSale?: boolean })
               </Stack>
 
               <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 3 }}>
+                {!disabledAll && (
                 <Button
                   variant="contained"
                   startIcon={<Add />}
@@ -162,6 +167,7 @@ const InputsFifthStep = ({ isPrivateSale = false }: { isPrivateSale?: boolean })
                 >
                   Agregar producto
                 </Button>
+                )}
                 {errors.length > 0 && (
                   <FormHelperText error>
                     {(errors as Array<string>).join(' - ')}

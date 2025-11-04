@@ -24,9 +24,10 @@ interface InputsSecondStepProps {
   isEditing?: boolean;
   currentSale?: SaleProps | null;
   isPrivateSale?: boolean;
+  disabledAll?: boolean;
 }
 
-const InputsSecondStep = ({ form, isEditing = false, currentSale, isPrivateSale = false }: InputsSecondStepProps) => {
+const InputsSecondStep = ({ form, isEditing = false, currentSale, isPrivateSale = false, disabledAll = false }: InputsSecondStepProps) => {
   const [openClients, setOpenClients] = useState(false);
 
   // Reglas condicionales: si es venta privada, ningún campo es obligatorio
@@ -83,6 +84,7 @@ const InputsSecondStep = ({ form, isEditing = false, currentSale, isPrivateSale 
         footerContent={renderFooterContent()}
         ResumeIcon={Business}
         color={isPrivateSale ? '#006DFA' : '#04BA6B'}
+        showSearchButton={!disabledAll}
         onClickSearch={() => setOpenClients(true)}
         headerLeft={
           <Fragment>
@@ -138,6 +140,7 @@ const InputsSecondStep = ({ form, isEditing = false, currentSale, isPrivateSale 
                     <SelectGeneric
                       label="Tipo de entrega"
                       options={tipoEntregaOptions}
+                      disabled={disabledAll}
                     />
                   </Form.Item>
                 </Grid>
@@ -150,13 +153,13 @@ const InputsSecondStep = ({ form, isEditing = false, currentSale, isPrivateSale 
                       if (tipoEntrega === 'ENTREGA_DOMICILIO') {
                         return (
                           <Form.Item name="destinoEntidad" rules={conditionalRules}>
-                            <InputAntd label="Nombre de la entidad" />
+                            <InputAntd label="Nombre de la entidad" disabled={disabledAll} />
                           </Form.Item>
                         );
                       } else if (tipoEntrega === 'ENTREGA_AGENCIA') {
                         return (
                           <Form.Item name="nombreAgencia" rules={conditionalRules}>
-                            <InputAntd label="Nombre de la agencia" />
+                            <InputAntd label="Nombre de la agencia" disabled={disabledAll} />
                           </Form.Item>
                         );
                       }
@@ -173,7 +176,7 @@ const InputsSecondStep = ({ form, isEditing = false, currentSale, isPrivateSale 
                       return (
                         <Grid size={12}>
                           <Form.Item name="destinoFinal" rules={conditionalRules}>
-                            <InputAntd label="Destino final" />
+                            <InputAntd label="Destino final" disabled={disabledAll} />
                           </Form.Item>
                         </Grid>
                       );
@@ -189,33 +192,33 @@ const InputsSecondStep = ({ form, isEditing = false, currentSale, isPrivateSale 
               {/* Primera fila - Dirección completa */}
               <Grid size={12}>
                 <Form.Item name="direccionEntrega" rules={conditionalRules}>
-                  <InputAntd label="Dirección" />
+                  <InputAntd label="Dirección" disabled={disabledAll} />
                 </Form.Item>
               </Grid>
 
               {/* Segunda fila - Distrito, Provincia, Departamento */}
               <Grid size={{ xs: 12, sm: 4 }}>
                 <Form.Item name="distritoEntrega" rules={conditionalRules}>
-                  <InputAntd label="Distrito" />
+                  <InputAntd label="Distrito" disabled={disabledAll} />
                 </Form.Item>
               </Grid>
 
               <Grid size={{ xs: 12, sm: 4 }}>
                 <Form.Item name="provinciaEntrega" rules={conditionalRules}>
-                  <InputAntd label="Provincia" />
+                  <InputAntd label="Provincia" disabled={disabledAll} />
                 </Form.Item>
               </Grid>
 
               <Grid size={{ xs: 12, sm: 4 }}>
                 <Form.Item name="regionEntrega" rules={conditionalRules}>
-                  <InputAntd label="Departamento" />
+                  <InputAntd label="Departamento" disabled={disabledAll} />
                 </Form.Item>
               </Grid>
 
               {/* Tercera fila - Referencia */}
               <Grid size={12}>
                 <Form.Item name="referenciaEntrega" rules={conditionalRules}>
-                  <InputAntd label="Referencia" />
+                  <InputAntd label="Referencia" disabled={disabledAll} />
                 </Form.Item>
               </Grid>
             </Grid>

@@ -9,9 +9,10 @@ import { Person } from '@mui/icons-material';
 interface InputsFourthStepProps {
   form: FormInstance;
   isPrivateSale?: boolean;
+  disabledAll?: boolean;
 }
 
-const InputsFourthStep = ({ form, isPrivateSale = false }: InputsFourthStepProps) => {
+const InputsFourthStep = ({ form, isPrivateSale = false, disabledAll = false }: InputsFourthStepProps) => {
   // Reglas condicionales: si es venta privada, ningún campo es obligatorio
   const conditionalRules = isPrivateSale ? [] : [requiredField];
 
@@ -41,6 +42,7 @@ const InputsFourthStep = ({ form, isPrivateSale = false }: InputsFourthStepProps
                     <SelectContactsByClient
                       clientId={clienteEstado?.id}
                       value={getFieldValue('cargoContacto')} // <-- Esto selecciona el contacto correcto
+                      disabled={disabledAll}
                       onChange={(value, record: any) =>
                         form.setFieldsValue({
                           cargoContacto: value,

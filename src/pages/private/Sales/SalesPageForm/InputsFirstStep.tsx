@@ -35,7 +35,9 @@ const InputsFirstStep = ({
   onTipoPagoChange,
   onNotaPagoChange,
   isPrivateSale = false,
-  isEditing = false
+  isEditing = false,
+  disableInvoiceFields = false,
+  fromBilling = false
 }: {
   form: FormInstance;
   payments?: PaymentItem[];
@@ -46,6 +48,8 @@ const InputsFirstStep = ({
   onNotaPagoChange?: (notaPago: string) => void;
   isPrivateSale?: boolean;
   isEditing?: boolean;
+  disableInvoiceFields?: boolean;
+  fromBilling?: boolean;
 }) => {
   // Reglas condicionales: si es venta privada, ningún campo es obligatorio
   const conditionalRules = isPrivateSale ? [] : [requiredField];
@@ -65,7 +69,7 @@ const InputsFirstStep = ({
             {/* Fila única: Estado de Factura, Fecha Factura y Documento PDF */}
             <Grid size={{ xs: 12, md: 4 }}>
               <Form.Item name="facturaStatus" rules={conditionalRules}>
-                <SelectGeneric showSearch={false} label="Estado de Factura" options={facturaStatusOptions} />
+                <SelectGeneric showSearch={false} label="Estado de Factura" options={facturaStatusOptions} disabled={fromBilling} />
               </Form.Item>
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
@@ -74,12 +78,13 @@ const InputsFirstStep = ({
                   label="Documento de Factura"
                   onChange={(file) => form.setFieldValue('documentoFactura', file)}
                   accept="application/pdf"
+                  editable={!disableInvoiceFields}
                 />
               </Form.Item>
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
               <Form.Item name="fechaFactura" rules={conditionalRules}>
-                <DatePickerAntd label="Fecha factura" />
+                <DatePickerAntd label="Fecha factura" disabled={disableInvoiceFields} />
               </Form.Item>
             </Grid>
           </Grid>
@@ -99,7 +104,7 @@ const InputsFirstStep = ({
                 tipoPago={tipoPago}
                 notaPago={notaPago}
                 title="Pagos Venta Privada"
-                mode="edit"
+                mode={fromBilling ? 'readonly' : 'edit'}
                 montoTotal={Number(montoVenta)}
                 onPaymentsChange={onPaymentsChange}
                 onTipoPagoChange={onTipoPagoChange}
