@@ -2,6 +2,7 @@ import SelectContainer from './SelectContainer';
 import { Select, SelectProps } from 'antd';
 import { filterOptions } from '@/utils/functions';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
+import SelectGeneric from './SelectGeneric';
 
 interface SelectCompaniesProps extends SelectProps {
   label: string;
@@ -12,8 +13,8 @@ const SelectCompanies = ({ label, ...rest }: SelectCompaniesProps) => {
 
   return (
     <>
-      <SelectContainer label={label} labelColor="white">
-        <Select
+      <SelectContainer label={label}>
+        <SelectGeneric
           filterOption={filterOptions}
           size="large"
           allowClear
@@ -27,7 +28,7 @@ const SelectCompanies = ({ label, ...rest }: SelectCompaniesProps) => {
               {item.razonSocial}
             </Select.Option>
           ))}
-        </Select>
+        </SelectGeneric>
       </SelectContainer>
     </>
   );
