@@ -79,6 +79,7 @@ import apiClient from '@/services/apiClient';
 import BillingHistory from '@/components/BillingHistory';
 import { BillingProps } from '@/services/billings/billings';
 import { getBillingHistoryByOrdenCompraId } from '@/services/billings/billings.request';
+import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 
 interface CollectionFormContentProps {
   sale: SaleProps;
@@ -149,6 +150,7 @@ const getCobradorOptions = (cobradores: UserProps[]) => {
 
 export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
   const [form] = Form.useForm();
+  const { obtainSales } = useGlobalInformation();
   const [gestionForm] = Form.useForm();
   const [cobradorForm] = Form.useForm();
   const navigate = useNavigate();
@@ -379,10 +381,10 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
       // Configurar el formulario con los datos
       form.setFieldsValue({
         etapaSiaf: cobranzaData.etapaSiaf || '',
-        fechaSiaf: cobranzaData.fechaSiaf ? dayjs(cobranzaData.fechaSiaf) : null,
         penalidad: cobranzaData.penalidad || '',
         estadoCobranza: cobranzaData.estadoCobranza || '',
-        fechaEstadoCobranza: cobranzaData.fechaEstadoCobranza ? dayjs(cobranzaData.fechaEstadoCobranza) : null,
+        fechaEstadoCobranza: cobranzaData.fechaEstadoCobranza ? dayjs.utc(cobranzaData.fechaEstadoCobranza) : null,
+        fechaSiaf: cobranzaData.fechaSiaf ? dayjs.utc(cobranzaData.fechaSiaf) : null,
         // Nuevo: estado de cobranza rol
         estadoCobranzaRol: cobranzaData.estadoCobranzaRol || 'PENDIENTE',
       });
@@ -559,13 +561,6 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
       changedFields.fechaEstadoCobranza = currentFechaEstadoCobranza || undefined;
     }
 
-    // Comparar estadoCobranzaRol
-    const currentEstadoCobranzaRol = currentValues.estadoCobranzaRol || '';
-    const originalEstadoCobranzaRol = originalCobranzaData.estadoCobranzaRol || '';
-    if (currentEstadoCobranzaRol !== originalEstadoCobranzaRol) {
-      changedFields.estadoCobranzaRol = currentEstadoCobranzaRol;
-    }
-
     return changedFields;
   };
 
@@ -636,7 +631,6 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
         message: 'Cobranza actualizada',
         description: `Se actualizaron ${Object.keys(changedFields).length} campo(s) correctamente`
       });
-      navigate('/collections');
 
     } catch (error) {
       notification.error({
@@ -1960,7 +1954,10 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
             <Button
               variant="outlined"
               startIcon={<ArrowBack />}
-              onClick={() => window.history.back()}
+              onClick={async () => {
+                await obtainSales();
+                window.history.back();
+              }}
               sx={{
                 color: '#666',
                 borderColor: '#ddd',
