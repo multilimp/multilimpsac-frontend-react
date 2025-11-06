@@ -78,6 +78,7 @@ import BillingHistory from '@/components/BillingHistory';
 import { BillingProps } from '@/services/billings/billings';
 import { getBillingHistoryByOrdenCompraId } from '@/services/billings/billings.request';
 import { getGestionesCobranza, createGestionCobranza, updateGestionCobranza, type GestionCobranza } from '@/services/cobranza/cobranza.service';
+import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 
 interface TrackingFormContentProps {
   sale: SaleProps;
@@ -171,6 +172,7 @@ const getUbigeoName = (val: RegionProps | ProvinceProps | DistrictProps | string
 
 const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
   const [billingHistory, setBillingHistory] = useState<BillingProps[]>([]);
+  const { obtainSales } = useGlobalInformation();
 
   useEffect(() => {
     let mounted = true;
@@ -244,7 +246,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
   const [originalTransportePaymentsState, setOriginalTransportePaymentsState] = useState<TransportePaymentsState | null>(null);
   const [transportePaymentsChanged, setTransportePaymentsChanged] = useState(false);
   const [savingTransportePayments, setSavingTransportePayments] = useState(false);
-  
+
   // Estados para gestión de cobranzas por OC
   const [gestionesCobranza, setGestionesCobranza] = useState<GestionCobranza[]>([]);
   const [notaCobranzaOC, setNotaCobranzaOC] = useState('');
@@ -526,10 +528,10 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
 
   const initializeOCValues = () => {
     const ocValues = {
-      fechaMaxForm: sale.fechaMaxForm ? dayjs(sale.fechaMaxForm) : null,
-      fechaEntregaOC: sale.fechaEntregaOc ? dayjs(sale.fechaEntregaOc) : null,
+      fechaMaxForm: sale.fechaMaxForm ? dayjs.utc(sale.fechaMaxForm) : null,
+      fechaEntregaOC: sale.fechaEntregaOc ? dayjs.utc(sale.fechaEntregaOc) : null,
       documentoPeruCompras: sale.documentoPeruCompras || null,
-      fechaPeruCompras: sale.fechaPeruCompras ? dayjs(sale.fechaPeruCompras) : null,
+      fechaPeruCompras: sale.fechaPeruCompras ? dayjs.utc(sale.fechaPeruCompras) : null,
       cartaAmpliacion: sale.cartaAmpliacion || null,
     };
     setOriginalOCValues(ocValues);
@@ -1114,6 +1116,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
       console.error('Error saving OC changes:', error);
     } finally {
       setSavingOC(false);
+      await obtainSales();
     }
   };
 
@@ -1122,7 +1125,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
     try {
       const gestiones = await getGestionesCobranza(sale.id);
       setGestionesCobranza(gestiones);
-      
+
       // Cargar la nota de cobranza más reciente si existe
       const ultimaGestion = gestiones.find(g => g.notaGestion);
       if (ultimaGestion?.notaGestion) {
@@ -1156,7 +1159,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
 
       // Buscar si ya existe una gestión con nota
       const existingGestion = gestionesCobranza.find(g => g.notaGestion);
-      
+
       if (existingGestion) {
         // Actualizar gestión existente
         await updateGestionCobranza(existingGestion.id!, gestionData);
@@ -1167,7 +1170,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
 
       setOriginalNotaCobranzaOC(notaCobranzaOC);
       setNotaCobranzaChanged(false);
-      
+
       // Recargar gestiones
       await loadGestionesCobranza();
 
@@ -2393,7 +2396,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
           </Box>
 
           {/* Sección Nota de Cobranzas en Seguimiento por OC */}
-          <AntCard 
+          <AntCard
             title="Nota de Cobranzas en Seguimiento por OC"
             style={{ marginBottom: 24 }}
             headStyle={{ backgroundColor: '#f0f2f5', fontWeight: 'bold' }}

@@ -80,13 +80,6 @@ const QuotesPageForm = () => {
     try {
       setLoading(true);
 
-      console.log('Valores del formulario:', values);
-      console.log('Productos:', values.productos);
-      console.log('Empresa:', values.empresa);
-      console.log('Cliente:', values.cliente);
-      console.log('Tipo de Pago:', values.tipoPago);
-      console.log('Fecha Cotización:', values.fechaCotizacion);
-
       const baseQuoteData = {
         empresaId: Number(values.empresa),
         clienteId: (values.cliente as { id: number })?.id,
@@ -109,7 +102,9 @@ const QuotesPageForm = () => {
         fechaCotizacion: dayjs.isDayjs(values.fechaCotizacion)
           ? (values.fechaCotizacion as dayjs.Dayjs).format('YYYY-MM-DD')
           : undefined,
-        fechaEntrega: (values.fechaEntrega as { toISOString: () => string })?.toISOString() || undefined,
+        fechaEntrega: dayjs.isDayjs(values.fechaEntrega)
+          ? (values.fechaEntrega as dayjs.Dayjs).format('YYYY-MM-DD')
+          : undefined,
         productos: (() => {
           const productos = values.productos as ProductoRecord[] || [];
           return productos.map(prod => ({

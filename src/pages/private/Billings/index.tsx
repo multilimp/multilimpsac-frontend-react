@@ -22,7 +22,7 @@ const BillingsPage = () => {
   const items: TabsProps['items'] = useMemo(() => [
     {
       key: 'facturaciones',
-      label: 'Facturaciones',
+      label: 'Ventas al Estado',
       children: (
         <BillingsTable
           data={salesEstado}

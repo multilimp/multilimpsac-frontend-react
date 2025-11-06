@@ -1,4 +1,7 @@
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(utc);
 
 export const isNavItemActive = ({ path, pathname = '' }: { path: string; pathname?: string }): boolean =>
   path === pathname || Boolean(path !== '/' && pathname.startsWith(path));
@@ -58,6 +61,17 @@ export const parseJSON = (str?: null | string | any[] | object) => {
 };
 
 export const formattedDate = (value?: null | Date | string, format = 'DD/MM/YYYY', defaultText?: string): string => {
-  if (!value || !dayjs(value).isValid()) return defaultText ?? '';
-  return dayjs(value).format(format);
+  if (!value) return defaultText ?? '';
+
+  // Si la fecha viene en formato ISO con zona horaria (Z), usar UTC para evitar conversión
+  if (typeof value === 'string' && value.includes('T') && value.endsWith('Z')) {
+    const utcDate = dayjs.utc(value);
+    if (!utcDate.isValid()) return defaultText ?? '';
+    return utcDate.format(format);
+  }
+
+  // Para fechas sin zona horaria, usar dayjs normal
+  const date = dayjs(value);
+  if (!date.isValid()) return defaultText ?? '';
+  return date.format(format);
 };

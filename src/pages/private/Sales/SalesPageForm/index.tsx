@@ -8,15 +8,19 @@ import InputsFourthStep from './InputsFourthStep';
 import InputsFifthStep from './InputsFifthStep';
 import { createDirectSale, processPdfSales, getSaleById, updateSale } from '@/services/sales/sales.request';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import type { Dayjs } from 'dayjs';
+
+dayjs.extend(utc);
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 import { BlackBarKeyEnum } from '@/types/global.enum';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { SaleProps } from '@/services/sales/sales';
 import { parseJSON } from '@/utils/functions';
-import { Save } from '@mui/icons-material';
+import { Save, ArrowBack } from '@mui/icons-material';
 import { estadoOptions, estadoBgMap } from '@/utils/constants';
 import { Producto } from '@/types/almacen.types';
+import SelectGeneric from '@/components/selects/SelectGeneric';
 
 const SalesPageForm = () => {
   const { companies, clients, saleInputValues, setSaleInputValues, setBlackBarKey, obtainSales, setSelectedSale } = useGlobalInformation();
@@ -99,12 +103,12 @@ const SalesPageForm = () => {
               catalogo: saleData.catalogoEmpresa.id,
               catalogoComplete: saleData.catalogoEmpresa,
             }),
-            fechaFormalizacion: saleData.fechaForm ? dayjs(saleData.fechaForm) : null,
-            fechaMaxEntrega: saleData.fechaMaxForm ? dayjs(saleData.fechaMaxForm) : null,
+            fechaFormalizacion: saleData.fechaForm ? dayjs.utc(saleData.fechaForm) : null,
+            fechaMaxEntrega: saleData.fechaMaxForm ? dayjs.utc(saleData.fechaMaxForm) : null,
+            fechaSIAF: saleData.fechaSiaf ? dayjs.utc(saleData.fechaSiaf) : null,
             montoVenta: saleData.montoVenta,
             numeroSIAF: saleData.siaf,
             etapaSIAF: saleData.etapaSiaf,
-            fechaSIAF: saleData.fechaSiaf ? dayjs(saleData.fechaSiaf) : null,
             ordenCompraElectronica: saleData.documentoOce,
             ordenCompraFisica: saleData.documentoOcf,
             codigoOcf: saleData.codigoOcf,
@@ -136,7 +140,7 @@ const SalesPageForm = () => {
           // Si es venta privada, cargar datos específicos
           if (isPrivateSale && saleData.ordenCompraPrivada) {
             formValues.facturaStatus = (saleData.ordenCompraPrivada as any).estadoFactura || 'PENDIENTE';
-            formValues.fechaFactura = saleData.ordenCompraPrivada.fechaFactura ? dayjs(saleData.ordenCompraPrivada.fechaFactura) : null;
+            formValues.fechaFactura = saleData.ordenCompraPrivada.fechaFactura ? dayjs.utc(saleData.ordenCompraPrivada.fechaFactura) : null;
             formValues.documentoFactura = saleData.ordenCompraPrivada.documentoPago || null;
             formValues.documentoCotizacion = (saleData.ordenCompraPrivada as any).documentoCotizacion || null;
             formValues.cotizacion = (saleData.ordenCompraPrivada as any).cotizacion || null; // Campo cotización
@@ -152,7 +156,7 @@ const SalesPageForm = () => {
             // Mapeo explícito de pagos desde backend a frontend
             const mappedPayments = Array.isArray(saleData.ordenCompraPrivada.pagos) && saleData.ordenCompraPrivada.pagos.length > 0
               ? saleData.ordenCompraPrivada.pagos.map((pago: any) => ({
-                date: pago.fechaPago && pago.fechaPago !== '1970-01-01T00:00:00.000Z' ? dayjs(pago.fechaPago) : null,
+                date: pago.fechaPago && pago.fechaPago !== '1970-01-01T00:00:00.000Z' ? dayjs.utc(pago.fechaPago) : null,
                 bank: pago.bancoPago || '',
                 description: pago.descripcionPago || '',
                 file: pago.archivoPago || null,
@@ -201,6 +205,12 @@ const SalesPageForm = () => {
       setSelectedSale(null);
     };
   }, [setSaleInputValues, setBlackBarKey, setSelectedSale]);
+
+  const back = async () => {
+    await obtainSales();
+    navigate(-1);
+  };
+
   const handleAnalizeFile = async () => {
     try {
       setLoading(true);
@@ -265,13 +275,21 @@ const SalesPageForm = () => {
           provinciaEntrega: values.provinciaEntrega || null,
           departamentoEntrega: values.regionEntrega || null,
           referenciaEntrega: values.referenciaEntrega || null,
-          fechaEntrega: dayjs(values.fechaEntrega).isValid() ? dayjs(values.fechaEntrega).toISOString() : undefined,
-          fechaForm: dayjs(values.fechaFormalizacion).isValid() ? dayjs(values.fechaFormalizacion).toISOString() : undefined,
-          fechaMaxForm: dayjs(values.fechaMaxEntrega).isValid() ? dayjs(values.fechaMaxEntrega).toISOString() : undefined,
+          fechaEntrega: dayjs.isDayjs(values.fechaEntrega)
+            ? (values.fechaEntrega as dayjs.Dayjs).format('YYYY-MM-DD')
+            : undefined,
+          fechaForm: dayjs.isDayjs(values.fechaFormalizacion)
+            ? (values.fechaFormalizacion as dayjs.Dayjs).format('YYYY-MM-DD')
+            : undefined,
+          fechaMaxForm: dayjs.isDayjs(values.fechaMaxEntrega)
+            ? (values.fechaMaxEntrega as dayjs.Dayjs).format('YYYY-MM-DD')
+            : undefined,
           montoVenta: values.montoVenta ? Number(values.montoVenta) : null,
           siaf: values.numeroSIAF ? String(values.numeroSIAF) : null,
           etapaSiaf: values.etapaSIAF || null,
-          fechaSiaf: dayjs(values.fechaSIAF).isValid() ? dayjs(values.fechaSIAF).toISOString() : undefined,
+          fechaSiaf: dayjs.isDayjs(values.fechaSIAF)
+            ? (values.fechaSIAF as dayjs.Dayjs).format('YYYY-MM-DD')
+            : undefined,
           estadoVenta: values.estadoVenta || 'PENDIENTE',
           multipleFuentesFinanciamiento: values.multipleFuentesFinanciamiento || false,
           documentoOce: values.ordenCompraElectronica || null,
@@ -292,7 +310,9 @@ const SalesPageForm = () => {
             ventaPrivada: {
               estadoPago: tipoPago || 'PENDIENTE',
               estadoFactura: values.facturaStatus || 'PENDIENTE',
-              fechaFactura: values.fechaFactura && dayjs(values.fechaFactura).isValid() ? dayjs(values.fechaFactura).toISOString() : undefined,
+              fechaFactura: dayjs.isDayjs(values.fechaFactura)
+                ? (values.fechaFactura as dayjs.Dayjs).format('YYYY-MM-DD')
+                : undefined,
               documentoPago: values.documentoFactura,
               documentoCotizacion: values.documentoCotizacion, // Campo de cotización
               cotizacion: values.cotizacion || null, // Campo cotización
@@ -303,8 +323,8 @@ const SalesPageForm = () => {
               destinoFinal: values.destinoFinal || null,
               nombreEntidad: values.destinoEntidad || null,
               pagos: payments.map(payment => ({
-                fechaPago: payment.date && dayjs(payment.date).isValid()
-                  ? dayjs(payment.date).toISOString()
+                fechaPago: payment.date && dayjs.isDayjs(payment.date)
+                  ? (payment.date as dayjs.Dayjs).format('YYYY-MM-DD')
                   : undefined,
                 bancoPago: payment.bank || '',
                 descripcionPago: payment.description || '',
@@ -320,6 +340,8 @@ const SalesPageForm = () => {
         }
 
         notification.success({ message: `La venta fue actualizada correctamente` });
+        await obtainSales();
+
       } else {
         // Modo creación (código existente)
         let bodyVentaPrivada = null;
@@ -329,8 +351,8 @@ const SalesPageForm = () => {
           for (const payment of payments || []) {
             if (payment.amount && parseFloat(payment.amount) > 0) {
               pagos.push({
-                fechaPago: payment.date && dayjs(payment.date).isValid()
-                  ? payment.date.toISOString()
+                fechaPago: payment.date && dayjs.isDayjs(payment.date)
+                  ? (payment.date as dayjs.Dayjs).format('YYYY-MM-DD')
                   : undefined,
                 bancoPago: payment.bank || '',
                 descripcionPago: payment.description || '',
@@ -344,7 +366,9 @@ const SalesPageForm = () => {
           bodyVentaPrivada = {
             estadoPago: tipoPago || 'PENDIENTE',
             estadoFactura: values.facturaStatus || 'PENDIENTE',
-            fechaFactura: dayjs(values.fechaFactura).isValid() ? dayjs(values.fechaFactura).toISOString() : undefined,
+            fechaFactura: dayjs.isDayjs(values.fechaFactura)
+              ? (values.fechaFactura as dayjs.Dayjs).format('YYYY-MM-DD')
+              : undefined,
             documentoPago: values.documentoFactura,
             documentoCotizacion: values.documentoCotizacion, // Campo de cotización
             cotizacion: values.cotizacion || null, // Campo cotización
@@ -393,12 +417,18 @@ const SalesPageForm = () => {
           distritoEntrega: values.distritoEntrega || null,
           direccionEntrega: values.direccionEntrega || null,
           referenciaEntrega: values.referenciaEntrega || null,
-          fechaForm: dayjs(values.fechaFormalizacion).isValid() ? dayjs(values.fechaFormalizacion).toISOString() : undefined,
-          fechaMaxForm: dayjs(values.fechaMaxEntrega).isValid() ? dayjs(values.fechaMaxEntrega).toISOString() : undefined,
+          fechaForm: dayjs.isDayjs(values.fechaFormalizacion)
+            ? (values.fechaFormalizacion as dayjs.Dayjs).format('YYYY-MM-DD')
+            : undefined,
+          fechaMaxForm: dayjs.isDayjs(values.fechaMaxEntrega)
+            ? (values.fechaMaxEntrega as dayjs.Dayjs).format('YYYY-MM-DD')
+            : undefined,
           montoVenta: values.montoVenta ? Number(values.montoVenta) : null,
           siaf: values.numeroSIAF ? String(values.numeroSIAF) : null,
           etapaSiaf: values.etapaSIAF || null,
-          fechaSiaf: dayjs(values.fechaSIAF).isValid() ? dayjs(values.fechaSIAF).toISOString() : undefined,
+          fechaSiaf: dayjs.isDayjs(values.fechaSIAF)
+            ? (values.fechaSIAF as dayjs.Dayjs).format('YYYY-MM-DD')
+            : undefined,
           estadoVenta: values.estadoVenta || 'PENDIENTE',
           documentoOce: values.ordenCompraElectronica || null,
           documentoOcf: values.ordenCompraFisica || null,
@@ -413,6 +443,7 @@ const SalesPageForm = () => {
 
         notification.success({ message: `La venta fue registrada correctamente` });
         navigate(`/sales/${nuevaVenta.id}/edit`);
+        await obtainSales();
       }
     } catch (error: any) {
       console.error('Error al guardar venta:', error);
@@ -480,28 +511,40 @@ const SalesPageForm = () => {
             {/* Estado de venta y botón de submit por separado */}
             <Card
               style={{
-                borderRadius: 12,
-                backgroundColor: 'inherit',
-                border: 'none',
+                borderRadius: 20,
+                backgroundColor: 'white',
+                border: '1px solid #D1D5DB',
               }}
             >
               <Stack direction="row" spacing={3} alignItems="center" justifyContent="space-between">
+                <Button
+                  variant="outlined"
+                  color="inherit"
+                  size="large"
+                  startIcon={<ArrowBack />}
+                  onClick={() => back()}
+                  sx={{
+                    minWidth: 140,
+                    height: 56,
+                    fontWeight: 600,
+                    fontSize: 16,
+                    textTransform: 'none',
+                    borderRadius: 3,
+                  }}
+                >
+                  Regresar
+                </Button>
+                {/* Botón de Submit */}
                 {/* Select de Estado */}
-                <Stack direction="column" spacing={1} sx={{ flex: 1 }}>
-                  <Typography
-                    variant="subtitle1"
-                    fontWeight={600}
-                    sx={{ color: '#374151', fontSize: '14px' }}
-                  >
-                    Estado de la Venta
-                  </Typography>
+                <Stack direction="column" spacing={2} sx={{ flex: 1 }}>
                   <Form.Item
                     name="estadoVenta"
                     style={{ marginBottom: 0 }}
                     initialValue="PENDIENTE"
                   >
-                    <Select
+                    <SelectGeneric
                       placeholder="Seleccione el estado"
+                      label='Estado de la Venta'
                       size="large"
                       style={{
                         maxWidth: 220,
@@ -543,11 +586,9 @@ const SalesPageForm = () => {
                           </div>
                         </Select.Option>
                       ))}
-                    </Select>
+                    </SelectGeneric>
                   </Form.Item>
                 </Stack>
-
-                {/* Botón de Submit */}
                 <Button
                   variant="contained"
                   color="primary"
