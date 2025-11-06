@@ -177,11 +177,7 @@ const SalesPageForm = () => {
             setTipoPago(saleData.ordenCompraPrivada.estadoPago || 'PENDIENTE');
             setNotaPago(saleData.ordenCompraPrivada.notaPago || '');
 
-            // Log para depuración
-            console.log('Pagos mapeados para el estado:', mappedPayments);
-            console.log('Datos originales de pagos del backend:', saleData.ordenCompraPrivada.pagos);
           }
-          console.log('Venta privada:', saleData.ordenCompraPrivada);
           form.setFieldsValue(formValues);
         } catch (error) {
           console.error('Error al cargar los datos de la venta:', error);

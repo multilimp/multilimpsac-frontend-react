@@ -129,7 +129,6 @@ const CargosEntregaTable: React.FC<CargosEntregaTableProps> = ({ fechaInicio, fe
             try {
                 setLoading(true);
                 const result = await getCargosEntregaData(fechaInicio, fechaFin);
-                console.log(result);
                 setData(result);
             } catch (error) {
                 console.error('Error al cargar datos de Reporte de Programación:', error);

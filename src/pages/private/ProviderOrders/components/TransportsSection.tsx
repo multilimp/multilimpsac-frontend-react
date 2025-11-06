@@ -238,12 +238,6 @@ const TransportSelectorField = ({ form, fieldName }: TransportSelectorFieldProps
 const TransportsSection = ({ form, isTreasury, isPrivateSale = false, incluyeTransporte = false, privateSaleData }: TransportsSectionProps) => {
   const { transports } = useGlobalInformation();
 
-  // 🔍 DEBUG: Agregar console.log para diagnosticar
-  console.log('TransportsSection - Props recibidas:', {
-    isPrivateSale,
-    privateSaleData
-  });
-
   return (
     <Form.List
       name="transportes"

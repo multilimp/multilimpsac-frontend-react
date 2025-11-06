@@ -55,7 +55,6 @@ const AntTable = <T,>(props: AntTablePropsProps<T>) => {
   const [showDrawer, setShowDrawer] = useState(false);
   const [columnsCloned, setColumnsCloned] = useState<Array<AntColumnType<T> & { selected: boolean }>>([]);
 
-  console.log('🚀 AntTable renderizado. showInputs:', showInputs, 'columns con filter:', columns.filter(c => c.filter).length);
 
   // Clave de almacenamiento única por tabla
   const storageKey = useMemo(() => {
@@ -115,17 +114,16 @@ const AntTable = <T,>(props: AntTablePropsProps<T>) => {
 
   // Filtrar y procesar columnas
   const columnsFiltered = useMemo(() => {
-    console.log('🔄 Recalculando columnas. showInputs:', showInputs, 'columnsCloned length:', columnsCloned.length);
+
 
     if (!columnsCloned.length) {
-      console.log('⚠️ columnsCloned está vacío, retornando array vacío');
       return [];
     }
 
     const processedColumns = columnsCloned
       .filter((item) => item.selected)
       .map((item, index) => {
-        console.log(`📋 Procesando columna ${index}:`, item.title, 'filter:', item.filter, 'showInputs:', showInputs);
+
 
         // Crear una copia del item para evitar mutaciones
         const newColumn: AntColumnType<T> = { ...item };
@@ -156,7 +154,6 @@ const AntTable = <T,>(props: AntTablePropsProps<T>) => {
 
         // Agregar filtro en la cabecera si está habilitado
         if (showInputs && item.filter) {
-          console.log('🔍 Creando filtro para columna:', item.title, 'showInputs:', showInputs);
           const key = String(item.dataIndex);
 
           // Crear el título con filtro
@@ -171,12 +168,10 @@ const AntTable = <T,>(props: AntTablePropsProps<T>) => {
                 value={filters[key] ?? ''}
                 onChange={(e) => {
                   e.stopPropagation();
-                  console.log('🔍 Filtro cambiado:', key, e.target.value);
                   handleFilterChange(key, e.target.value);
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
-                  console.log('🔍 Click en filtro:', key);
                 }}
                 sx={{
                   '.MuiInputBase-root': {
@@ -193,9 +188,7 @@ const AntTable = <T,>(props: AntTablePropsProps<T>) => {
           );
 
           newColumn.title = titleWithFilter;
-          console.log('✅ Filtro creado para columna:', item.title);
         } else {
-          console.log('❌ NO creando filtro para columna:', item.title, 'showInputs:', showInputs, 'item.filter:', item.filter);
           // Mantener el título original si no hay filtro
           newColumn.title = item.title;
         }
@@ -203,7 +196,6 @@ const AntTable = <T,>(props: AntTablePropsProps<T>) => {
         return newColumn;
       });
 
-    console.log('🏁 Columnas procesadas:', processedColumns.length, 'con filtros:', processedColumns.filter(c => showInputs && c.filter).length);
     return processedColumns;
   }, [columnsCloned, showInputs, filters, handleFilterChange]);
 
@@ -412,7 +404,6 @@ const AntTable = <T,>(props: AntTablePropsProps<T>) => {
                       color="primary"
                       size="small"
                       onClick={() => {
-                        console.log('🔧 Toggling filtros avanzados. Actual:', showInputs, 'Nuevo:', !showInputs);
                         setShowInputs(!showInputs);
                       }}
                       sx={{ border: showInputs ? '1px solid' : '0' }}

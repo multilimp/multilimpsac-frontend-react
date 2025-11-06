@@ -63,7 +63,6 @@ const CompaniesTable = ({ data, loading, onRecordAction, onReload }: CompaniesTa
           size="small"
           startIcon={<FolderOpen />}
           onClick={() => {
-            console.log('📁 Catalogs button clicked for:', record.razonSocial);
             onRecordAction(ModalStateEnum.DRAWER, record);
           }}
           sx={{ minWidth: 'auto' }}

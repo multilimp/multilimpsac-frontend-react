@@ -14,7 +14,6 @@ interface CompanyCatalogDrawerProps {
 }
 
 const CompanyCatalogDrawer = ({ data, handleClose }: CompanyCatalogDrawerProps) => {
-  console.log('🎨 CompanyCatalogDrawer rendered with data:', data);
 
   const { catalogs, loadingCatalogs, obtainCatalogs } = useCatalogs(data.id);
   const [loading, setLoading] = useState(false);

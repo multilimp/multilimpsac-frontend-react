@@ -624,7 +624,6 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
 
   const handlePrintOP = async (op: ProviderOrderProps) => {
     try {
-      console.log('Imprimiendo OP:', op.codigoOp, 'ID:', op.id);
 
       notification.info({
         message: 'Generando PDF',
@@ -956,7 +955,6 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
       isChanged = JSON.stringify(originalValue) !== JSON.stringify(value);
     }
 
-    console.log(`📝 Campo OC "${fieldName}" cambió:`, { original: originalValue, nuevo: value, isChanged });
 
     setChangedOCFields(prev => {
       const newChangedFields = new Set(prev);
@@ -1096,7 +1094,6 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
         dataToSend[fieldMapping[fieldName] || fieldName] = value;
       });
 
-      console.log('📋 Guardando datos de OC Conforme:', dataToSend);
       await updateOrdenCompra(sale.id, dataToSend);
 
       notification.success({
@@ -1207,7 +1204,6 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
   const handleFinish = async (values: Record<string, unknown>) => {
     try {
       setLoading(true);
-      console.log('Guardando seguimiento:', values);
 
       // Guardar cambios de OC Conforme si hay cambios
       if (changedOCFields.size > 0) {
@@ -1237,7 +1233,6 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
           ocData[fieldMapping[fieldName] || fieldName] = value;
         });
 
-        console.log('📋 Datos de OC Conforme:', ocData);
         await updateOrdenCompra(sale.id, ocData);
       }
 
@@ -1273,8 +1268,6 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
             id: op.id,
             ...opData
           });
-
-          console.log(`🏭 Datos de OP ${op.id}:`, opData);
         }
       }
 

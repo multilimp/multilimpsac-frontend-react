@@ -23,7 +23,6 @@ const BillingsForm = () => {
         try {
           const sale = await getSaleById(parseInt(saleId));
           setSelectedSale(sale);
-          console.log('Facturación cargada para venta:', sale.codigoVenta);
         } catch (error) {
           message.error('Venta no encontrada');
           navigate('/billing');

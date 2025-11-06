@@ -627,8 +627,6 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
         return;
       }
 
-      console.log('Campos que cambiaron:', changedFields);
-
       await updateCobranzaFields(sale.id, changedFields);
 
       // Actualizar los datos originales con los nuevos valores

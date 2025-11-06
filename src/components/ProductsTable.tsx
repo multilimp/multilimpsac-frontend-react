@@ -110,7 +110,7 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
   const calculateProductSubTotal = (index: number) => {
     try {
       setIsCalculating(index);
-      
+
       const record = form.getFieldValue([fieldName, index]);
       if (!record) return;
 
@@ -141,7 +141,6 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
       // Forzar actualización de detalles
       setTimeout(() => updateProductDetails(), 10);
 
-      console.log(`✅ Producto ${index} calculado:`, { cantidad, precioUnitario, total });
     } catch (error) {
       console.error(`❌ Error calculando producto ${index}:`, error);
     } finally {
@@ -152,7 +151,7 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
   // Hook personalizado para manejar cambios del formulario
   const useFormWatch = () => {
     const [watchedValues, setWatchedValues] = useState({});
-    
+
     useEffect(() => {
       const interval = setInterval(() => {
         const currentValues = form.getFieldValue(fieldName);
@@ -161,10 +160,10 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
           updateProductDetails();
         }
       }, 200);
-      
+
       return () => clearInterval(interval);
     }, [watchedValues]);
-    
+
     return watchedValues;
   };
 
@@ -175,12 +174,12 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
   const updateProductDetails = () => {
     const productos = form.getFieldValue(fieldName) || [];
     const newDetails: Record<number, ProductDetail> = {};
-    
+
     productos.forEach((producto: Record<string, unknown>, index: number) => {
       const cantidad = Number(producto.cantidad) || 0;
       const precioUnitario = Number(producto.precioUnitario) || 0;
       const total = cantidad * precioUnitario;
-      
+
       newDetails[index] = {
         cantidad,
         precioUnitario,
@@ -188,7 +187,7 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
         hasData: Boolean(producto.codigo || producto.descripcion)
       };
     });
-    
+
     setProductDetails(newDetails);
   };
 
@@ -235,11 +234,11 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                   {fields.map((field) => {
                     const productDetail = productDetails[field.name];
                     const hasData = productDetail?.hasData;
-                    
+
                     return (
-                      <TableRow 
-                        key={field.name} 
-                        sx={{ 
+                      <TableRow
+                        key={field.name}
+                        sx={{
                           '&:hover': { bgcolor: 'rgba(25, 118, 210, 0.04) !important' },
                           bgcolor: hasData ? 'rgba(76, 175, 80, 0.04)' : 'transparent'
                         }}
@@ -475,24 +474,24 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                                 )}
                                 {/* Mostrar siempre el valor del total, aunque sea 0 */}
                                 {!isCalculating && (
-                                    <Chip 
-                                      label={formatCurrency(productDetail?.total || 0)}
-                                      size="small"
-                                      sx={{ 
-                                        fontSize: '0.7rem',
-                                        height: 20,
-                                        bgcolor: productDetail?.total > 0 ? '#e3f2fd' : '#f5f5f5',
-                                        color: productDetail?.total > 0 ? '#1976d2' : '#666666'
-                                      }}
-                                    />
+                                  <Chip
+                                    label={formatCurrency(productDetail?.total || 0)}
+                                    size="small"
+                                    sx={{
+                                      fontSize: '0.7rem',
+                                      height: 20,
+                                      bgcolor: productDetail?.total > 0 ? '#e3f2fd' : '#f5f5f5',
+                                      color: productDetail?.total > 0 ? '#1976d2' : '#666666'
+                                    }}
+                                  />
                                 )}
                                 {/* Debug: mostrar detalles del producto */}
                                 {process.env.NODE_ENV === 'development' && (
-                                  <Box sx={{ 
-                                    position: 'absolute', 
-                                    bottom: -20, 
-                                    fontSize: '10px', 
-                                    color: 'red' 
+                                  <Box sx={{
+                                    position: 'absolute',
+                                    bottom: -20,
+                                    fontSize: '10px',
+                                    color: 'red'
                                   }}>
                                     {JSON.stringify({
                                       index: field.name,
@@ -519,9 +518,9 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                             }}>
                               {showDeleteButton && (
                                 <Tooltip title="Eliminar producto">
-                                  <IconButton 
-                                    size="small" 
-                                    color="error" 
+                                  <IconButton
+                                    size="small"
+                                    color="error"
                                     onClick={() => remove(field.name)}
                                     sx={{
                                       color: '#dc2626',
@@ -540,7 +539,7 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                       </TableRow>
                     );
                   })}
-                  
+
                   {(!readOnly || showTotal || showAddButton) && (
                     <TableRow sx={{ '&:hover': { bgcolor: 'transparent !important' } }}>
                       <TableCell colSpan={2}>
@@ -549,10 +548,10 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                       {!readOnly && showAddButton && (
                         <TableCell colSpan={3} sx={cellStyle}>
                           <Stack direction="row" spacing={1}>
-                            <Button 
-                              fullWidth 
-                              size="large" 
-                              onClick={() => add(getEmptyProductRecord())} 
+                            <Button
+                              fullWidth
+                              size="large"
+                              onClick={() => add(getEmptyProductRecord())}
                               style={{
                                 background: '#1777ff',
                                 borderColor: '#f3f6f9',
@@ -604,10 +603,10 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
           </TableBody>
         </Table>
       </TableContainer>
-      
+
       {showNote && (
         <Form.Item name={noteFieldName} rules={required ? [requiredField] : []}>
-          <Input.TextArea 
+          <Input.TextArea
             placeholder={noteLabel}
             rows={3}
             style={{ borderRadius: 4 }}

@@ -24,12 +24,7 @@ const Reports = () => {
   ];
 
   const handleGenerateReport = () => {
-    // Aquí irá la lógica para generar el reporte
-    console.log('Generando reporte:', {
-      type: reportType,
-      startDate: startDate?.format('YYYY-MM-DD'),
-      endDate: endDate?.format('YYYY-MM-DD'),
-    });
+
   };
 
   const renderReportContent = () => {

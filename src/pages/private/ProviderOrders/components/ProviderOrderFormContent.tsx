@@ -197,21 +197,15 @@ const calculateProductTotals = (form: any, fieldName: number) => {
     const loadPrivateSaleData = async () => {
       if (sale?.id && sale?.ventaPrivada) {
         try {
-          console.log('Cargando datos de venta privada para sale ID:', sale.id);
-          console.log('Sale data completa:', sale);
-
           const data = await getPrivateSaleData(sale.id);
-          console.log('Datos obtenidos del backend:', data);
 
           setPrivateSaleData(data);
 
-          console.log('Datos de venta privada cargados exitosamente:', data);
         } catch (error) {
           console.error('Error cargando datos de venta privada:', error);
           setPrivateSaleData(null);
         }
       } else {
-        console.log('No se cargan datos de venta privada - sale ID:', sale?.id, 'ventaPrivada:', sale?.ventaPrivada);
         setPrivateSaleData(null);
       }
     };
@@ -273,12 +267,6 @@ const calculateProductTotals = (form: any, fieldName: number) => {
           total: String(producto.total || 0),
         };
       }) || [getEmptyProductRecord()];
-
-      console.log('🔍 Cargando productos en edición:', {
-        originalProductos: orderData.productos,
-        productosFormatted,
-        orderData
-      });
 
       form.setFieldsValue({
         empresa: (orderData.empresa as any)?.id,

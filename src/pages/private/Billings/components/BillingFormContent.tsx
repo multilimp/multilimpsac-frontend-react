@@ -164,7 +164,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
 
     form.setFieldsValue({
       numeroFactura: billing.factura,
-      fechaFactura: billing.fechaFactura ? dayjs(billing.fechaFactura) : dayjs(),
+      fechaFactura: billing.fechaFactura ? dayjs.utc(billing.fechaFactura) : dayjs(),
       grr: billing.grr,
       porcentajeRetencion: billing.retencion,
       porcentajeDetraccion: billing.detraccion,
@@ -395,14 +395,8 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
       setLoading(true);
       const values = await form.validateFields();
 
-      // CRÍTICO: Siempre usar savedModalState como fuente de verdad
-      // Si no existe savedModalState, usar los estados actuales como fallback
       const currentMode = savedModalState?.modalMode || modalMode;
       const currentFacturacionId = savedModalState?.facturacionId || facturacionId;
-
-      console.log('💾 Guardando con modo:', currentMode, 'ID:', currentFacturacionId);
-      console.log('📊 Estado guardado:', savedModalState);
-      console.log('📊 Estado actual:', { modalMode, facturacionId });
 
       // Determinar qué acción realizar
       const result = await processBillingAction(currentMode, currentFacturacionId, values);
@@ -438,9 +432,6 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
       if (cartaGarantiaUrl) {
         documentData.cartaGarantia = cartaGarantiaUrl;
       }
-
-      console.log('📄 Guardando documentos en orden de compra:', sale.id);
-      console.log('📦 Datos:', documentData);
 
       await patchSale(sale.id, documentData);
 

@@ -120,7 +120,6 @@ const QuotesPageForm = () => {
         })(),
       };
 
-      console.log('Datos a enviar:', baseQuoteData);
 
       // Validaciones adicionales
       if (!baseQuoteData.empresaId || isNaN(baseQuoteData.empresaId)) {

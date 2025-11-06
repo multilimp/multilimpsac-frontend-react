@@ -77,7 +77,6 @@ const Providers = () => {
         entidadNombre={pagosModalData.entidad?.razonSocial || ''}
         onSuccess={() => {
           // Aquí podrías recargar datos si es necesario
-          console.log('Pago registrado para proveedor:', pagosModalData.entidad?.id);
         }}
       />
     </PageContent>
