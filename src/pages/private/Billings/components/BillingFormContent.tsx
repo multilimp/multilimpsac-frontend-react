@@ -131,12 +131,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
   const loadBillingHistory = useCallback(async () => {
     try {
       const history = await getBillingHistoryByOrdenCompraId(sale.id);
-      // parsear fecha factura con dayjs
-      const parsedHistory = history.map(item => ({
-        ...item,
-        fechaFactura: item.fechaFactura ? dayjs.utc(item.fechaFactura) : null
-      }));
-      setBillingHistory(parsedHistory || []);
+      setBillingHistory(history || []);
     } catch (error) {
       console.error('❌ Error loading billing history:', error instanceof Error ? error.message : 'Unknown error');
       setBillingHistory([]);

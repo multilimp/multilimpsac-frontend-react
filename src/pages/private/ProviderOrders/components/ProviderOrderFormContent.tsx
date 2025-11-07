@@ -33,8 +33,11 @@ import { useNavigate } from 'react-router-dom';
 import { StepItemContent } from '../../Sales/SalesPageForm/smallcomponents';
 import PaymentsList from '@/components/PaymentsList';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
-import dayjs from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import { ProviderProps } from '@/services/providers/providers';
+
+dayjs.extend(utc);
 import ProviderSelectorModal from '../../Providers/components/ProviderSelectorModal';
 import { ProviderOrderProps } from '@/services/providerOrders/providerOrders';
 import TransportsSection, { getEmptyTransformRecord } from './TransportsSection';
@@ -99,8 +102,10 @@ const validateReceptionDate = (_: unknown, value: dayjs.Dayjs | null) => {
   return Promise.resolve();
 };
 
-const disablePastReceptionDate = (current: dayjs.Dayjs) =>
-  !!current && current.startOf('day').isBefore(dayjs().startOf('day'));
+const disablePastReceptionDate = (current: any): boolean => {
+  if (!current) return false;
+  return current.startOf('day').isBefore(dayjs().startOf('day'));
+};
 
 // Función para calcular automáticamente cantidad total y total del producto
 const calculateProductTotals = (form: any, fieldName: number) => {
