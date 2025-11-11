@@ -575,8 +575,9 @@ const calculateProductTotals = (form: any, fieldName: number) => {
         await updateOrderProvider(orderData.id, body);
         notification.success({ message: 'La orden del proveedor se actualizó correctamente' });
       } else {
-        await createOrderProvider(sale.id, body);
+        const op = await createOrderProvider(sale.id, body);
         notification.success({ message: 'La orden del proveedor se registró correctamente' });
+        navigate(`/provider-orders/${op.id}`);
       }
 
     } catch (error) {
