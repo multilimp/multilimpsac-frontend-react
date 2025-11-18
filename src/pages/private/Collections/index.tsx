@@ -30,7 +30,7 @@ const CollectionsPage = () => {
         const estado = sale.estadoRolSeguimiento;
         // Cobranza NO ve: PENDIENTE y ENTREGADO
         // Cobranza SÍ ve: EN_PROCESO, COMPLETO, ANULADO
-        return estado !== 'PENDIENTE' && estado !== 'ENTREGADO';
+        return estado !== 'PENDIENTE' && estado !== 'ANULADO';
       });
     }
 

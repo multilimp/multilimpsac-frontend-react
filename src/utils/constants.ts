@@ -47,20 +47,20 @@ export const ESTADOS_SEGUIMIENTO = {
     },
     ENTREGADO: {
         key: 'ENTREGADO' as const,
-        label: 'Entregado',
-        color: heroUIColors.primary[500],
+        label: 'Entregado En Proceso',
+        color: heroUIColors.secondary[500],
         value: 'ENTREGADO' as EstadoSeguimientoType,
     },
-    EN_PROCESO: {
-        key: 'EN_PROCESO' as const,
-        label: 'En Proceso',
-        color: heroUIColors.secondary[500],
-        value: 'EN_PROCESO' as EstadoSeguimientoType,
-    },
+    // EN_PROCESO: {
+    //     key: 'EN_PROCESO' as const,
+    //     label: 'En Proceso',
+    //     color: heroUIColors.secondary[500],
+    //     value: 'EN_PROCESO' as EstadoSeguimientoType,
+    // },
     COMPLETO: {
         key: 'COMPLETO' as const,
         label: 'Completo',
-        color: heroUIColors.success[600],
+        color: heroUIColors.primary[500],
         value: 'COMPLETO' as EstadoSeguimientoType,
     },
     ANULADO: {
