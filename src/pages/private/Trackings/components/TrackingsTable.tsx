@@ -118,7 +118,7 @@ export const TrackingsTable = ({ data, loading, onRowClick, onReload }: Tracking
 
   const getStatusBackgroundColor = (value: EstadoSeguimientoType | string | null | undefined) => {
     const key = (value || 'PENDIENTE') as EstadoSeguimientoType;
-    return ESTADO_SEGUIMIENTO_COLORS[key] || '#64748b';
+    return (ESTADO_SEGUIMIENTO_COLORS as Record<string, string>)[key] || '#64748b';
   };
 
   const columns: Array<AntColumnType<TrackingsDataTable>> = [
@@ -336,7 +336,7 @@ export const TrackingsTable = ({ data, loading, onRowClick, onReload }: Tracking
       sort: true,
       filter: true,
       render: (value: EstadoSeguimientoType | null | undefined) => {
-        const estado = value && ESTADOS_SEGUIMIENTO[value] ? ESTADOS_SEGUIMIENTO[value] : ESTADOS_SEGUIMIENTO.PENDIENTE;
+        const estado = value && value in ESTADOS_SEGUIMIENTO ? ESTADOS_SEGUIMIENTO[value as keyof typeof ESTADOS_SEGUIMIENTO] : ESTADOS_SEGUIMIENTO.PENDIENTE;
         return (
           <Chip
             label={estado.label}
