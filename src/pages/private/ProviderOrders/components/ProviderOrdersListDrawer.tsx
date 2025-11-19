@@ -467,31 +467,6 @@ const ProviderOrdersListDrawer = ({ handleClose, data, isTreasury = false }: Pro
                   : 'Esta es la orden de proveedor seleccionada.'
                 }
               </Typography>
-
-              {isSaleProps(data) && isTreasury !== true && (
-                <Button
-                  variant="outlined"
-                  startIcon={<Add />}
-                  onClick={() => handleSelected()}
-                  sx={{
-                    borderColor: alpha('#ffffff', 0.3),
-                    color: '#ffffff',
-                    borderRadius: heroUIColors.radius.lg,
-                    textTransform: 'none',
-                    fontWeight: 600,
-                    px: 3,
-                    py: 1.5,
-
-                    '&:hover': {
-                      borderColor: '#ffffff',
-                      background: alpha('#ffffff', 0.1),
-                      color: '#ffffff',
-                    }
-                  }}
-                >
-                  Crear Primera OP
-                </Button>
-              )}
             </Box>
           )}
         </CardContent>
