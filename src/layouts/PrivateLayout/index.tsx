@@ -40,7 +40,7 @@ const PrivateLayout = () => {
           <Outlet />
         </Box>
       </Box>
-      {/* <ChatbotButton /> */}
+      <ChatbotButton />
     </Box>
   );
 };
