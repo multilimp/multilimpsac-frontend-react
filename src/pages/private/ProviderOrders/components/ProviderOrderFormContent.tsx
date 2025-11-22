@@ -1215,93 +1215,99 @@ const calculateProductTotals = (form: any, fieldName: number) => {
                               </TableCell>
                             </TableRow>
                           ))}
-                          <TableRow
-                            sx={{
-                              bgcolor: '#f8f9fa',
-                              borderTop: '2px solid #e9ecef',
-                              '& .MuiTableCell-root': {
-                                borderBottom: 'none',
-                                py: 2
-                              }
-                            }}
-                          >
-                            <TableCell colSpan={6} sx={{ textAlign: 'left', pr: 2 }}>
-                            </TableCell>
-                            <TableCell sx={{ textAlign: 'center', px: 1 }}>
-                              <Button
-                                onClick={() => add(getEmptyProductRecord())}
-                                startIcon={<Add />}
-                                variant="contained"
-                                size="small"
-                                disabled={fromTreasury}
-                                sx={{
-                                  minWidth: 'auto',
-                                  px: 2,
-                                  py: 0.75,
-                                  fontSize: '0.75rem',
-                                  fontWeight: 600,
-                                  textTransform: 'none',
-                                  borderRadius: 1.5,
-                                  boxShadow: '0 2px 4px rgba(24, 144, 255, 0.2)',
-                                  '&:hover': {
-                                    boxShadow: '0 4px 8px rgba(24, 144, 255, 0.3)',
-                                    transform: 'translateY(-1px)'
-                                  },
-                                  transition: 'all 0.2s ease-in-out'
-                                }}
-                              >
-                                Agregar
-                              </Button>
-                            </TableCell>
-                            <TableCell sx={{ textAlign: 'center', px: 2 }}>
-                              <Form.Item noStyle shouldUpdate>
-                                {() => {
-                                  const productos = form.getFieldValue('productos') || [];
-                                  const total = productos.reduce((sum: number, prod: ProductRecord) =>
-                                    sum + (Number(prod?.total) || 0), 0
-                                  );
-                                  return (
-                                    <Box
-                                      sx={{
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        alignItems: 'center',
-                                        gap: 0.5
-                                      }}
-                                    >
-                                      <Typography
-                                        variant="h6"
-                                        fontWeight={700}
-                                        color="primary.main"
-                                        sx={{
-                                          fontSize: '1.1rem',
-                                          textShadow: '0 1px 2px rgba(0,0,0,0.1)'
-                                        }}
-                                      >
-                                        S/ {total.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                      </Typography>
-                                      <Typography
-                                        variant="caption"
-                                        color="text.secondary"
-                                        sx={{ fontSize: '0.7rem', fontWeight: 500 }}
-                                      >
-                                        Total General
-                                      </Typography>
-                                    </Box>
-                                  );
-                                }}
-                              </Form.Item>
-                            </TableCell>
-                            <TableCell sx={{ textAlign: 'center' }}>
-                              {/* Espacio vacío para mantener alineación */}
-                            </TableCell>
-                          </TableRow>
                         </>
                       )}
                     </Form.List>
                   </TableBody>
                 </Table>
               </TableContainer>
+
+              {/* Sección de botón agregar y total fuera de la tabla */}
+              <Form.List name="productos">
+                {(fields, { add }) => (
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      mt: 3,
+                      pt: 2,
+                      borderTop: '2px solid #e9ecef',
+                      bgcolor: '#f8f9fa',
+                      px: 3,
+                      py: 2,
+                      borderRadius: '0 0 8px 8px'
+                    }}
+                  >
+                    <Button
+                      onClick={() => add(getEmptyProductRecord())}
+                      startIcon={<Add />}
+                      variant="contained"
+                      size="medium"
+                      disabled={fromTreasury}
+                      sx={{
+                        px: 3,
+                        py: 1,
+                        fontSize: '0.875rem',
+                        fontWeight: 600,
+                        textTransform: 'none',
+                        borderRadius: 2,
+                        boxShadow: '0 2px 4px rgba(24, 144, 255, 0.2)',
+                        '&:hover': {
+                          boxShadow: '0 4px 8px rgba(24, 144, 255, 0.3)',
+                          transform: 'translateY(-1px)'
+                        },
+                        transition: 'all 0.2s ease-in-out'
+                      }}
+                    >
+                      Agregar Producto
+                    </Button>
+
+                    <Form.Item noStyle shouldUpdate>
+                      {() => {
+                        const productos = form.getFieldValue('productos') || [];
+                        const total = productos.reduce((sum: number, prod: ProductRecord) =>
+                          sum + (Number(prod?.total) || 0), 0
+                        );
+                        return (
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 2,
+                              bgcolor: 'white',
+                              px: 3,
+                              py: 1.5,
+                              borderRadius: 2,
+                              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                              border: '1px solid #e9ecef'
+                            }}
+                          >
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              sx={{ fontWeight: 600, fontSize: '0.875rem' }}
+                            >
+                              Total General:
+                            </Typography>
+                            <Typography
+                              variant="h5"
+                              fontWeight={700}
+                              color="primary.main"
+                              sx={{
+                                fontSize: '1.5rem',
+                                textShadow: '0 1px 2px rgba(0,0,0,0.1)'
+                              }}
+                            >
+                              S/ {total.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </Typography>
+                          </Box>
+                        );
+                      }}
+                    </Form.Item>
+                  </Box>
+                )}
+              </Form.List>
             </CardContent>
           </Card>
 
