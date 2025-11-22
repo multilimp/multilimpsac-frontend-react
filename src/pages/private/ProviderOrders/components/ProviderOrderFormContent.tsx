@@ -1068,12 +1068,11 @@ const calculateProductTotals = (form: any, fieldName: number) => {
                                 >
                                   <Input.TextArea
                                     placeholder="Descripción"
-                                    rows={2}
+                                    autoSize={{ minRows: 2, maxRows: 8 }}
                                     disabled={fromTreasury}
                                     style={{
                                       borderRadius: 4,
                                       border: '1px solid #d9d9d9',
-                                      resize: 'none',
                                       fontSize: '14px',
                                     }}
                                   />
@@ -1227,37 +1226,6 @@ const calculateProductTotals = (form: any, fieldName: number) => {
                             }}
                           >
                             <TableCell colSpan={6} sx={{ textAlign: 'left', pr: 2 }}>
-                              <Stack direction="row" alignItems="center" spacing={2}>
-                                <Box
-                                  sx={{
-                                    width: 8,
-                                    height: 8,
-                                    borderRadius: '50%',
-                                    bgcolor: '#1890ff',
-                                    flexShrink: 0
-                                  }}
-                                />
-                                <Typography
-                                  variant="subtitle2"
-                                  fontWeight={600}
-                                  color="text.primary"
-                                  sx={{ fontSize: '0.875rem' }}
-                                >
-                                  Resumen de Productos
-                                </Typography>
-                                <Chip
-                                  label={`${form.getFieldValue('productos')?.length || 0} producto(s)`}
-                                  size="small"
-                                  variant="outlined"
-                                  sx={{
-                                    height: 24,
-                                    fontSize: '0.75rem',
-                                    fontWeight: 500,
-                                    color: '#1890ff',
-                                    borderColor: '#1890ff'
-                                  }}
-                                />
-                              </Stack>
                             </TableCell>
                             <TableCell sx={{ textAlign: 'center', px: 1 }}>
                               <Button
