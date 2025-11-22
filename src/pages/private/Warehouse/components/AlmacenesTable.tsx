@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
     Table,
     TableBody,
@@ -13,6 +13,7 @@ import {
     Typography,
     Chip,
     Box,
+    TablePagination,
 } from '@mui/material';
 import {
     MoreVert as MoreVertIcon,
@@ -40,6 +41,23 @@ const AlmacenesTable: React.FC<AlmacenesTableProps> = ({
 }) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [selectedAlmacen, setSelectedAlmacen] = useState<Almacen | null>(null);
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+
+    // Datos paginados
+    const paginatedData = useMemo(() => {
+        const start = page * rowsPerPage;
+        return data.slice(start, start + rowsPerPage);
+    }, [data, page, rowsPerPage]);
+
+    const handleChangePage = (_: unknown, newPage: number) => {
+        setPage(newPage);
+    };
+
+    const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setRowsPerPage(parseInt(event.target.value, 10));
+        setPage(0);
+    };
 
     const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, almacen: Almacen) => {
         setAnchorEl(event.currentTarget);
@@ -123,7 +141,7 @@ const AlmacenesTable: React.FC<AlmacenesTableProps> = ({
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {data.map((almacen) => (
+                        {paginatedData.map((almacen) => (
                             <TableRow key={almacen.id} hover>
                                 <TableCell>
                                     <Typography variant="body2" fontWeight="medium">
@@ -165,6 +183,18 @@ const AlmacenesTable: React.FC<AlmacenesTableProps> = ({
                     </TableBody>
                 </Table>
             </TableContainer>
+
+            <TablePagination
+                component="div"
+                count={data.length}
+                page={page}
+                onPageChange={handleChangePage}
+                rowsPerPage={rowsPerPage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+                rowsPerPageOptions={[5, 10, 25, 50]}
+                labelRowsPerPage="Filas por página:"
+                labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
+            />
 
             <Menu
                 anchorEl={anchorEl}

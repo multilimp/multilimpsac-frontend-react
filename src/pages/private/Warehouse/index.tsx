@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Box, Tabs, Tab, Button, Stack } from '@mui/material';
+import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
+import { Box, Tabs, Tab, Button, Stack, CircularProgress } from '@mui/material';
 import { Add, Warehouse, Inventory } from '@mui/icons-material';
 import PageContent from '@/components/PageContent';
-import AlmacenesTable from './components/AlmacenesTable';
 import {
     getAlmacenes,
     getProductos,
@@ -14,54 +13,60 @@ import {
     StockWithDetails
 } from '@/types/almacen.types';
 import { notification } from 'antd';
-import StockTable from './components/StockTable';
-import ProductosTable from './components/ProductosTable';
-import ProductoFormModal from './components/ProductoFormModal';
-import AlmacenFormModal from './components/AlmacenFormModal';
-import StockFormModal from './components/StockFormModal';
+
+// Lazy load de componentes para mejorar rendimiento inicial
+const AlmacenesTable = lazy(() => import('./components/AlmacenesTable'));
+const ProductosTable = lazy(() => import('./components/ProductosTable'));
+const StockTable = lazy(() => import('./components/StockTable'));
+const ProductoFormModal = lazy(() => import('./components/ProductoFormModal'));
+const AlmacenFormModal = lazy(() => import('./components/AlmacenFormModal'));
+const StockFormModal = lazy(() => import('./components/StockFormModal'));
 
 // Caché local simple con TTL para almacenes/productos/stock
 const CACHE_KEY = 'warehouse_cache_v1';
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutos
 
 type WarehouseCache = {
-  almacenes?: { data: Almacen[]; timestamp: number };
-  productos?: { data: Producto[]; timestamp: number };
-  stock?: { data: StockWithDetails[]; timestamp: number };
+    almacenes?: { data: Almacen[]; timestamp: number };
+    productos?: { data: Producto[]; timestamp: number };
+    stock?: { data: StockWithDetails[]; timestamp: number };
 };
 
 function loadCache(): WarehouseCache | null {
-  try {
-    const raw = localStorage.getItem(CACHE_KEY);
-    return raw ? (JSON.parse(raw) as WarehouseCache) : null;
-  } catch {
-    return null;
-  }
+    try {
+        const raw = localStorage.getItem(CACHE_KEY);
+        return raw ? (JSON.parse(raw) as WarehouseCache) : null;
+    } catch {
+        return null;
+    }
 }
 
 function saveCache(next: WarehouseCache) {
-  try {
-    const current = loadCache() || {};
-    const merged = { ...current, ...next };
-    localStorage.setItem(CACHE_KEY, JSON.stringify(merged));
-  } catch {
-    // noop
-  }
+    try {
+        const current = loadCache() || {};
+        const merged = { ...current, ...next };
+        localStorage.setItem(CACHE_KEY, JSON.stringify(merged));
+    } catch {
+        // noop
+    }
 }
 
 function isFresh(ts?: number): boolean {
-  if (!ts) return false;
-  return Date.now() - ts < CACHE_TTL_MS;
+    if (!ts) return false;
+    return Date.now() - ts < CACHE_TTL_MS;
 }
 
 const WarehousePage = () => {
     const [activeTab, setActiveTab] = useState<number>(0);
     const [loading, setLoading] = useState(false);
 
-    // Estados para datos
-    const [almacenes, setAlmacenes] = useState<Almacen[]>([]);
-    const [productos, setProductos] = useState<Producto[]>([]);
-    const [stock, setStock] = useState<StockWithDetails[]>([]);
+    // Cargar datos iniciales desde caché
+    const cache = loadCache();
+
+    // Estados para datos (inicializados con caché si existe)
+    const [almacenes, setAlmacenes] = useState<Almacen[]>(cache?.almacenes?.data || []);
+    const [productos, setProductos] = useState<Producto[]>(cache?.productos?.data || []);
+    const [stock, setStock] = useState<StockWithDetails[]>(cache?.stock?.data || []);
 
     // Estados para modales
     const [almacenModalOpen, setAlmacenModalOpen] = useState(false);
@@ -78,12 +83,12 @@ const WarehousePage = () => {
         try {
             setLoading(true);
             if (!force) {
-              const cache = loadCache();
-              const cached = cache?.almacenes;
-              if (cached && isFresh(cached.timestamp)) {
-                setAlmacenes(cached.data);
-                return;
-              }
+                const cache = loadCache();
+                const cached = cache?.almacenes;
+                if (cached && isFresh(cached.timestamp)) {
+                    setAlmacenes(cached.data);
+                    return;
+                }
             }
             const data = await getAlmacenes();
             setAlmacenes(data);
@@ -103,12 +108,12 @@ const WarehousePage = () => {
         try {
             setLoading(true);
             if (!force) {
-              const cache = loadCache();
-              const cached = cache?.productos;
-              if (cached && isFresh(cached.timestamp)) {
-                setProductos(cached.data);
-                return;
-              }
+                const cache = loadCache();
+                const cached = cache?.productos;
+                if (cached && isFresh(cached.timestamp)) {
+                    setProductos(cached.data);
+                    return;
+                }
             }
             const data = await getProductos();
             setProductos(data);
@@ -128,12 +133,12 @@ const WarehousePage = () => {
         try {
             setLoading(true);
             if (!force) {
-              const cache = loadCache();
-              const cached = cache?.stock;
-              if (cached && isFresh(cached.timestamp)) {
-                setStock(cached.data);
-                return;
-              }
+                const cache = loadCache();
+                const cached = cache?.stock;
+                if (cached && isFresh(cached.timestamp)) {
+                    setStock(cached.data);
+                    return;
+                }
             }
             const data = await getStock();
             setStock(data);
@@ -151,15 +156,23 @@ const WarehousePage = () => {
 
     // Efectos para cargar datos según tab activo
     useEffect(() => {
+        const cache = loadCache();
         switch (activeTab) {
             case 0:
-                loadAlmacenes();
+                // Recargar si no hay caché fresco
+                if (!cache?.almacenes || !isFresh(cache.almacenes.timestamp)) {
+                    loadAlmacenes();
+                }
                 break;
             case 1:
-                loadProductos();
+                if (!cache?.productos || !isFresh(cache.productos.timestamp)) {
+                    loadProductos();
+                }
                 break;
             case 2:
-                loadStock();
+                if (!cache?.stock || !isFresh(cache.stock.timestamp)) {
+                    loadStock();
+                }
                 break;
         }
     }, [activeTab, loadAlmacenes, loadProductos, loadStock]);
@@ -275,17 +288,17 @@ const WarehousePage = () => {
                         aria-label="tabs de almacén"
                     >
                         <Tab
-                            label={`Almacenes (${almacenes.length})`}
+                            label="Almacenes"
                             icon={<Warehouse />}
                             iconPosition="start"
                         />
                         <Tab
-                            label={`Productos (${productos.length})`}
+                            label="Productos"
                             icon={<Inventory />}
                             iconPosition="start"
                         />
                         <Tab
-                            label={`Stock (${stock.length})`}
+                            label="Stock"
                             icon={<Inventory />}
                             iconPosition="start"
                         />
@@ -301,12 +314,14 @@ const WarehousePage = () => {
                 >
                     {activeTab === 0 && (
                         <Box sx={{ py: 3 }}>
-                            <AlmacenesTable
-                                data={almacenes}
-                                loading={loading}
-                                onEdit={handleEditAlmacen}
-                                onReload={loadAlmacenes}
-                            />
+                            <Suspense fallback={<Box sx={{ display: 'flex', justifyContent: 'center', py: 5 }}><CircularProgress /></Box>}>
+                                <AlmacenesTable
+                                    data={almacenes}
+                                    loading={loading}
+                                    onEdit={handleEditAlmacen}
+                                    onReload={loadAlmacenes}
+                                />
+                            </Suspense>
                         </Box>
                     )}
                 </div>
@@ -320,12 +335,14 @@ const WarehousePage = () => {
                 >
                     {activeTab === 1 && (
                         <Box sx={{ py: 3 }}>
-                            <ProductosTable
-                                data={productos}
-                                loading={loading}
-                                onEdit={handleEditProducto}
-                                onReload={loadProductos}
-                            />
+                            <Suspense fallback={<Box sx={{ display: 'flex', justifyContent: 'center', py: 5 }}><CircularProgress /></Box>}>
+                                <ProductosTable
+                                    data={productos}
+                                    loading={loading}
+                                    onEdit={handleEditProducto}
+                                    onReload={loadProductos}
+                                />
+                            </Suspense>
                         </Box>
                     )}
                 </div>
@@ -339,37 +356,41 @@ const WarehousePage = () => {
                 >
                     {activeTab === 2 && (
                         <Box sx={{ py: 3 }}>
-                            <StockTable
-                                data={stock}
-                                loading={loading}
-                                onEdit={handleEditStock}
-                                onReload={loadStock}
-                            />
+                            <Suspense fallback={<Box sx={{ display: 'flex', justifyContent: 'center', py: 5 }}><CircularProgress /></Box>}>
+                                <StockTable
+                                    data={stock}
+                                    loading={loading}
+                                    onEdit={handleEditStock}
+                                    onReload={loadStock}
+                                />
+                            </Suspense>
                         </Box>
                     )}
                 </div>
             </Box>
 
-            {/* Modales */}
-            <AlmacenFormModal
-                open={almacenModalOpen}
-                onClose={handleCloseAlmacenModal}
-                editingAlmacen={editingAlmacen}
-            />
+            {/* Modales con lazy loading */}
+            <Suspense fallback={null}>
+                <AlmacenFormModal
+                    open={almacenModalOpen}
+                    onClose={handleCloseAlmacenModal}
+                    editingAlmacen={editingAlmacen}
+                />
 
-            <ProductoFormModal
-                open={productoModalOpen}
-                onClose={handleCloseProductoModal}
-                editingProducto={editingProducto}
-            />
+                <ProductoFormModal
+                    open={productoModalOpen}
+                    onClose={handleCloseProductoModal}
+                    editingProducto={editingProducto}
+                />
 
-            <StockFormModal
-                open={stockModalOpen}
-                onClose={handleCloseStockModal}
-                editingStock={editingStock}
-                almacenes={almacenes}
-                productos={productos}
-            />
+                <StockFormModal
+                    open={stockModalOpen}
+                    onClose={handleCloseStockModal}
+                    editingStock={editingStock}
+                    almacenes={almacenes}
+                    productos={productos}
+                />
+            </Suspense>
         </PageContent>
     );
 };

@@ -18,6 +18,7 @@ import {
     InputLabel,
     Select,
     Button,
+    TablePagination,
 } from '@mui/material';
 import {
     MoreVert as MoreVertIcon,
@@ -50,6 +51,8 @@ const StockTable: React.FC<StockTableProps> = ({
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [selectedStock, setSelectedStock] = useState<StockWithDetails | null>(null);
     const [historyOpen, setHistoryOpen] = useState(false);
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
 
     // Estados para filtros
     const [searchTerm, setSearchTerm] = useState('');
@@ -95,12 +98,28 @@ const StockTable: React.FC<StockTableProps> = ({
         });
     }, [data, searchTerm, almacenFilter, stockLevelFilter, minStock, maxStock]);
 
+    // Datos paginados
+    const paginatedData = useMemo(() => {
+        const start = page * rowsPerPage;
+        return filteredData.slice(start, start + rowsPerPage);
+    }, [filteredData, page, rowsPerPage]);
+
+    const handleChangePage = (_: unknown, newPage: number) => {
+        setPage(newPage);
+    };
+
+    const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setRowsPerPage(parseInt(event.target.value, 10));
+        setPage(0);
+    };
+
     const handleClearFilters = () => {
         setSearchTerm('');
         setAlmacenFilter('all');
         setStockLevelFilter('all');
         setMinStock('');
         setMaxStock('');
+        setPage(0);
     };
 
     const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, stock: StockWithDetails) => {
@@ -310,93 +329,107 @@ const StockTable: React.FC<StockTableProps> = ({
                     </Typography>
                 </Box>
             ) : (
-                <TableContainer component={Paper} elevation={2}>
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell><strong>ID</strong></TableCell>
-                                <TableCell><strong>Producto</strong></TableCell>
-                                <TableCell><strong>Almacén</strong></TableCell>
-                                <TableCell><strong>Cantidad</strong></TableCell>
-                                <TableCell><strong>Unidad</strong></TableCell>
-                                <TableCell><strong>Nivel</strong></TableCell>
-                                <TableCell><strong>Stock Mín.</strong></TableCell>
-                                <TableCell><strong>Stock Máx.</strong></TableCell>
-                                <TableCell><strong>Última Actualización</strong></TableCell>
-                                <TableCell align="center"><strong>Acciones</strong></TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {filteredData.map((stock) => (
-                                <TableRow key={stock.id} hover>
-                                    <TableCell>{stock.id}</TableCell>
-                                    <TableCell>
-                                        <Box>
+                <>
+                    <TableContainer component={Paper} elevation={2}>
+                        <Table>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell><strong>ID</strong></TableCell>
+                                    <TableCell><strong>Producto</strong></TableCell>
+                                    <TableCell><strong>Almacén</strong></TableCell>
+                                    <TableCell><strong>Cantidad</strong></TableCell>
+                                    <TableCell><strong>Unidad</strong></TableCell>
+                                    <TableCell><strong>Nivel</strong></TableCell>
+                                    <TableCell><strong>Stock Mín.</strong></TableCell>
+                                    <TableCell><strong>Stock Máx.</strong></TableCell>
+                                    <TableCell><strong>Última Actualización</strong></TableCell>
+                                    <TableCell align="center"><strong>Acciones</strong></TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {paginatedData.map((stock) => (
+                                    <TableRow key={stock.id} hover>
+                                        <TableCell>{stock.id}</TableCell>
+                                        <TableCell>
+                                            <Box>
+                                                <Typography variant="body2" fontWeight="medium">
+                                                    {stock.producto.nombre}
+                                                </Typography>
+                                                {stock.producto.descripcion && (
+                                                    <Typography variant="caption" color="textSecondary">
+                                                        {stock.producto.descripcion}
+                                                    </Typography>
+                                                )}
+                                            </Box>
+                                        </TableCell>
+                                        <TableCell>
                                             <Typography variant="body2" fontWeight="medium">
-                                                {stock.producto.nombre}
+                                                {stock.almacen.nombre}
                                             </Typography>
-                                            {stock.producto.descripcion && (
+                                            {stock.almacen.direccion && (
                                                 <Typography variant="caption" color="textSecondary">
-                                                    {stock.producto.descripcion}
+                                                    {stock.almacen.direccion}
                                                 </Typography>
                                             )}
-                                        </Box>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Typography variant="body2" fontWeight="medium">
-                                            {stock.almacen.nombre}
-                                        </Typography>
-                                        {stock.almacen.direccion && (
-                                            <Typography variant="caption" color="textSecondary">
-                                                {stock.almacen.direccion}
+                                        </TableCell>
+                                        <TableCell>
+                                            <Typography variant="body2" fontFamily="monospace" fontWeight="bold">
+                                                {Number(stock.cantidad).toLocaleString()}
                                             </Typography>
-                                        )}
-                                    </TableCell>
-                                    <TableCell>
-                                        <Typography variant="body2" fontFamily="monospace" fontWeight="bold">
-                                            {Number(stock.cantidad).toLocaleString()}
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Typography variant="body2">
-                                            {stock.producto.unidadMedida || 'No especificada'}
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Chip
-                                            label={getStockLevelLabel(Number(stock.cantidad))}
-                                            size="small"
-                                            color={getStockLevelColor(Number(stock.cantidad))}
-                                        />
-                                    </TableCell>
-                                    <TableCell>
-                                        <Typography variant="body2" fontFamily="monospace">
-                                            -
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Typography variant="body2" fontFamily="monospace">
-                                            -
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Typography variant="body2">
-                                            {formattedDate(stock.updatedAt)}
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell align="center">
-                                        <IconButton
-                                            size="small"
-                                            onClick={(e) => handleMenuOpen(e, stock)}
-                                        >
-                                            <MoreVertIcon />
-                                        </IconButton>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Typography variant="body2">
+                                                {stock.producto.unidadMedida || 'No especificada'}
+                                            </Typography>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Chip
+                                                label={getStockLevelLabel(Number(stock.cantidad))}
+                                                size="small"
+                                                color={getStockLevelColor(Number(stock.cantidad))}
+                                            />
+                                        </TableCell>
+                                        <TableCell>
+                                            <Typography variant="body2" fontFamily="monospace">
+                                                -
+                                            </Typography>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Typography variant="body2" fontFamily="monospace">
+                                                -
+                                            </Typography>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Typography variant="body2">
+                                                {formattedDate(stock.updatedAt)}
+                                            </Typography>
+                                        </TableCell>
+                                        <TableCell align="center">
+                                            <IconButton
+                                                size="small"
+                                                onClick={(e) => handleMenuOpen(e, stock)}
+                                            >
+                                                <MoreVertIcon />
+                                            </IconButton>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+
+                    <TablePagination
+                        component="div"
+                        count={filteredData.length}
+                        page={page}
+                        onPageChange={handleChangePage}
+                        rowsPerPage={rowsPerPage}
+                        onRowsPerPageChange={handleChangeRowsPerPage}
+                        rowsPerPageOptions={[5, 10, 25, 50, 100]}
+                        labelRowsPerPage="Filas por página:"
+                        labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
+                    />
+                </>
             )}
 
             <Menu

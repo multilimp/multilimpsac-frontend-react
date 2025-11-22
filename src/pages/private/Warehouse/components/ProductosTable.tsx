@@ -18,6 +18,7 @@ import {
     InputLabel,
     Select,
     Button,
+    TablePagination,
 } from '@mui/material';
 import {
     MoreVert as MoreVertIcon,
@@ -47,6 +48,8 @@ const ProductosTable: React.FC<ProductosTableProps> = ({
 }) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [selectedProducto, setSelectedProducto] = useState<Producto | null>(null);
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
 
     // Estados para filtros
     const [searchTerm, setSearchTerm] = useState('');
@@ -78,10 +81,26 @@ const ProductosTable: React.FC<ProductosTableProps> = ({
         });
     }, [data, searchTerm, statusFilter, unidadMedidaFilter]);
 
+    // Datos paginados
+    const paginatedData = useMemo(() => {
+        const start = page * rowsPerPage;
+        return filteredData.slice(start, start + rowsPerPage);
+    }, [filteredData, page, rowsPerPage]);
+
+    const handleChangePage = (_: unknown, newPage: number) => {
+        setPage(newPage);
+    };
+
+    const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setRowsPerPage(parseInt(event.target.value, 10));
+        setPage(0);
+    };
+
     const handleClearFilters = () => {
         setSearchTerm('');
         setStatusFilter('all');
         setUnidadMedidaFilter('all');
+        setPage(0);
     };
 
     const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, producto: Producto) => {
@@ -245,89 +264,103 @@ const ProductosTable: React.FC<ProductosTableProps> = ({
                     </Typography>
                 </Box>
             ) : (
-                <TableContainer component={Paper} elevation={2}>
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell><strong>ID</strong></TableCell>
-                                <TableCell><strong>Nombre</strong></TableCell>
-                                <TableCell><strong>Descripción</strong></TableCell>
-                                <TableCell><strong>Unidad Medida</strong></TableCell>
-                                <TableCell><strong>Precio Base</strong></TableCell>
-                                <TableCell><strong>Estado</strong></TableCell>
-                                <TableCell><strong>Stock en Almacenes</strong></TableCell>
-                                <TableCell><strong>Fecha Creación</strong></TableCell>
-                                <TableCell align="center"><strong>Acciones</strong></TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {filteredData.map((producto) => (
-                                <TableRow key={producto.id} hover>
-                                    <TableCell>{producto.id}</TableCell>
-                                    <TableCell>
-                                        <Typography variant="body2" fontWeight="medium">
-                                            {producto.nombre}
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Typography
-                                            variant="body2"
-                                            sx={{
-                                                maxWidth: 200,
-                                                overflow: 'hidden',
-                                                textOverflow: 'ellipsis',
-                                                whiteSpace: 'nowrap'
-                                            }}
-                                            title={producto.descripcion}
-                                        >
-                                            {producto.descripcion || 'Sin descripción'}
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Typography variant="body2">
-                                            {producto.unidadMedida || 'No especificada'}
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Typography variant="body2" fontFamily="monospace">
-                                            {producto.precioBase ? formatCurrency(Number(producto.precioBase)) : 'No definido'}
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Chip
-                                            label={producto.estado ? 'Activo' : 'Inactivo'}
-                                            size="small"
-                                            color={producto.estado ? 'success' : 'error'}
-                                        />
-                                    </TableCell>
-                                    <TableCell>
-                                        <Chip
-                                            label={`${producto.stockProductos?.length || 0} almacenes`}
-                                            size="small"
-                                            color={producto.stockProductos?.length ? 'primary' : 'default'}
-                                        />
-                                    </TableCell>
-                                    <TableCell>
-                                        <Typography variant="body2">
-                                            {formattedDate(producto.createdAt)}
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell align="center">
-                                        <IconButton
-                                            size="small"
-                                            onClick={(e) => handleMenuOpen(e, producto)}
-                                        >
-                                            <MoreVertIcon />
-                                        </IconButton>
-                                    </TableCell>
+                <>
+                    <TableContainer component={Paper} elevation={2}>
+                        <Table>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell><strong>ID</strong></TableCell>
+                                    <TableCell><strong>Nombre</strong></TableCell>
+                                    <TableCell><strong>Descripción</strong></TableCell>
+                                    <TableCell><strong>Unidad Medida</strong></TableCell>
+                                    <TableCell><strong>Precio Base</strong></TableCell>
+                                    <TableCell><strong>Estado</strong></TableCell>
+                                    <TableCell><strong>Stock en Almacenes</strong></TableCell>
+                                    <TableCell><strong>Fecha Creación</strong></TableCell>
+                                    <TableCell align="center"><strong>Acciones</strong></TableCell>
                                 </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            )}
+                            </TableHead>
+                            <TableBody>
+                                {paginatedData.map((producto) => (
+                                    <TableRow key={producto.id} hover>
+                                        <TableCell>{producto.id}</TableCell>
+                                        <TableCell>
+                                            <Typography variant="body2" fontWeight="medium">
+                                                {producto.nombre}
+                                            </Typography>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Typography
+                                                variant="body2"
+                                                sx={{
+                                                    maxWidth: 200,
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis',
+                                                    whiteSpace: 'nowrap'
+                                                }}
+                                                title={producto.descripcion}
+                                            >
+                                                {producto.descripcion || 'Sin descripción'}
+                                            </Typography>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Typography variant="body2">
+                                                {producto.unidadMedida || 'No especificada'}
+                                            </Typography>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Typography variant="body2" fontFamily="monospace">
+                                                {producto.precioBase ? formatCurrency(Number(producto.precioBase)) : 'No definido'}
+                                            </Typography>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Chip
+                                                label={producto.estado ? 'Activo' : 'Inactivo'}
+                                                size="small"
+                                                color={producto.estado ? 'success' : 'error'}
+                                            />
+                                        </TableCell>
+                                        <TableCell>
+                                            <Chip
+                                                label={`${producto.stockProductos?.length || 0} almacenes`}
+                                                size="small"
+                                                color={producto.stockProductos?.length ? 'primary' : 'default'}
+                                            />
+                                        </TableCell>
+                                        <TableCell>
+                                            <Typography variant="body2">
+                                                {formattedDate(producto.createdAt)}
+                                            </Typography>
+                                        </TableCell>
+                                        <TableCell align="center">
+                                            <IconButton
+                                                size="small"
+                                                onClick={(e) => handleMenuOpen(e, producto)}
+                                            >
+                                                <MoreVertIcon />
+                                            </IconButton>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
 
-            <Menu
+                    <TablePagination
+                        component="div"
+                        count={filteredData.length}
+                        page={page}
+                        onPageChange={handleChangePage}
+                        rowsPerPage={rowsPerPage}
+                        onRowsPerPageChange={handleChangeRowsPerPage}
+                        rowsPerPageOptions={[5, 10, 25, 50, 100]}
+                        labelRowsPerPage="Filas por página:"
+                        labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
+                    />
+                </>
+            )
+            }
+            < Menu
                 anchorEl={anchorEl}
                 open={Boolean(anchorEl)}
                 onClose={handleMenuClose}
@@ -352,7 +385,7 @@ const ProductosTable: React.FC<ProductosTableProps> = ({
                     <RefreshIcon sx={{ mr: 1, fontSize: 20 }} />
                     Actualizar
                 </MenuItem>
-            </Menu>
+            </Menu >
         </>
     );
 };
