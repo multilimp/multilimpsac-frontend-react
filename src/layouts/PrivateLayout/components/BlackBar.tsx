@@ -715,7 +715,6 @@ const BlackBar = memo(() => {
                           gap: 2,
                           opacity: isCompleted ? 0.6 : 1,
                           transition: 'all 0.2s',
-                          userSelect: 'none',
                           border: '1px solid rgba(255,255,255,0.15)',
                           borderRadius: 2,
                           p: 2.5,
@@ -742,80 +741,135 @@ const BlackBar = memo(() => {
                         />
 
                         <Box sx={{ flex: 1, minWidth: 0 }}>
-                          {/* Código con botón de copiar */}
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                          {/* Código */}
+                          <Box sx={{ mb: 1.5 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  color: isCompleted ? '#bababa' : '#eaebee',
+                                  fontWeight: 600,
+                                  fontSize: '11px',
+                                }}
+                              >
+                                CÓDIGO:
+                              </Typography>
+                              <IconButton
+                                size="small"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCopyDescription(item.codigo);
+                                }}
+                                sx={{
+                                  color: '#fff',
+                                  bgcolor: 'rgba(255, 255, 255, 0.1)',
+                                  '&:hover': {
+                                    bgcolor: 'rgba(255, 255, 255, 0.2)',
+                                  },
+                                  width: 24,
+                                  height: 24,
+                                }}
+                                title="Copiar código"
+                              >
+                                <ContentCopy sx={{ fontSize: 14 }} />
+                              </IconButton>
+                            </Box>
                             <Typography
                               variant="body2"
                               sx={{
                                 textDecoration: isCompleted ? 'line-through' : 'none',
                                 color: isCompleted ? '#bababa' : '#fff',
                                 fontWeight: 700,
-                                fontSize: '15px',
+                                fontSize: '14px',
                                 letterSpacing: '0.5px',
                                 fontFamily: 'monospace',
                               }}
                             >
                               {item.codigo}
                             </Typography>
-                            <IconButton
-                              size="small"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleCopyDescription(item.codigo);
-                              }}
-                              sx={{
-                                color: '#fff',
-                                bgcolor: 'rgba(255, 255, 255, 0.1)',
-                                '&:hover': {
-                                  bgcolor: 'rgba(255, 255, 255, 0.2)',
-                                },
-                                width: 24,
-                                height: 24,
-                              }}
-                              title="Copiar código"
-                            >
-                              <ContentCopy sx={{ fontSize: 14 }} />
-                            </IconButton>
                           </Box>
 
-                          {/* Marca con botón de copiar */}
+                          {/* Marca */}
                           {item.marca && (
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                            <Box sx={{ mb: 1.5 }}>
+                              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
+                                <Typography
+                                  variant="caption"
+                                  sx={{
+                                    color: isCompleted ? '#bababa' : '#eaebee',
+                                    fontWeight: 600,
+                                    fontSize: '11px',
+                                  }}
+                                >
+                                  MARCA:
+                                </Typography>
+                                <IconButton
+                                  size="small"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleCopyDescription(item.marca);
+                                  }}
+                                  sx={{
+                                    color: '#1890ff',
+                                    bgcolor: 'rgba(24, 144, 255, 0.1)',
+                                    '&:hover': {
+                                      bgcolor: 'rgba(24, 144, 255, 0.2)',
+                                    },
+                                    width: 24,
+                                    height: 24,
+                                  }}
+                                  title="Copiar marca"
+                                >
+                                  <ContentCopy sx={{ fontSize: 14 }} />
+                                </IconButton>
+                              </Box>
                               <Typography
                                 variant="body2"
                                 sx={{
                                   textDecoration: isCompleted ? 'line-through' : 'none',
                                   color: isCompleted ? '#bababa' : '#1890ff',
                                   fontWeight: 600,
-                                  fontSize: '13px',
+                                  fontSize: '14px',
                                 }}
                               >
-                                <strong style={{ color: isCompleted ? '#bababa' : '#eaebee' }}>Marca:</strong> {item.marca}
+                                {item.marca}
+                              </Typography>
+                            </Box>
+                          )}
+
+                          {/* Cantidad */}
+                          <Box sx={{ mb: 1.5 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  color: isCompleted ? '#bababa' : '#eaebee',
+                                  fontWeight: 600,
+                                  fontSize: '11px',
+                                }}
+                              >
+                                CANTIDAD:
                               </Typography>
                               <IconButton
                                 size="small"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleCopyDescription(item.marca);
+                                  handleCopyDescription(String(item.cantidad));
                                 }}
                                 sx={{
-                                  color: '#1890ff',
-                                  bgcolor: 'rgba(24, 144, 255, 0.1)',
+                                  color: '#57c98d',
+                                  bgcolor: 'rgba(87, 201, 141, 0.1)',
                                   '&:hover': {
-                                    bgcolor: 'rgba(24, 144, 255, 0.2)',
+                                    bgcolor: 'rgba(87, 201, 141, 0.2)',
                                   },
                                   width: 24,
                                   height: 24,
                                 }}
-                                title="Copiar marca"
+                                title="Copiar cantidad"
                               >
                                 <ContentCopy sx={{ fontSize: 14 }} />
                               </IconButton>
                             </Box>
-                          )}
-
-                          {/* Cantidad con botón de copiar */}
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
                             <Typography
                               variant="body2"
                               sx={{
@@ -825,40 +879,13 @@ const BlackBar = memo(() => {
                                 fontSize: '14px',
                               }}
                             >
-                              <strong style={{ color: isCompleted ? '#bababa' : '#eaebee' }}>Cantidad:</strong> {item.cantidad}
+                              {item.cantidad}
                             </Typography>
-                            <IconButton
-                              size="small"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleCopyDescription(String(item.cantidad));
-                              }}
-                              sx={{
-                                color: '#57c98d',
-                                bgcolor: 'rgba(87, 201, 141, 0.1)',
-                                '&:hover': {
-                                  bgcolor: 'rgba(87, 201, 141, 0.2)',
-                                },
-                                width: 24,
-                                height: 24,
-                              }}
-                              title="Copiar cantidad"
-                            >
-                              <ContentCopy sx={{ fontSize: 14 }} />
-                            </IconButton>
                           </Box>
 
-                          {/* Descripción con botón de copiar */}
-                          <Box
-                            sx={{
-                              bgcolor: 'rgba(255,255,255,0.05)',
-                              p: 1.5,
-                              borderRadius: 1,
-                              border: '1px solid rgba(255,255,255,0.1)',
-                              mt: 1.5
-                            }}
-                          >
-                            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 0.5 }}>
+                          {/* Descripción */}
+                          <Box sx={{ mb: 1.5 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
                               <Typography
                                 variant="caption"
                                 sx={{
@@ -881,13 +908,12 @@ const BlackBar = memo(() => {
                                   '&:hover': {
                                     bgcolor: 'rgba(250, 173, 20, 0.2)',
                                   },
-                                  width: 20,
-                                  height: 20,
-                                  ml: 'auto',
+                                  width: 24,
+                                  height: 24,
                                 }}
-                                title="Copiar descripción completa"
+                                title="Copiar descripción"
                               >
-                                <ContentCopy sx={{ fontSize: 12 }} />
+                                <ContentCopy sx={{ fontSize: 14 }} />
                               </IconButton>
                             </Box>
                             <Typography
@@ -896,7 +922,7 @@ const BlackBar = memo(() => {
                                 textDecoration: isCompleted ? 'line-through' : 'none',
                                 color: isCompleted ? '#bababa' : '#eaebee',
                                 lineHeight: 1.6,
-                                fontSize: '13px',
+                                fontSize: '14px',
                                 wordBreak: 'break-word',
                               }}
                             >
