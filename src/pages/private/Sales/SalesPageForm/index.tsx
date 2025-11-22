@@ -513,6 +513,7 @@ const SalesPageForm = () => {
               }}
             >
               <Stack direction="row" spacing={3} alignItems="center" justifyContent="space-between">
+                {/* Botón Regresar - Lado Izquierdo */}
                 <Button
                   variant="outlined"
                   color="inherit"
@@ -530,9 +531,9 @@ const SalesPageForm = () => {
                 >
                   Regresar
                 </Button>
-                {/* Botón de Submit */}
-                {/* Select de Estado */}
-                <Stack direction="column" spacing={2} sx={{ flex: 1 }}>
+
+                {/* Lado Derecho - Estado y Guardar */}
+                <Stack direction="row" spacing={2} alignItems="center">
                   <Form.Item
                     name="estadoVenta"
                     style={{ marginBottom: 0 }}
@@ -543,7 +544,7 @@ const SalesPageForm = () => {
                       label='Estado de la Venta'
                       size="large"
                       style={{
-                        maxWidth: 220,
+                        minWidth: 220,
                         borderRadius: 12,
                         fontWeight: 600,
                         fontSize: 16,
@@ -584,35 +585,36 @@ const SalesPageForm = () => {
                       ))}
                     </SelectGeneric>
                   </Form.Item>
+
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    size="large"
+                    startIcon={<Save />}
+                    onClick={() => form.submit()}
+                    disabled={loading}
+                    sx={{
+                      minWidth: 180,
+                      height: 56,
+                      fontWeight: 600,
+                      fontSize: 16,
+                      textTransform: 'none',
+                      borderRadius: 3,
+                      backgroundColor: '#2563eb',
+                      boxShadow: '0 4px 15px 0 rgba(37, 99, 235, 0.25)',
+                      '&:hover': {
+                        backgroundColor: '#1d4ed8',
+                        boxShadow: '0 6px 20px 0 rgba(37, 99, 235, 0.35)',
+                      },
+                      '&:disabled': {
+                        backgroundColor: '#E0E0E0',
+                        color: '#9E9E9E',
+                      },
+                    }}
+                  >
+                    {loading ? 'Guardando...' : 'Guardar Venta'}
+                  </Button>
                 </Stack>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  size="large"
-                  startIcon={<Save />}
-                  onClick={() => form.submit()}
-                  disabled={loading}
-                  sx={{
-                    minWidth: 180,
-                    height: 56,
-                    fontWeight: 600,
-                    fontSize: 16,
-                    textTransform: 'none',
-                    borderRadius: 3,
-                    backgroundColor: '#2563eb',
-                    boxShadow: '0 4px 15px 0 rgba(37, 99, 235, 0.25)',
-                    '&:hover': {
-                      backgroundColor: '#1d4ed8',
-                      boxShadow: '0 6px 20px 0 rgba(37, 99, 235, 0.35)',
-                    },
-                    '&:disabled': {
-                      backgroundColor: '#E0E0E0',
-                      color: '#9E9E9E',
-                    },
-                  }}
-                >
-                  {loading ? 'Guardando...' : 'Guardar Venta'}
-                </Button>
               </Stack>
             </Card>
           </Stack>
