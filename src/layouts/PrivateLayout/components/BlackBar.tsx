@@ -713,7 +713,6 @@ const BlackBar = memo(() => {
                           display: 'flex',
                           alignItems: 'flex-start',
                           gap: 2,
-                          cursor: 'pointer',
                           opacity: isCompleted ? 0.6 : 1,
                           transition: 'all 0.2s',
                           userSelect: 'none',
@@ -726,7 +725,6 @@ const BlackBar = memo(() => {
                             borderColor: 'rgba(255,255,255,0.25)',
                           }
                         }}
-                        onClick={() => handleToggleProduct(item.codigo)}
                       >
                         <Checkbox
                           checked={isCompleted}
@@ -744,120 +742,181 @@ const BlackBar = memo(() => {
                         />
 
                         <Box sx={{ flex: 1, minWidth: 0 }}>
-                          {/* Header con código y cantidad */}
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                          {/* Código con botón de copiar */}
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
                             <Typography
                               variant="body2"
                               sx={{
                                 textDecoration: isCompleted ? 'line-through' : 'none',
                                 color: isCompleted ? '#bababa' : '#fff',
                                 fontWeight: 700,
-                                fontSize: '14px',
+                                fontSize: '15px',
+                                letterSpacing: '0.5px',
+                                fontFamily: 'monospace',
                               }}
                             >
                               {item.codigo}
-                            </Typography>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <Typography
-                                variant="caption"
-                                sx={{
-                                  color: isCompleted ? '#bababa' : '#57c98d',
-                                  fontWeight: 600,
-                                  bgcolor: isCompleted ? 'rgba(186,186,186,0.1)' : 'rgba(87,201,141,0.1)',
-                                  px: 1,
-                                  py: 0.5,
-                                  borderRadius: 1,
-                                  fontSize: '11px',
-                                }}
-                              >
-                                {item.cantidad}
-                              </Typography>
-                              <IconButton
-                                size="small"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleCopyDescription(String(item.cantidad));
-                                }}
-                                sx={{
-                                  color: '#57c98d',
-                                  bgcolor: 'rgba(87, 201, 141, 0.1)',
-                                  '&:hover': {
-                                    bgcolor: 'rgba(87, 201, 141, 0.2)',
-                                  },
-                                  width: 20,
-                                  height: 20,
-                                }}
-                                title="Copiar cantidad"
-                              >
-                                <ContentCopy sx={{ fontSize: 12 }} />
-                              </IconButton>
-                            </Box>
-                          </Box>
-
-                          {/* Marca */}
-                          {item.marca && (
-                            <Typography
-                              variant="body2"
-                              sx={{
-                                textDecoration: isCompleted ? 'line-through' : 'none',
-                                color: isCompleted ? '#bababa' : '#1890ff',
-                                fontWeight: 600,
-                                fontSize: '12px',
-                                mb: 1,
-                              }}
-                            >
-                              Marca: {item.marca}
-                            </Typography>
-                          )}
-
-                          {/* Descripción */}
-                          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
-                            <Typography
-                              variant="body2"
-                              sx={{
-                                textDecoration: isCompleted ? 'line-through' : 'none',
-                                color: isCompleted ? '#bababa' : '#eaebee',
-                                flex: 1,
-                                lineHeight: 1.5,
-                                fontSize: '13px',
-                              }}
-                            >
-                              {item.descripcion}
                             </Typography>
                             <IconButton
                               size="small"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleCopyDescription(item.descripcion);
+                                handleCopyDescription(item.codigo);
                               }}
                               sx={{
-                                color: '#1890ff',
-                                bgcolor: 'rgba(24, 144, 255, 0.1)',
+                                color: '#fff',
+                                bgcolor: 'rgba(255, 255, 255, 0.1)',
                                 '&:hover': {
-                                  bgcolor: 'rgba(24, 144, 255, 0.2)',
+                                  bgcolor: 'rgba(255, 255, 255, 0.2)',
                                 },
-                                width: 28,
-                                height: 28,
-                                mt: -0.5,
+                                width: 24,
+                                height: 24,
                               }}
-                              title="Copiar descripción"
+                              title="Copiar código"
                             >
-                              <ContentCopy sx={{ fontSize: 16 }} />
+                              <ContentCopy sx={{ fontSize: 14 }} />
                             </IconButton>
+                          </Box>
+
+                          {/* Marca con botón de copiar */}
+                          {item.marca && (
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                              <Typography
+                                variant="body2"
+                                sx={{
+                                  textDecoration: isCompleted ? 'line-through' : 'none',
+                                  color: isCompleted ? '#bababa' : '#1890ff',
+                                  fontWeight: 600,
+                                  fontSize: '13px',
+                                }}
+                              >
+                                <strong style={{ color: isCompleted ? '#bababa' : '#eaebee' }}>Marca:</strong> {item.marca}
+                              </Typography>
+                              <IconButton
+                                size="small"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCopyDescription(item.marca);
+                                }}
+                                sx={{
+                                  color: '#1890ff',
+                                  bgcolor: 'rgba(24, 144, 255, 0.1)',
+                                  '&:hover': {
+                                    bgcolor: 'rgba(24, 144, 255, 0.2)',
+                                  },
+                                  width: 24,
+                                  height: 24,
+                                }}
+                                title="Copiar marca"
+                              >
+                                <ContentCopy sx={{ fontSize: 14 }} />
+                              </IconButton>
+                            </Box>
+                          )}
+
+                          {/* Cantidad con botón de copiar */}
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                textDecoration: isCompleted ? 'line-through' : 'none',
+                                color: isCompleted ? '#bababa' : '#57c98d',
+                                fontWeight: 700,
+                                fontSize: '14px',
+                              }}
+                            >
+                              <strong style={{ color: isCompleted ? '#bababa' : '#eaebee' }}>Cantidad:</strong> {item.cantidad}
+                            </Typography>
+                            <IconButton
+                              size="small"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleCopyDescription(String(item.cantidad));
+                              }}
+                              sx={{
+                                color: '#57c98d',
+                                bgcolor: 'rgba(87, 201, 141, 0.1)',
+                                '&:hover': {
+                                  bgcolor: 'rgba(87, 201, 141, 0.2)',
+                                },
+                                width: 24,
+                                height: 24,
+                              }}
+                              title="Copiar cantidad"
+                            >
+                              <ContentCopy sx={{ fontSize: 14 }} />
+                            </IconButton>
+                          </Box>
+
+                          {/* Descripción con botón de copiar */}
+                          <Box
+                            sx={{
+                              bgcolor: 'rgba(255,255,255,0.05)',
+                              p: 1.5,
+                              borderRadius: 1,
+                              border: '1px solid rgba(255,255,255,0.1)',
+                              mt: 1.5
+                            }}
+                          >
+                            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 0.5 }}>
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  color: isCompleted ? '#bababa' : '#eaebee',
+                                  fontWeight: 600,
+                                  fontSize: '11px',
+                                }}
+                              >
+                                DESCRIPCIÓN:
+                              </Typography>
+                              <IconButton
+                                size="small"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCopyDescription(item.descripcion);
+                                }}
+                                sx={{
+                                  color: '#faad14',
+                                  bgcolor: 'rgba(250, 173, 20, 0.1)',
+                                  '&:hover': {
+                                    bgcolor: 'rgba(250, 173, 20, 0.2)',
+                                  },
+                                  width: 20,
+                                  height: 20,
+                                  ml: 'auto',
+                                }}
+                                title="Copiar descripción completa"
+                              >
+                                <ContentCopy sx={{ fontSize: 12 }} />
+                              </IconButton>
+                            </Box>
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                textDecoration: isCompleted ? 'line-through' : 'none',
+                                color: isCompleted ? '#bababa' : '#eaebee',
+                                lineHeight: 1.6,
+                                fontSize: '13px',
+                                wordBreak: 'break-word',
+                              }}
+                            >
+                              {item.descripcion}
+                            </Typography>
                           </Box>
 
                           {/* Precios si están disponibles */}
                           {(item.precioUnitario || item.total) && (
-                            <Box sx={{ display: 'flex', gap: 2, mt: 1, pt: 1, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                            <Box sx={{ display: 'flex', gap: 2, mt: 1.5, pt: 1.5, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
                               {item.precioUnitario && (
                                 <Typography
                                   variant="caption"
                                   sx={{
                                     color: isCompleted ? '#bababa' : '#eaebee',
-                                    fontSize: '11px',
+                                    fontSize: '12px',
+                                    fontWeight: 600,
                                   }}
                                 >
-                                  Precio: S/ {item.precioUnitario.toFixed(2)}
+                                  Precio Unit.: <span style={{ color: '#1890ff' }}>S/ {item.precioUnitario.toFixed(2)}</span>
                                 </Typography>
                               )}
                               {item.total && (
@@ -865,8 +924,8 @@ const BlackBar = memo(() => {
                                   variant="caption"
                                   sx={{
                                     color: isCompleted ? '#bababa' : '#57c98d',
-                                    fontWeight: 600,
-                                    fontSize: '11px',
+                                    fontWeight: 700,
+                                    fontSize: '12px',
                                   }}
                                 >
                                   Total: S/ {item.total.toFixed(2)}
