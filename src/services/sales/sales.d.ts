@@ -65,7 +65,10 @@ export interface SaleProps {
     id: number;
     nombre: string;
   };
-  ordenesProveedor: Array<ProviderOrderProps>;
+  ordenesProveedor: Array<{
+    id: number;
+    totalProveedor: string | null;
+  }>;
   // Relación plural de facturaciones devuelta por el backend
   facturaciones?: Array<{
     id: number;

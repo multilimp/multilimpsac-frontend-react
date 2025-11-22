@@ -616,7 +616,16 @@ const BlackBar = memo(() => {
               >
                 <ListItemText primary="F. Máxima:" />
               </ListItem>
-              <ListItem divider disablePadding secondaryAction={formatCurrency(0)} sx={{ borderBottomColor: 'red', py: 1 }}>
+              <ListItem
+                divider
+                disablePadding
+                secondaryAction={
+                  formatCurrency(
+                    selectedSale.ordenesProveedor?.reduce((sum, op) => sum + (Number(op.totalProveedor) || 0), 0) || 0
+                  )
+                }
+                sx={{ borderBottomColor: 'red', py: 1 }}
+              >
                 <ListItemText primary="OP Importe Total:" />
               </ListItem>
               <ListItem

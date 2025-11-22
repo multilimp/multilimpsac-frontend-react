@@ -28,6 +28,7 @@ export const getSaleById = async (id: number): Promise<SaleProps> => {
     provinciaEntrega: item.provinciaEntrega || null,
     distritoEntrega: item.distritoEntrega || null,
     productos: Array.isArray(item.productos) ? item.productos : parseJSON(item.productos) || [],
+    ordenesProveedor: item.ordenesProveedor || [],
   };
 };
 

@@ -62,8 +62,10 @@ const ProviderOrderForm = () => {
 
       // En modo edición, establecer la venta desde los datos de la OP
       if (orderDetails.ordenCompra) {
-        // Convertir los datos de la OP a formato SaleProps
-        setSelectedSale(orderDetails.ordenCompra as any);
+        // ✅ FIXED: Cargar datos completos de la venta incluyendo ordenesProveedor
+        const { getSaleById } = await import('@/services/sales/sales.request');
+        const fullSaleData = await getSaleById(orderDetails.ordenCompra.id);
+        setSelectedSale(fullSaleData);
       }
     } catch (error) {
       console.error('Error al cargar los datos de la OP:', error);
