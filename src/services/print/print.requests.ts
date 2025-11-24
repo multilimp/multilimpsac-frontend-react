@@ -175,6 +175,7 @@ export interface OrdenProveedorData {
   productos?: Producto[];
   totalProveedor?: number;
   tipoPago?: string;
+  formaPago?: string;
   transportesAsignados?: TransporteAsignado[];
   fechaRecepcion?: string;
   notaPedido?: string;
@@ -238,6 +239,14 @@ export const printOrdenProveedor = async (id: number): Promise<void> => {
 
     const total = productos.reduce((sum: number, p: Producto) => sum + (Number(p.total) || 0), 0);
     const plazoEntrega = data.fechaRecepcion ? formatDate(data.fechaRecepcion) : 'No especificado';
+
+    const formaPagoLabels: Record<string, string> = {
+      'CONTADO': 'Pago al Contado',
+      'CREDITO': 'Pago al Crédito',
+      'ANTICIPADO': 'Anticipado',
+      'OTROS': 'Otros'
+    };
+    const formaPagoLabel = data.formaPago ? formaPagoLabels[data.formaPago] || data.formaPago : 'No especificado';
 
     let seccionTransporte = '';
     let destinoInfo = '';
@@ -356,7 +365,7 @@ export const printOrdenProveedor = async (id: number): Promise<void> => {
       PROVEEDOR_RUC: escapeHtml(data.proveedor?.ruc || ''),
       PRODUCTOS_ROWS: productosRows,
       TOTAL_INCLUYE_IGV: formatCurrency(total),
-      FORMA_PAGO: escapeHtml(data.tipoPago || 'No especificado'),
+      FORMA_PAGO: escapeHtml(formaPagoLabel),
       PLAZO_ENTREGA: plazoEntrega,
       SECCION_TRANSPORTE: seccionTransporte,
       DESTINO_INFO: destinoInfo,
@@ -406,7 +415,7 @@ export const printCotizacion = async (id: number): Promise<void> => {
     }
 
     const data = response.data.data.cotizacion;
-     const productos = (data.productos || []) as Producto[];
+    const productos = (data.productos || []) as Producto[];
 
     const formatCurrency = (value: unknown): string => {
       if (value === null || value === undefined || value === '') return '';
@@ -451,13 +460,13 @@ export const printCotizacion = async (id: number): Promise<void> => {
     const plazoEntrega = data.fechaEntrega ? formatDate(data.fechaEntrega) : 'No especificado';
 
     const direccionCompleta = [
-       data.direccionEntrega,
-       data.distritoEntrega,
-       data.provinciaEntrega,
-       data.departamentoEntrega
-     ].filter(Boolean).join(' / ') || 'No especificada';
+      data.direccionEntrega,
+      data.distritoEntrega,
+      data.provinciaEntrega,
+      data.departamentoEntrega
+    ].filter(Boolean).join(' / ') || 'No especificada';
 
-     const destinoInfo = `
+    const destinoInfo = `
        <div><b>${escapeHtml(data.cliente?.razonSocial || 'Sin cliente')}</b></div>
        <div><b>Dirección: </b>${escapeHtml(direccionCompleta)}</div>
        ${data.referenciaEntrega ? `<div><b>Referencia: </b>${escapeHtml(data.referenciaEntrega)}</div>` : ''}
@@ -467,25 +476,25 @@ export const printCotizacion = async (id: number): Promise<void> => {
     const validezCotizacion = '30 días';
 
     const htmlFinal = fillTemplate(template, {
-       CODIGO_COTIZACION: escapeHtml(data.codigoCotizacion || ''),
-       LOGO: logoHtml,
-       EMPRESA_TELEFONO: escapeHtml(data.empresa?.telefono || ''),
-       EMPRESA_DIRECCIONES: escapeHtml(empresaDirecciones),
-       FECHA_EMISION: formatDate(data.fechaCotizacion || new Date().toISOString()),
-       RUC_EMPRESA: escapeHtml(data.empresa?.ruc || ''),
-       CLIENTE_RAZON_SOCIAL: escapeHtml(data.cliente?.razonSocial || ''),
-       CLIENTE_RUC: escapeHtml(data.cliente?.ruc || ''),
-       PRODUCTOS_ROWS: productosRows,
-       TOTAL_INCLUYE_IGV: formatCurrency(total),
-       VALIDEZ_COTIZACION: validezCotizacion,
-       PLAZO_ENTREGA: plazoEntrega,
-       SECCION_TRANSPORTE: '',
-       DESTINO_INFO: destinoInfo,
-       OBSERVACIONES_ADICIONALES: escapeHtml(data.notaPedido || ''),
-       RUC_FACTURACION: escapeHtml(data.empresa?.ruc || ''),
-       RAZON_SOCIAL_FACTURACION: escapeHtml(data.empresa?.razonSocial || ''),
-       EMAIL_FACTURACION: escapeHtml(data.empresa?.email || '')
-     });
+      CODIGO_COTIZACION: escapeHtml(data.codigoCotizacion || ''),
+      LOGO: logoHtml,
+      EMPRESA_TELEFONO: escapeHtml(data.empresa?.telefono || ''),
+      EMPRESA_DIRECCIONES: escapeHtml(empresaDirecciones),
+      FECHA_EMISION: formatDate(data.fechaCotizacion || new Date().toISOString()),
+      RUC_EMPRESA: escapeHtml(data.empresa?.ruc || ''),
+      CLIENTE_RAZON_SOCIAL: escapeHtml(data.cliente?.razonSocial || ''),
+      CLIENTE_RUC: escapeHtml(data.cliente?.ruc || ''),
+      PRODUCTOS_ROWS: productosRows,
+      TOTAL_INCLUYE_IGV: formatCurrency(total),
+      VALIDEZ_COTIZACION: validezCotizacion,
+      PLAZO_ENTREGA: plazoEntrega,
+      SECCION_TRANSPORTE: '',
+      DESTINO_INFO: destinoInfo,
+      OBSERVACIONES_ADICIONALES: escapeHtml(data.notaPedido || ''),
+      RUC_FACTURACION: escapeHtml(data.empresa?.ruc || ''),
+      RAZON_SOCIAL_FACTURACION: escapeHtml(data.empresa?.razonSocial || ''),
+      EMAIL_FACTURACION: escapeHtml(data.empresa?.email || '')
+    });
 
     if (!printWindow) {
       const blob = new Blob([htmlFinal], { type: 'text/html' });

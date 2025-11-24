@@ -48,6 +48,7 @@ import { ESTADOS, estadoBgMap, EstadoVentaType } from '@/utils/constants';
 import { useAppContext } from '@/context';
 import { PermissionsEnum } from '@/services/users/permissions.enum';
 import { RolesEnum } from '@/services/users/user.enum';
+import SelectGeneric from '@/components/selects/SelectGeneric';
 
 interface ProviderOrderFormContentProps {
   sale: SaleProps;
@@ -289,6 +290,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
         embalaje: orderData.embalaje || '',
         tipoPago: orderData.tipoPago || 'PENDIENTE',
         notaPago: orderData.notaPago || '',
+        formaPago: orderData.formaPago || 'CONTADO',
         incluyeTransporte: !(orderData.transportesAsignados && orderData.transportesAsignados.length > 0), // ✅ Invertir lógica: si tiene transportes, switch desactivado
         productos: productosFormatted,
         pagosProveedor: Array.isArray(orderData.pagos) && orderData.pagos.length > 0
@@ -337,6 +339,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
         empresa: sale.empresa?.id,
         tipoPago: 'PENDIENTE',
         notaPago: '',
+        formaPago: 'CONTADO',
         productosNota: '',
         observaciones: '',
         etiquetado: '',
@@ -561,6 +564,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
         etiquetado: values.etiquetado as string || null,
         embalaje: values.embalaje as string || null,
         tipoPago: values.tipoPago as string || null,
+        formaPago: values.formaPago as string || null,
         notaPago: values.notaPago as string || null,
         productos: isEditing ? { deleteMany: {}, create: productosArr } : { create: productosArr },
         pagos: isEditing ? { deleteMany: {}, create: pagosArr } : { create: pagosArr },
@@ -614,6 +618,10 @@ const calculateProductTotals = (form: any, fieldName: number) => {
   const handleProviderSelect = (data: ProviderProps) => form.setFieldValue('proveedor', data);
 
   const handleTipoPagoChange = (tipo: string) => form.setFieldValue('tipoPago', tipo);
+
+  const handleFormaPagoChange = (value: string) => {
+    form.setFieldValue('formaPago', value);
+  };
 
   const handleNotaPagoChange = (nota: string) => form.setFieldValue('notaPago', nota);
 
@@ -713,10 +721,10 @@ const calculateProductTotals = (form: any, fieldName: number) => {
       estadoPago: payment.status
     }));
 
-    const tipoPago = form.getFieldValue('tipoPago');
+    const formaPago = form.getFieldValue('formaPago');
     const notaPago = form.getFieldValue('notaPago');
 
-    await handlePaymentsUpdate(formattedPayments, tipoPago, notaPago);
+    await handlePaymentsUpdate(formattedPayments, formaPago, notaPago);
 
     form.setFieldValue('pagosProveedor', payments);
   };
@@ -739,6 +747,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
         <Form.Item name="proveedor" noStyle />
         <Form.Item name="tipoPago" noStyle />
         <Form.Item name="notaPago" noStyle />
+        <Form.Item name="formaPago" noStyle />
         <Form.Item name="pagosProveedor" noStyle />
 
         <Stack direction="column" spacing={2}>
@@ -1316,63 +1325,36 @@ const calculateProductTotals = (form: any, fieldName: number) => {
               title={
                 <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Business color="primary" />
-                  Nota al Proveedor
+                  Notas y Especificaciones
                 </Typography>
               }
               sx={{ pb: 1 }}
             />
             <CardContent>
-              <Form.Item name="productosNota">
-                <Input.TextArea
-                  placeholder="Ingrese notas adicionales sobre el pedido..."
-                  rows={3}
-                  disabled={fromTreasury}
-                  style={{
-                    borderRadius: 4,
-                    border: '1px solid #d9d9d9',
-                  }}
-                />
-              </Form.Item>
-            </CardContent>
-          </Card>
+              <Grid container spacing={1}>
+                <Grid size={{ xs: 12 }}>
+                  <Box>
+                    <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+                      Forma de Pago
+                    </Typography>
+                    <Form.Item name="formaPago">
+                      <SelectGeneric
+                        placeholder="Seleccione una forma de pago..."
+                        disabled={fromTreasury}
+                        onChange={handleFormaPagoChange}
+                        options={
+                          [
+                            { label: 'Pago al Contado', value: 'CONTADO' },
+                            { label: 'Pago al Crédito', value: 'CREDITO' },
+                            { label: 'Anticipado', value: 'ANTICIPADO' },
+                            { label: 'Otros', value: 'OTROS' },
+                          ]
+                        }
+                      />
+                    </Form.Item>
+                  </Box>
+                </Grid>
 
-          <Card>
-            <CardHeader
-              title={
-                <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Business color="primary" />
-                  Observaciones Internas
-                </Typography>
-              }
-              sx={{ pb: 1 }}
-            />
-            <CardContent>
-              <Form.Item name="observaciones">
-                <Input.TextArea
-                  placeholder="Ingrese observaciones internas (no visibles en el documento)..."
-                  rows={3}
-                  disabled={fromTreasury}
-                  style={{
-                    borderRadius: 4,
-                    border: '1px solid #d9d9d9',
-                  }}
-                />
-              </Form.Item>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader
-              title={
-                <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Inventory color="primary" />
-                  Etiquetado y Embalaje
-                </Typography>
-              }
-              sx={{ pb: 1 }}
-            />
-            <CardContent>
-              <Grid container spacing={3}>
                 <Grid size={{ xs: 12, md: 6 }}>
                   <Box>
                     <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
@@ -1386,6 +1368,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
                     </Form.Item>
                   </Box>
                 </Grid>
+
                 <Grid size={{ xs: 12, md: 6 }}>
                   <Box>
                     <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
@@ -1395,6 +1378,44 @@ const calculateProductTotals = (form: any, fieldName: number) => {
                       <InputAntd
                         placeholder="Especificaciones de embalaje..."
                         disabled={fromTreasury}
+                      />
+                    </Form.Item>
+                  </Box>
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <Box>
+                    <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+                      Observaciones (Se imprime en el documento)
+                    </Typography>
+                    <Form.Item name="productosNota">
+                      <Input.TextArea
+                        placeholder="Ingrese notas adicionales sobre el pedido..."
+                        rows={3}
+                        disabled={fromTreasury}
+                        style={{
+                          borderRadius: 4,
+                          fontSize: '16px',
+                          border: '1px solid #d9d9d9',
+                        }}
+                      />
+                    </Form.Item>
+                  </Box>
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <Box>
+                    <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+                      Nota de Pedido
+                    </Typography>
+                    <Form.Item name="observaciones">
+                      <Input.TextArea
+                        placeholder="Ingrese observaciones internas (no visibles en el documento)..."
+                        rows={3}
+                        disabled={fromTreasury}
+                        style={{
+                          borderRadius: 4,
+                          fontSize: '16px',
+                          border: '1px solid #d9d9d9',
+                        }}
                       />
                     </Form.Item>
                   </Box>
@@ -1422,7 +1443,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
                   <PaymentsList
                     title="Pagos Proveedor"
                     payments={getFieldValue('pagosProveedor') || []}
-                    tipoPago={getFieldValue('tipoPago')}
+                    tipoPago={getFieldValue('formaPago')}
                     notaPago={getFieldValue('notaPago') || ''}
                     montoTotal={totalProductos}
                     mode={fromTreasury ? "edit" : "readonly"}

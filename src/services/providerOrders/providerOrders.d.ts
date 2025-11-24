@@ -17,6 +17,7 @@ export interface ProviderOrderProps {
   notaPedido: string;
   totalProveedor: null;
   tipoPago: null;
+  formaPago: string | null;
   notaPago: null;
   notaGestionOp: null;
   tipoEntrega: null;

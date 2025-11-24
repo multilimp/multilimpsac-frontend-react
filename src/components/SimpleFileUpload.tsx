@@ -14,7 +14,7 @@ interface SimpleFileUploadProps {
 const SimpleFileUpload = ({
   label,
   onChange,
-  accept = 'application/pdf',
+  accept = '*', // Tipo de archivo por defecto: Todo
   value,
   editable = true,
 }: SimpleFileUploadProps) => {
