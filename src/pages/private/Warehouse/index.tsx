@@ -1,7 +1,10 @@
-import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
-import { Box, Tabs, Tab, Button, Stack, CircularProgress } from '@mui/material';
-import { Add, Warehouse, Inventory } from '@mui/icons-material';
+import React, { useState, useEffect, useCallback, lazy, Suspense, useMemo } from 'react';
+import { Button, Stack } from '@mui/material';
+import { Tabs, Spin, notification } from 'antd';
+import type { TabsProps } from 'antd';
+import { Add, Warehouse as WarehouseIcon, Inventory } from '@mui/icons-material';
 import PageContent from '@/components/PageContent';
+import { useTabPersistenceString } from '@/hooks/useTabPersistence';
 import {
     getAlmacenes,
     getProductos,
@@ -12,7 +15,6 @@ import {
     Producto,
     StockWithDetails
 } from '@/types/almacen.types';
-import { notification } from 'antd';
 
 // Lazy load de componentes para mejorar rendimiento inicial
 const AlmacenesTable = lazy(() => import('./components/AlmacenesTable'));
@@ -57,7 +59,7 @@ function isFresh(ts?: number): boolean {
 }
 
 const WarehousePage = () => {
-    const [activeTab, setActiveTab] = useState<number>(0);
+    const [activeTab, setActiveTab] = useTabPersistenceString('almacenes');
     const [loading, setLoading] = useState(false);
 
     // Cargar datos iniciales desde caché
@@ -158,18 +160,18 @@ const WarehousePage = () => {
     useEffect(() => {
         const cache = loadCache();
         switch (activeTab) {
-            case 0:
+            case 'almacenes':
                 // Recargar si no hay caché fresco
                 if (!cache?.almacenes || !isFresh(cache.almacenes.timestamp)) {
                     loadAlmacenes();
                 }
                 break;
-            case 1:
+            case 'productos':
                 if (!cache?.productos || !isFresh(cache.productos.timestamp)) {
                     loadProductos();
                 }
                 break;
-            case 2:
+            case 'stock':
                 if (!cache?.stock || !isFresh(cache.stock.timestamp)) {
                     loadStock();
                 }
@@ -178,9 +180,9 @@ const WarehousePage = () => {
     }, [activeTab, loadAlmacenes, loadProductos, loadStock]);
 
     // Handlers para cambio de tab
-    const handleTabChange = useCallback((_: React.SyntheticEvent, newValue: number) => {
-        setActiveTab(newValue);
-    }, []);
+    const handleTabChange = useCallback((key: string) => {
+        setActiveTab(key);
+    }, [setActiveTab]);
 
     // Handlers para abrir modales
     const handleAddAlmacen = useCallback(() => {
@@ -235,7 +237,7 @@ const WarehousePage = () => {
     // Función para obtener el botón apropiado según el tab activo
     const getActionButton = () => {
         switch (activeTab) {
-            case 0:
+            case 'almacenes':
                 return (
                     <Button
                         variant="contained"
@@ -246,7 +248,7 @@ const WarehousePage = () => {
                         Agregar Almacén
                     </Button>
                 );
-            case 1:
+            case 'productos':
                 return (
                     <Button
                         variant="contained"
@@ -257,7 +259,7 @@ const WarehousePage = () => {
                         Agregar Producto
                     </Button>
                 );
-            case 2:
+            case 'stock':
                 return (
                     <Button
                         variant="contained"
@@ -273,6 +275,66 @@ const WarehousePage = () => {
         }
     };
 
+    const tabItems: TabsProps['items'] = useMemo(() => [
+        {
+            key: 'almacenes',
+            label: (
+                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <WarehouseIcon fontSize="small" />
+                    Almacenes
+                </span>
+            ),
+            children: (
+                <Suspense fallback={<Spin />}>
+                    <AlmacenesTable
+                        data={almacenes}
+                        loading={loading}
+                        onEdit={handleEditAlmacen}
+                        onReload={loadAlmacenes}
+                    />
+                </Suspense>
+            ),
+        },
+        {
+            key: 'productos',
+            label: (
+                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <Inventory fontSize="small" />
+                    Productos
+                </span>
+            ),
+            children: (
+                <Suspense fallback={<Spin />}>
+                    <ProductosTable
+                        data={productos}
+                        loading={loading}
+                        onEdit={handleEditProducto}
+                        onReload={loadProductos}
+                    />
+                </Suspense>
+            ),
+        },
+        {
+            key: 'stock',
+            label: (
+                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <Inventory fontSize="small" />
+                    Stock
+                </span>
+            ),
+            children: (
+                <Suspense fallback={<Spin />}>
+                    <StockTable
+                        data={stock}
+                        loading={loading}
+                        onEdit={handleEditStock}
+                        onReload={loadStock}
+                    />
+                </Suspense>
+            ),
+        },
+    ], [almacenes, loading, handleEditAlmacen, loadAlmacenes, productos, handleEditProducto, loadProductos, stock, handleEditStock, loadStock]);
+
     return (
         <PageContent
             title="Gestión de Almacén"
@@ -280,94 +342,11 @@ const WarehousePage = () => {
             <Stack direction="row" spacing={1} justifyContent="flex-end" mb={2}>
                 {getActionButton()}
             </Stack>
-            <Box sx={{ width: '100%' }}>
-                <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                    <Tabs
-                        value={activeTab}
-                        onChange={handleTabChange}
-                        aria-label="tabs de almacén"
-                    >
-                        <Tab
-                            label="Almacenes"
-                            icon={<Warehouse />}
-                            iconPosition="start"
-                        />
-                        <Tab
-                            label="Productos"
-                            icon={<Inventory />}
-                            iconPosition="start"
-                        />
-                        <Tab
-                            label="Stock"
-                            icon={<Inventory />}
-                            iconPosition="start"
-                        />
-                    </Tabs>
-                </Box>
-
-                {/* Tab Panel: Almacenes */}
-                <div
-                    role="tabpanel"
-                    hidden={activeTab !== 0}
-                    id="tabpanel-almacenes"
-                    aria-labelledby="tab-almacenes"
-                >
-                    {activeTab === 0 && (
-                        <Box sx={{ py: 3 }}>
-                            <Suspense fallback={<Box sx={{ display: 'flex', justifyContent: 'center', py: 5 }}><CircularProgress /></Box>}>
-                                <AlmacenesTable
-                                    data={almacenes}
-                                    loading={loading}
-                                    onEdit={handleEditAlmacen}
-                                    onReload={loadAlmacenes}
-                                />
-                            </Suspense>
-                        </Box>
-                    )}
-                </div>
-
-                {/* Tab Panel: Productos */}
-                <div
-                    role="tabpanel"
-                    hidden={activeTab !== 1}
-                    id="tabpanel-productos"
-                    aria-labelledby="tab-productos"
-                >
-                    {activeTab === 1 && (
-                        <Box sx={{ py: 3 }}>
-                            <Suspense fallback={<Box sx={{ display: 'flex', justifyContent: 'center', py: 5 }}><CircularProgress /></Box>}>
-                                <ProductosTable
-                                    data={productos}
-                                    loading={loading}
-                                    onEdit={handleEditProducto}
-                                    onReload={loadProductos}
-                                />
-                            </Suspense>
-                        </Box>
-                    )}
-                </div>
-
-                {/* Tab Panel: Stock */}
-                <div
-                    role="tabpanel"
-                    hidden={activeTab !== 2}
-                    id="tabpanel-stock"
-                    aria-labelledby="tab-stock"
-                >
-                    {activeTab === 2 && (
-                        <Box sx={{ py: 3 }}>
-                            <Suspense fallback={<Box sx={{ display: 'flex', justifyContent: 'center', py: 5 }}><CircularProgress /></Box>}>
-                                <StockTable
-                                    data={stock}
-                                    loading={loading}
-                                    onEdit={handleEditStock}
-                                    onReload={loadStock}
-                                />
-                            </Suspense>
-                        </Box>
-                    )}
-                </div>
-            </Box>
+            <Tabs
+                activeKey={activeTab}
+                onChange={handleTabChange}
+                items={tabItems}
+            />
 
             {/* Modales con lazy loading */}
             <Suspense fallback={null}>

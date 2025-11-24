@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { Tabs, Tab, Box } from '@mui/material';
+import { Tabs, DatePicker, Space, notification } from 'antd';
+import type { TabsProps } from 'antd';
 import { AccountBalance, Business, Assignment } from '@mui/icons-material';
 import PageContent from '@/components/PageContent';
 import TrackingsTable from './components/TrackingsTable';
@@ -8,15 +9,14 @@ import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 import { useNavigate } from 'react-router-dom';
 import { ProviderOrderProps } from '@/services/providerOrders/providerOrders';
 import { getAllOrderProviders } from '@/services/providerOrders/providerOrders.requests';
-import { notification } from 'antd';
 import CargosEntregaTable from '@/components/CargosEntregaTable';
 import dayjs from 'dayjs';
-import { DatePicker, Space } from 'antd';
 import { SaleProps } from '@/services/sales/sales';
+import { useTabPersistenceString } from '@/hooks/useTabPersistence';
 
 const TrackingsPage = () => {
   const { sales, loadingSales, obtainSales } = useGlobalInformation();
-  const [activeTab, setActiveTab] = useState<number>(0);
+  const [activeTab, setActiveTab] = useTabPersistenceString('oc');
   const navigate = useNavigate();
   const [ops, setOps] = useState<Array<ProviderOrderProps>>([]);
   const [loadingOps, setLoadingOps] = useState(false);
@@ -43,13 +43,13 @@ const TrackingsPage = () => {
   }, []);
 
   // Handler memoizado para cambio de tab
-  const handleTabChange = useCallback((_: React.SyntheticEvent, newValue: number) => {
-    setActiveTab(newValue);
+  const handleTabChange = useCallback((key: string) => {
+    setActiveTab(key);
     // Cargar OPs cuando se selecciona la pestaña de OP
-    if (newValue === 1 && ops.length === 0) {
+    if (key === 'op' && ops.length === 0) {
       loadOps();
     }
-  }, [loadOps, ops.length]);
+  }, [loadOps, ops.length, setActiveTab]);
 
   // Handler para OC
   const handleOcRowClick = useCallback((sale: SaleProps) => {
@@ -61,112 +61,90 @@ const TrackingsPage = () => {
     navigate(`/provider-orders/${op.id}`);
   }, [navigate]);
 
+  const tabItems: TabsProps['items'] = useMemo(() => [
+    {
+      key: 'oc',
+      label: (
+        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <AccountBalance fontSize="small" />
+          Tabla de Órdenes de Compra
+        </span>
+      ),
+      children: (
+        <TrackingsTable
+          data={sales}
+          loading={loadingSales}
+          onRowClick={handleOcRowClick}
+          onReload={obtainSales}
+        />
+      ),
+    },
+    {
+      key: 'op',
+      label: (
+        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Assignment fontSize="small" />
+          Tabla OP
+        </span>
+      ),
+      children: (
+        <OpTable
+          data={ops}
+          loading={loadingOps}
+          onRowClick={handleOpRowClick}
+          onReload={loadOps}
+        />
+      ),
+    },
+    {
+      key: 'programacion',
+      label: (
+        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Business fontSize="small" />
+          Reporte de Programación
+        </span>
+      ),
+      children: (
+        <>
+          <Space direction="horizontal" style={{ marginBottom: 12 }}>
+            <DatePicker
+              value={dateRange[0]}
+              onChange={(value) => {
+                if (!value) return;
+                setDateRange([value, dateRange[1]]);
+              }}
+              format="DD/MM/YYYY"
+              allowClear={false}
+            />
+            <DatePicker
+              value={dateRange[1]}
+              onChange={(value) => {
+                if (!value) return;
+                setDateRange([dateRange[0], value]);
+              }}
+              format="DD/MM/YYYY"
+              allowClear={false}
+            />
+          </Space>
+
+          <CargosEntregaTable
+            fechaInicio={dateRange[0]!.format('YYYY-MM-DD')}
+            fechaFin={dateRange[1]!.format('YYYY-MM-DD')}
+          />
+        </>
+      ),
+    },
+  ], [sales, loadingSales, handleOcRowClick, obtainSales, ops, loadingOps, handleOpRowClick, loadOps, dateRange]);
+
   return (
     <PageContent
       title="Seguimientos"
     >
-      <Box sx={{ width: '100%' }}>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs
-            value={activeTab}
-            onChange={handleTabChange}
-            aria-label="tabs de seguimientos"
-          >
-            <Tab
-              label={`Tabla de Órdenes de Compra`}
-              icon={<AccountBalance />}
-              iconPosition="start"
-            />
-            <Tab
-              label={`Tabla OP`}
-              icon={<Assignment />}
-              iconPosition="start"
-            />
-            <Tab
-              label={`Reporte de Programación`}
-              icon={<Business />}
-              iconPosition="start"
-            />
-          </Tabs>
-        </Box>
-
-        {/* Tab Panel: Ordenes de Compra */}
-        <div
-          role="tabpanel"
-          hidden={activeTab !== 0}
-          id="tabpanel-oc"
-          aria-labelledby="tab-oc"
-        >
-          {activeTab === 0 && (
-            <Box sx={{ py: 3 }}>
-              <TrackingsTable
-                data={sales}
-                loading={loadingSales}
-                onRowClick={handleOcRowClick}
-                onReload={obtainSales}
-              />
-            </Box>
-          )}
-        </div>
-
-        {/* Tab Panel: Ordenes de Proveedor */}
-        <div
-          role="tabpanel"
-          hidden={activeTab !== 1}
-          id="tabpanel-op"
-          aria-labelledby="tab-op"
-        >
-          {activeTab === 1 && (
-            <Box sx={{ py: 3 }}>
-              <OpTable
-                data={ops}
-                loading={loadingOps}
-                onRowClick={handleOpRowClick}
-                onReload={loadOps}
-              />
-            </Box>
-          )}
-        </div>
-
-        {/* Tab Panel: Reporte de Programación */}
-        <div
-          role="tabpanel"
-          hidden={activeTab !== 2}
-          id="tabpanel-programacion"
-          aria-labelledby="tab-programacion"
-        >
-          {activeTab === 2 && (
-            <Box sx={{ py: 3 }}>
-              <Space direction="horizontal" style={{ marginBottom: 12 }}>
-                <DatePicker
-                  value={dateRange[0]}
-                  onChange={(value) => {
-                    if (!value) return;
-                    setDateRange([value, dateRange[1]]);
-                  }}
-                  format="DD/MM/YYYY"
-                  allowClear={false}
-                />
-                <DatePicker
-                  value={dateRange[1]}
-                  onChange={(value) => {
-                    if (!value) return;
-                    setDateRange([dateRange[0], value]);
-                  }}
-                  format="DD/MM/YYYY"
-                  allowClear={false}
-                />
-              </Space>
-
-              <CargosEntregaTable
-                fechaInicio={dateRange[0]!.format('YYYY-MM-DD')}
-                fechaFin={dateRange[1]!.format('YYYY-MM-DD')}
-              />
-            </Box>
-          )}
-        </div>
-
-      </Box>
+      <Tabs
+        activeKey={activeTab}
+        onChange={handleTabChange}
+        items={tabItems}
+      />
     </PageContent>
   );
 };

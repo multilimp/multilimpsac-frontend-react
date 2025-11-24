@@ -3,7 +3,6 @@ import React, { useMemo, useState } from 'react';
 import { IconButton, Button, Box, Tooltip } from '@mui/material';
 import { PictureAsPdf, Visibility, Contacts } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
-import { Button as AntButton, Space } from 'antd';
 import { formatCurrency, formattedDate } from '@/utils/functions';
 import { ModalStateEnum } from '@/types/global.enum';
 import AntTable, { AntColumnType } from '@/components/AntTable';
@@ -22,7 +21,6 @@ interface CollectionsTableProps {
 const defaultText = ' ';
 
 const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onReload }) => {
-  const [filtroTipoVenta, setFiltroTipoVenta] = useState<string>('estado');
   const [contactsDrawerOpen, setContactsDrawerOpen] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
   const [selectedTitle, setSelectedTitle] = useState<string>('');
@@ -62,15 +60,8 @@ const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRe
       return [];
     }
 
-    // Filtrar por tipo de venta
-    let filteredData = data;
-    if (filtroTipoVenta === 'privada') {
-      filteredData = data.filter(item => item.ventaPrivada === true);
-    } else if (filtroTipoVenta === 'estado') {
-      filteredData = data.filter(item => item.ventaPrivada === false || item.ventaPrivada === null || item.ventaPrivada === undefined);
-    }
-
-    return filteredData.map((item) => {
+    // Los datos ya vienen filtrados desde el componente padre (tabs)
+    return data.map((item) => {
       // Obtener la primera factura
       const firstBilling = Array.isArray(item.facturaciones) && item.facturaciones.length > 0
         ? item.facturaciones[0]
@@ -117,7 +108,7 @@ const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRe
         rawdata: item,
       };
     });
-  }, [data, filtroTipoVenta]);
+  }, [data]);
 
   interface CollectionsRow {
     id?: number;
@@ -321,22 +312,6 @@ const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRe
   ];
   return (
     <div>
-      <div style={{ marginBottom: 16 }}>
-        <Space>
-          <AntButton
-            type={filtroTipoVenta === 'estado' ? 'primary' : 'default'}
-            onClick={() => setFiltroTipoVenta('estado')}
-          >
-            Venta al Estado
-          </AntButton>
-          <AntButton
-            type={filtroTipoVenta === 'privada' ? 'primary' : 'default'}
-            onClick={() => setFiltroTipoVenta('privada')}
-          >
-            Venta Privada
-          </AntButton>
-        </Space>
-      </div>
       <AntTable
         data={formattedData}
         columns={columns}

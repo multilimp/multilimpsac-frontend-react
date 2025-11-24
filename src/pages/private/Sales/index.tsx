@@ -1,17 +1,17 @@
-
-import React, { useState, useMemo, useCallback } from 'react';
-import { Tabs, Tab, Box, Stack } from '@mui/material';
-import { AccountBalance, Business } from '@mui/icons-material';
+import React, { useMemo, useCallback } from 'react';
+import { Stack, Button, Box } from '@mui/material';
+import { Tabs } from 'antd';
+import type { TabsProps } from 'antd';
+import { AccountBalance, Business, Add } from '@mui/icons-material';
 import PageContent from '@/components/PageContent';
 import SalesTable from './components/SalesTable';
-import { Button } from '@mui/material';
-import { Add } from '@mui/icons-material';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 import { useNavigate } from 'react-router-dom';
+import { useTabPersistenceString } from '@/hooks/useTabPersistence';
 
 const SalesPage = () => {
   const { sales, loadingSales, obtainSales, setSaleInputValues } = useGlobalInformation();
-  const [activeTab, setActiveTab] = useState<number>(0);
+  const [activeTab, setActiveTab] = useTabPersistenceString('estado');
   const navigate = useNavigate();
 
   // Filtrar ventas por tipo con memoización
@@ -22,11 +22,6 @@ const SalesPage = () => {
   const ventasPrivadas = useMemo(() => {
     return sales.filter(sale => sale.ventaPrivada);
   }, [sales]);
-
-  // Handler memoizado para cambio de tab
-  const handleTabChange = useCallback((_: React.SyntheticEvent, newValue: number) => {
-    setActiveTab(newValue);
-  }, []);
 
   // Handler para inicializar valores al crear nueva venta
   const handleAddSale = useCallback(() => {
@@ -40,6 +35,43 @@ const SalesPage = () => {
     // Navegar a la página de creación
     navigate('/sales/create');
   }, [setSaleInputValues, navigate]);
+
+  const tabItems: TabsProps['items'] = useMemo(() => [
+    {
+      key: 'estado',
+      label: (
+        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <AccountBalance fontSize="small" />
+          Ventas al Estado
+        </span>
+      ),
+      children: (
+        <SalesTable
+          data={ventasEstado}
+          loading={loadingSales}
+          onReload={obtainSales}
+          isPrivateSales={false}
+        />
+      ),
+    },
+    {
+      key: 'privadas',
+      label: (
+        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Business fontSize="small" />
+          Ventas Privadas
+        </span>
+      ),
+      children: (
+        <SalesTable
+          data={ventasPrivadas}
+          loading={loadingSales}
+          onReload={obtainSales}
+          isPrivateSales={true}
+        />
+      ),
+    },
+  ], [ventasEstado, ventasPrivadas, loadingSales, obtainSales]);
 
   return (
     <PageContent
@@ -55,64 +87,11 @@ const SalesPage = () => {
           Agregar Venta
         </Button>
       </Stack>
-      <Box sx={{ width: '100%' }}>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs
-            value={activeTab}
-            onChange={handleTabChange}
-            aria-label="tabs de ventas"
-          >
-            <Tab
-              label={`Ventas al Estado`}
-              icon={<AccountBalance />}
-              iconPosition="start"
-            />
-            <Tab
-              label={`Ventas Privadas`}
-              icon={<Business />}
-              iconPosition="start"
-            />
-          </Tabs>
-        </Box>
-
-        {/* Tab Panel: Ventas al Estado */}
-        <div
-          role="tabpanel"
-          hidden={activeTab !== 0}
-          id="tabpanel-estado"
-          aria-labelledby="tab-estado"
-        >
-          {activeTab === 0 && (
-            <Box sx={{ py: 3 }}>
-              <SalesTable
-                data={ventasEstado}
-                loading={loadingSales}
-                onReload={obtainSales}
-                isPrivateSales={false}
-              />
-            </Box>
-          )}
-        </div>
-
-        {/* Tab Panel: Ventas Privadas */}
-        <div
-          role="tabpanel"
-          hidden={activeTab !== 1}
-          id="tabpanel-privadas"
-          aria-labelledby="tab-privadas"
-        >
-          {activeTab === 1 && (
-            <Box sx={{ py: 3 }}>
-              <SalesTable
-                data={ventasPrivadas}
-                loading={loadingSales}
-                onReload={obtainSales}
-                isPrivateSales={true}
-              />
-            </Box>
-          )}
-        </div>
-      </Box>
+      <Tabs
+        activeKey={activeTab}
+        onChange={setActiveTab}
+        items={tabItems}
+      />
     </PageContent>
   );
 };

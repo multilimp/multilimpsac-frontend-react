@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Tabs, Button, DatePicker, TabsProps } from 'antd';
+import { AccountBalance, Assignment, CalendarMonth } from '@mui/icons-material';
 import PageContent from '@/components/PageContent';
 import { SaleProps } from '@/services/sales/sales';
 import { ProviderOrderProps } from '@/services/providerOrders/providerOrders';
@@ -15,12 +16,13 @@ import { useNavigate } from 'react-router-dom';
 import { Box, Typography } from '@mui/material';
 import CargosEntregaTable from '@/components/CargosEntregaTable';
 import dayjs from 'dayjs';
+import { useTabPersistenceString } from '@/hooks/useTabPersistence';
 
 const ProviderOrders = () => {
   const navigate = useNavigate();
   const { sales, loadingSales } = useGlobalInformation();
   const [modal, setModal] = useState<ModalStateProps<SaleProps>>(null);
-  const [activeTab, setActiveTab] = useState('oc');
+  const [activeTab, setActiveTab] = useTabPersistenceString('oc'); // Persistir tab en URL
 
   // Estados para el tab de OP
   const [loadingOps, setLoadingOps] = useState(false);
@@ -70,7 +72,12 @@ const ProviderOrders = () => {
   const tabItems: TabsProps['items'] = useMemo(() => [
     {
       key: 'oc',
-      label: 'Tabla de Órdenes de Compra',
+      label: (
+        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <AccountBalance fontSize="small" />
+          Tabla de Órdenes de Compra
+        </span>
+      ),
       children: (
         <ProviderOrdersTable
           loading={loadingSales}
@@ -81,7 +88,12 @@ const ProviderOrders = () => {
     },
     {
       key: 'op',
-      label: 'Tabla OP',
+      label: (
+        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Assignment fontSize="small" />
+          Tabla OP
+        </span>
+      ),
       children: (
         <OpTable
           loading={loadingOps}
@@ -93,7 +105,12 @@ const ProviderOrders = () => {
     },
     {
       key: 'cargos',
-      label: 'Reporte de Programación',
+      label: (
+        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <CalendarMonth fontSize="small" />
+          Reporte de Programación
+        </span>
+      ),
       children: (
         <>
           <Box sx={{ mb: 3 }}>

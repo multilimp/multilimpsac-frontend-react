@@ -1,6 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { Tabs } from 'antd';
 import type { TabsProps } from 'antd';
+import { AccountBalance, Business, CalendarMonth } from '@mui/icons-material';
 import PageContent from '@/components/PageContent';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 import BillingsTable from './components/BillingsTable';
@@ -8,10 +9,12 @@ import { Box, Typography } from '@mui/material';
 import CargosEntregaTable from '@/components/CargosEntregaTable';
 import dayjs from 'dayjs';
 import { DatePicker } from 'antd';
+import { useTabPersistenceString } from '@/hooks/useTabPersistence';
+import { useState } from 'react';
 
 const BillingsPage = () => {
   const { sales, loadingSales, obtainSales } = useGlobalInformation();
-  const [activeTab, setActiveTab] = useState('facturaciones');
+  const [activeTab, setActiveTab] = useTabPersistenceString('facturaciones'); // Persistir tab en URL
 
   // Estados para el tab de Reporte de Programación
   const [fechaInicio, setFechaInicio] = useState(dayjs().startOf('month').format('YYYY-MM-DD'));
@@ -22,7 +25,12 @@ const BillingsPage = () => {
   const items: TabsProps['items'] = useMemo(() => [
     {
       key: 'facturaciones',
-      label: 'Ventas al Estado',
+      label: (
+        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <AccountBalance fontSize="small" />
+          Ventas al Estado
+        </span>
+      ),
       children: (
         <BillingsTable
           data={salesEstado}
@@ -33,7 +41,12 @@ const BillingsPage = () => {
     },
     {
       key: 'ordenCompraPrivada',
-      label: 'Ventas Privadas',
+      label: (
+        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Business fontSize="small" />
+          Ventas Privadas
+        </span>
+      ),
       children: (
         <BillingsTable
           data={salesPrivadas}
@@ -45,7 +58,12 @@ const BillingsPage = () => {
     },
     {
       key: 'cargos',
-      label: 'Reporte de Programación',
+      label: (
+        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <CalendarMonth fontSize="small" />
+          Reporte de Programación
+        </span>
+      ),
       children: (
         <>
           <Box sx={{ mb: 3 }}>
