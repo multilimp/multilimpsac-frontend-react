@@ -80,6 +80,7 @@ import BillingHistory from '@/components/BillingHistory';
 import { BillingProps } from '@/services/billings/billings';
 import { getBillingHistoryByOrdenCompraId } from '@/services/billings/billings.request';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
+import { getClasificacionCliente } from '@/utils/constants';
 
 interface CollectionFormContentProps {
   sale: SaleProps;
@@ -1044,7 +1045,7 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
               {/* Grid minimalista - Exactamente 3 columnas */}
               <Box sx={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(3, 1fr)',
+                gridTemplateColumns: 'repeat(4, 1fr)',
                 gap: 1.5,
                 mb: 2
               }}>
@@ -1101,44 +1102,6 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                     </Typography>
                     <Typography variant="body1" sx={{ fontWeight: 500, color: '#424242', fontSize: '0.9rem' }}>
                       {sale.cliente?.codigoUnidadEjecutora || 'No asignado'}
-                    </Typography>
-                  </CardContent>
-                </Card>
-
-                {/* Card 4: Factura */}
-                <Card sx={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                  border: '1px solid #e0e0e0',
-                  minHeight: '70px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  boxShadow: 'none'
-                }}>
-                  <CardContent sx={{ py: 1, px: 1.5, '&:last-child': { pb: 1 } }}>
-                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.7rem' }}>
-                      Número Factura
-                    </Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 500, color: '#424242', fontSize: '0.9rem' }}>
-                      {sale?.facturacion?.factura || 'Pendiente'}
-                    </Typography>
-                  </CardContent>
-                </Card>
-
-                {/* Card 5: Fecha Factura */}
-                <Card sx={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                  border: '1px solid #e0e0e0',
-                  minHeight: '70px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  boxShadow: 'none'
-                }}>
-                  <CardContent sx={{ py: 1, px: 1.5, '&:last-child': { pb: 1 } }}>
-                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.7rem' }}>
-                      Fecha Factura
-                    </Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 500, color: '#424242', fontSize: '0.9rem' }}>
-                      {sale?.facturacion?.fechaFactura ? formattedDate(sale?.facturacion?.fechaFactura) : 'No registrado'}
                     </Typography>
                   </CardContent>
                 </Card>
@@ -1914,32 +1877,26 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                 <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem' }}>
                   Clasificación
                 </Typography>
-                <Typography
-                  variant="h5"
-                  sx={{
-                    fontWeight: 600,
-                    mt: 0.5,
-                    color: promedioLocal !== null
-                      ? promedioLocal <= 30
-                        ? '#4caf50' // Verde para buen promedio
-                        : promedioLocal <= 60
-                          ? '#ff9800' // Naranja para promedio regular
-                          : '#f44336' // Rojo para mal promedio
-                      : '#757575'
-                  }}
-                >
-                  {promedioLocal !== null
-                    ? promedioLocal <= 30
-                      ? 'Excelente'
-                      : promedioLocal <= 60
-                        ? 'Regular'
-                        : 'Requiere Atención'
-                    : 'Sin datos'
-                  }
-                </Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                  Basado en histórico de pagos
-                </Typography>
+                {(() => {
+                  const clasificacion = getClasificacionCliente(promedioLocal);
+                  return (
+                    <>
+                      <Typography
+                        variant="h5"
+                        sx={{
+                          fontWeight: 600,
+                          mt: 0.5,
+                          color: clasificacion.color
+                        }}
+                      >
+                        {clasificacion.label}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                        {clasificacion.descripcion}
+                      </Typography>
+                    </>
+                  );
+                })()}
               </CardContent>
             </Card>
           </Box>

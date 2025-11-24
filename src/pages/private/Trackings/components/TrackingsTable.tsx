@@ -106,6 +106,9 @@ export const TrackingsTable = ({ data, loading, onRowClick, onReload }: Tracking
       cartaAmpliacion: item?.cartaAmpliacion,
       codigoOcf: codigoOcfValue,
       cue: item?.cliente?.codigoUnidadEjecutora ?? defaultText,
+      oce: item?.documentoOce,
+      ocf: item?.documentoOcf,
+      peruCompras: item?.documentoPeruCompras,
       departamentoEntrega: item?.departamentoEntrega ?? defaultText,
       departamentoCliente: departamentoCliente,
       estadoRolSeguimiento: (item?.estadoRolSeguimiento ?? 'PENDIENTE') as EstadoSeguimientoType,
@@ -196,29 +199,15 @@ export const TrackingsTable = ({ data, loading, onRowClick, onReload }: Tracking
     { title: 'Departamento Cliente', dataIndex: 'departamentoCliente', width: 150, filter: true, sort: true },
     {
       title: 'OCE',
-      dataIndex: 'id',
+      dataIndex: 'oce',
       width: 100,
-      render: (_, record) =>
-        record.rawdata?.documentoOce ? (
-          <IconButton color="error" component="a" href={record.rawdata?.documentoOce} target="_blank">
-            <PictureAsPdf />
-          </IconButton>
-        ) : (
-          defaultText
-        ),
+      document: true,
     },
     {
       title: 'OCF',
-      dataIndex: 'id',
+      dataIndex: 'ocf',
       width: 100,
-      render: (_, record) =>
-        record.rawdata?.documentoOcf ? (
-          <IconButton color="error" component="a" href={record.rawdata?.documentoOcf} target="_blank">
-            <PictureAsPdf />
-          </IconButton>
-        ) : (
-          defaultText
-        ),
+      document: true,
     },
     {
       title: 'Codigo OCF',
@@ -236,24 +225,14 @@ export const TrackingsTable = ({ data, loading, onRowClick, onReload }: Tracking
     { title: 'Fecha Entrega OC', dataIndex: 'fechaEntregaOc', width: 150, filter: true, sort: true },
     { title: 'Fecha Perú Compras', dataIndex: 'fechaPeruCompras', width: 150, filter: true, sort: true },
     {
-      title: 'Perú Compras', dataIndex: 'id', width: 150,
-      render: (_, record) => record.rawdata?.documentoPeruCompras ?
-        <IconButton color="error" component="a" href={record.rawdata?.documentoPeruCompras} target="_blank">
-          <PictureAsPdf />
-        </IconButton> : defaultText
+      title: 'Perú Compras', dataIndex: 'peruCompras', width: 150,
+      document: true,
     },
     {
       title: 'Carta Ampliación',
-      dataIndex: 'id',
+      dataIndex: 'cartaAmpliacion',
       width: 100,
-      render: (_, record) =>
-        record.rawdata?.cartaAmpliacion ? (
-          <IconButton color="error" component="a" href={record.rawdata?.cartaAmpliacion} target="_blank">
-            <PictureAsPdf />
-          </IconButton>
-        ) : (
-          defaultText
-        ),
+      document: true,
     },
     {
       title: 'Fuera de plazo',

@@ -2391,8 +2391,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
           {/* Sección Nota de Cobranzas en Seguimiento por OC */}
           <AntCard
             title="Nota de Cobranzas en Seguimiento por OC"
-            style={{ marginBottom: 24 }}
-            headStyle={{ backgroundColor: '#f0f2f5', fontWeight: 'bold' }}
+            style={{ marginBottom: 24, color: '#1e293b' }}
           >
             <div style={{ marginBottom: 16 }}>
               <TextArea

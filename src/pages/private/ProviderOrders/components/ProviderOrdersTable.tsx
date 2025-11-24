@@ -49,6 +49,8 @@ const ProviderOrdersTable = ({ data, loading, onRowClick }: ProviderOrdersTableP
     codigoOcf: item.codigoOcf ?? defaultText,
     montoVenta: formatCurrency(parseInt(item.montoVenta, 10)),
     cue: item.cliente?.codigoUnidadEjecutora ?? defaultText,
+    oce: item.documentoOce,
+    ocf: item.documentoOcf,
     departamentoEntrega: item.departamentoEntrega ?? defaultText,
   }));
 
@@ -91,29 +93,15 @@ const ProviderOrdersTable = ({ data, loading, onRowClick }: ProviderOrdersTableP
     },
     {
       title: 'OCE',
-      dataIndex: 'id',
+      dataIndex: 'oce',
       width: 100,
-      render: (_, record) =>
-        record.rawdata?.documentoOce ? (
-          <IconButton color="error" component="a" href={record.rawdata?.documentoOce} target="_blank">
-            <PictureAsPdf />
-          </IconButton>
-        ) : (
-          defaultText
-        ),
+      document: true,
     },
     {
       title: 'OCF',
-      dataIndex: 'id',
+      dataIndex: 'ocf',
       width: 100,
-      render: (_, record) =>
-        record.rawdata?.documentoOcf ? (
-          <IconButton color="error" component="a" href={record.rawdata?.documentoOcf} target="_blank">
-            <PictureAsPdf />
-          </IconButton>
-        ) : (
-          defaultText
-        ),
+      document: true,
     },
     {
       title: 'Código OCF',

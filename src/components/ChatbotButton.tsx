@@ -313,7 +313,7 @@ const ChatbotButton: React.FC<ChatbotButtonProps> = ({ onOpen, onClose }) => {
             background: '#f8f9fa'
           }
         }}
-        closeIcon={<CloseOutlined style={{ color: 'white', fontSize: 18 }} />}
+        closeIcon={<CloseOutlined style={{ color: 'gray', fontSize: 18 }} />}
       >
         {/* Acciones Rápidas - Solo cuando no hay mensajes */}
         {messages.length === 1 && quickActions.length > 0 && (

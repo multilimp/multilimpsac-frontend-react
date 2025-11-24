@@ -184,3 +184,69 @@ export const getEstadoCobranzaByKey = (key: keyof typeof ESTADOS_COBRANZA) => ES
 export const estadoBgMap: Record<string, string> = ESTADO_ROL_COLORS;
 export const estadoSeguimientoBgMap: Record<string, string> = ESTADO_SEGUIMIENTO_COLORS;
 export const estadoCobranzaBgMap: Record<string, string> = ESTADO_COBRANZA_COLORS;
+
+// Clasificación de Cliente basada en promedio de cobranza (días)
+export type ClasificacionClienteType = 'EXCELENTE' | 'REGULAR' | 'REQUIERE_ATENCION' | 'SIN_DATOS';
+
+export const CLASIFICACION_CLIENTE = {
+    MUY_BUENO: {
+        key: 'MUY_BUENO' as const,
+        label: 'Muy Bueno',
+        color: '#2e7d32', // Verde oscuro
+        maxDias: 25,
+        descripcion: 'Excelente historial de pagos'
+    },
+    BUENO: {
+        key: 'BUENO' as const,
+        label: 'Bueno',
+        color: '#4caf50', // Verde
+        maxDias: 35,
+        descripcion: 'Buen historial de pagos'
+    },
+    REGULAR: {
+        key: 'REGULAR' as const,
+        label: 'Regular',
+        color: '#ff9800', // Naranja
+        maxDias: 45,
+        descripcion: 'Historial de pagos moderado'
+    },
+    MALO: {
+        key: 'MALO' as const,
+        label: 'Malo',
+        color: '#f44336', // Rojo
+        maxDias: 65,
+        descripcion: 'Historial de pagos deficiente'
+    },
+    MUY_MALO: {
+        key: 'MUY_MALO' as const,
+        label: 'Muy Malo',
+        color: '#b71c1c', // Rojo oscuro
+        maxDias: 90,
+        descripcion: 'Historial de pagos muy deficiente'
+    },
+    CRITICO: {
+        key: 'CRITICO' as const,
+        label: 'Crítico',
+        color: '#4a148c', // Púrpura oscuro
+        maxDias: Infinity,
+        descripcion: 'Requiere atención inmediata'
+    },
+    SIN_DATOS: {
+        key: 'SIN_DATOS' as const,
+        label: 'Sin datos',
+        color: '#757575', // Gris
+        maxDias: null,
+        descripcion: 'Sin información de histórico'
+    }
+} as const;
+
+// Función para obtener clasificación basada en promedio de días
+export const getClasificacionCliente = (promedioDias: number | null): typeof CLASIFICACION_CLIENTE[keyof typeof CLASIFICACION_CLIENTE] => {
+    if (promedioDias === null) return CLASIFICACION_CLIENTE.SIN_DATOS;
+    if (promedioDias <= CLASIFICACION_CLIENTE.MUY_BUENO.maxDias) return CLASIFICACION_CLIENTE.MUY_BUENO;
+    if (promedioDias <= CLASIFICACION_CLIENTE.BUENO.maxDias) return CLASIFICACION_CLIENTE.BUENO;
+    if (promedioDias <= CLASIFICACION_CLIENTE.REGULAR.maxDias) return CLASIFICACION_CLIENTE.REGULAR;
+    if (promedioDias <= CLASIFICACION_CLIENTE.MALO.maxDias) return CLASIFICACION_CLIENTE.MALO;
+    if (promedioDias <= CLASIFICACION_CLIENTE.MUY_MALO.maxDias) return CLASIFICACION_CLIENTE.MUY_MALO;
+    return CLASIFICACION_CLIENTE.CRITICO;
+};

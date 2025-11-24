@@ -325,7 +325,7 @@ const ProviderOrdersListDrawer = ({ handleClose, data, isTreasury = false }: Pro
                               Estado OP
                             </Typography>
                             <Typography variant="body2" fontWeight={500} sx={{ color: alpha('#ffffff', 0.9) }}>
-                              {item.estadoOp || 'PENDIENTE'}
+                              {item.estadoRolOp || 'PENDIENTE'}
                             </Typography>
                           </Box>
                         </Stack>

@@ -97,8 +97,8 @@ const OpTable = ({ data, loading, onRowClick, onReload }: OpTableProps) => {
       tipoEntrega: transporte?.tipoDestino ?? defaultText,
       estadoRolOp: item.estadoRolOp,
       tipoPago: item.tipoPago || null,
-      ordenCompraElectronica: item.ordenCompra?.documentoOce ?? "Sin documento",
-      ordenCompraFisica: item.ordenCompra?.documentoOcf ?? "Sin documento",
+      ordenCompraElectronica: item.ordenCompra?.documentoOce,
+      ordenCompraFisica: item.ordenCompra?.documentoOcf,
     } as OpDataTable;
   });
 
@@ -157,43 +157,13 @@ const OpTable = ({ data, loading, onRowClick, onReload }: OpTableProps) => {
       title: 'OCE',
       dataIndex: 'ordenCompraElectronica',
       width: 150,
-      render: (value: string, record: OpDataTable) => {
-        if (value && value !== "Sin documento") {
-          return (
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<PictureAsPdf />}
-              onClick={() => window.open(value, '_blank')}
-              sx={{ fontSize: '0.75rem', py: 0.25, px: 1 }}
-            >
-              Ver OCE
-            </Button>
-          );
-        }
-        return "Sin documento";
-      }
+      document: true,
     },
     {
       title: 'OCF',
       dataIndex: 'ordenCompraFisica',
       width: 150,
-      render: (value: string, record: OpDataTable) => {
-        if (value && value !== "Sin documento") {
-          return (
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<PictureAsPdf />}
-              onClick={() => window.open(value, '_blank')}
-              sx={{ fontSize: '0.75rem', py: 0.25, px: 1 }}
-            >
-              Ver OCF
-            </Button>
-          );
-        }
-        return "Sin documento";
-      }
+      document: true,
     },
     { title: 'OC Importe Total', dataIndex: 'totalVenta', width: 150, filter: true, sort: true },
     { title: 'Cliente Departamento', dataIndex: 'clienteDepartamento', width: 150, filter: true, sort: true },

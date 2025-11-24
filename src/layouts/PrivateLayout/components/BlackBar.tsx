@@ -127,13 +127,31 @@ const BlackBar = memo(() => {
         label: 'Carta de Ampliación',
         field: 'cartaAmpliacion',
         value: selectedSale?.cartaAmpliacion,
+      },
+      {
+        label: 'Carta de CCI',
+        field: 'cartaCci',
+        value: selectedSale?.cartaCci,
+      },
+      {
+        label: 'Carta de Garantía',
+        field: 'cartaGarantia',
+        value: selectedSale?.cartaGarantia,
       }
     ] : []),
-    ...(selectedSale?.id ? [{
-      label: 'Cargo de Entrega OC',
-      field: 'documentoPeruCompras',
-      value: selectedSale?.documentoPeruCompras,
-    }] : []),
+    ...(selectedSale?.id ? [
+      {
+        label: 'Cargo de Entrega OC',
+        field: 'documentoPeruCompras',
+        value: selectedSale?.documentoPeruCompras,
+      },
+      {
+        label: 'Documento de Cotización',
+        field: 'documentoCotizacion',
+        value: selectedSale?.ordenCompraPrivada?.documentoCotizacion,
+      }
+
+    ] : []),
     // Agrega aquí otros documentos si existen en tu modelo
   ];
 

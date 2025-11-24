@@ -2,7 +2,6 @@ import { Fragment, useEffect, useMemo, useState } from 'react';
 import { Table } from 'antd';
 import dayjs from 'dayjs';
 import { ColumnType, TableProps } from 'antd/es/table';
-import type { SortOrder } from 'antd/es/table/interface';
 import {
   Box,
   Button,
@@ -22,12 +21,13 @@ import {
   Typography,
   useTheme,
 } from '@mui/material';
-import { Bolt, Clear, Close, North, Reorder, Replay, SaveAlt, Search, South, Storage, SwapVert } from '@mui/icons-material';
+import { Bolt, Clear, Close, North, Reorder, Replay, SaveAlt, Search, South, Storage, SwapVert, Description, OpenInNew, FileDownload } from '@mui/icons-material';
 import { removeAccents } from '@/utils/functions';
 
 export interface AntColumnType<T = unknown> extends ColumnType<T> {
   filter?: boolean;
   sort?: boolean;
+  document?: boolean; // Para columnas que muestran enlaces a documentos/archivos
   children?: AntColumnType<T>[];
 }
 
@@ -150,6 +150,44 @@ const AntTable = <T,>(props: AntTablePropsProps<T>) => {
           // };
 
           newColumn.ellipsis = true;
+        }
+
+        // Agregar renderizado de documento si está habilitado
+        if (item.document && !newColumn.render) {
+          newColumn.render = (value: unknown) => {
+            if (!value || value === '' || value === null || value === undefined) {
+              return (
+                <Typography variant="caption" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                  Sin documento
+                </Typography>
+              );
+            }
+            const url = String(value);
+            const fileName = url.split('/').pop() || 'Documento';
+            return (
+              <Tooltip title={`Abrir: ${fileName}`}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<Description />}
+                  endIcon={<OpenInNew sx={{ fontSize: '14px !important' }} />}
+                  onClick={() => window.open(url, '_blank')}
+                  sx={{
+                    textTransform: 'none',
+                    fontSize: '0.75rem',
+                    py: 0.5,
+                    px: 1,
+                    maxWidth: '150px',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Ver
+                </Button>
+              </Tooltip>
+            );
+          };
         }
 
         // Agregar filtro en la cabecera si está habilitado
