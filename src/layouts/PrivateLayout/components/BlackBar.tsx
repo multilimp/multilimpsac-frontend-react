@@ -110,9 +110,23 @@ const BlackBar = memo(() => {
     fetchCurrentAgrupacion();
   }, [selectedSale?.id, selectedSale?.ventaPrivada]);
 
-  const documentosConfig = [
-    // OCE y OCF solo para ventas al estado existentes
-    ...(selectedSale?.id && !selectedSale?.ventaPrivada ? [
+  // Configuración de documentos según tipo de venta
+  const documentosConfig = useMemo(() => {
+    if (!selectedSale?.id) return [];
+
+    const isVentaPrivada = selectedSale?.ventaPrivada;
+
+    // Documentos comunes a ambos tipos de venta
+    const documentosComunes = [
+      {
+        label: 'Cargo de Entrega OC',
+        field: 'documentoPeruCompras',
+        value: selectedSale?.documentoPeruCompras,
+      },
+    ];
+
+    // Documentos específicos para ventas al estado
+    const documentosEstado = [
       {
         label: 'OCE (Orden de Compra Electrónica)',
         field: 'documentoOce',
@@ -137,23 +151,34 @@ const BlackBar = memo(() => {
         label: 'Carta de Garantía',
         field: 'cartaGarantia',
         value: selectedSale?.cartaGarantia,
-      }
-    ] : []),
-    ...(selectedSale?.id ? [
-      {
-        label: 'Cargo de Entrega OC',
-        field: 'documentoPeruCompras',
-        value: selectedSale?.documentoPeruCompras,
       },
+    ];
+
+    // Documentos específicos para ventas privadas
+    const documentosPrivados = [
       {
         label: 'Documento de Cotización',
         field: 'documentoCotizacion',
         value: selectedSale?.ordenCompraPrivada?.documentoCotizacion,
-      }
+      },
+    ];
 
-    ] : []),
-    // Agrega aquí otros documentos si existen en tu modelo
-  ];
+    if (isVentaPrivada) {
+      return [...documentosPrivados, ...documentosComunes];
+    }
+
+    return [...documentosEstado, ...documentosComunes];
+  }, [
+    selectedSale?.id,
+    selectedSale?.ventaPrivada,
+    selectedSale?.documentoOce,
+    selectedSale?.documentoOcf,
+    selectedSale?.cartaAmpliacion,
+    selectedSale?.cartaCci,
+    selectedSale?.cartaGarantia,
+    selectedSale?.documentoPeruCompras,
+    selectedSale?.ordenCompraPrivada?.documentoCotizacion,
+  ]);
 
   const totalDocs = documentosConfig.length;
   const docsPresentes = documentosConfig.filter(doc => !!doc.value).length;
@@ -621,7 +646,24 @@ const BlackBar = memo(() => {
         {selectedSale ? (
           <Stack direction="column" spacing={3}>
             <Stack spacing={0.5}>
-              <Typography sx={{ fontWeight: 600, fontSize: '16px', color: '#eaebee' }}>Órden de Compra</Typography>
+              <Stack direction="row" alignItems="center" justifyContent="space-between">
+                <Typography sx={{ fontWeight: 600, fontSize: '16px', color: '#eaebee' }}>Órden de Compra</Typography>
+                <Box
+                  sx={{
+                    bgcolor: selectedSale?.ventaPrivada ? '#722ed1' : '#1890ff',
+                    color: '#fff',
+                    px: 1.5,
+                    py: 0.5,
+                    borderRadius: 1,
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                  }}
+                >
+                  {selectedSale?.ventaPrivada ? 'Venta Privada' : 'Venta al Estado'}
+                </Box>
+              </Stack>
               <Typography sx={{ fontWeight: 700, fontSize: '30px' }}>{selectedSale.codigoVenta}</Typography>
               <Typography sx={{ fontWeight: 600, fontSize: '16px', color: '#eaebee' }}>Fecha {formattedDate(selectedSale.createdAt)}</Typography>
             </Stack>
@@ -662,7 +704,11 @@ const BlackBar = memo(() => {
               Cliente: {selectedSale?.cliente?.razonSocial ?? '-'}  <br />
               CUE: {selectedSale?.cliente?.codigoUnidadEjecutora ?? '-'} <br />
               Sede: {selectedSale?.cliente?.sede ?? '-'} <br />
-              OCF: {selectedSale?.codigoOcf ?? '-'} <br />
+              {!selectedSale?.ventaPrivada && (
+                <>
+                  OCF: {selectedSale?.codigoOcf ?? '-'} <br />
+                </>
+              )}
             </AccordionStyled>
             <Divider sx={{ borderBottomColor: '#3c4351', my: 0, py: 0 }} />
 
@@ -692,9 +738,9 @@ const BlackBar = memo(() => {
                     </Box>
                   ))}
                 {/* Si no hay documentos */}
-                {![selectedSale?.documentoOce, selectedSale?.documentoOcf, selectedSale?.documentoPeruCompras].some(Boolean) && (
+                {docsPresentes === 0 && (
                   <Typography variant="body2" color="#bababa">
-                    No hay documentos registrados para esta orden de compra.
+                    No hay documentos registrados para esta {selectedSale?.ventaPrivada ? 'venta privada' : 'orden de compra'}.
                   </Typography>
                 )}
               </Stack>

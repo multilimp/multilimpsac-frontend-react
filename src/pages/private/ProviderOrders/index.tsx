@@ -25,16 +25,21 @@ const ProviderOrders = () => {
   // Estados para el tab de OP
   const [loadingOps, setLoadingOps] = useState(false);
   const [ops, setOps] = useState<Array<ProviderOrderProps>>([]);
+  const [opsLoaded, setOpsLoaded] = useState(false); // Flag para saber si ya se cargaron
 
   // Estados para el tab de Reporte de Programación
   const [fechaInicio, setFechaInicio] = useState(dayjs().startOf('month').format('YYYY-MM-DD'));
   const [fechaFin, setFechaFin] = useState(dayjs().format('YYYY-MM-DD'));
 
-  const loadOps = async () => {
+  const loadOps = async (forceReload = false) => {
+    // Si ya está cargado y no es forzado, no recargar
+    if (opsLoaded && !forceReload) return;
+
     try {
       setLoadingOps(true);
       const data = await getAllOrderProviders();
       setOps(data);
+      setOpsLoaded(true);
     } catch (error) {
       console.error('Error loading OPs:', error);
       notification.error({
@@ -47,11 +52,11 @@ const ProviderOrders = () => {
   };
 
   useEffect(() => {
-    // Cargar OPs cuando se cambie al tab de OP o al montar el componente
-    if (activeTab === 'op') {
+    // Cargar OPs solo la primera vez que se accede al tab
+    if (activeTab === 'op' && !opsLoaded) {
       loadOps();
     }
-  }, [activeTab]);
+  }, [activeTab, opsLoaded]);
 
   const handleOpRowClick = (op: ProviderOrderProps) => {
     navigate(`/provider-orders/${op.id}`);
@@ -82,7 +87,7 @@ const ProviderOrders = () => {
           loading={loadingOps}
           data={ops}
           onRowClick={handleOpRowClick}
-          onReload={loadOps}
+          onReload={() => loadOps(true)} // Forzar recarga cuando el usuario lo solicite
         />
       )
     },

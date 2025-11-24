@@ -121,16 +121,14 @@ const InputsThirdStep = ({ form, companyId, isPrivateSale = false, disabledAll =
                   </Form.Item>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                  <Form.Item noStyle shouldUpdate>
-                    {({ getFieldValue, setFieldValue }) => (
-                      <SimpleFileUpload
-                        label="Doc. Cotización"
-                        accept="application/pdf"
-                        value={getFieldValue('documentoCotizacion')}
-                        onChange={(file) => setFieldValue('documentoCotizacion', file)}
-                        editable={!disabledAll}
-                      />
-                    )}
+                  <Form.Item name="documentoCotizacion">
+                    <SimpleFileUpload
+                      label="Doc. Cotización"
+                      accept="application/pdf"
+                      value={form.getFieldValue('documentoCotizacion')}
+                      onChange={(file) => form.setFieldsValue({ documentoCotizacion: file })}
+                      editable={!disabledAll}
+                    />
                   </Form.Item>
                 </Grid>
               </>
