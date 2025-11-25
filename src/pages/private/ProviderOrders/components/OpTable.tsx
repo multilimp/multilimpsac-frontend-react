@@ -94,7 +94,8 @@ const OpTable = ({ data, loading, onRowClick, onReload }: OpTableProps) => {
       fechaEntregaOc: formattedDate(item.ordenCompra?.fechaEntregaOc, undefined, defaultText),
       transporteFechaPago: formattedDate(fechaPagoUltima, undefined, defaultText),
       fechaMaximaEntrega: formattedDate(item.ordenCompra?.fechaMaxForm, undefined, defaultText),
-      tipoEntrega: transporte?.tipoDestino ?? defaultText,
+      tipoEntrega: item?.tipoEntrega ?? defaultText,
+      transporte: transporte ? 'Con Transporte' : 'Sin Transporte',
       estadoRolOp: item.estadoRolOp,
       tipoPago: item.tipoPago || null,
       ordenCompraElectronica: item.ordenCompra?.documentoOce,
@@ -170,7 +171,7 @@ const OpTable = ({ data, loading, onRowClick, onReload }: OpTableProps) => {
     { title: 'RUC Proveedor', dataIndex: 'proveedorRuc', width: 150, filter: true, sort: true },
     { title: 'Razón Social Proveedor', dataIndex: 'proveedorNombre', width: 200, filter: true, sort: true },
     { title: 'Estado Pago Proveedor', dataIndex: 'tipoPago', width: 150, filter: true, sort: true },
-
+    { title: 'Transporte', dataIndex: 'transporte', width: 150, filter: true, sort: true },
     { title: 'RUC Transporte', dataIndex: 'transporteRuc', width: 150, filter: true, sort: true },
     { title: 'Transporte Razón Social', dataIndex: 'transporteNombre', width: 200, filter: true, sort: true },
     { title: 'Numero de Factura Transporte', dataIndex: 'numeroFacturaTransporte', width: 180, filter: true, sort: true },
@@ -178,7 +179,6 @@ const OpTable = ({ data, loading, onRowClick, onReload }: OpTableProps) => {
     { title: 'Flete Cotizado', dataIndex: 'fleteCotizado', width: 150, filter: true, sort: true },
     { title: 'Flete Pagado', dataIndex: 'fletePagado', width: 150, filter: true, sort: true },
     { title: 'Transporte Fecha de Pago', dataIndex: 'transporteFechaPago', width: 180, filter: true, sort: true },
-
     { title: 'Fecha Maxima de Entrega', dataIndex: 'fechaMaximaEntrega', width: 180, filter: true, sort: true },
     { title: 'Fecha Recepción', dataIndex: 'fechaRecepcion', width: 150, filter: true, sort: true },
     { title: 'Fecha de Programación', dataIndex: 'fechaProgramada', width: 150, filter: true, sort: true },

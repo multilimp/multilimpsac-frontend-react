@@ -215,7 +215,6 @@ export const TrackingsTable = ({ data, loading, onRowClick, onReload }: Tracking
       width: 'auto',
       sort: true,
       filter: true,
-      // Sin render: se usa directamente el valor normalizado de formattedData
     },
     { title: 'Número Factura', dataIndex: 'numeroFactura', width: 150, filter: true, sort: true },
     { title: 'Fecha Factura', dataIndex: 'fechaFactura', width: 150, filter: true, sort: true },

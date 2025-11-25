@@ -27,7 +27,6 @@ import { TransportProps } from '@/services/transports/transports';
 import { useState } from 'react';
 import SelectTransportButton from '@/components/SelectTransportButton';
 
-// Opciones para el tipo de entrega (similar a ventas privadas)
 const tipoEntregaOptions = [
   { label: 'Recojo en almacén', value: 'RECOJO_ALMACEN' },
   { label: 'Entrega a domicilio', value: 'ENTREGA_DOMICILIO' },
