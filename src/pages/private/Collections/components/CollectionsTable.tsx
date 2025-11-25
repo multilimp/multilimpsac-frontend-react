@@ -1,7 +1,7 @@
 // src/pages/private/Collections/components/CollectionsTable.tsx
 import React, { useMemo, useState } from 'react';
-import { IconButton, Button, Box, Tooltip } from '@mui/material';
-import { PictureAsPdf, Visibility, Contacts } from '@mui/icons-material';
+import { Button, Box, Tooltip } from '@mui/material';
+import { Visibility, Contacts } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import { formatCurrency, formattedDate } from '@/utils/functions';
 import { ModalStateEnum } from '@/types/global.enum';
@@ -226,51 +226,27 @@ const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRe
     {
       title: 'OCE',
       dataIndex: 'oce',
-      width: 80,
-      render: (value) =>
-        value ? (
-          <IconButton color="error" component="a" href={value} target="_blank" size="small">
-            <PictureAsPdf />
-          </IconButton>
-        ) : (
-          <span>-</span>
-        ),
+      width: 120,
+      document: true,
     },
     {
       title: 'OCF',
       dataIndex: 'ocf',
-      width: 80,
-      render: (value) =>
-        value ? (
-          <IconButton color="error" component="a" href={value} target="_blank" size="small">
-            <PictureAsPdf />
-          </IconButton>
-        ) : (
-          <span>-</span>
-        ),
+      width: 120,
+      document: true,
     },
     { title: 'Código OCF', dataIndex: 'codigo_ocf_numero', width: 120, sort: true, filter: true },
     {
-      title: 'Perú Compras', dataIndex: 'documento_peru_compras', width: 120, render: (value) => value ? (
-        <IconButton color="error" component="a" href={value} target="_blank" size="small">
-          <PictureAsPdf />
-        </IconButton>
-      ) : (
-        <span>-</span>
-      )
+      title: 'Perú Compras',
+      dataIndex: 'documento_peru_compras',
+      width: 120,
+      document: true,
     },
     {
       title: 'Carta Ampliación',
       dataIndex: 'carta_ampliacion',
       width: 100,
-      render: (value) =>
-        value ? (
-          <IconButton color="error" component="a" href={value} target="_blank" size="small">
-            <PictureAsPdf />
-          </IconButton>
-        ) : (
-          <span>-</span>
-        ),
+      document: true,
     },
     {
       title: 'Estado',

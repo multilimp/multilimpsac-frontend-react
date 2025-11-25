@@ -149,8 +149,8 @@ const SalesTable: React.FC<SalesTableProps> = ({ data, loading, onReload, isPriv
     { title: 'Monto Venta', dataIndex: 'monto_venta', width: 200, sort: true, filter: true },
     { title: 'CUE', dataIndex: 'cue', width: 200, sort: true, filter: true },
     { title: 'Dirección Entrega', dataIndex: 'direccion_entrega', width: 300, sort: true, filter: true },
-    { title: 'OCE', dataIndex: 'oce', width: 200, document: true },
-    { title: 'OCF', dataIndex: 'ocf', width: 200, document: true },
+    { title: 'OCE', dataIndex: 'oce', width: 120, document: true },
+    { title: 'OCF', dataIndex: 'ocf', width: 120, document: true },
     { title: 'Fuentes Financiamiento', dataIndex: 'fuentes_financiamiento', width: 200, sort: true, filter: true },
     {
       title: 'Estado',

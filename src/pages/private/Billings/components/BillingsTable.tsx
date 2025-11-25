@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
-import { Button, Box, IconButton, Tooltip } from '@mui/material';
-import { Visibility, PictureAsPdf, Contacts } from '@mui/icons-material';
-import { useNavigate, Link } from 'react-router-dom';
+import { Button, Box, Tooltip } from '@mui/material';
+import { Visibility, Contacts } from '@mui/icons-material';
+import { Link } from 'react-router-dom';
 import { formatCurrency, formattedDate } from '@/utils/functions';
 import AntTable, { AntColumnType } from '@/components/AntTable';
 import { SaleProps } from '@/services/sales/sales';
@@ -81,6 +81,11 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload, 
         ? fullCodigoOcf.split('-').slice(1).join('-').trim()
         : fullCodigoOcf;
 
+      // Datos de venta privada
+      const ordenPrivada = item.ordenCompraPrivada;
+      const estadoFacturaPrivada = ordenPrivada?.estadoFactura || defaultText;
+      const fechaFacturaPrivada = formattedDate(ordenPrivada?.fechaFactura, undefined, defaultText);
+      const documentoFacturaPrivada = ordenPrivada?.documentoPago || null;
 
       return {
         id: item.id,
@@ -105,12 +110,16 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload, 
         ocf: item.documentoOcf || null,
         carta_ampliacion: item.cartaAmpliacion || null,
         estado_facturacion: String(item.estadoFacturacion),
-        estado_indicador: String(item.estadoFacturacion),
+        estado_indicador: privateMode ? estadoFacturaPrivada : String(item.estadoFacturacion),
         refact: refactFirst?.factura ?? defaultText,
+        // Campos específicos de venta privada
+        estado_factura_privada: estadoFacturaPrivada,
+        fecha_factura_privada: fechaFacturaPrivada,
+        documento_factura_privada: documentoFacturaPrivada,
         rawdata: item,
       };
     });
-  }, [data]);
+  }, [data, privateMode]);
 
   interface BillingsRow {
     id: string | number | undefined;
@@ -136,9 +145,14 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload, 
     ocf: string | null;
     carta_ampliacion: string | null;
     refact: string;
+    estado_factura_privada: string;
+    fecha_factura_privada: string;
+    documento_factura_privada: string | null;
   }
-  const columns: Array<AntColumnType<BillingsRow>> = [
-    {
+
+  // Columnas base que se muestran en ambos modos
+  const columns: Array<AntColumnType<BillingsRow>> = useMemo(() => {
+    const indicadorColumn: AntColumnType<BillingsRow> = {
       title: '',
       dataIndex: 'estado_indicador',
       width: 30,
@@ -151,7 +165,6 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload, 
             backgroundColor: `${getStatusBackgroundColor(value)} !important`,
             margin: '-16px !important',
             padding: '6px !important',
-
             '&:hover': {
               backgroundColor: `${getStatusBackgroundColor(value)} !important`,
               opacity: '0.9 !important',
@@ -159,8 +172,9 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload, 
           }}
         />
       ),
-    },
-    {
+    };
+
+    const codigoColumn: AntColumnType<BillingsRow> = {
       title: 'Código OC',
       dataIndex: 'codigo_venta',
       width: 200,
@@ -184,181 +198,174 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload, 
           </Button>
         );
       }
-    },
-    { title: 'Razón Social Cliente', dataIndex: 'razon_social_cliente', width: 250, sort: true, filter: true },
-    { title: 'RUC Cliente', dataIndex: 'ruc_cliente', width: 150, sort: true, filter: true },
-    { title: 'RUC Empresa', dataIndex: 'ruc_empresa', width: 150, sort: true, filter: true },
-    { title: 'Razón Social Empresa', dataIndex: 'razon_social_empresa', width: 250, sort: true, filter: true },
-    {
-      title: 'Contactos',
-      dataIndex: 'id',
-      width: 120,
-      align: 'center',
-      render: (_: unknown, record: BillingsRow) => {
-        if (!record?.rawdata?.id) {
-          return <span>{record.contacto}</span>;
-        }
-        return (
-          <Tooltip title="Ver contactos del cliente">
-            <Button
-              variant="outlined"
-              startIcon={<Contacts />}
-              onClick={() => handleOpenContactsDrawer(record.rawdata.clienteId, `${record.razon_social_cliente} - ${record.ruc_cliente}`)}
-              size="small"
-              color="primary"
-            >
-              Ver
-            </Button>
-          </Tooltip>
-        );
-      }
-      ,
-    },
-    { title: 'Fecha Form', dataIndex: 'fecha_formalizacion', width: 150, sort: true, filter: true },
-    { title: 'Fecha Max Entrega', dataIndex: 'fecha_max_entrega', width: 150, sort: true, filter: true },
+    };
 
-    { title: 'Fecha Entrega OC', dataIndex: 'fecha_entrega_oc', width: 150, sort: true, filter: true },
-    {
-      title: 'Monto Venta', dataIndex: 'monto_venta', width: 150, sort: true, filter: true,
-    },
-    {
-      title: 'OCE', dataIndex: 'oce', width: 80, align: 'center',
-      render: (value) =>
-        value ? (
-          <Tooltip title="Ver Orden de Compra Electrónica" placement="top">
-            <IconButton
-              color="error"
-              component="a"
-              href={value}
-              target="_blank"
-              size="small"
-              sx={{
-                '&:hover': {
-                  bgcolor: 'rgba(211, 47, 47, 0.08)'
-                }
-              }}
-            >
-              <PictureAsPdf />
-            </IconButton>
-          </Tooltip>
-        ) : (
-          <Box sx={{ color: '#94a3b8', fontSize: '0.75rem' }}>-</Box>
-        ),
-    },
-    {
-      title: 'OCF',
-      dataIndex: 'ocf',
-      width: 80,
-      align: 'center',
-      render: (value) =>
-        value ? (
-          <Tooltip title="Ver Orden de Compra Física" placement="top">
-            <IconButton
-              color="error"
-              component="a"
-              href={value}
-              target="_blank"
-              size="small"
-              sx={{
-                '&:hover': {
-                  bgcolor: 'rgba(211, 47, 47, 0.08)'
-                }
-              }}
-            >
-              <PictureAsPdf />
-            </IconButton>
-          </Tooltip>
-        ) : (
-          <Box sx={{ color: '#94a3b8', fontSize: '0.75rem' }}>-</Box>
-        ),
-    },
-
-    {
-      title: 'Codigo OCF',
-      dataIndex: 'codigo_ocf',
-      width: 150,
-      sort: true,
-      filter: true,
-      // Usar valor directo ya normalizado en formattedData, sin render
-    }, {
-      title: 'Carta Ampliación',
-      dataIndex: 'carta_ampliacion',
-      width: 120,
-      align: 'center',
-      render: (value) =>
-        value ? (
-          <Tooltip title="Ver Carta de Ampliación" placement="top">
-            <IconButton
-              color="error"
-              component="a"
-              href={value}
-              target="_blank"
-              size="small"
-              sx={{
-                '&:hover': {
-                  bgcolor: 'rgba(211, 47, 47, 0.08)'
-                }
-              }}
-            >
-              <PictureAsPdf />
-            </IconButton>
-          </Tooltip>
-        ) : (
-          <Box sx={{ color: '#94a3b8', fontSize: '0.75rem' }}>-</Box>
-        ),
-    },
-    { title: 'Fecha Recepción', dataIndex: 'fecha_recepcion', width: 120, sort: true, filter: true },
-    { title: 'Fecha Programación', dataIndex: 'fecha_programacion', width: 150, sort: true, filter: true },
-    { title: 'Etapa SIAF', dataIndex: 'etapa_siaf', width: 150, sort: true, filter: true },
-    {
-      title: 'Número Factura',
-      dataIndex: 'numero_factura',
-      width: 150,
-      sort: true,
-      filter: true,
-    },
-    { title: 'Fecha Factura', dataIndex: 'fecha_factura', width: 150, sort: true, filter: true },
-    { title: 'GRR', dataIndex: 'grr', width: 150, sort: true, filter: true },
-    { title: 'Refact', dataIndex: 'refact', width: 150, sort: true, filter: true },
-    {
-      title: 'Estado Facturación',
-      dataIndex: 'estado_facturacion',
-      width: 150,
-      sort: true,
-      filter: true,
-      render: (value: string) => {
-        if (!value) {
-          return <span>{value}</span>;
-        }
-        return (
-          <Box
-            sx={{
-              width: '100%',
-              backgroundColor: getStatusBackgroundColor(value),
-              color: 'white',
-              textAlign: 'center',
-              borderRadius: '4px',
-              padding: '6px 16px',
-              fontWeight: 600,
-              fontSize: '0.8125rem',
-              textTransform: 'none',
-              boxShadow: `0 2px 8px ${getStatusBackgroundColor(value)}40`,
-              cursor: 'default',
-              transition: 'all 0.2s ease',
-
-              '&:hover': {
-                opacity: 0.9,
-                transform: 'translateY(-1px)',
-                boxShadow: `0 4px 12px ${getStatusBackgroundColor(value)}60`,
-              }
-            }}
-          >
-            {getStatusLabel(value)}
-          </Box>
-        );
+    const clienteColumns: Array<AntColumnType<BillingsRow>> = [
+      { title: 'Razón Social Cliente', dataIndex: 'razon_social_cliente', width: 250, sort: true, filter: true },
+      { title: 'RUC Cliente', dataIndex: 'ruc_cliente', width: 150, sort: true, filter: true },
+      { title: 'RUC Empresa', dataIndex: 'ruc_empresa', width: 150, sort: true, filter: true },
+      { title: 'Razón Social Empresa', dataIndex: 'razon_social_empresa', width: 250, sort: true, filter: true },
+      {
+        title: 'Contactos',
+        dataIndex: 'id',
+        width: 120,
+        align: 'center',
+        render: (_: unknown, record: BillingsRow) => {
+          if (!record?.rawdata?.id) {
+            return <span>{record.contacto}</span>;
+          }
+          return (
+            <Tooltip title="Ver contactos del cliente">
+              <Button
+                variant="outlined"
+                startIcon={<Contacts />}
+                onClick={() => handleOpenContactsDrawer(record.rawdata.clienteId, `${record.razon_social_cliente} - ${record.ruc_cliente}`)}
+                size="small"
+                color="primary"
+              >
+                Ver
+              </Button>
+            </Tooltip>
+          );
+        },
       },
-    },
-  ];
+    ];
+
+    const fechasBasicasColumns: Array<AntColumnType<BillingsRow>> = [
+      { title: 'Fecha Form', dataIndex: 'fecha_formalizacion', width: 150, sort: true, filter: true },
+      { title: 'Fecha Max Entrega', dataIndex: 'fecha_max_entrega', width: 150, sort: true, filter: true },
+      { title: 'Fecha Entrega OC', dataIndex: 'fecha_entrega_oc', width: 150, sort: true, filter: true },
+      { title: 'Monto Venta', dataIndex: 'monto_venta', width: 150, sort: true, filter: true },
+    ];
+
+    // Columnas específicas de Estado (OCE, OCF, Codigo OCF) - NO se muestran en modo privado
+    const estadoColumns: Array<AntColumnType<BillingsRow>> = [
+      {
+        title: 'OCE', dataIndex: 'oce', width: 120,
+        document: true,
+      },
+      {
+        title: 'OCF', dataIndex: 'ocf', width: 120,
+        document: true,
+      },
+      { title: 'Codigo OCF', dataIndex: 'codigo_ocf', width: 150, sort: true, filter: true },
+      {
+        title: 'Carta Ampliación', dataIndex: 'carta_ampliacion', width: 120,
+        document: true,
+      },
+      { title: 'Fecha Recepción', dataIndex: 'fecha_recepcion', width: 120, sort: true, filter: true },
+      { title: 'Fecha Programación', dataIndex: 'fecha_programacion', width: 150, sort: true, filter: true },
+      { title: 'Etapa SIAF', dataIndex: 'etapa_siaf', width: 150, sort: true, filter: true },
+      { title: 'Número Factura', dataIndex: 'numero_factura', width: 150, sort: true, filter: true },
+      { title: 'Fecha Factura', dataIndex: 'fecha_factura', width: 150, sort: true, filter: true },
+      { title: 'GRR', dataIndex: 'grr', width: 150, sort: true, filter: true },
+      { title: 'Refact', dataIndex: 'refact', width: 150, sort: true, filter: true },
+      {
+        title: 'Estado Facturación',
+        dataIndex: 'estado_facturacion',
+        width: 150,
+        sort: true,
+        filter: true,
+        render: (value: string) => {
+          if (!value) {
+            return <span>{value}</span>;
+          }
+          return (
+            <Box
+              sx={{
+                width: '100%',
+                backgroundColor: getStatusBackgroundColor(value),
+                color: 'white',
+                textAlign: 'center',
+                borderRadius: '4px',
+                padding: '6px 16px',
+                fontWeight: 600,
+                fontSize: '0.8125rem',
+                textTransform: 'none',
+                boxShadow: `0 2px 8px ${getStatusBackgroundColor(value)}40`,
+                cursor: 'default',
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  opacity: 0.9,
+                  transform: 'translateY(-1px)',
+                  boxShadow: `0 4px 12px ${getStatusBackgroundColor(value)}60`,
+                }
+              }}
+            >
+              {getStatusLabel(value)}
+            </Box>
+          );
+        },
+      },
+    ];
+
+    // Columnas específicas de Venta Privada
+    const privadaColumns: Array<AntColumnType<BillingsRow>> = [
+      { title: 'Fecha Factura', dataIndex: 'fecha_factura_privada', width: 150, sort: true, filter: true },
+      {
+        title: 'Documento Factura',
+        dataIndex: 'documento_factura_privada',
+        width: 120,
+        document: true,
+      },
+      {
+        title: 'Estado Factura',
+        dataIndex: 'estado_factura_privada',
+        width: 150,
+        sort: true,
+        filter: true,
+        render: (value: string) => {
+          if (!value) {
+            return <Box sx={{ color: '#94a3b8', fontSize: '0.75rem' }}>-</Box>;
+          }
+          return (
+            <Box
+              sx={{
+                width: '100%',
+                backgroundColor: getStatusBackgroundColor(value),
+                color: 'white',
+                textAlign: 'center',
+                borderRadius: '4px',
+                padding: '6px 16px',
+                fontWeight: 600,
+                fontSize: '0.8125rem',
+                textTransform: 'none',
+                boxShadow: `0 2px 8px ${getStatusBackgroundColor(value)}40`,
+                cursor: 'default',
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  opacity: 0.9,
+                  transform: 'translateY(-1px)',
+                  boxShadow: `0 4px 12px ${getStatusBackgroundColor(value)}60`,
+                }
+              }}
+            >
+              {getStatusLabel(value)}
+            </Box>
+          );
+        },
+      },
+    ];
+
+    // Retornar columnas según el modo
+    if (privateMode) {
+      return [
+        indicadorColumn,
+        codigoColumn,
+        ...clienteColumns,
+        ...fechasBasicasColumns,
+        ...privadaColumns,
+      ];
+    }
+
+    return [
+      indicadorColumn,
+      codigoColumn,
+      ...clienteColumns,
+      ...fechasBasicasColumns,
+      ...estadoColumns,
+    ];
+  }, [privateMode]);
 
   return (
     <>
@@ -366,7 +373,7 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload, 
         data={formattedData}
         columns={columns}
         loading={loading}
-        scroll={{ x: 2650 }}
+        scroll={{ x: privateMode ? 1800 : 2650 }}
         size="small"
         onReload={onReload}
         rowKey="id"
