@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Tabs, Button, DatePicker, TabsProps } from 'antd';
+import { Tabs, TabsProps, notification } from 'antd';
 import { AccountBalance, Assignment, CalendarMonth } from '@mui/icons-material';
 import PageContent from '@/components/PageContent';
 import { SaleProps } from '@/services/sales/sales';
@@ -11,11 +11,8 @@ import ProviderOrdersListDrawer from './components/ProviderOrdersListDrawer';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 import { getAllOrderProviders } from '@/services/providerOrders/providerOrders.requests';
 import OpTable from './components/OpTable';
-import { notification } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { Box, Typography } from '@mui/material';
-import CargosEntregaTable from '@/components/CargosEntregaTable';
-import dayjs from 'dayjs';
+import ReporteProgramacion from '@/components/ReporteProgramacion';
 import { useTabPersistenceString } from '@/hooks/useTabPersistence';
 
 const ProviderOrders = () => {
@@ -28,10 +25,6 @@ const ProviderOrders = () => {
   const [loadingOps, setLoadingOps] = useState(false);
   const [ops, setOps] = useState<Array<ProviderOrderProps>>([]);
   const [opsLoaded, setOpsLoaded] = useState(false); // Flag para saber si ya se cargaron
-
-  // Estados para el tab de Reporte de Programación
-  const [fechaInicio, setFechaInicio] = useState(dayjs().startOf('month').format('YYYY-MM-DD'));
-  const [fechaFin, setFechaFin] = useState(dayjs().format('YYYY-MM-DD'));
 
   const loadOps = async (forceReload = false) => {
     // Si ya está cargado y no es forzado, no recargar
@@ -111,41 +104,9 @@ const ProviderOrders = () => {
           Reporte de Programación
         </span>
       ),
-      children: (
-        <>
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="h6" gutterBottom>
-              Seleccionar Período
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
-              <Box>
-                <Typography variant="body2" sx={{ mb: 1 }}>Fecha Inicio</Typography>
-                <DatePicker
-                  value={dayjs(fechaInicio)}
-                  onChange={(date) => setFechaInicio(date?.format('YYYY-MM-DD') || fechaInicio)}
-                  format="DD/MM/YYYY"
-                  placeholder="Seleccionar fecha inicio"
-                />
-              </Box>
-              <Box>
-                <Typography variant="body2" sx={{ mb: 1 }}>Fecha Fin</Typography>
-                <DatePicker
-                  value={dayjs(fechaFin)}
-                  onChange={(date) => setFechaFin(date?.format('YYYY-MM-DD') || fechaFin)}
-                  format="DD/MM/YYYY"
-                  placeholder="Seleccionar fecha fin"
-                />
-              </Box>
-            </Box>
-          </Box>
-          <CargosEntregaTable
-            fechaInicio={fechaInicio}
-            fechaFin={fechaFin}
-          />
-        </>
-      )
+      children: <ReporteProgramacion />
     }
-  ], [loadingSales, filteredSales, loadingOps, ops, handleOpRowClick, loadOps, fechaInicio, fechaFin]);
+  ], [loadingSales, filteredSales, loadingOps, ops, handleOpRowClick, loadOps]);
 
   return (
     <PageContent>

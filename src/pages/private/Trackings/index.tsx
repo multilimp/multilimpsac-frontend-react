@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { Tabs, DatePicker, Space, notification } from 'antd';
+import { Tabs, notification } from 'antd';
 import type { TabsProps } from 'antd';
 import { AccountBalance, Business, Assignment } from '@mui/icons-material';
 import PageContent from '@/components/PageContent';
@@ -9,8 +9,7 @@ import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 import { useNavigate } from 'react-router-dom';
 import { ProviderOrderProps } from '@/services/providerOrders/providerOrders';
 import { getAllOrderProviders } from '@/services/providerOrders/providerOrders.requests';
-import CargosEntregaTable from '@/components/CargosEntregaTable';
-import dayjs from 'dayjs';
+import ReporteProgramacion from '@/components/ReporteProgramacion';
 import { SaleProps } from '@/services/sales/sales';
 import { useTabPersistenceString } from '@/hooks/useTabPersistence';
 
@@ -20,10 +19,6 @@ const TrackingsPage = () => {
   const navigate = useNavigate();
   const [ops, setOps] = useState<Array<ProviderOrderProps>>([]);
   const [loadingOps, setLoadingOps] = useState(false);
-  const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null]>([
-    dayjs().startOf('month'),
-    dayjs().endOf('month'),
-  ]);
 
   // Cargar OPs cuando se cambia a la pestaña de OP
   const loadOps = useCallback(async () => {
@@ -104,37 +99,9 @@ const TrackingsPage = () => {
           Reporte de Programación
         </span>
       ),
-      children: (
-        <>
-          <Space direction="horizontal" style={{ marginBottom: 12 }}>
-            <DatePicker
-              value={dateRange[0]}
-              onChange={(value) => {
-                if (!value) return;
-                setDateRange([value, dateRange[1]]);
-              }}
-              format="DD/MM/YYYY"
-              allowClear={false}
-            />
-            <DatePicker
-              value={dateRange[1]}
-              onChange={(value) => {
-                if (!value) return;
-                setDateRange([dateRange[0], value]);
-              }}
-              format="DD/MM/YYYY"
-              allowClear={false}
-            />
-          </Space>
-
-          <CargosEntregaTable
-            fechaInicio={dateRange[0]!.format('YYYY-MM-DD')}
-            fechaFin={dateRange[1]!.format('YYYY-MM-DD')}
-          />
-        </>
-      ),
+      children: <ReporteProgramacion />,
     },
-  ], [sales, loadingSales, handleOcRowClick, obtainSales, ops, loadingOps, handleOpRowClick, loadOps, dateRange]);
+  ], [sales, loadingSales, handleOcRowClick, obtainSales, ops, loadingOps, handleOpRowClick, loadOps]);
 
   return (
     <PageContent
