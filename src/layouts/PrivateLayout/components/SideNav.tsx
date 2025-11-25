@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Box, IconButton, Tooltip } from '@mui/material';
-import { Menu as MenuIcon, MenuOpen as MenuOpenIcon } from '@mui/icons-material';
+import { Button, Tooltip } from 'antd';
+import { MenuOutlined, MenuFoldOutlined } from '@ant-design/icons';
 import NavigatorList from './NavigatorList';
 import '../../../styles/sidebar.css';
 
@@ -10,21 +10,11 @@ const SideNavbar: React.FC = () => {
   const toggleExpanded = () => setExpanded(!expanded);
 
   return (
-    <Box
-      component="nav"
-      sx={{
-        '--SideNav-width-collapsed': '72px',
-        '--SideNav-width-expanded': '240px',
-        '--SideNav-background': '#01a76a', // Color verde original
-        '--SideNav-color': '#FFFFFF',
-        '--NavItem-hover-background': 'rgba(255, 255, 255, 0.1)',
-        '--NavItem-active-background': 'rgba(255, 255, 255, 0.15)',
-        '--NavItem-icon-color': 'rgba(255,255,255,0.8)',
-        '--NavItem-icon-active-color': '#FFFFFF',
-
-        width: expanded ? 'var(--SideNav-width-expanded)' : 'var(--SideNav-width-collapsed)',
-        bgcolor: 'var(--SideNav-background)',
-        color: 'var(--SideNav-color)',
+    <nav
+      style={{
+        width: expanded ? 240 : 72,
+        backgroundColor: '#01a76a',
+        color: '#FFFFFF',
         display: 'flex',
         flexDirection: 'column',
         height: '100vh',
@@ -38,30 +28,30 @@ const SideNavbar: React.FC = () => {
         zIndex: 0,
       }}
     >
-      <Box
-        sx={{
+      {/* Header con logo */}
+      <div
+        style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          p: 2,
+          padding: 16,
           borderBottom: '1px solid rgba(255,255,255,0.1)',
           minHeight: 64,
         }}
       >
-        <Box
-          component="img"
+        <img
           src="/images/multilimp-logo.svg"
           alt="MultiLimp Logo"
-          sx={{
+          style={{
             height: expanded ? 40 : 36,
             width: 'auto',
             transition: 'height 0.3s ease',
           }}
         />
         {expanded && (
-          <Box
-            sx={{
-              ml: 2,
+          <span
+            style={{
+              marginLeft: 16,
               fontSize: '1.2rem',
               fontWeight: 700,
               color: 'white',
@@ -69,45 +59,47 @@ const SideNavbar: React.FC = () => {
             }}
           >
             MULTILIMPSAC
-          </Box>
+          </span>
         )}
-      </Box>{' '}
+      </div>
+
       {/* Lista de navegación */}
-      <Box
-        sx={{
+      <div
+        style={{
           flex: 1,
           overflow: 'auto',
-          py: 1,
+          paddingTop: 8,
+          paddingBottom: 8,
         }}
         className="sidebar-scroll"
       >
         <NavigatorList expanded={expanded} />
-      </Box>
+      </div>
+
       {/* Botón de toggle en la parte inferior */}
-      <Box
-        sx={{
+      <div
+        style={{
           display: 'flex',
           justifyContent: 'center',
-          p: 2,
+          padding: 16,
           borderTop: '1px solid rgba(255,255,255,0.1)',
         }}
       >
         <Tooltip title={expanded ? 'Contraer menú' : 'Expandir menú'} placement="right">
-          <IconButton
+          <Button
+            type="text"
+            icon={expanded ? <MenuFoldOutlined /> : <MenuOutlined />}
             onClick={toggleExpanded}
-            size="small"
-            sx={{
+            style={{
               color: 'white',
-              '&:hover': {
-                bgcolor: 'rgba(255,255,255,0.1)',
-              },
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
-          >
-            {expanded ? <MenuOpenIcon /> : <MenuIcon />}
-          </IconButton>
+          />
         </Tooltip>
-      </Box>
-    </Box>
+      </div>
+    </nav>
   );
 };
 

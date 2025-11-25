@@ -22,13 +22,15 @@
 }
 
 .sidebar-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(17, 24, 38, 0.7); /* Azul oscuro más intenso en hover */
+  background: rgba(17, 24, 38, 0.7);
+  /* Azul oscuro más intenso en hover */
 }
 
 /* Scroll para Firefox */
 .sidebar-scroll {
   scrollbar-width: thin;
-  scrollbar-color: #01a76a transparent; /* Azul oscuro con transparencia */
+  scrollbar-color: #01a76a transparent;
+  /* Azul oscuro con transparencia */
 }
 
 /* Animación de entrada para los elementos de menú */
@@ -37,6 +39,7 @@
     opacity: 0;
     transform: translateX(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -55,4 +58,14 @@
 
 .MuiTooltip-arrow {
   color: #1e293b !important;
+}
+
+/* Estilos para los items de navegación */
+.nav-item-link {
+  text-decoration: none;
+}
+
+.nav-item-link:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  transform: translateX(4px);
 }

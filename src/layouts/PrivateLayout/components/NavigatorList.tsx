@@ -1,7 +1,7 @@
 import { useAppContext } from '@/context';
 import useSidebarConfig from '@/hooks/useSidebarConfig';
 import { isNavItemActive } from '@/utils/functions';
-import { Box, Divider, Stack, Tooltip, Typography } from '@mui/material';
+import { Tooltip, Divider } from 'antd';
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
@@ -13,43 +13,47 @@ const NavigatorList: React.FC<NavigatorListProps> = ({ expanded }) => {
   const { pathname } = useLocation();
   const { user } = useAppContext();
   const sidebarList = useSidebarConfig(user.role, user.permisos || []);
+
   return (
-    <Box sx={{ width: '100%', px: 1, height: '100%', overflow: 'auto' }}>
-      <Stack spacing={expanded ? 2 : 1}>
+    <div style={{ width: '100%', paddingLeft: 8, paddingRight: 8, height: '100%', overflow: 'auto' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: expanded ? 16 : 8 }}>
         {sidebarList.map((section, sectionIndex) => (
-          <Box key={section.title}>
+          <div key={section.title}>
             {/* Título de sección */}
             {expanded && (
-              <Typography
-                variant="caption"
-                sx={{
+              <span
+                style={{
                   color: 'rgba(255,255,255,0.8)',
                   fontWeight: 600,
                   fontSize: '0.7rem',
                   textTransform: 'uppercase',
                   letterSpacing: 1,
-                  px: 2,
-                  py: 1,
+                  paddingLeft: 16,
+                  paddingRight: 16,
+                  paddingTop: 8,
+                  paddingBottom: 8,
                   display: 'block',
                 }}
               >
                 {section.title}
-              </Typography>
+              </span>
             )}
 
             {/* Divider visual para secciones cuando está colapsado */}
             {!expanded && sectionIndex > 0 && (
               <Divider
-                sx={{
+                style={{
                   borderColor: 'rgba(255,255,255,0.2)',
-                  my: 1,
-                  mx: 2,
+                  marginTop: 8,
+                  marginBottom: 8,
+                  marginLeft: 16,
+                  marginRight: 16,
                 }}
               />
             )}
 
             {/* Rutas de la sección */}
-            <Stack spacing={0.5}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {section.routes.map((route) => (
                 <NavIconButton
                   key={route.path}
@@ -60,11 +64,11 @@ const NavigatorList: React.FC<NavigatorListProps> = ({ expanded }) => {
                   expanded={expanded}
                 />
               ))}
-            </Stack>
-          </Box>
+            </div>
+          </div>
         ))}
-      </Stack>
-    </Box>
+      </div>
+    </div>
   );
 };
 
@@ -79,45 +83,28 @@ interface NavIconButtonProps {
 }
 
 const NavIconButton: React.FC<NavIconButtonProps> = ({ icon: Icon, to, name, active, expanded }) => {
-  const baseStyles = {
+  const baseStyles: React.CSSProperties = {
     width: '100%',
-    p: expanded ? '12px 16px' : '12px',
+    padding: expanded ? '12px 16px' : '12px',
     display: 'flex',
     alignItems: 'center',
-    gap: expanded ? 2 : 0,
-    color: active ? 'var(--NavItem-icon-active-color)' : 'var(--NavItem-icon-color)',
-    bgcolor: active ? 'var(--NavItem-active-background)' : 'transparent',
-    borderRadius: 2,
+    gap: expanded ? 16 : 0,
+    color: active ? '#FFFFFF' : 'rgba(255,255,255,0.8)',
+    backgroundColor: active ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
+    borderRadius: 8,
     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
     textDecoration: 'none',
     position: 'relative',
     overflow: 'hidden',
-    '&:hover': {
-      bgcolor: 'var(--NavItem-hover-background)',
-      transform: 'translateX(4px)',
-      color: '#111826', // Azul oscuro en lugar de azul claro
-    },
-    '&::before': active
-      ? {
-          content: '""',
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          height: '100%',
-          width: '4px',
-          bgcolor: '#111826', // Azul oscuro
-          borderRadius: '0 4px 4px 0',
-        }
-      : {},
+    justifyContent: expanded ? 'flex-start' : 'center'
   };
 
   const content = (
     <>
-      <Icon fontSize="small" />
+      <Icon style={{ fontSize: 20 }} />
       {expanded && (
-        <Typography
-          variant="body2"
-          sx={{
+        <span
+          style={{
             fontWeight: active ? 600 : 400,
             fontSize: '0.875rem',
             whiteSpace: 'nowrap',
@@ -126,27 +113,20 @@ const NavIconButton: React.FC<NavIconButtonProps> = ({ icon: Icon, to, name, act
           }}
         >
           {name}
-        </Typography>
+        </span>
       )}
     </>
   );
 
   return expanded ? (
-    <Box component={Link} to={to} sx={baseStyles}>
+    <Link to={to} style={baseStyles} className="nav-item-link">
       {content}
-    </Box>
+    </Link>
   ) : (
-    <Tooltip title={name} placement="right" arrow>
-      <Box
-        component={Link}
-        to={to}
-        sx={{
-          ...baseStyles,
-          justifyContent: 'center',
-        }}
-      >
+    <Tooltip title={name} placement="right">
+      <Link to={to} style={baseStyles} className="nav-item-link">
         {content}
-      </Box>
+      </Link>
     </Tooltip>
   );
 };
