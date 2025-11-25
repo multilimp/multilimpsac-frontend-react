@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button, Tooltip } from 'antd';
 import { MenuOutlined, MenuFoldOutlined } from '@ant-design/icons';
+import Logo from '@/components/Logo';
 import NavigatorList from './NavigatorList';
 import '../../../styles/sidebar.css';
 
@@ -39,14 +40,10 @@ const SideNavbar: React.FC = () => {
           minHeight: 64,
         }}
       >
-        <img
-          src="/images/multilimp-logo.svg"
-          alt="MultiLimp Logo"
-          style={{
-            height: expanded ? 40 : 36,
-            width: 'auto',
-            transition: 'height 0.3s ease',
-          }}
+        <Logo
+          size={expanded ? 40 : 36}
+          variant="light"
+          style={{ transition: 'height 0.3s ease' }}
         />
         {expanded && (
           <span

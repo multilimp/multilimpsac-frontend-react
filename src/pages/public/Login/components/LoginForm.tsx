@@ -2,22 +2,18 @@ import { useAppContext } from '@/context';
 import StorageService from '@/services/storageService';
 import { authUser } from '@/services/users/user.requests';
 import { EMAIL_PATTERN, STORAGE_KEY } from '@/utils/constants';
-import { HeroInput } from '@/components/ui/HeroInput';
-import { heroUIColors } from '@/styles/theme/heroui-colors';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
-import { Box, IconButton, Stack, Typography, Button } from '@mui/material';
-import { Form } from 'antd';
+import { EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
+import { Form, Input, Button, Typography } from 'antd';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
+const { Title, Text } = Typography;
+
 const LoginForm = () => {
   const { setUser } = useAppContext();
-  const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
   const navigate = useNavigate();
-
-
 
   const handleSubmit = async (values: Record<string, string>) => {
     try {
@@ -39,175 +35,111 @@ const LoginForm = () => {
   };
 
   return (
-    <Box
-      sx={{
-        width: '100%',
-        maxWidth: '380px',
-        mx: 'auto',
-        my: 5,
-        p: 0,
-      }}
-    >
-      {/* Header ultra minimalista */}
-      <Stack spacing={0.5} sx={{ textAlign: 'center', mb: 6 }}>
-        <Typography
-          variant="h3"
-          sx={{
+    <div style={{ width: '100%', maxWidth: 380, margin: '0 auto' }}>
+      {/* Header */}
+      <div style={{ textAlign: 'center', marginBottom: 40 }}>
+        <Title
+          level={2}
+          style={{
+            margin: 0,
+            marginBottom: 8,
             fontWeight: 300,
             fontSize: '2rem',
-            color: heroUIColors.neutral[800],
+            color: '#ffffff',
             letterSpacing: '-0.02em',
           }}
         >
           Iniciar Sesión
-        </Typography>
-        <Typography
-          variant="body2"
-          sx={{
-            color: heroUIColors.neutral[500],
-            fontWeight: 400,
-            fontSize: '0.875rem',
-          }}
-        >
+        </Title>
+        <Text style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.875rem' }}>
           Accede a tu cuenta
-        </Typography>
-      </Stack>
+        </Text>
+      </div>
 
-      {/* Formulario limpio */}
-      <Form form={form} onFinish={handleSubmit} layout="vertical">
-        <Stack spacing={4}>
-          {/* Campo Email - Sin label visible */}
-          <Form.Item
-            name="email"
-            rules={[
-              { required: true, message: 'El email es requerido' },
-              { pattern: EMAIL_PATTERN, message: 'Ingrese un email válido' },
-            ]}
-          >
-            <HeroInput
-              variant="soft"
-              heroSize="large"
-              placeholder="tu.email@multilimp.com"
-              autoComplete="username"
-              disabled={loading}
-              style={{
-                fontSize: '15px',
-                padding: '16px 20px',
-                border: `1px solid ${heroUIColors.neutral[200]}`,
-                borderRadius: '8px',
-                backgroundColor: '#ffffff',
-                transition: 'all 0.2s ease',
-              }}
-            />
-          </Form.Item>
-
-          {/* Campo Contraseña - Sin label visible */}
-          <Form.Item
-            name="password"
-            rules={[{ required: true, message: 'La contraseña es requerida' }]}
-          >
-            <HeroInput
-              variant="soft"
-              heroSize="large"
-              placeholder="Contraseña"
-              autoComplete="current-password"
-              type={show ? 'text' : 'password'}
-              suffix={
-                <IconButton
-                  size="small"
-                  onClick={() => setShow(!show)}
-                  disabled={loading}
-                  sx={{
-                    color: heroUIColors.neutral[400],
-                    transition: 'color 0.2s ease',
-                    '&:hover': {
-                      color: heroUIColors.neutral[600],
-                      backgroundColor: 'transparent',
-                    }
-                  }}
-                >
-                  {show ? <Visibility fontSize="small" /> : <VisibilityOff fontSize="small" />}
-                </IconButton>
-              }
-              disabled={loading}
-              style={{
-                fontSize: '15px',
-                padding: '16px 20px',
-                border: `1px solid ${heroUIColors.neutral[200]}`,
-                borderRadius: '8px',
-                backgroundColor: '#ffffff',
-                transition: 'all 0.2s ease',
-              }}
-            />
-          </Form.Item>
-
-          {/* Botón de envío ultra limpio */}
-          <Button
-            type="submit"
+      {/* Formulario */}
+      <Form form={form} onFinish={handleSubmit} layout="vertical" size="large">
+        <Form.Item
+          name="email"
+          rules={[
+            { required: true, message: 'El email es requerido' },
+            { pattern: EMAIL_PATTERN, message: 'Ingrese un email válido' },
+          ]}
+        >
+          <Input
+            placeholder="tu.email@multilimp.com"
+            autoComplete="username"
             disabled={loading}
-            onClick={() => form.submit()}
-            sx={{
-              width: '100%',
-              height: '48px',
-              fontSize: '15px',
+            style={{
+              height: 52,
+              fontSize: 15,
+              borderRadius: 8,
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              color: 'black',
+            }}
+          />
+        </Form.Item>
+
+        <Form.Item
+          name="password"
+          rules={[{ required: true, message: 'La contraseña es requerida' }]}
+        >
+          <Input.Password
+            placeholder="Contraseña"
+            autoComplete="current-password"
+            disabled={loading}
+            iconRender={(visible) =>
+              visible ? (
+                <EyeOutlined style={{ color: 'black' }} />
+              ) : (
+                <EyeInvisibleOutlined style={{ color: 'black' }} />
+              )
+            }
+            style={{
+              height: 52,
+              fontSize: 15,
+              borderRadius: 8,
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              color: 'black',
+            }}
+          />
+        </Form.Item>
+
+        <Form.Item style={{ marginBottom: 16, marginTop: 32 }}>
+          <Button
+            type="primary"
+            htmlType="submit"
+            loading={loading}
+            block
+            style={{
+              height: 52,
+              fontSize: 15,
               fontWeight: 500,
-              borderRadius: '8px',
-              backgroundColor: heroUIColors.neutral[900],
-              color: '#ffffff',
-              textTransform: 'none',
+              borderRadius: 8,
+              backgroundColor: '#10b981',
               border: 'none',
               boxShadow: 'none',
-              transition: 'all 0.2s ease',
-
-              '&:hover': {
-                backgroundColor: heroUIColors.neutral[800],
-                boxShadow: 'none',
-                transform: 'none',
-              },
-
-              '&:active': {
-                backgroundColor: heroUIColors.neutral[900],
-                transform: 'scale(0.98)',
-              },
-
-              '&:disabled': {
-                backgroundColor: heroUIColors.neutral[300],
-                color: heroUIColors.neutral[500],
-                cursor: 'not-allowed',
-              }
             }}
           >
-            {loading ? 'Iniciando...' : 'Continuar'}
+            {loading ? 'Iniciando...' : 'Ingresar'}
           </Button>
-        </Stack>
+        </Form.Item>
       </Form>
 
-      {/* Información de contacto para soporte */}
-      <Stack alignItems="center" sx={{ mt: 4 }}>
-        <Button
-          component={Link}
+      {/* Link de soporte */}
+      <div style={{ textAlign: 'center', marginTop: 24 }}>
+        <Link
           to="/soporte-acceso"
-          variant="text"
-          size="small"
-          sx={{
-            color: heroUIColors.neutral[500],
-            textTransform: 'none',
-            fontWeight: 400,
+          style={{
+            color: 'rgba(255, 255, 255, 0.5)',
             fontSize: '0.875rem',
             textDecoration: 'none',
-            padding: '4px 8px',
-
-            '&:hover': {
-              color: heroUIColors.neutral[700],
-              backgroundColor: 'transparent',
-              textDecoration: 'none',
-            }
+            transition: 'color 0.2s ease',
           }}
         >
           ¿Problemas para acceder?
-        </Button>
-      </Stack>
-    </Box>
+        </Link>
+      </div>
+    </div>
   );
 };
 
