@@ -98,7 +98,7 @@ const InputsSecondStep = ({ form, isEditing = false, currentSale, isPrivateSale 
           <Fragment>
             {'Actualizado: '}
             <Typography component="span" color="inherit" variant="inherit" fontWeight={600}>
-              {currentSale?.updatedAt ? dayjs(currentSale.updatedAt).format('DD / MM / YYYY') : '---'}
+              {currentSale?.updatedAt ? dayjs(currentSale.updatedAt).format('DD / MM / YYYY HH:mm') : '---'}
             </Typography>
           </Fragment>
         }

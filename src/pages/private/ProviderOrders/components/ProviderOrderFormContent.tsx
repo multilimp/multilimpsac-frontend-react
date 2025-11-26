@@ -837,35 +837,21 @@ const calculateProductTotals = (form: any, fieldName: number) => {
               ) : null
             }
             headerLeft={
-              <Form.Item noStyle shouldUpdate>
-                {({ getFieldValue }) => {
-                  const createdDate = getFieldValue('proveedor')?.createdAt;
-                  return (
-                    <Fragment>
-                      {'Creado: '}
-                      <Typography component="span" color="inherit" variant="inherit" fontWeight={600}>
-                        {createdDate ? dayjs(createdDate).format('DD / MM / YYYY') : '---'}
-                      </Typography>
-                    </Fragment>
-                  );
-                }}
-              </Form.Item>
+              <Fragment>
+                {'Creado: '}
+                <Typography component="span" color="inherit" variant="inherit" fontWeight={600}>
+                  {orderData?.createdAt ? dayjs(orderData.createdAt).format('DD / MM / YYYY HH:mm') : '---'}
+                </Typography>
+              </Fragment>
             }
             headerRight={
               <Stack direction="row" alignItems="center" spacing={2}>
-                <Form.Item noStyle shouldUpdate>
-                  {({ getFieldValue }) => {
-                    const createdDate = getFieldValue('proveedor')?.updatedAt;
-                    return (
-                      <Fragment>
-                        {'Actualizado: '}
-                        <Typography component="span" color="inherit" variant="inherit" fontWeight={600}>
-                          {createdDate ? dayjs(createdDate).format('DD / MM / YYYY') : '---'}
-                        </Typography>
-                      </Fragment>
-                    );
-                  }}
-                </Form.Item>
+                <Fragment>
+                  {'Actualizado: '}
+                  <Typography component="span" color="inherit" variant="inherit" fontWeight={600}>
+                    {orderData?.updatedAt ? dayjs(orderData.updatedAt).format('DD / MM / YYYY HH:mm') : '---'}
+                  </Typography>
+                </Fragment>
               </Stack>
             }
             resumeContent={
