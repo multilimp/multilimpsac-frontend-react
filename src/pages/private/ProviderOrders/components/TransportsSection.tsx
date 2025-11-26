@@ -49,7 +49,7 @@ const getEmptyTransformRecord = () => ({
   transporte: null,
   contacto: null,
   codigoTransporte: null, // Campo para mostrar código generado por el backend
-  destino: null,
+  destino: 'CLIENTE', // Valor por defecto: CLIENTE
   region: '',
   provincia: '',
   distrito: '',
@@ -458,7 +458,7 @@ const TransportsSection = ({ form, isTreasury, isPrivateSale = false, incluyeTra
                         <Form.Item
                           name={[field.name, 'destino']}
                           style={{ margin: 0, minWidth: 130 }}
-                          initialValue="ALMACEN"
+                          initialValue="CLIENTE"
                         >
                           <SelectGeneric
                             label=""

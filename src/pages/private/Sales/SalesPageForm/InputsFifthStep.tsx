@@ -1,5 +1,5 @@
 import { Fragment } from 'react';
-import { Form, Card, Row, Col, Button as AntButton, Typography as AntTypography } from 'antd';
+import { Form, Card, Row, Col, Button as AntButton, Typography as AntTypography, Input } from 'antd';
 import { StepItemContent } from './smallcomponents';
 import { requiredField } from './InputsFirstStep';
 import { Button, FormHelperText, Stack, Typography, Box } from '@mui/material';
@@ -89,9 +89,9 @@ const InputsFifthStep = ({ isPrivateSale = false, disabledAll = false }: { isPri
                           </Text>
                         </div>
                         <Form.Item name={[field.name, 'descripcion']} rules={conditionalRules} style={{ marginBottom: 0 }}>
-                          <InputAntd
+                          <Input.TextArea
                             placeholder="Descripción detallada del producto"
-                            rows={2}
+                            autoSize={{ minRows: 1, maxRows: 8 }}
                             size="large"
                             disabled={disabledAll}
                           />
@@ -154,19 +154,19 @@ const InputsFifthStep = ({ isPrivateSale = false, disabledAll = false }: { isPri
 
               <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 3 }}>
                 {!disabledAll && (
-                <Button
-                  variant="contained"
-                  startIcon={<Add />}
-                  onClick={() => add(generateEmptyProductRecord())}
-                  sx={{
-                    backgroundColor: '#1890ff',
-                    '&:hover': {
-                      backgroundColor: '#40a9ff'
-                    }
-                  }}
-                >
-                  Agregar producto
-                </Button>
+                  <Button
+                    variant="contained"
+                    startIcon={<Add />}
+                    onClick={() => add(generateEmptyProductRecord())}
+                    sx={{
+                      backgroundColor: '#1890ff',
+                      '&:hover': {
+                        backgroundColor: '#40a9ff'
+                      }
+                    }}
+                  >
+                    Agregar producto
+                  </Button>
                 )}
                 {errors.length > 0 && (
                   <FormHelperText error>

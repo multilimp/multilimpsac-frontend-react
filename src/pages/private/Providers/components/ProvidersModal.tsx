@@ -181,10 +181,6 @@ const ProvidersModal: React.FC<ProvidersModalProps> = ({ data, handleClose, hand
               <Grid size={{ xs: 12, sm: 6, md: 6 }}>
                 <Form.Item
                   name="telefono"
-                  rules={[
-                    { min: 7, max: 15, message: 'Ingrese un teléfono o celular válido (7-15 dígitos)' },
-                    { pattern: PHONE_PATTERN, message: 'Ingrese un teléfono o celular válido' },
-                  ]}
                 >
                   <InputAntd label="Tel / Cel" />
                 </Form.Item>

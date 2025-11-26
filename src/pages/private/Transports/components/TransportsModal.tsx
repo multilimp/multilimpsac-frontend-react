@@ -178,8 +178,7 @@ const TransportsModal: React.FC<TransportsModalProps> = ({ data, handleClose, ha
                 <Form.Item
                   name="telefono"
                   rules={[
-                    { min: 7, max: 15, message: 'Ingrese un teléfono o celular válido (7-15 dígitos)' },
-                    { pattern: PHONE_PATTERN, message: 'Ingrese un teléfono o celular válido' },
+                    { message: 'Ingrese un teléfono o celular válido' },
                   ]}
                 >
                   <InputAntd label="Tel / Cel" />
@@ -191,7 +190,7 @@ const TransportsModal: React.FC<TransportsModalProps> = ({ data, handleClose, ha
                 </Form.Item>
               </Grid>
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <Form.Item name="cobertura" rules={[{ required: true, message: 'La cobertura es requerida' }]}>
+                <Form.Item name="cobertura">
                   <InputAntd label="Cobertura" />
                 </Form.Item>
               </Grid>

@@ -6,7 +6,7 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, Typogr
 import SelectRegions from '@/components/selects/SelectRegions';
 import SelectProvinces from '@/components/selects/SelectProvinces';
 import SelectDistricts from '@/components/selects/SelectDistricts';
-import { EMAIL_PATTERN, PHONE_PATTERN } from '@/utils/constants';
+import { EMAIL_PATTERN } from '@/utils/constants';
 import { useEffect, useState } from 'react';
 import { postCompany, putCompany } from '@/services/companies/company.requests';
 import SimpleFileUpload from '@/components/SimpleFileUpload';
@@ -157,8 +157,6 @@ const CompaniesModal = ({ data, handleClose, handleReload }: CompaniesModalProps
                     name="telefono"
                     rules={[
                       { required: true, message: 'El teléfono o celular es requerido' },
-                      { min: 7, max: 15, message: 'Ingrese un teléfono o celular válido (7-15 dígitos)' },
-                      { pattern: PHONE_PATTERN, message: 'Ingrese un teléfono o celular válido' },
                     ]}
                   >
                     <InputAntd label="Tel / Cel" />

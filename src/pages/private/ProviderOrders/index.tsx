@@ -17,7 +17,7 @@ import { useTabPersistenceString } from '@/hooks/useTabPersistence';
 
 const ProviderOrders = () => {
   const navigate = useNavigate();
-  const { sales, loadingSales } = useGlobalInformation();
+  const { sales, loadingSales, obtainSales } = useGlobalInformation();
   const [modal, setModal] = useState<ModalStateProps<SaleProps>>(null);
   const [activeTab, setActiveTab] = useTabPersistenceString('oc'); // Persistir tab en URL
 
@@ -76,6 +76,7 @@ const ProviderOrders = () => {
           loading={loadingSales}
           data={filteredSales}
           onRowClick={(sale) => setModal({ mode: ModalStateEnum.BOX, data: sale })}
+          onReload={obtainSales}
         />
       )
     },

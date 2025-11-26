@@ -91,26 +91,34 @@ const getEmptyProductRecord = (): ProductRecord => ({
 
 const requiredField = { required: true, message: 'Requerido' };
 
-const validateReceptionDate = (_: unknown, value: dayjs.Dayjs | null) => {
-  if (!value) {
+// Función factory para crear validador de fecha de recepción
+const createReceptionDateValidator = (originalDate: dayjs.Dayjs | null) => {
+  return (_: unknown, value: dayjs.Dayjs | null) => {
+    if (!value) {
+      return Promise.resolve();
+    }
+
+    // Si el valor es igual al original (ya guardado), no validar
+    if (originalDate && value.isSame(originalDate)) {
+      return Promise.resolve();
+    }
+
+    // Usar hora local explícitamente
+    const now = dayjs().local();
+    const valueLocal = value.local();
+
+    // Si es un día anterior, rechazar
+    if (valueLocal.startOf('day').isBefore(now.startOf('day'))) {
+      return Promise.reject(new Error('La fecha de recepción no puede ser menor a hoy'));
+    }
+
+    // Si es el mismo día, validar que la hora no sea menor a la actual
+    if (valueLocal.startOf('day').isSame(now.startOf('day')) && valueLocal.isBefore(now)) {
+      return Promise.reject(new Error('La hora de recepción no puede ser menor a la hora actual'));
+    }
+
     return Promise.resolve();
-  }
-
-  // Usar hora local explícitamente
-  const now = dayjs().local();
-  const valueLocal = value.local();
-
-  // Si es un día anterior, rechazar
-  if (valueLocal.startOf('day').isBefore(now.startOf('day'))) {
-    return Promise.reject(new Error('La fecha de recepción no puede ser menor a hoy'));
-  }
-
-  // Si es el mismo día, validar que la hora no sea menor a la actual
-  if (valueLocal.startOf('day').isSame(now.startOf('day')) && valueLocal.isBefore(now)) {
-    return Promise.reject(new Error('La hora de recepción no puede ser menor a la hora actual'));
-  }
-
-  return Promise.resolve();
+  };
 };
 
 const disablePastReceptionDate = (current: any): boolean => {
@@ -315,36 +323,39 @@ const calculateProductTotals = (form: any, fieldName: number) => {
             status: pago.estadoPago ? true : false,
           }))
           : [],
-        transportes: orderData.transportesAsignados?.map(transporte => ({
-          id: transporte.id, // ✅ AGREGADO: ID único para updates
-          transporte: transporte.transporte?.id || transporte.transporteId, // ✅ SINCRONIZACIÓN: Usar ID para select
-          transporteCompleto: transporte.transporte, // ✅ SINCRONIZACIÓN: Objeto completo para información
-          contacto: transporte.contactoTransporte?.id || transporte.contactoTransporteId, // ✅ SINCRONIZACIÓN: Usar ID para select
-          contactoCompleto: transporte.contactoTransporte, // ✅ SINCRONIZACIÓN: Objeto completo para información
-          almacen: transporte.almacen?.id || transporte.almacenId, // ✅ AGREGADO: Mapear almacén
-          almacenCompleto: transporte.almacen, // ✅ AGREGADO: Objeto completo del almacén
-          codigoTransporte: transporte.codigoTransporte, // ✅ AGREGADO: Mapear código de transporte
-          region: transporte.region || '',
-          provincia: transporte.provincia || '',
-          distrito: transporte.distrito || '',
-          destino: transporte.tipoDestino,
-          direccion: transporte.direccion || '',
-          nota: transporte.notaTransporte || '',
-          flete: transporte.montoFlete || '',
-          cotizacion: transporte.cotizacionTransporte || null,
-          estadoPago: transporte.estadoPago || '',
-          notaPago: transporte.notaPago || '',
-          pagosTransporte: Array.isArray(transporte.pagos) && transporte.pagos.length > 0
-            ? (transporte.pagos as any[]).map((pago: any): PagoRecord => ({
-              date: pago.fechaPago ? dayjs(pago.fechaPago) : null,
-              bank: pago.bancoPago || '',
-              description: pago.descripcionPago || '',
-              file: pago.archivoPago || null,
-              amount: pago.montoPago || '',
-              status: pago.estadoPago ? true : false,
-            }))
-            : [],
-        })) || [getEmptyTransformRecord()],
+        transportes: orderData.transportesAsignados
+          ?.slice() // Copia del array para no mutar el original
+          .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) // Ordenar por fecha de creación (menor a mayor)
+          .map(transporte => ({
+            id: transporte.id, // ✅ AGREGADO: ID único para updates
+            transporte: transporte.transporte?.id || transporte.transporteId, // ✅ SINCRONIZACIÓN: Usar ID para select
+            transporteCompleto: transporte.transporte, // ✅ SINCRONIZACIÓN: Objeto completo para información
+            contacto: transporte.contactoTransporte?.id || transporte.contactoTransporteId, // ✅ SINCRONIZACIÓN: Usar ID para select
+            contactoCompleto: transporte.contactoTransporte, // ✅ SINCRONIZACIÓN: Objeto completo para información
+            almacen: transporte.almacen?.id || transporte.almacenId, // ✅ AGREGADO: Mapear almacén
+            almacenCompleto: transporte.almacen, // ✅ AGREGADO: Objeto completo del almacén
+            codigoTransporte: transporte.codigoTransporte, // ✅ AGREGADO: Mapear código de transporte
+            region: transporte.region || '',
+            provincia: transporte.provincia || '',
+            distrito: transporte.distrito || '',
+            destino: transporte.tipoDestino,
+            direccion: transporte.direccion || '',
+            nota: transporte.notaTransporte || '',
+            flete: transporte.montoFlete || '',
+            cotizacion: transporte.cotizacionTransporte || null,
+            estadoPago: transporte.estadoPago || '',
+            notaPago: transporte.notaPago || '',
+            pagosTransporte: Array.isArray(transporte.pagos) && transporte.pagos.length > 0
+              ? (transporte.pagos as any[]).map((pago: any): PagoRecord => ({
+                date: pago.fechaPago ? dayjs(pago.fechaPago) : null,
+                bank: pago.bancoPago || '',
+                description: pago.descripcionPago || '',
+                file: pago.archivoPago || null,
+                amount: pago.montoPago || '',
+                status: pago.estadoPago ? true : false,
+              }))
+              : [],
+          })) || [getEmptyTransformRecord()],
       });
     } else {
       form.setFieldsValue({
@@ -882,7 +893,11 @@ const calculateProductTotals = (form: any, fieldName: number) => {
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                 <Form.Item
                   name="fechaRecepcion"
-                  rules={fromTreasury ? [] : [{ validator: validateReceptionDate }]}
+                  rules={fromTreasury ? [] : [{
+                    validator: createReceptionDateValidator(
+                      orderData?.fechaRecepcion ? dayjs(orderData.fechaRecepcion) : null
+                    )
+                  }]}
                 >
                   <DatePickerAntd
                     label="Fecha de recepción"

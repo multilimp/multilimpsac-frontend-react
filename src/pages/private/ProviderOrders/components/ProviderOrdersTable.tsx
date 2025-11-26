@@ -9,6 +9,7 @@ interface ProviderOrdersTableProps {
   data: Array<SaleProps>;
   loading: boolean;
   onRowClick: (sale: SaleProps) => void;
+  onReload: () => void;
 }
 
 interface ProviderOrdersDataTable {
@@ -31,7 +32,7 @@ interface ProviderOrdersDataTable {
 }
 
 const defaultText = ' ';
-const ProviderOrdersTable = ({ data, loading, onRowClick }: ProviderOrdersTableProps) => {
+const ProviderOrdersTable = ({ data, loading, onRowClick, onReload }: ProviderOrdersTableProps) => {
   const formattedData: Array<ProviderOrdersDataTable> = data.map((item) => ({
     id: item.id,
     rawdata: item,
@@ -178,6 +179,7 @@ const ProviderOrdersTable = ({ data, loading, onRowClick }: ProviderOrdersTableP
       columns={columns}
       data={formattedData}
       loading={loading}
+      onReload={onReload}
     />
   );
 };
