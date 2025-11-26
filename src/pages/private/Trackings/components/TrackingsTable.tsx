@@ -44,6 +44,7 @@ interface TrackingsDataTable {
   fechaFactura: string;
   grr: string;
   refact: string;
+  fuera_plazo: string;
 }
 
 const defaultText = '';
@@ -86,6 +87,18 @@ export const TrackingsTable = ({ data, loading, onRowClick, onReload }: Tracking
       ? fullCodigoOcf.split('-').slice(1).join('-').trim()
       : fullCodigoOcf;
 
+    // Calcular si está fuera de plazo para el filtro
+    const entrega = item?.fechaEntregaOc || item?.fechaEntrega;
+    const max = item?.fechaMaxForm;
+    let fueraPlazoValue = '-';
+    if (entrega && max) {
+      const entregaTime = new Date(entrega).getTime();
+      const maxTime = new Date(max).getTime();
+      if (!Number.isNaN(entregaTime) && !Number.isNaN(maxTime)) {
+        fueraPlazoValue = entregaTime > maxTime ? 'Sí' : 'No';
+      }
+    }
+
     return {
       id: item.id,
       rawdata: item,
@@ -116,6 +129,7 @@ export const TrackingsTable = ({ data, loading, onRowClick, onReload }: Tracking
       fechaFactura,
       grr: grrValue,
       refact: refactNumero,
+      fuera_plazo: fueraPlazoValue,
     };
   });
 
@@ -237,6 +251,7 @@ export const TrackingsTable = ({ data, loading, onRowClick, onReload }: Tracking
       title: 'Fuera de plazo',
       dataIndex: 'fuera_plazo',
       width: 140,
+      filter: true,
       align: 'center',
       render: (_: unknown, record: TrackingsDataTable) => {
         const entrega = record.rawdata?.fechaEntregaOc || record.rawdata?.fechaEntrega;
@@ -308,7 +323,7 @@ export const TrackingsTable = ({ data, loading, onRowClick, onReload }: Tracking
       },
     },
     {
-      title: 'Estado Seguimiento',
+      title: 'Estado',
       dataIndex: 'estadoRolSeguimiento',
       width: 150,
       sort: true,

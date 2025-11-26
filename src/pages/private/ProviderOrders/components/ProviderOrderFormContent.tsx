@@ -96,8 +96,18 @@ const validateReceptionDate = (_: unknown, value: dayjs.Dayjs | null) => {
     return Promise.resolve();
   }
 
-  if (value.startOf('day').isBefore(dayjs().startOf('day'))) {
+  // Usar hora local explícitamente
+  const now = dayjs().local();
+  const valueLocal = value.local();
+
+  // Si es un día anterior, rechazar
+  if (valueLocal.startOf('day').isBefore(now.startOf('day'))) {
     return Promise.reject(new Error('La fecha de recepción no puede ser menor a hoy'));
+  }
+
+  // Si es el mismo día, validar que la hora no sea menor a la actual
+  if (valueLocal.startOf('day').isSame(now.startOf('day')) && valueLocal.isBefore(now)) {
+    return Promise.reject(new Error('La hora de recepción no puede ser menor a la hora actual'));
   }
 
   return Promise.resolve();
@@ -105,7 +115,9 @@ const validateReceptionDate = (_: unknown, value: dayjs.Dayjs | null) => {
 
 const disablePastReceptionDate = (current: any): boolean => {
   if (!current) return false;
-  return current.startOf('day').isBefore(dayjs().startOf('day'));
+  // Usar hora local explícitamente
+  const now = dayjs().local();
+  return current.local().startOf('day').isBefore(now.startOf('day'));
 };
 
 // Función para calcular automáticamente cantidad total y total del producto
