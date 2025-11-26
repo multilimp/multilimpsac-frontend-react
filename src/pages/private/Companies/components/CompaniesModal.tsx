@@ -272,7 +272,7 @@ const CompaniesModal = ({ data, handleClose, handleReload }: CompaniesModalProps
               <Grid container spacing={2}>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <Form.Item name="logo">
-                    <SimpleFileUpload label="Logo de la empresa" accept='.png, .jpg, .jpeg' />
+                    <SimpleFileUpload label="Logo de la empresa" accept='image/*' />
                   </Form.Item>
                 </Grid>
               </Grid>

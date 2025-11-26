@@ -2481,7 +2481,6 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                   >
                     <SimpleFileUpload
                       onChange={(file) => handleOCFieldChange('documentoPeruCompras', file)}
-                      accept="application/pdf"
                     />
                   </Form.Item>
                 </Grid>
@@ -2512,7 +2511,6 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                   >
                     <SimpleFileUpload
                       onChange={(file) => handleOCFieldChange('cartaAmpliacion', file)}
-                      accept="application/pdf"
                     />
                   </Form.Item>
                 </Grid>
@@ -3127,7 +3125,6 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                           <SimpleFileUpload
                             value={transporteFormData.archivoFactura}
                             onChange={(file) => updateTransporteField('archivoFactura', file)}
-                            accept="application/pdf"
                           />
                         </Box>
                         <Box sx={{
@@ -3175,7 +3172,6 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                           <SimpleFileUpload
                             value={transporteFormData.guiaRemision}
                             onChange={(file) => updateTransporteField('guiaRemision', file)}
-                            accept="application/pdf"
                           />
                         </Box>
                         {/* Submit form */}

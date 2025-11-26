@@ -77,7 +77,6 @@ const InputsFirstStep = ({
                 <SimpleFileUpload
                   label="Documento de Factura"
                   onChange={(file) => form.setFieldValue('documentoFactura', file)}
-                  accept="application/pdf"
                   editable={!disableInvoiceFields}
                 />
               </Form.Item>

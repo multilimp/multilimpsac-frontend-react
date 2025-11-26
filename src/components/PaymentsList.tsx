@@ -610,7 +610,7 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
                   ) : (
                     <SimpleFileUpload
                       label=""
-                      accept="application/pdf"
+                      accept="application/pdf,image/*"
                       value={payment.file}
                       onChange={(file) => handleUpdatePayment(index, 'file', file)}
                     />

@@ -25,7 +25,6 @@ import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 import TransportSelectorModal from '@/pages/private/Transports/components/TransportSelectorModal';
 import { TransportProps } from '@/services/transports/transports';
 import { useState } from 'react';
-import SelectTransportButton from '@/components/SelectTransportButton';
 
 const tipoEntregaOptions = [
   { label: 'Recojo en almacén', value: 'RECOJO_ALMACEN' },
@@ -692,11 +691,8 @@ const TransportsSection = ({ form, isTreasury, isPrivateSale = false, incluyeTra
                         <Typography sx={{ textAlign: 'center', mb: 1, fontWeight: 600 }}>Subir Cotización</Typography>
                         <Form.Item
                           name={[field.name, 'cotizacion']}
-                          // Hacer cotización opcional
-                          rules={[]}
                         >
                           <SimpleFileUpload
-                            accept=".pdf,application/pdf"
                           />
                         </Form.Item>
                       </Grid>

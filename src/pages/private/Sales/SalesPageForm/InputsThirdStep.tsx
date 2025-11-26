@@ -124,7 +124,6 @@ const InputsThirdStep = ({ form, companyId, isPrivateSale = false, disabledAll =
                   <Form.Item name="documentoCotizacion">
                     <SimpleFileUpload
                       label="Doc. Cotización"
-                      accept="application/pdf"
                       value={form.getFieldValue('documentoCotizacion')}
                       onChange={(file) => form.setFieldsValue({ documentoCotizacion: file })}
                       editable={!disabledAll}
@@ -177,7 +176,6 @@ const InputsThirdStep = ({ form, companyId, isPrivateSale = false, disabledAll =
                 <Form.Item name="ordenCompraElectronica">
                   <SimpleFileUpload
                     label="Orden de Compra Electrónica (OCE)"
-                    accept="pdf"
                     value={form.getFieldValue('ordenCompraElectronica')}
                     onChange={(file) => form.setFieldsValue({ ordenCompraElectronica: file })}
                     editable={!disabledAll}
@@ -189,7 +187,6 @@ const InputsThirdStep = ({ form, companyId, isPrivateSale = false, disabledAll =
                 <Form.Item name="ordenCompraFisica">
                   <SimpleFileUpload
                     label="Orden de Compra Física (OCF)"
-                    accept="pdf"
                     value={form.getFieldValue('ordenCompraFisica')}
                     onChange={(file) => form.setFieldsValue({ ordenCompraFisica: file })}
                     editable={!disabledAll}
