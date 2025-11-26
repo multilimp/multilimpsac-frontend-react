@@ -327,18 +327,8 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
             <Grid container spacing={3}>
               <Grid size={{ xs: 12, md: 6 }}>
                 <Box sx={{ mb: 2 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 500, color: '#475569' }}>
-                      Carta CCI
-                    </Typography>
-                    {savingCartaCci && (
-                      <Typography variant="caption" sx={{ color: '#667eea', fontStyle: 'italic' }}>
-                        Guardando...
-                      </Typography>
-                    )}
-                  </Box>
                   <SimpleFileUpload
-                    label="Seleccionar archivo PDF"
+                    label="Carta CCI"
                     accept="application/pdf"
                     value={cartaCciUrl}
                     onChange={handleCartaCciChange}
@@ -348,18 +338,8 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
 
               <Grid size={{ xs: 12, md: 6 }}>
                 <Box sx={{ mb: 2 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 500, color: '#475569' }}>
-                      Carta de Garantía
-                    </Typography>
-                    {savingCartaGarantia && (
-                      <Typography variant="caption" sx={{ color: '#667eea', fontStyle: 'italic' }}>
-                        Guardando...
-                      </Typography>
-                    )}
-                  </Box>
                   <SimpleFileUpload
-                    label="Seleccionar archivo PDF"
+                    label="Carta de Garantía"
                     accept="application/pdf"
                     value={cartaGarantiaUrl}
                     onChange={handleCartaGarantiaChange}
