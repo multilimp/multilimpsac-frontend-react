@@ -19,7 +19,8 @@ import {
 import {
   Receipt as ReceiptIcon,
   Refresh as RefreshIcon,
-  Add as AddIcon
+  Add as AddIcon,
+  Visibility as VisibilityIcon
 } from '@mui/icons-material';
 import dayjs from 'dayjs';
 import { BillingProps } from '@/services/billings/billings.d';
@@ -30,6 +31,7 @@ export interface BillingHistoryProps {
   readOnly?: boolean; // en otros apartados debe ser solo lectura
   onCreateNew?: () => void; // visible solo si !readOnly
   onRefactor?: (billing: BillingProps) => void; // visible solo si !readOnly
+  onView?: (billing: BillingProps) => void; // para visualizar detalles de la facturación
   onViewFile?: (fileUrl: string | null | undefined) => void; // opcional; por defecto abre en nueva pestaña
   emptyDescription?: string;
 }
@@ -40,6 +42,7 @@ const BillingHistory: React.FC<BillingHistoryProps> = ({
   readOnly = true,
   onCreateNew,
   onRefactor,
+  onView,
   onViewFile,
   emptyDescription = 'No hay facturaciones registradas',
 }) => {
@@ -106,15 +109,13 @@ const BillingHistory: React.FC<BillingHistoryProps> = ({
                   <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Factura</TableCell>
                   <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Fecha</TableCell>
                   <TableCell sx={{ fontWeight: 600, color: '#475569' }}>GRR</TableCell>
-                  <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Retención</TableCell>
-                  <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Detracción</TableCell>
+                  {/* <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Retención</TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Detracción</TableCell> */}
                   <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Forma Envío</TableCell>
                   <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Archivos</TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Nota de Crédito</TableCell>
                   <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Motivo Refact</TableCell>
-                  <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Tipo</TableCell>
-                  {showActions && (
-                    <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Acciones</TableCell>
-                  )}
+                  <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Acciones</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -136,12 +137,12 @@ const BillingHistory: React.FC<BillingHistoryProps> = ({
                     <TableCell sx={{ color: '#64748b' }}>
                       {billing.grr || 'Sin GRR'}
                     </TableCell>
-                    <TableCell sx={{ color: '#64748b' }}>
+                    {/* <TableCell sx={{ color: '#64748b' }}>
                       {billing.retencion ? `${billing.retencion}%` : '0%'}
                     </TableCell>
                     <TableCell sx={{ color: '#64748b' }}>
                       {billing.detraccion ? `${billing.detraccion}%` : '0%'}
-                    </TableCell>
+                    </TableCell> */}
                     <TableCell sx={{ color: '#64748b' }}>
                       {billing.formaEnvioFactura || 'No especificado'}
                     </TableCell>
@@ -182,14 +183,33 @@ const BillingHistory: React.FC<BillingHistoryProps> = ({
                       </Box>
                     </TableCell>
                     <TableCell sx={{ color: '#64748b' }}>
-                      {billing.motivoRefacturacion || 'Sin motivo'}
+                      {billing.notaCreditoTexto || '-'}
                     </TableCell>
                     <TableCell sx={{ color: '#64748b' }}>
-                      {billing.esRefacturacion ? 'Refacturación' : 'Facturación'}
+                      {billing.motivoRefacturacion || '-'}
                     </TableCell>
-                    {showActions && (
-                      <TableCell>
-                        <Stack direction="row" spacing={1.5}>
+                    <TableCell>
+                      <Stack direction="row" spacing={1}>
+                        {/* Botón Ver */}
+                        <Tooltip title="Ver detalles" arrow placement="top">
+                          <IconButton
+                            size="small"
+                            onClick={() => onView && onView(billing)}
+                            type="button"
+                            sx={{
+                              border: '1px solid #64748b',
+                              color: '#64748b',
+                              '&:hover': {
+                                bgcolor: 'rgba(100, 116, 139, 0.1)'
+                              }
+                            }}
+                            aria-label="Ver detalles"
+                          >
+                            <VisibilityIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        {/* Botón Refacturar - solo si no es refacturación y no es readOnly */}
+                        {showActions && !billing.esRefacturacion && (
                           <Tooltip title="Refacturar" arrow placement="top">
                             <IconButton
                               size="small"
@@ -207,9 +227,9 @@ const BillingHistory: React.FC<BillingHistoryProps> = ({
                               <RefreshIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
-                        </Stack>
-                      </TableCell>
-                    )}
+                        )}
+                      </Stack>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
