@@ -386,18 +386,6 @@ const ProviderOrdersListDrawer = ({ handleClose, data, isTreasury = false }: Pro
                     >
                       Ver Detalle
                     </Button>
-                    {isTreasury !== true && (
-                      <Button
-                        variant="outlined"
-                        color="error"
-                        startIcon={<Delete />}
-                        sx={{
-                          py: 1.5,
-                        }}
-                      >
-                        Eliminar
-                      </Button>
-                    )}
                   </CardActions>
                 </Card>
               ))}

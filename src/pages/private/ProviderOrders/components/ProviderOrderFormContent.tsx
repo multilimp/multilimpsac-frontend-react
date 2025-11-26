@@ -1,6 +1,6 @@
 import { Fragment, useState, useEffect } from 'react';
 import { Form, notification, Spin, Input, InputNumber, Select } from 'antd';
-import { Business, Delete, Add, Inventory, LocalShipping, Print, ArrowBack } from '@mui/icons-material';
+import { Business, Delete, Add, Inventory, LocalShipping, Print, ArrowBack, AddCircleOutline } from '@mui/icons-material';
 import {
   Box,
   Card,
@@ -172,6 +172,9 @@ const calculateProductTotals = (form: any, fieldName: number) => {
   // Estado para lista de órdenes de proveedor de la misma OC
   const [providerOrders, setProviderOrders] = useState<ProviderOrderProps[]>([]);
 
+  // Estado para loading de navegación entre OPs
+  const [navigatingOrderId, setNavigatingOrderId] = useState<number | null>(null);
+
   const empresaValue = Form.useWatch('empresa', form);
 
   const { handlePaymentsUpdate } = usePayments({
@@ -243,8 +246,16 @@ const calculateProductTotals = (form: any, fieldName: number) => {
   useEffect(() => {
     if (orderData?.estadoRolOp) {
       setEstadoRolOp(orderData.estadoRolOp);
+    } else {
+      // Reset para nueva OP
+      setEstadoRolOp('PENDIENTE');
     }
-  }, [orderData?.estadoRolOp]);
+  }, [orderData?.estadoRolOp, orderData?.id]);
+
+  // Resetear navigatingOrderId cuando cambia la OP (navegación completada)
+  useEffect(() => {
+    setNavigatingOrderId(null);
+  }, [orderData?.id]);
 
   // Handler para cambiar el estado y persistir
   const handleEstadoRolOpChange = async (newEstado: EstadoVentaType) => {
@@ -275,6 +286,9 @@ const calculateProductTotals = (form: any, fieldName: number) => {
   };
 
   useEffect(() => {
+    // Resetear formulario primero para limpiar datos anteriores
+    form.resetFields();
+
     if (isEditing && orderData) {
       // Preparar los productos correctamente para el formulario
       const productosFormatted = orderData.productos?.map(producto => {
@@ -391,61 +405,105 @@ const calculateProductTotals = (form: any, fieldName: number) => {
   }, [sale?.id]);
 
   const handleNavigateToOrder = (orderId: number) => {
-    navigate(`/provider-orders/${orderId}`);
+    setNavigatingOrderId(orderId);
+    // Pequeño delay para mostrar el loading antes de navegar
+    setTimeout(() => {
+      navigate(`/provider-orders/${orderId}`);
+    }, 150);
+  };
+
+  const handleCreateNewOp = () => {
+    if (!sale?.id) return;
+    const queryParams = fromTreasury ? '?from=treasury' : '';
+    navigate(`/provider-orders/create${queryParams}`, {
+      state: { fromTreasury, saleData: sale }
+    });
   };
 
   const renderOrderNavigation = () => {
-    if (providerOrders.length <= 1) return null;
+    const showNavigation = providerOrders.length > 1;
+    const showNewOpButton = isEditing && sale?.id;
+
+    if (!showNavigation && !showNewOpButton) return null;
 
     return (
       <Box sx={{ ml: 3, p: 2, bgcolor: '#f8f9fa', borderRadius: 2, border: '1px solid #e9ecef' }}>
-        <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 600, color: '#495057', textAlign: 'center' }}>
-          Órdenes de Proveedor ({providerOrders.length})
-        </Typography>
-        <Stack direction="row" spacing={1} flexWrap="wrap" justifyContent="center">
-          {providerOrders.map((order) => (
+        {showNavigation && (
+          <>
+            <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 600, color: '#495057', textAlign: 'center' }}>
+              Órdenes de Proveedor ({providerOrders.length})
+            </Typography>
+            <Stack direction="row" spacing={1} flexWrap="wrap" justifyContent="center">
+              {providerOrders.map((order) => {
+                const isCurrentOrder = order.id === orderData?.id;
+                const isNavigating = navigatingOrderId === order.id;
+
+                return (
+                  <Button
+                    key={order.id}
+                    size="small"
+                    variant={isCurrentOrder ? "contained" : "outlined"}
+                    onClick={() => handleNavigateToOrder(order.id)}
+                    disabled={isCurrentOrder || navigatingOrderId !== null}
+                    sx={{
+                      minWidth: 'auto',
+                      px: 2,
+                      py: 0.75,
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      textTransform: 'none',
+                      borderRadius: 2,
+                      ...(isCurrentOrder && {
+                        bgcolor: '#1976d2',
+                        color: 'white',
+                        '&:hover': {
+                          bgcolor: '#1565c0',
+                        },
+                        '&.Mui-disabled': {
+                          bgcolor: '#1976d2',
+                          color: 'white',
+                        },
+                      }),
+                      ...(!isCurrentOrder && {
+                        borderColor: isNavigating ? '#1976d2' : '#ced4da',
+                        color: isNavigating ? '#1976d2' : '#495057',
+                        '&:hover': {
+                          bgcolor: '#e9ecef',
+                          borderColor: '#adb5bd',
+                        },
+                      }),
+                    }}
+                  >
+                    {isNavigating ? 'Cargando...' : (order.codigoOp || `OP-${order.id}`)}
+                  </Button>
+                );
+              })}
+            </Stack>
+            <Typography variant="caption" sx={{ mt: 1, display: 'block', textAlign: 'center', color: '#6c757d' }}>
+              OP actual: {orderData?.codigoOp || `OP-${orderData?.id}`}
+            </Typography>
+          </>
+        )}
+
+        {/* Botón para crear nueva OP */}
+        {showNewOpButton && (
+          <Box sx={{ mt: showNavigation ? 2 : 0, textAlign: 'center' }}>
             <Button
-              key={order.id}
               size="small"
-              variant={order.id === orderData?.id ? "contained" : "outlined"}
-              onClick={() => handleNavigateToOrder(order.id)}
-              disabled={order.id === orderData?.id}
+              variant="outlined"
+              color="success"
+              startIcon={<AddCircleOutline />}
+              onClick={handleCreateNewOp}
               sx={{
-                minWidth: 'auto',
-                px: 2,
-                py: 0.75,
-                fontSize: '0.75rem',
-                fontWeight: 600,
                 textTransform: 'none',
+                fontWeight: 600,
                 borderRadius: 2,
-                ...(order.id === orderData?.id && {
-                  bgcolor: '#1976d2',
-                  color: 'white',
-                  '&:hover': {
-                    bgcolor: '#1565c0',
-                  },
-                  '&.Mui-disabled': {
-                    bgcolor: '#1976d2',
-                    color: 'white',
-                  },
-                }),
-                ...(!(order.id === orderData?.id) && {
-                  borderColor: '#ced4da',
-                  color: '#495057',
-                  '&:hover': {
-                    bgcolor: '#e9ecef',
-                    borderColor: '#adb5bd',
-                  },
-                }),
               }}
             >
-              {order.codigoOp || `OP-${order.id}`}
+              Nueva OP
             </Button>
-          ))}
-        </Stack>
-        <Typography variant="caption" sx={{ mt: 1, display: 'block', textAlign: 'center', color: '#6c757d' }}>
-          OP actual: {orderData?.codigoOp || `OP-${orderData?.id}`}
-        </Typography>
+          </Box>
+        )}
       </Box>
     );
   };
