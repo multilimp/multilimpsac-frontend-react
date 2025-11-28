@@ -78,16 +78,6 @@ class ChatbotService {
     }
   }
 
-  async getQuickActions(): Promise<QuickAction[]> {
-    try {
-      const response = await chatbotClient.get('/quick-actions');
-      return response.data;
-    } catch (error) {
-      console.error('Error obteniendo acciones rápidas:', error);
-      return this.getDefaultQuickActions();
-    }
-  }
-
   async getChatHistory(limit: number = 20): Promise<ChatMessage[]> {
     try {
       const response = await chatbotClient.get(`/history?limit=${limit}`);
@@ -107,34 +97,6 @@ class ChatbotService {
     }
   }
 
-  private getDefaultQuickActions(): QuickAction[] {
-    return [
-      {
-        id: 'clientes-activos',
-        title: 'Clientes Activos',
-        description: 'Ver lista de clientes activos',
-        query: 'Muéstrame los clientes activos'
-      },
-      {
-        id: 'ordenes-mes',
-        title: 'Órdenes del Mes',
-        description: 'Órdenes de compra de este mes',
-        query: 'Lista las órdenes de compra de este mes'
-      },
-      {
-        id: 'usuarios-sistema',
-        title: 'Usuarios del Sistema',
-        description: 'Ver todos los usuarios registrados',
-        query: 'Cuántos usuarios hay en el sistema'
-      },
-      {
-        id: 'ventas-resumen',
-        title: 'Resumen de Ventas',
-        description: 'Estadísticas de ventas recientes',
-        query: 'Muéstrame un resumen de las ventas'
-      }
-    ];
-  }
 }
 
 export default new ChatbotService();

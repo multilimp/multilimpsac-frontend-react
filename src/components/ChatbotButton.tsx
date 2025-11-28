@@ -67,22 +67,6 @@ const ChatbotButton: React.FC<ChatbotButtonProps> = ({ onOpen, onClose }) => {
   const [quickActions, setQuickActions] = useState<QuickAction[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Cargar acciones rápidas al abrir el modal
-  useEffect(() => {
-    if (open) {
-      loadQuickActions();
-    }
-  }, [open]);
-
-  const loadQuickActions = async () => {
-    try {
-      const actions = await chatbotService.getQuickActions();
-      setQuickActions(actions);
-    } catch (error) {
-      console.error('Error cargando acciones rápidas:', error);
-    }
-  };
-
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
