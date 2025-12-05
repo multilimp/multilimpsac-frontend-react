@@ -53,7 +53,7 @@ const getEmptyPaymentRecord = (): PaymentItem => ({
   description: '',
   file: null,
   amount: '',
-  status: true,
+  status: false,
 });
 
 const PaymentsList: React.FC<PaymentsListProps> = ({
@@ -504,7 +504,7 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
                     checked={false}
                     disabled={true}
                   >
-                    Activo
+                    Verificado
                   </Checkbox>
                 </div>
               </Col>
@@ -649,7 +649,7 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
                         disabled={isReadonly}
                         onChange={(e) => handleUpdatePayment(index, 'status', e.target.checked)}
                       >
-                        Activo
+                        Verificado
                       </Checkbox>
                     </div>
 

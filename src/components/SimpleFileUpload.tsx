@@ -199,7 +199,7 @@ const SimpleFileUpload = ({
                 fontSize: 14,
                 fontWeight: 400
               }}>
-                {loading ? 'Subiendo...' : isDragging ? 'Soltar aquí' : 'Subir o arrastrar'}
+                {loading ? 'Subiendo...' : isDragging ? 'Soltar aquí' : 'Subir'}
               </Typography>
             </Stack>
           </Stack>
