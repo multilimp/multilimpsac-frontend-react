@@ -1456,7 +1456,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
                 <Grid size={{ xs: 12 }}>
                   <Box>
                     <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-                      Observaciones (Se imprime en el documento)
+                      Observaciones
                     </Typography>
                     <Form.Item name="productosNota">
                       <Input.TextArea
@@ -1475,7 +1475,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
                 <Grid size={{ xs: 12 }}>
                   <Box>
                     <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-                      Nota de Pedido
+                      Otros
                     </Typography>
                     <Form.Item name="observaciones">
                       <Input.TextArea

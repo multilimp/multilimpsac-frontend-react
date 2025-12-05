@@ -301,7 +301,7 @@ export const printOrdenProveedor = async (id: number): Promise<void> => {
       otrosRow = `
         <tr>
           <td class="section-label">OTROS:</td>
-          <td class="section-content">${escapeHtml(data.otros || '')}</td>
+          <td class="section-content">${escapeHtml(data.observaciones || '')}</td>
         </tr>
       `;
     } else {
@@ -331,7 +331,7 @@ export const printOrdenProveedor = async (id: number): Promise<void> => {
       otrosRow = `
         <tr>
           <td class="section-label">OTROS:</td>
-          <td class="section-content"></td>
+          <td class="section-content">${escapeHtml(data.observaciones || '')}</td>
         </tr>
       `;
     }
