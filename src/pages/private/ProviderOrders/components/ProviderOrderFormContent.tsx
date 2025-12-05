@@ -1514,7 +1514,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
                   <PaymentsList
                     title="Pagos Proveedor"
                     payments={getFieldValue('pagosProveedor') || []}
-                    tipoPago={getFieldValue('formaPago')}
+                    tipoPago={getFieldValue('tipoPago')}
                     notaPago={getFieldValue('notaPago') || ''}
                     montoTotal={totalProductos}
                     mode={fromTreasury ? "edit" : "readonly"}
