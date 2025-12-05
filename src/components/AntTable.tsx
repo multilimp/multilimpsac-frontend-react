@@ -21,8 +21,10 @@ import {
   Typography,
   useTheme,
 } from '@mui/material';
-import { Bolt, Clear, Close, North, Reorder, Replay, SaveAlt, Search, South, Storage, SwapVert, Description, OpenInNew, FileDownload } from '@mui/icons-material';
+import { Bolt, Clear, Close, North, Reorder, Replay, SaveAlt, Search, South, Storage, SwapVert, Description, OpenInNew, FileDownload, TableView, TextSnippet } from '@mui/icons-material';
 import { removeAccents } from '@/utils/functions';
+import { utils, writeFile } from 'xlsx';
+import { Menu, MenuItem, ListItemIcon } from '@mui/material';
 
 export interface AntColumnType<T = unknown> extends ColumnType<T> {
   filter?: boolean;
@@ -54,6 +56,7 @@ const AntTable = <T,>(props: AntTablePropsProps<T>) => {
   const [wait, setWait] = useState<NodeJS.Timeout>();
   const [showDrawer, setShowDrawer] = useState(false);
   const [columnsCloned, setColumnsCloned] = useState<Array<AntColumnType<T> & { selected: boolean }>>([]);
+  const [anchorElExport, setAnchorElExport] = useState<null | HTMLElement>(null);
 
 
   // Clave de almacenamiento única por tabla
@@ -272,6 +275,26 @@ const AntTable = <T,>(props: AntTablePropsProps<T>) => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    setAnchorElExport(null);
+  };
+
+  const handleDownloadExcel = () => {
+    const headers = columns.map((item) => String(item.title));
+    const keys = columns.map((item) => String(item.dataIndex));
+
+    const rows = (filteredData as Array<Record<string, unknown>>).map((row) => {
+      const newRow: Record<string, string> = {};
+      keys.forEach((key, index) => {
+        newRow[headers[index]] = String(row[key] ?? '');
+      });
+      return newRow;
+    });
+
+    const worksheet = utils.json_to_sheet(rows);
+    const workbook = utils.book_new();
+    utils.book_append_sheet(workbook, worksheet, 'Data');
+    writeFile(workbook, `data_${dayjs().toISOString()}.xlsx`);
+    setAnchorElExport(null);
   };
 
   const handleClear = () => {
@@ -449,11 +472,33 @@ const AntTable = <T,>(props: AntTablePropsProps<T>) => {
                       <Bolt />
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title="Descargar CSV">
-                    <IconButton color="primary" size="small" onClick={handleDownloadCSV}>
+                  <Tooltip title="Exportar">
+                    <IconButton
+                      color="primary"
+                      size="small"
+                      onClick={(e) => setAnchorElExport(e.currentTarget)}
+                    >
                       <SaveAlt />
                     </IconButton>
                   </Tooltip>
+                  <Menu
+                    anchorEl={anchorElExport}
+                    open={Boolean(anchorElExport)}
+                    onClose={() => setAnchorElExport(null)}
+                  >
+                    <MenuItem onClick={handleDownloadCSV}>
+                      <ListItemIcon>
+                        <TextSnippet fontSize="small" />
+                      </ListItemIcon>
+                      Exportar CSV
+                    </MenuItem>
+                    <MenuItem onClick={handleDownloadExcel}>
+                      <ListItemIcon>
+                        <TableView fontSize="small" />
+                      </ListItemIcon>
+                      Exportar Excel
+                    </MenuItem>
+                  </Menu>
                   <Tooltip title="Limpiar filtros">
                     <IconButton color="error" size="small" onClick={handleClear}>
                       <Clear />
