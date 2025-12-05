@@ -101,6 +101,7 @@
 
         .client-info {
             margin-top: 10px;
+            margin-bottom: 10px;
             width: 97%;
             border-radius: 10px;
             border: 2px solid #ccc;
@@ -116,20 +117,25 @@
             font-weight: bold;
         }
 
-        .products-header {
-            margin-top: 10px;
-            width: 100%;
-            border-radius: 10px;
-            border: 2px solid #aaa;
-        }
-
-        .products-table {
-            margin-top: 10px;
+        .products-header-table {
             width: 100%;
             border-radius: 10px;
             border: 2px solid #ccc;
-            border-collapse: collapse;
+            border-collapse: separate;
+            border-spacing: 0;
             table-layout: fixed;
+            overflow: hidden;
+        }
+
+        .products-body-table {
+            margin-top: 8px;
+            width: 100%;
+            border-radius: 10px;
+            border: 2px solid #ccc;
+            border-collapse: separate;
+            border-spacing: 0;
+            table-layout: fixed;
+            overflow: hidden;
         }
 
         .header-cell {
@@ -137,10 +143,14 @@
             font-weight: bold;
             background-color: #eee;
             font-size: 11px;
-            border-right: 2px solid #eee;
+            border-right: 2px solid #ddd;
             text-align: center;
             margin: 0;
-            padding: 5px;
+            padding: 8px 5px;
+        }
+
+        .header-cell:first-child {
+            border-top-left-radius: 8px;
         }
 
         .header-cell-description {
@@ -148,10 +158,10 @@
             font-weight: bold;
             background-color: #eee;
             font-size: 11px;
-            border-right: 2px solid #eee;
+            border-right: 2px solid #ddd;
             text-align: center;
             margin: 0;
-            padding: 5px;
+            padding: 8px 5px;
         }
 
         .header-cell-last {
@@ -161,15 +171,17 @@
             font-size: 11px;
             text-align: center;
             margin: 0;
-            padding: 5px;
+            padding: 8px 5px;
+            border-top-right-radius: 8px;
         }
 
         .product-cell {
             font-size: 11px;
             border-right: 2px solid #eee;
+            border-bottom: 1px solid #f0f0f0;
             text-align: center;
             margin: 0;
-            padding-top: 10px;
+            padding: 10px 5px;
             vertical-align: top;
             white-space: normal;
             word-break: break-word;
@@ -180,8 +192,9 @@
         .product-cell-description {
             font-size: 11px;
             border-right: 2px solid #eee;
+            border-bottom: 1px solid #f0f0f0;
             margin: 0;
-            padding-top: 10px;
+            padding: 10px 5px;
             vertical-align: top;
             white-space: normal;
             word-break: break-word;
@@ -192,7 +205,8 @@
         .product-cell-last {
             font-size: 11px;
             text-align: center;
-            padding-top: 10px;
+            border-bottom: 1px solid #f0f0f0;
+            padding: 10px 5px;
             vertical-align: top;
             white-space: normal;
             word-break: break-word;
@@ -200,13 +214,20 @@
             box-sizing: border-box;
         }
 
+        /* Eliminar borde inferior en la última fila de productos */
+        tbody tr:last-child .product-cell,
+        tbody tr:last-child .product-cell-description,
+        tbody tr:last-child .product-cell-last {
+            border-bottom: none;
+        }
+
         .total-row {
             width: 100%;
             font-size: 11px;
             text-align: end;
-            padding-top: 5px;
-            padding-bottom: 5px;
+            padding: 10px 15px;
             font-weight: bold;
+            background-color: #f9f9f9;
             border-top: 2px solid #eee;
         }
 
@@ -295,8 +316,8 @@
             <div class="client-ruc">RUC: {{CLIENTE_RUC}}</div>
         </div>
 
-        <!-- Tabla de productos -->
-        <table class="products-table">
+        <!-- Tabla de productos - Cabecera -->
+        <table class="products-header-table">
             <colgroup>
                 <col style="width: 12%">
                 <col style="width: 12%">
@@ -315,8 +336,22 @@
                     <th class="header-cell-last">IMPORTE S/</th>
                 </tr>
             </thead>
+        </table>
+
+        <!-- Tabla de productos - Cuerpo -->
+        <table class="products-body-table">
+            <colgroup>
+                <col style="width: 12%">
+                <col style="width: 12%">
+                <col style="width: 12%">
+                <col style="width: 40%">
+                <col style="width: 12%">
+                <col style="width: 12%">
+            </colgroup>
             <tbody>
                 {{PRODUCTOS_ROWS}}
+            </tbody>
+            <tfoot>
                 <tr>
                     <td colspan="6" class="total-row">TOTAL INCLUYE
                         I.G.V.&nbsp;&nbsp;&nbsp;{{TOTAL_INCLUYE_IGV}}&nbsp;&nbsp;</td>
@@ -324,7 +359,7 @@
                 <tr>
                     <td colspan="6" class="validity-row">Validez de la cotización: {{VALIDEZ_COTIZACION}}</td>
                 </tr>
-            </tbody>
+            </tfoot>
         </table>
 
         <!-- Detalles adicionales -->
