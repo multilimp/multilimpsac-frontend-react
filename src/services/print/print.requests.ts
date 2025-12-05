@@ -475,6 +475,20 @@ export const printCotizacion = async (id: number): Promise<void> => {
 
     const validezCotizacion = '30 días';
 
+    // Generar HTML de cuentas bancarias de la empresa
+    const cuentasBancarias = data.empresa?.cuentasBancarias || [];
+    const cuentasBancariasHtml = cuentasBancarias.length > 0
+      ? cuentasBancarias.map((cuenta: any) => {
+        const tipoCuenta = cuenta.tipoCuenta === 'corriente' ? 'cuenta corriente' : 'cuenta de ahorros';
+        const moneda = cuenta.moneda === 'DOLARES' ? 'dólares' : 'soles';
+        let cuentaHtml = `<b>${escapeHtml(cuenta.banco || '')}:</b> ${tipoCuenta} ${moneda} N° ${escapeHtml(cuenta.numeroCuenta || '')}`;
+        if (cuenta.numeroCci) {
+          cuentaHtml += ` - CCI N° ${escapeHtml(cuenta.numeroCci)}`;
+        }
+        return cuentaHtml;
+      }).join('<br>')
+      : 'No hay cuentas bancarias registradas';
+
     const htmlFinal = fillTemplate(template, {
       CODIGO_COTIZACION: escapeHtml(data.codigoCotizacion || ''),
       LOGO: logoHtml,
@@ -491,6 +505,7 @@ export const printCotizacion = async (id: number): Promise<void> => {
       SECCION_TRANSPORTE: '',
       DESTINO_INFO: destinoInfo,
       OBSERVACIONES_ADICIONALES: escapeHtml(data.notaPedido || ''),
+      CUENTAS_BANCARIAS: cuentasBancariasHtml,
       RUC_FACTURACION: escapeHtml(data.empresa?.ruc || ''),
       RAZON_SOCIAL_FACTURACION: escapeHtml(data.empresa?.razonSocial || ''),
       EMAIL_FACTURACION: escapeHtml(data.empresa?.email || '')

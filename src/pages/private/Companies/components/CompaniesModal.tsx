@@ -1,8 +1,8 @@
-import { Form, notification, Spin } from 'antd';
+import { Form, notification, Spin, Select } from 'antd';
 import InputAntd from '@/components/InputAntd';
 import SubmitButton from '@/components/SubmitButton';
 import { CompanyProps } from '@/services/companies/company';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, Typography, Divider, Box } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, Typography, Divider, Box, IconButton, Card, CardContent } from '@mui/material';
 import SelectRegions from '@/components/selects/SelectRegions';
 import SelectProvinces from '@/components/selects/SelectProvinces';
 import SelectDistricts from '@/components/selects/SelectDistricts';
@@ -10,6 +10,8 @@ import { EMAIL_PATTERN } from '@/utils/constants';
 import { useEffect, useState } from 'react';
 import { postCompany, putCompany } from '@/services/companies/company.requests';
 import SimpleFileUpload from '@/components/SimpleFileUpload';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 interface CompaniesModalProps {
   data?: CompanyProps;
@@ -32,6 +34,7 @@ const CompaniesModal = ({ data, handleClose, handleReload }: CompaniesModalProps
         departamentoId: null,
         provinciaId: null,
         distritoId: null,
+        cuentasBancarias: [{}], // Inicializar con una cuenta vacía
       });
       return;
     }
@@ -47,15 +50,45 @@ const CompaniesModal = ({ data, handleClose, handleReload }: CompaniesModalProps
       direccion: data.direccion,
       direcciones: data.direcciones || '',
       logo: data.logo || '',
+      cuentasBancarias: data.cuentasBancarias && data.cuentasBancarias.length > 0
+        ? data.cuentasBancarias
+        : [{}], // Si no hay cuentas, inicializar con una vacía
       departamentoId: null,
       provinciaId: null,
       distritoId: null,
     });
   }, [data, form]);
 
+  const addBankAccount = () => {
+    const currentAccounts = form.getFieldValue('cuentasBancarias') || [];
+    form.setFieldsValue({
+      cuentasBancarias: [...currentAccounts, {}],
+    });
+  };
+
+  const removeBankAccount = (index: number) => {
+    const currentAccounts = form.getFieldValue('cuentasBancarias') || [];
+    if (currentAccounts.length > 1) {
+      form.setFieldsValue({
+        cuentasBancarias: currentAccounts.filter((_: any, i: number) => i !== index),
+      });
+    }
+  };
+
   const handleSubmit = async (values: Record<string, any>) => {
     try {
       setLoading(true);
+
+      // Filtrar cuentas bancarias válidas (solo banco y número de cuenta requeridos)
+      const cuentasBancariasFiltradas = values.cuentasBancarias?.filter((cuenta: any) =>
+        cuenta.banco && cuenta.numeroCuenta
+      ).map((cuenta: any) => ({
+        ...cuenta,
+        numeroCci: cuenta.cci || null, // Mapear cci a numeroCci para el backend
+        moneda: cuenta.moneda || 'SOLES', // Default a SOLES si no se especifica
+        tipoCuenta: cuenta.tipoCuenta || 'corriente', // Default a corriente
+        titularCuenta: cuenta.titularCuenta || '', // Default vacío
+      })) || [];
 
       // Preparar datos para el backend con nombres de ubicación
       const body = {
@@ -70,6 +103,7 @@ const CompaniesModal = ({ data, handleClose, handleReload }: CompaniesModalProps
         direccion: values.direccion,
         direcciones: values.direcciones,
         logo: values.logo,
+        cuentasBancarias: cuentasBancariasFiltradas,
       };
 
       if (data) {
@@ -258,6 +292,103 @@ const CompaniesModal = ({ data, handleClose, handleReload }: CompaniesModalProps
                   </Form.Item>
                 </Grid>
               </Grid>
+            </Box>
+
+            <Divider sx={{ my: 1.5 }} />
+
+            {/* Sección: Información Bancaria */}
+            <Box sx={{ mb: 2 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                <Typography variant="h6" sx={{ color: 'primary.main', fontWeight: 'bold' }}>
+                  💳 Información Bancaria
+                </Typography>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<AddIcon />}
+                  onClick={addBankAccount}
+                  sx={{ minWidth: 'auto' }}
+                >
+                  Agregar Cuenta
+                </Button>
+              </Box>
+
+              <Form.List name="cuentasBancarias">
+                {(fields, { remove }) => (
+                  <>
+                    {fields.map((field, index) => (
+                      <Card key={field.key} sx={{ mb: 2, position: 'relative' }}>
+                        <CardContent>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                            <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+                              Cuenta Bancaria #{index + 1}
+                            </Typography>
+                            {fields.length > 1 && (
+                              <IconButton
+                                color="error"
+                                size="small"
+                                onClick={() => {
+                                  remove(field.name);
+                                  removeBankAccount(index);
+                                }}
+                              >
+                                <DeleteIcon />
+                              </IconButton>
+                            )}
+                          </Box>
+
+                          <Grid container spacing={2}>
+                            <Grid size={{ xs: 12, sm: 6, md: 6 }}>
+                              <Form.Item
+                                {...field}
+                                name={[field.name, 'banco']}
+                                rules={[{ required: false, message: 'El banco es requerido' }]}
+                              >
+                                <InputAntd label="Banco" />
+                              </Form.Item>
+                            </Grid>
+                            <Grid size={{ xs: 12, sm: 6, md: 6 }}>
+                              <Form.Item
+                                {...field}
+                                name={[field.name, 'numeroCuenta']}
+                                rules={[{ required: false, message: 'El número de cuenta es requerido' }]}
+                              >
+                                <InputAntd label="Número de cuenta" />
+                              </Form.Item>
+                            </Grid>
+                            {/* Campos ocultos - no visibles para el usuario */}
+                            <Form.Item
+                              {...field}
+                              name={[field.name, 'tipoCuenta']}
+                              initialValue="corriente"
+                              style={{ display: 'none' }}
+                            >
+                              <Select style={{ width: '100%' }}>
+                                <Select.Option value="corriente">Cuenta Corriente</Select.Option>
+                                <Select.Option value="ahorros">Cuenta de Ahorros</Select.Option>
+                              </Select>
+                            </Form.Item>
+                            <Form.Item
+                              {...field}
+                              name={[field.name, 'cci']}
+                              style={{ display: 'none' }}
+                            >
+                              <InputAntd />
+                            </Form.Item>
+                            <Form.Item
+                              {...field}
+                              name={[field.name, 'titularCuenta']}
+                              style={{ display: 'none' }}
+                            >
+                              <InputAntd />
+                            </Form.Item>
+                          </Grid>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </>
+                )}
+              </Form.List>
             </Box>
 
             <Divider sx={{ my: 1.5 }} />

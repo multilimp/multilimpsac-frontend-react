@@ -1,5 +1,17 @@
 import { DistrictProps, ProvinceProps, RegionProps } from '../ubigeo/ubigeo';
 
+export interface BankAccount {
+  id?: number;
+  banco: string;
+  numeroCuenta: string;
+  tipoCuenta: 'corriente' | 'ahorros';
+  cci?: string;
+  numeroCci?: string;
+  titularCuenta: string;
+  moneda?: 'SOLES' | 'DOLARES';
+  activa?: boolean;
+}
+
 export interface CompanyProps {
   id: number;
   razonSocial: string;
@@ -13,4 +25,5 @@ export interface CompanyProps {
   direccion: string;
   direcciones?: string;
   logo: string;
+  cuentasBancarias?: BankAccount[];
 }
