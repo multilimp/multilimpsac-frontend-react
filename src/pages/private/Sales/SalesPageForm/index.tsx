@@ -134,7 +134,7 @@ const SalesPageForm = () => {
             provinciaEntrega: saleData.provinciaEntrega,
             distritoEntrega: saleData.distritoEntrega,
             estadoVenta: saleData.estadoVenta || 'PENDIENTE',
-            multipleFuentesFinanciamiento: saleData.multipleFuentesFinanciamiento || false,
+            multipleFuentesFinanciamiento: saleData.multipleFuentesFinanciamiento,
           };
 
           // Si es venta privada, cargar datos específicos
@@ -172,7 +172,7 @@ const SalesPageForm = () => {
               description: '',
               file: null,
               amount: '',
-              status: true,
+              status: false,
             }]);
             setTipoPago(saleData.ordenCompraPrivada.estadoPago || 'PENDIENTE');
             setNotaPago(saleData.ordenCompraPrivada.notaPago || '');
@@ -287,7 +287,7 @@ const SalesPageForm = () => {
             ? (values.fechaSIAF as dayjs.Dayjs).format('YYYY-MM-DD')
             : undefined,
           estadoVenta: values.estadoVenta || 'PENDIENTE',
-          multipleFuentesFinanciamiento: values.multipleFuentesFinanciamiento || false,
+          multipleFuentesFinanciamiento: values.multipleFuentesFinanciamiento,
           documentoOce: values.ordenCompraElectronica || null,
           documentoOcf: values.ordenCompraFisica || null,
           codigoOcf: values.codigoOcf || null,
@@ -302,7 +302,7 @@ const SalesPageForm = () => {
 
           const bodyVentaPrivada = {
             ...baseVentaData,
-            multipleFuentesFinanciamiento: values.multipleFuentesFinanciamiento || false,
+            multipleFuentesFinanciamiento: values.multipleFuentesFinanciamiento,
             ventaPrivada: {
               estadoPago: tipoPago || 'PENDIENTE',
               estadoFactura: values.facturaStatus || 'PENDIENTE',
@@ -407,7 +407,7 @@ const SalesPageForm = () => {
           }),
 
           ventaPrivada: bodyVentaPrivada,
-          multipleFuentesFinanciamiento: values.multipleFuentesFinanciamiento || false,
+          multipleFuentesFinanciamiento: values.multipleFuentesFinanciamiento,
           departamentoEntrega: values.regionEntrega || null,
           provinciaEntrega: values.provinciaEntrega || null,
           distritoEntrega: values.distritoEntrega || null,
