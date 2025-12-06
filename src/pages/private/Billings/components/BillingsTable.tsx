@@ -82,10 +82,10 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload, 
         : fullCodigoOcf;
 
       // Datos de venta privada
-      const ordenPrivada = item.ordenCompraPrivada;
-      const estadoFacturaPrivada = ordenPrivada?.estadoFactura || defaultText;
-      const fechaFacturaPrivada = formattedDate(ordenPrivada?.fechaFactura, undefined, defaultText);
-      const documentoFacturaPrivada = ordenPrivada?.documentoPago || null;
+      // const ordenPrivada = item.ordenCompraPrivada;
+      // const estadoFacturaPrivada = ordenPrivada?.estadoFactura || defaultText;
+      // const fechaFacturaPrivada = formattedDate(ordenPrivada?.fechaFactura, undefined, defaultText);
+      // const documentoFacturaPrivada = ordenPrivada?.documentoPago || null;
 
       return {
         id: item.id,
@@ -110,12 +110,8 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload, 
         ocf: item.documentoOcf || null,
         carta_ampliacion: item.cartaAmpliacion || null,
         estado_facturacion: String(item.estadoFacturacion),
-        estado_indicador: privateMode ? estadoFacturaPrivada : String(item.estadoFacturacion),
+        estado_indicador: String(item.estadoFacturacion),
         refact: refactFirst?.factura ?? defaultText,
-        // Campos específicos de venta privada
-        estado_factura_privada: estadoFacturaPrivada,
-        fecha_factura_privada: fechaFacturaPrivada,
-        documento_factura_privada: documentoFacturaPrivada,
         rawdata: item,
       };
     });
@@ -145,9 +141,6 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload, 
     ocf: string | null;
     carta_ampliacion: string | null;
     refact: string;
-    estado_factura_privada: string;
-    fecha_factura_privada: string;
-    documento_factura_privada: string | null;
   }
 
   // Columnas base que se muestran en ambos modos
@@ -187,7 +180,7 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload, 
         return (
           <Button
             component={Link}
-            to={privateMode ? `/sales/${record.rawdata.id}/edit?from=billing` : `/billing/${record.rawdata.id}`}
+            to={`/billing/${record.rawdata.id}`}
             variant="contained"
             startIcon={<Visibility />}
             size="small"
@@ -348,15 +341,15 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload, 
     ];
 
     // Retornar columnas según el modo
-    if (privateMode) {
-      return [
-        indicadorColumn,
-        codigoColumn,
-        ...clienteColumns,
-        ...fechasBasicasColumns,
-        ...privadaColumns,
-      ];
-    }
+    // if (privateMode) {
+    //   return [
+    //     indicadorColumn,
+    //     codigoColumn,
+    //     ...clienteColumns,
+    //     ...fechasBasicasColumns,
+    //     ...privadaColumns,
+    //   ];
+    // }
 
     return [
       indicadorColumn,
@@ -373,7 +366,6 @@ const BillingsTable: React.FC<BillingsTableProps> = ({ data, loading, onReload, 
         data={formattedData}
         columns={columns}
         loading={loading}
-        scroll={{ x: privateMode ? 1800 : 2650 }}
         size="small"
         onReload={onReload}
         rowKey="id"
