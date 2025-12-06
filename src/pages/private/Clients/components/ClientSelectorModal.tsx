@@ -17,7 +17,7 @@ const ClientSelectorModal = ({ onSelected, onClose }: ClientSelectorModalProps) 
       open
       fullWidth
       maxWidth="lg"
-      onClose={onClose} // Permite cerrar haciendo clic fuera del modal
+      onClose={onClose}
     >
       <DialogTitle
         sx={{
@@ -48,7 +48,7 @@ const ClientSelectorModal = ({ onSelected, onClose }: ClientSelectorModalProps) 
             onClose();
           }}
           hideActions
-          modalMode // Nueva prop para indicar que está en modo modal
+          modalMode
         />
       </DialogContent>
     </Dialog>

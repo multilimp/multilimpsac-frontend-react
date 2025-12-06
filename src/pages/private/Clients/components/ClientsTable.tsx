@@ -50,6 +50,11 @@ const ClientsTable = ({ data, loading, hideActions, onRecordAction, modalMode, o
         </>
       ),
     },
+    {
+      title: 'Promedio Cobranza',
+      dataIndex: 'promedioCobranza',
+      width: 120
+    },
     !hideActions && {
       title: 'Contactos',
       dataIndex: 'contactos',

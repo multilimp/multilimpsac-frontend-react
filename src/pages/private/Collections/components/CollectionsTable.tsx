@@ -95,7 +95,7 @@ const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRe
         fecha_estado_cobranza: formattedDate(item.fechaEstadoCobranza, undefined, defaultText),
         neto_cobrado: formatCurrency(item.netoCobrado ? parseInt(item.netoCobrado, 10) : 0),
         penalidad: formatCurrency(item.penalidad ? parseInt(item.penalidad, 10) : 0),
-        // Nuevas columnas agregadas
+        contador_cobranza: (item.fechaEntregaOc && item.fechaEstadoCobranza) ? `${Math.round((new Date(item.fechaEstadoCobranza).getTime() - new Date(item.fechaEntregaOc).getTime()) / (24 * 60 * 60 * 1000))} días` : defaultText,
         numero_factura: numeroFactura,
         fecha_factura: fechaFactura,
         cobrador: item?.cobrador?.nombre || 'Sin asignar',
@@ -194,7 +194,7 @@ const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRe
       width: 140,
       align: 'center',
       render: (_: unknown, record: CollectionsRow) => {
-        const entrega = record.rawdata?.fechaEntregaOc || record.rawdata?.fechaEntrega;
+        const entrega = record.rawdata?.fechaEntregaOc;
         const max = record.rawdata?.fechaMaxForm;
         if (!entrega || !max) {
           return <span>-</span>;
@@ -206,9 +206,12 @@ const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRe
         }
         const fuera = entregaTime > maxTime;
         return (
-          <Box
-
-          >
+          <Box sx={{
+            backgroundColor: fuera ? 'red' : 'green',
+            color: 'white',
+            padding: '2px 8px',
+            borderRadius: '4px',
+          }}>
             {fuera ? 'Sí' : 'No'}
           </Box>
         );
@@ -247,6 +250,13 @@ const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRe
       dataIndex: 'carta_ampliacion',
       width: 100,
       document: true,
+    },
+    {
+      title: 'Contador Cobranza',
+      dataIndex: 'contador_cobranza',
+      width: 120,
+      sort: true,
+      filter: true
     },
     {
       title: 'Estado',
