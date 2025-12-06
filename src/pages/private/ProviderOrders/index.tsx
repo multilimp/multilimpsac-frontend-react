@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Tabs, TabsProps, notification } from 'antd';
+import { Tabs, TabsProps, notification, Segmented } from 'antd';
 import { AccountBalance, Assignment, CalendarMonth } from '@mui/icons-material';
 import PageContent from '@/components/PageContent';
 import { SaleProps } from '@/services/sales/sales';
@@ -15,11 +15,13 @@ import { useNavigate } from 'react-router-dom';
 import ReporteProgramacion from '@/components/ReporteProgramacion';
 import { useTabPersistenceString } from '@/hooks/useTabPersistence';
 
+
 const ProviderOrders = () => {
   const navigate = useNavigate();
   const { sales, loadingSales, obtainSales } = useGlobalInformation();
   const [modal, setModal] = useState<ModalStateProps<SaleProps>>(null);
   const [activeTab, setActiveTab] = useTabPersistenceString('oc'); // Persistir tab en URL
+  const [saleType, setSaleType] = useState<'all' | 'publica' | 'privada'>('all');
 
   // Estados para el tab de OP
   const [loadingOps, setLoadingOps] = useState(false);
@@ -57,10 +59,20 @@ const ProviderOrders = () => {
     navigate(`/provider-orders/${op.id}`);
   };
 
-  // Filtrar ventas completadas
+  // Filtrar ventas completadas y por tipo
   const filteredSales = useMemo(() => {
-    return sales.filter(sale => sale.estadoVenta === 'COMPLETADO');
-  }, [sales]);
+    return sales.filter(sale => {
+      // Filtro base: solo ventas completadas
+      if (sale.estadoVenta !== 'COMPLETADO') return false;
+
+      // Filtro por tipo de venta
+      if (saleType === 'all') return true;
+      if (saleType === 'publica') return !sale.ventaPrivada;
+      if (saleType === 'privada') return sale.ventaPrivada === true;
+
+      return true;
+    });
+  }, [sales, saleType]);
 
   const tabItems: TabsProps['items'] = useMemo(() => [
     {
@@ -72,12 +84,26 @@ const ProviderOrders = () => {
         </span>
       ),
       children: (
-        <ProviderOrdersTable
-          loading={loadingSales}
-          data={filteredSales}
-          onRowClick={(sale) => setModal({ mode: ModalStateEnum.BOX, data: sale })}
-          onReload={obtainSales}
-        />
+        <>
+          <div style={{ marginBottom: 16 }}>
+            <Segmented
+              value={saleType}
+              size="large"
+              onChange={(value) => setSaleType(value as 'all' | 'publica' | 'privada')}
+              options={[
+                { label: 'Todas', value: 'all' },
+                { label: 'Venta Pública', value: 'publica' },
+                { label: 'Venta Privada', value: 'privada' },
+              ]}
+            />
+          </div>
+          <ProviderOrdersTable
+            loading={loadingSales}
+            data={filteredSales}
+            onRowClick={(sale) => setModal({ mode: ModalStateEnum.BOX, data: sale })}
+            onReload={obtainSales}
+          />
+        </>
       )
     },
     {
