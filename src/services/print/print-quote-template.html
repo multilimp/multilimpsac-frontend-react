@@ -139,7 +139,6 @@
         }
 
         .header-cell {
-            width: 12%;
             font-weight: bold;
             background-color: #eee;
             font-size: 11px;
@@ -319,18 +318,20 @@
         <!-- Tabla de productos - Cabecera -->
         <table class="products-header-table">
             <colgroup>
+                <col style="width: 4%">
+                <col style="width: 10%">
+                <col style="width: 7%">
+                <col style="width: 8%">
+                <col style="width: 46%">
                 <col style="width: 12%">
-                <col style="width: 12%">
-                <col style="width: 12%">
-                <col style="width: 40%">
-                <col style="width: 12%">
-                <col style="width: 12%">
+                <col style="width: 13%">
             </colgroup>
             <thead>
                 <tr>
+                    <th class="header-cell">N°</th>
                     <th class="header-cell">CÓDIGO</th>
-                    <th class="header-cell">CANTIDAD</th>
-                    <th class="header-cell">UNIDAD DE MEDIDA</th>
+                    <th class="header-cell">CANT</th>
+                    <th class="header-cell">U.M.</th>
                     <th class="header-cell-description">DESCRIPCIÓN</th>
                     <th class="header-cell">PRECIO S/</th>
                     <th class="header-cell-last">IMPORTE S/</th>
@@ -341,23 +342,24 @@
         <!-- Tabla de productos - Cuerpo -->
         <table class="products-body-table">
             <colgroup>
+                <col style="width: 4%">
+                <col style="width: 10%">
+                <col style="width: 7%">
+                <col style="width: 8%">
+                <col style="width: 46%">
                 <col style="width: 12%">
-                <col style="width: 12%">
-                <col style="width: 12%">
-                <col style="width: 40%">
-                <col style="width: 12%">
-                <col style="width: 12%">
+                <col style="width: 13%">
             </colgroup>
             <tbody>
                 {{PRODUCTOS_ROWS}}
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="6" class="total-row">TOTAL INCLUYE
+                    <td colspan="7" class="total-row">TOTAL INCLUYE
                         I.G.V.&nbsp;&nbsp;&nbsp;{{TOTAL_INCLUYE_IGV}}&nbsp;&nbsp;</td>
                 </tr>
                 <tr>
-                    <td colspan="6" class="validity-row">Validez de la cotización: {{VALIDEZ_COTIZACION}}</td>
+                    <td colspan="7" class="validity-row">Validez de la cotización: {{VALIDEZ_COTIZACION}}</td>
                 </tr>
             </tfoot>
         </table>

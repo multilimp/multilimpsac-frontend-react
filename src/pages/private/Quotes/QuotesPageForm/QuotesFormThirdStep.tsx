@@ -1,14 +1,14 @@
 import { Form, FormInstance, Input, InputNumber, Select } from 'antd';
-import { 
-  Grid, 
-  Typography, 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableContainer, 
-  TableHead, 
-  TableRow, 
-  IconButton, 
+import {
+  Grid,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  IconButton,
   Button,
   Card,
   CardHeader,
@@ -73,6 +73,7 @@ const QuotesFormThirdStep = ({ form }: { form: FormInstance }) => {
             <Table stickyHeader>
               <TableHead>
                 <TableRow>
+                  <TableCell sx={{ fontWeight: 600, fontSize: 12 }}></TableCell>
                   <TableCell sx={{ fontWeight: 600, fontSize: 12 }}>Código</TableCell>
                   <TableCell sx={{ fontWeight: 600, fontSize: 12 }}>Descripción</TableCell>
                   <TableCell sx={{ fontWeight: 600, fontSize: 12 }}>U. Medida</TableCell>
@@ -102,6 +103,9 @@ const QuotesFormThirdStep = ({ form }: { form: FormInstance }) => {
                     <>
                       {fields.map((field) => (
                         <TableRow key={field.name} sx={{ '&:hover': { bgcolor: 'rgba(25, 118, 210, 0.04)' } }}>
+                          <TableCell sx={{ p: 1 }}>
+                            {field.name + 1}
+                          </TableCell>
                           <TableCell sx={{ p: 1 }}>
                             <Form.Item
                               name={[field.name, 'codigo']}
@@ -310,7 +314,7 @@ const QuotesFormThirdStep = ({ form }: { form: FormInstance }) => {
         <CardContent>
           <Grid container columnSpacing={2} rowSpacing={2}>
             <Grid size={{ xs: 12, md: 6 }}>
-              <Form.Item 
+              <Form.Item
                 name="tipoPago"
                 label="Tipo de Pago"
                 rules={[{ required: true, message: 'Seleccione el tipo de pago' }]}
@@ -323,9 +327,9 @@ const QuotesFormThirdStep = ({ form }: { form: FormInstance }) => {
                 </Select>
               </Form.Item>
             </Grid>
-            
+
             <Grid size={{ xs: 12, md: 6 }}>
-              <Form.Item 
+              <Form.Item
                 name="notaPago"
                 label="Nota de Pago"
               >
@@ -338,9 +342,9 @@ const QuotesFormThirdStep = ({ form }: { form: FormInstance }) => {
                 />
               </Form.Item>
             </Grid>
-            
+
             <Grid size={{ xs: 12 }}>
-              <Form.Item 
+              <Form.Item
                 name="notaPedido"
                 label="Nota del Pedido"
               >

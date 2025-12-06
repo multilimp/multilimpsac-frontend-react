@@ -445,8 +445,9 @@ export const printCotizacion = async (id: number): Promise<void> => {
 
     const empresaDirecciones = data.empresa?.direcciones || data.empresa?.direccion || 'Sin dirección';
 
-    const productosRows = productos.map((producto: Producto) => `
+    const productosRows = productos.map((producto: Producto, index: number) => `
       <tr>
+        <td class="product-cell">${index + 1}</td>
         <td class="product-cell">${escapeHtml(producto.codigo || ' ')}</td>
         <td class="product-cell">${producto.cantidad || 0}</td>
         <td class="product-cell">${escapeHtml(producto.unidadMedida || 'UND')}</td>
