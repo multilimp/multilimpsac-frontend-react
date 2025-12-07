@@ -39,6 +39,7 @@ import ProviderOrderFormSkeleton from '@/components/ProviderOrderFormSkeleton';
 import { BillingProps } from '@/services/billings/billings.d';
 import BillingModal, { BillingModalMode } from './BillingModal';
 import BillingHistory from '@/components/BillingHistory';
+import PaymentsList from '@/components/PaymentsList';
 
 interface BillingFormContentProps {
   sale: SaleProps;
@@ -611,6 +612,25 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                   )}
                 </CardContent>
               </Card>
+
+              {/* Sección de Pagos de Venta Privada */}
+              {sale.ventaPrivada && sale.ordenCompraPrivada?.pagos && (
+                <Box sx={{ mt: 3, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+                  <PaymentsList
+                    payments={sale.ordenCompraPrivada.pagos.map(p => ({
+                      date: dayjs(p.fechaPago),
+                      bank: p.bancoPago,
+                      description: p.descripcionPago,
+                      file: p.archivoPago || null,
+                      amount: p.montoPago.toString(),
+                      status: p.estadoPago
+                    }))}
+                    title="Pagos de Venta Privada"
+                    mode="readonly"
+                    montoTotal={parseFloat(sale.montoVenta || '0')}
+                  />
+                </Box>
+              )}
               <BillingSection
                 billingHistory={billingHistory}
               />
