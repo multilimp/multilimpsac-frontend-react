@@ -2,12 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { Form, Input, notification, Modal, Row, Col, Typography as AntTypography, Space, Select } from 'antd';
 import { SaveOutlined, ReloadOutlined, FileTextOutlined, CalendarOutlined, PaperClipOutlined, InfoCircleOutlined, PlusOutlined, EyeOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(utc);
 import DatePickerAntd from '@/components/DatePickerAnt';
 import InputAntd from '@/components/InputAntd';
 import SimpleFileUpload from '@/components/SimpleFileUpload';
 import { createBilling, patchBilling } from '@/services/billings/billings.request';
 import { BillingProps, BillingData, BillingUpdateData } from '@/services/billings/billings.d';
 import { heroUIColors } from '@/components/ui';
+import { formattedDate } from '@/utils/functions';
 
 const { Title, Text } = AntTypography;
 
@@ -81,7 +85,7 @@ const BillingModal: React.FC<BillingModalProps> = ({
         if (open && (isEditMode || isViewMode) && billing) {
             form.setFieldsValue({
                 numeroFactura: billing.factura,
-                fechaFactura: billing.fechaFactura ? dayjs(billing.fechaFactura) : dayjs(),
+                fechaFactura: billing.fechaFactura ? dayjs(dayjs(billing.fechaFactura).utc().format('YYYY-MM-DD')) : dayjs(),
                 grr: billing.grr,
                 retencion: billing.retencion || 0,
                 detraccion: billing.detraccion || 0,
