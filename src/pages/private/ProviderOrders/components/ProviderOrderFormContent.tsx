@@ -324,6 +324,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
         embalaje: orderData.embalaje || '',
         tipoPago: orderData.tipoPago || 'PENDIENTE',
         notaPago: orderData.notaPago || '',
+        notaAdicional: orderData.notaAdicional || '',
         formaPago: orderData.formaPago || 'CONTADO',
         incluyeTransporte: !(orderData.transportesAsignados && orderData.transportesAsignados.length > 0), // ✅ Invertir lógica: si tiene transportes, switch desactivado
         productos: productosFormatted,
@@ -381,6 +382,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
         observaciones: '',
         etiquetado: '',
         embalaje: '',
+        notaAdicional: '',
         incluyeTransporte: false, // ✅ Por defecto NO requiere transporte (mostrar sección)
         pagosProveedor: [],
         productos: [getEmptyProductRecord()], // ✅ USAR función simplificada
@@ -647,6 +649,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
         tipoPago: values.tipoPago as string || null,
         formaPago: values.formaPago as string || null,
         notaPago: values.notaPago as string || null,
+        notaAdicional: values.notaAdicional as string || null,
         productos: isEditing ? { deleteMany: {}, create: productosArr } : { create: productosArr },
         pagos: isEditing ? { deleteMany: {}, create: pagosArr } : { create: pagosArr },
       };
@@ -1496,7 +1499,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
                     <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
                       Nota Privada para Facturación
                     </Typography>
-                    <Form.Item name="notaPrivadaFacturacion">
+                    <Form.Item name="notaAdicional">
                       <Input.TextArea
                         placeholder="Ingrese nota privada para facturación..."
                         rows={3}
