@@ -376,6 +376,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
             <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Fecha Recepción</TableCell>
             <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Fecha Programada</TableCell>
             <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Fecha Despacho</TableCell>
+            <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Nota Adicional</TableCell>
             <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Acciones</TableCell>
           </TableRow>
         </TableHead>
@@ -400,6 +401,9 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
               </TableCell>
               <TableCell sx={{ color: '#64748b' }}>
                 {formattedDate(op.fechaDespacho)}
+              </TableCell>
+              <TableCell sx={{ color: '#64748b' }}>
+                {op.notaAdicional}
               </TableCell>
               <TableCell>
                 <Button
