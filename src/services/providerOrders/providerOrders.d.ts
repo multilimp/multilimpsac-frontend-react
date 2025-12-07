@@ -31,6 +31,7 @@ export interface ProviderOrderProps {
   notaAdicional: null;
   notaObservaciones: null;
   notaCobranzas: null;
+  notaPrivadaFacturacion: string | null;
   isCompleted: boolean;
   estadoRolOp: EstadoVentaType;
   activo: true;

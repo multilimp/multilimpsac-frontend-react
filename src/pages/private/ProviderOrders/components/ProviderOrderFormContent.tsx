@@ -1460,7 +1460,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
                     </Typography>
                     <Form.Item name="productosNota">
                       <Input.TextArea
-                        placeholder="Ingrese notas adicionales sobre el pedido..."
+                        placeholder="Ingrese las observaciones del pedido..."
                         rows={3}
                         disabled={fromTreasury}
                         style={{
@@ -1479,7 +1479,26 @@ const calculateProductTotals = (form: any, fieldName: number) => {
                     </Typography>
                     <Form.Item name="observaciones">
                       <Input.TextArea
-                        placeholder="Ingrese observaciones internas (no visibles en el documento)..."
+                        placeholder="Ingrese notas adicionales sobre el pedido..."
+                        rows={3}
+                        disabled={fromTreasury}
+                        style={{
+                          borderRadius: 4,
+                          fontSize: '16px',
+                          border: '1px solid #d9d9d9',
+                        }}
+                      />
+                    </Form.Item>
+                  </Box>
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <Box>
+                    <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+                      Nota Privada para Facturación
+                    </Typography>
+                    <Form.Item name="notaPrivadaFacturacion">
+                      <Input.TextArea
+                        placeholder="Ingrese nota privada para facturación..."
                         rows={3}
                         disabled={fromTreasury}
                         style={{
