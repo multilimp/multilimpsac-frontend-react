@@ -75,3 +75,11 @@ export const formattedDate = (value?: null | Date | string, format = 'DD/MM/YYYY
   if (!date.isValid()) return defaultText ?? '';
   return date.format(format);
 };
+
+export const formattedDateTime = (value?: null | Date | string, format = 'DD/MM/YYYY HH:mm A', defaultText?: string): string => {
+  if (!value) return defaultText ?? '';
+
+  const date = dayjs(value);
+  if (!date.isValid()) return defaultText ?? '';
+  return date.format(format);
+};

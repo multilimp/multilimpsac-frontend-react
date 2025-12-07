@@ -52,8 +52,9 @@ const BillingsForm = () => {
   return (
     <Stack direction="column" spacing={2}>
       {loading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
-          <Spin size="large" tip="Cargando venta..." />
+        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
+          <Spin size="large" />
+          <div style={{ marginTop: 16, color: '#666' }}>Cargando venta...</div>
         </div>
       ) : selectedSale ? (
         <BillingFormContent sale={selectedSale} />

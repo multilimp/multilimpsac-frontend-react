@@ -24,6 +24,7 @@ import {
 } from '@mui/icons-material';
 import dayjs from 'dayjs';
 import { BillingProps } from '@/services/billings/billings.d';
+import { formattedDate } from '@/utils/functions';
 
 export interface BillingHistoryProps {
   title?: string;
@@ -132,7 +133,7 @@ const BillingHistory: React.FC<BillingHistoryProps> = ({
                       {billing.factura || 'Sin número'}
                     </TableCell>
                     <TableCell sx={{ color: '#64748b' }}>
-                      {billing.fechaFactura ? dayjs(billing.fechaFactura).format('DD/MM/YYYY') : 'Sin fecha'}
+                      {billing.fechaFactura ? formattedDate(billing.fechaFactura) : 'Sin fecha'}
                     </TableCell>
                     <TableCell sx={{ color: '#64748b' }}>
                       {billing.grr || 'Sin GRR'}

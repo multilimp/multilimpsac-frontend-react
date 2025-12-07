@@ -28,7 +28,7 @@ import { alpha } from '@/styles/theme/heroui-colors';
 import { StepItemContent } from '../../Sales/SalesPageForm/smallcomponents';
 import SimpleFileUpload from '@/components/SimpleFileUpload';
 import { getBillingHistoryByOrdenCompraId } from '@/services/billings/billings.request';
-import { formatCurrency, formattedDate } from '@/utils/functions';
+import { formatCurrency, formattedDate, formattedDateTime } from '@/utils/functions';
 import { ProviderOrderProps } from '@/services/providerOrders/providerOrders';
 import { estadoOptions, ESTADOS, estadoBgMap } from '@/utils/constants';
 import { getOpsByOrdenCompra } from '@/services/trackings/trackings.request';
@@ -376,7 +376,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
             <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Fecha Recepción</TableCell>
             <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Fecha Programada</TableCell>
             <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Fecha Despacho</TableCell>
-            <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Nota Adicional</TableCell>
+            <TableCell sx={{ fontWeight: 600, color: '#475569', minWidth: 350 }}>Nota Adicional</TableCell>
             <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Acciones</TableCell>
           </TableRow>
         </TableHead>
@@ -394,7 +394,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                 {op.codigoOp}
               </TableCell>
               <TableCell sx={{ color: '#64748b' }}>
-                {formattedDate(op.fechaRecepcion)}
+                {formattedDateTime(op.fechaRecepcion)}
               </TableCell>
               <TableCell sx={{ color: '#64748b' }}>
                 {formattedDate(op.fechaProgramada)}
