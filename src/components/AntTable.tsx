@@ -262,7 +262,9 @@ const AntTable = <T,>(props: AntTablePropsProps<T>) => {
   const finalScroll = useMemo(() => ({ x: scrollX, ...(rest.scroll ?? {}) }), [scrollX, rest.scroll]);
 
   const handleDownloadCSV = () => {
-    const headers = columns.map((item) => ({ label: String(item.title), key: String(item.dataIndex) }));
+    // Usar solo las columnas visibles/seleccionadas
+    const visibleColumns = columnsCloned.filter((c) => c.selected);
+    const headers = visibleColumns.map((item) => ({ label: String(item.title), key: String(item.dataIndex) }));
 
     const rows = (filteredData as Array<Record<string, unknown>>)
       .map((row) => headers.map((field) => `"${clean(String(row[field.key] ?? '')).replace(/\n/g, ' ')}"`).join(','));
@@ -279,8 +281,10 @@ const AntTable = <T,>(props: AntTablePropsProps<T>) => {
   };
 
   const handleDownloadExcel = () => {
-    const headers = columns.map((item) => String(item.title));
-    const keys = columns.map((item) => String(item.dataIndex));
+    // Usar solo las columnas visibles/seleccionadas
+    const visibleColumns = columnsCloned.filter((c) => c.selected);
+    const headers = visibleColumns.map((item) => String(item.title));
+    const keys = visibleColumns.map((item) => String(item.dataIndex));
 
     const rows = (filteredData as Array<Record<string, unknown>>).map((row) => {
       const newRow: Record<string, string> = {};
