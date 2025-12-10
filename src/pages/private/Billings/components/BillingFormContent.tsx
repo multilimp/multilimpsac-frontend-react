@@ -1,30 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import {
-  Box,
-  Stack,
-  Typography,
-  Card,
-  CardContent,
-  Button,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Table,
-} from '@mui/material';
-import {
-  Print,
-  Assignment as AssignmentIcon,
-  Description as DescriptionIcon,
-  ArrowBack as ArrowBackIcon
-} from '@mui/icons-material';
-import { notification, Form, Select } from 'antd';
-import Grid from '@mui/material/Grid';
+import { notification, Form, Select, Button, Space } from 'antd';
+import { Box, Typography } from '@mui/material';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
 import { SaleProps } from '@/services/sales/sales';
-import { alpha } from '@/styles/theme/heroui-colors';
 import { StepItemContent } from '../../Sales/SalesPageForm/smallcomponents';
 import SimpleFileUpload from '@/components/SimpleFileUpload';
 import { getBillingHistoryByOrdenCompraId } from '@/services/billings/billings.request';
@@ -123,12 +102,6 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
   const handleOpenCreateModal = useCallback(() => {
     setSelectedBilling(null);
     setBillingModalMode('create');
-    setBillingModalOpen(true);
-  }, []);
-
-  const handleOpenEditModal = useCallback((billing: BillingProps) => {
-    setSelectedBilling(billing);
-    setBillingModalMode('edit');
     setBillingModalOpen(true);
   }, []);
 
@@ -274,6 +247,17 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
     }
   }, [sale.id, sale.cartaGarantia]);
 
+  const getLocationName = (location: any): string => {
+    if (!location) return '';
+    if (typeof location === 'object' && location.name) return location.name;
+    if (typeof location === 'string') return location;
+    return '';
+  };
+
+  const domicilioFiscal = sale?.cliente?.direccion
+    ? `${sale.cliente.direccion}${sale.cliente.distrito ? ` - ${getLocationName(sale.cliente.distrito)}` : ''}${sale.cliente.provincia ? ` - ${getLocationName(sale.cliente.provincia)}` : ''}${sale.cliente.departamento ? ` - ${getLocationName(sale.cliente.departamento)}` : ''}`
+    : 'No especificado';
+
   const handlePrintOP = async (op: ProviderOrderProps) => {
     try {
       notification.info({
@@ -303,53 +287,48 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
     return (
       <>
         {/* Apartado de Documentos */}
-        <Card sx={{
+        <div style={{
           border: '1px solid #e2e8f0',
-          borderRadius: 2,
+          borderRadius: '0.5rem',
           boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
         }}>
-          <CardContent sx={{ p: 4 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Typography
-                variant="h6"
-                sx={{
-                  fontWeight: 600,
-                  color: '#667eea',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1
-                }}
-              >
-                <DescriptionIcon sx={{ fontSize: 24 }} />
+          <div style={{ padding: '2rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h6 style={{
+                fontWeight: 600,
+                color: '#667eea',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                margin: 0,
+                fontSize: '1rem'
+              }}>
+                📄
                 Documentos
-              </Typography>
-            </Box>
+              </h6>
+            </div>
 
-            <Grid container spacing={3}>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <Box sx={{ mb: 2 }}>
-                  <SimpleFileUpload
-                    label="Carta CCI"
-                    accept="application/pdf"
-                    value={cartaCciUrl}
-                    onChange={handleCartaCciChange}
-                  />
-                </Box>
-              </Grid>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+              <div style={{ marginBottom: '0.5rem' }}>
+                <SimpleFileUpload
+                  label="Carta CCI"
+                  accept="application/pdf"
+                  value={cartaCciUrl}
+                  onChange={handleCartaCciChange}
+                />
+              </div>
 
-              <Grid size={{ xs: 12, md: 6 }}>
-                <Box sx={{ mb: 2 }}>
-                  <SimpleFileUpload
-                    label="Carta de Garantía"
-                    accept="application/pdf"
-                    value={cartaGarantiaUrl}
-                    onChange={handleCartaGarantiaChange}
-                  />
-                </Box>
-              </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
+              <div style={{ marginBottom: '0.5rem' }}>
+                <SimpleFileUpload
+                  label="Carta de Garantía"
+                  accept="application/pdf"
+                  value={cartaGarantiaUrl}
+                  onChange={handleCartaGarantiaChange}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
 
         <BillingHistory
           billings={billingHistory}
@@ -364,68 +343,75 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
   });
 
   const ProviderOrdersTableComponent = React.memo<{ ordenesProveedor: any[]; handlePrintOP: (op: any) => void }>(({ ordenesProveedor, handlePrintOP }) => (
-    <TableContainer sx={{
-      bgcolor: '#f8fafc',
-      borderRadius: 2,
+    <div style={{
+      backgroundColor: '#f8fafc',
+      borderRadius: '0.5rem',
       maxHeight: '400px',
       overflowY: 'auto'
     }}>
-      <Table size="small">
-        <TableHead>
-          <TableRow sx={{ bgcolor: '#e2e8f0' }}>
-            <TableCell sx={{ fontWeight: 600, color: '#475569' }}>OP</TableCell>
-            <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Fecha Recepción</TableCell>
-            <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Fecha Programada</TableCell>
-            <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Fecha Despacho</TableCell>
-            <TableCell sx={{ fontWeight: 600, color: '#475569', minWidth: 350 }}>Nota Adicional</TableCell>
-            <TableCell sx={{ fontWeight: 600, color: '#475569' }}>Acciones</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
+        <thead>
+          <tr style={{ backgroundColor: '#e2e8f0' }}>
+            <th style={{ fontWeight: 600, color: '#475569', padding: '0.75rem', textAlign: 'left', borderBottom: '1px solid #cbd5e1' }}>OP</th>
+            <th style={{ fontWeight: 600, color: '#475569', padding: '0.75rem', textAlign: 'left', borderBottom: '1px solid #cbd5e1' }}>Fecha Recepción</th>
+            <th style={{ fontWeight: 600, color: '#475569', padding: '0.75rem', textAlign: 'left', borderBottom: '1px solid #cbd5e1' }}>Fecha Programada</th>
+            <th style={{ fontWeight: 600, color: '#475569', padding: '0.75rem', textAlign: 'left', borderBottom: '1px solid #cbd5e1' }}>Fecha Despacho</th>
+            <th style={{ fontWeight: 600, color: '#475569', padding: '0.75rem', textAlign: 'left', borderBottom: '1px solid #cbd5e1', minWidth: 350 }}>Nota Adicional</th>
+            <th style={{ fontWeight: 600, color: '#475569', padding: '0.75rem', textAlign: 'center', borderBottom: '1px solid #cbd5e1' }}>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
           {ordenesProveedor.map((op, index) => (
-            <TableRow
+            <tr
               key={op.id}
-              sx={{
-                '&:hover': {
-                  bgcolor: '#f1f5f9'
-                }
+              style={{
+                borderBottom: '1px solid #e2e8f0'
               }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f1f5f9'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
             >
-              <TableCell sx={{ color: '#475569', fontWeight: 500 }}>
+              <td style={{ color: '#475569', fontWeight: 500, padding: '0.75rem' }}>
                 {op.codigoOp}
-              </TableCell>
-              <TableCell sx={{ color: '#64748b' }}>
+              </td>
+              <td style={{ color: '#64748b', padding: '0.75rem' }}>
                 {formattedDateTime(op.fechaRecepcion)}
-              </TableCell>
-              <TableCell sx={{ color: '#64748b' }}>
+              </td>
+              <td style={{ color: '#64748b', padding: '0.75rem' }}>
                 {formattedDate(op.fechaProgramada)}
-              </TableCell>
-              <TableCell sx={{ color: '#64748b' }}>
+              </td>
+              <td style={{ color: '#64748b', padding: '0.75rem' }}>
                 {formattedDate(op.fechaDespacho)}
-              </TableCell>
-              <TableCell sx={{ color: '#64748b' }}>
+              </td>
+              <td style={{ color: '#64748b', padding: '0.75rem' }}>
                 {op.notaAdicional}
-              </TableCell>
-              <TableCell>
-                <Button
-                  variant="contained"
-                  color="primary"
+              </td>
+              <td style={{ padding: '0.75rem', textAlign: 'center' }}>
+                <button
                   onClick={() => handlePrintOP(op)}
-                  size="small"
-                  sx={{
-                    minWidth: 'auto',
-                    px: 1.5,
-                    py: 0.5
+                  style={{
+                    background: '#667eea',
+                    color: 'white',
+                    border: 'none',
+                    padding: '0.375rem 0.75rem',
+                    borderRadius: '0.25rem',
+                    cursor: 'pointer',
+                    fontSize: '0.875rem',
+                    fontWeight: 500,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.25rem'
                   }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = '#5a67d8'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = '#667eea'}
                 >
-                  <Print sx={{ fontSize: 18 }} />
-                </Button>
-              </TableCell>
-            </TableRow>
+                  🖨️ Imprimir
+                </button>
+              </td>
+            </tr>
           ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+        </tbody>
+      </table>
+    </div>
   ));
 
   return (
@@ -433,9 +419,9 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
       {loading ? (
         <ProviderOrderFormSkeleton />
       ) : (
-        <Box sx={{ p: 3 }}>
+        <div style={{ padding: '1.5rem' }}>
           <Form form={form} layout="vertical">
-            <Stack spacing={3}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
               {/* Header OC - READONLY */}
               <StepItemContent
@@ -446,176 +432,205 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                 showSearchButton={false}
                 resumeContent={
                   <Box>
-                    <Typography variant="h5">
+                    <Typography variant="h5" sx={{ fontWeight: 600 }}>
                       {sale.codigoVenta}
                     </Typography>
-                    <Typography fontWeight={300}>
-                      {sale?.cliente?.razonSocial || 'Cliente no especificado'}
+                    <Typography variant="body2" sx={{ fontWeight: 300 }}>
+                      {sale?.cliente?.razonSocial || 'Cliente no especificado'} - {sale?.cliente?.codigoUnidadEjecutora || ' '}
                     </Typography>
-                    <Typography fontWeight={300}>
+                    <Typography variant="body2" sx={{ fontWeight: 300 }}>
                       RUC: {sale?.cliente?.ruc || ' '}
+                    </Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 300 }}>
+                      Direccion: {sale?.cliente?.direccion || ' '}
+                    </Typography>
+                  </Box>
+                }
+                showFooter={true}
+                footerContent={
+                  <Box>
+                    <Typography variant="body2" sx={{ color: '#ffffff' }}>
+                      Domicilio Fiscal: {domicilioFiscal}
                     </Typography>
                   </Box>
                 }
               >
                 {/* Información Empresarial Minimalista */}
-                <Box>
-                  {/* Grid minimalista - Exactamente 3 columnas */}
-                  <Typography variant="h6" sx={{
-                    mb: 2, fontWeight: 600, color: '#667eea', display: 'flex',
+                <div>
+                  {/* Grid minimalista - Exactamente 4 columnas */}
+                  <h6 style={{
+                    fontWeight: 600,
+                    color: '#667eea',
+                    display: 'flex',
                     alignItems: 'center',
-                    gap: 1
+                    gap: '0.5rem',
+                    margin: 0,
+                    marginBottom: '1rem',
+                    fontSize: '1rem'
                   }}>
-                    <AssignmentIcon sx={{ fontSize: 24 }} />
+                    📋
                     Información de la Orden de Compra
-                  </Typography>
-                  <Box sx={{
+                  </h6>
+                  <div style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(4, 1fr)',
-                    gap: 1.5
+                    gap: '1.5rem'
                   }}>
                     {/* Card 1: Empresa */}
                     {sale?.empresa?.razonSocial && (
-                      <Card sx={{
+                      <div style={{
                         minHeight: '70px',
                         display: 'flex',
                         alignItems: 'center',
-                        border: 'none'
+                        border: 'none',
+                        padding: '0.75rem 1.5rem',
+                        backgroundColor: '#f8f9fa',
+                        borderRadius: '0.25rem'
                       }}>
-                        <CardContent sx={{ py: 1, px: 1.5, '&:last-child': { pb: 1 } }}>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.7rem' }}>
+                        <div>
+                          <p style={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.7rem', margin: 0, color: '#666' }}>
                             Empresa
-                          </Typography>
-                          <Typography variant="body1" sx={{
+                          </p>
+                          <p style={{
                             fontWeight: 500,
                             color: '#424242',
                             fontSize: '0.9rem',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap'
+                            whiteSpace: 'nowrap',
+                            margin: 0
                           }}>
                             {sale.empresa.razonSocial}
-                          </Typography>
-                        </CardContent>
-                      </Card>
+                          </p>
+                        </div>
+                      </div>
                     )}
 
                     {/* Card 2: Fecha Emisión */}
                     {sale.fechaEmision && (
-                      <Card sx={{
+                      <div style={{
                         minHeight: '70px',
                         display: 'flex',
                         alignItems: 'center',
-                        boxShadow: 'none'
+                        boxShadow: 'none',
+                        padding: '0.75rem 1.5rem',
+                        backgroundColor: '#f8f9fa',
+                        borderRadius: '0.25rem'
                       }}>
-                        <CardContent sx={{ py: 1, px: 1.5, '&:last-child': { pb: 1 } }}>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.7rem' }}>
+                        <div>
+                          <p style={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.7rem', margin: 0, color: '#666' }}>
                             Fecha Emisión
-                          </Typography>
-                          <Typography variant="body1" sx={{ fontWeight: 500, color: '#424242', fontSize: '0.9rem' }}>
+                          </p>
+                          <p style={{ fontWeight: 500, color: '#424242', fontSize: '0.9rem', margin: 0 }}>
                             {formattedDate(sale.fechaEmision)}
-                          </Typography>
-                        </CardContent>
-                      </Card>
+                          </p>
+                        </div>
+                      </div>
                     )}
 
                     {/* Card 3: Monto Total */}
-                    <Card sx={{
+                    <div style={{
                       minHeight: '70px',
                       display: 'flex',
                       alignItems: 'center',
-                      boxShadow: 'none'
+                      boxShadow: 'none',
+                      padding: '0.75rem 1.5rem',
+                      backgroundColor: '#f8f9fa',
+                      borderRadius: '0.25rem'
                     }}>
-                      <CardContent sx={{ py: 1, px: 1.5, '&:last-child': { pb: 1 } }}>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.7rem' }}>
+                      <div>
+                        <p style={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.7rem', margin: 0, color: '#666' }}>
                           Monto Total
-                        </Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 500, color: '#424242', fontSize: '0.9rem' }}>
+                        </p>
+                        <p style={{ fontWeight: 500, color: '#424242', fontSize: '0.9rem', margin: 0 }}>
                           {formatCurrency(parseFloat(sale.montoVenta || '0'))}
-                        </Typography>
-                      </CardContent>
-                    </Card>
+                        </p>
+                      </div>
+                    </div>
 
                     {/* Card 4: Fuente de financiamiento */}
-                    <Card sx={{
+                    <div style={{
                       minHeight: '70px',
                       display: 'flex',
                       alignItems: 'center',
-                      boxShadow: 'none'
+                      boxShadow: 'none',
+                      padding: '0.75rem 1.5rem',
+                      backgroundColor: '#f8f9fa',
+                      borderRadius: '0.25rem'
                     }}>
-                      <CardContent sx={{ py: 1, px: 1.5, '&:last-child': { pb: 1 } }}>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.7rem' }}>
+                      <div>
+                        <p style={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.7rem', margin: 0, color: '#666' }}>
                           Fuente de Financiamiento
-                        </Typography>
-                        <Typography variant="body1" sx={{
+                        </p>
+                        <p style={{
                           fontWeight: 500,
                           color: '#424242',
                           fontSize: '0.9rem',
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap'
+                          whiteSpace: 'nowrap',
+                          margin: 0
                         }}>
                           {sale.multipleFuentesFinanciamiento ? 'Múltiples fuentes' : 'Única fuente'}
-                        </Typography>
-                      </CardContent>
-                    </Card>
-                  </Box>
-                </Box>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </StepItemContent>
 
               {/* Tabla de Órdenes de Proveedor - READONLY */}
-              <Card sx={{
+              <div style={{
                 border: '1px solid #e2e8f0',
-                borderRadius: 2,
+                borderRadius: '0.5rem',
                 boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
               }}>
-                <CardContent sx={{ p: 4 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                    <Typography
-                      variant="h6"
-                      sx={{
-                        fontWeight: 600,
-                        color: '#667eea',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1
-                      }}
-                    >
-                      <AssignmentIcon sx={{ fontSize: 24 }} />
+                <div style={{ padding: '2rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                    <h6 style={{
+                      fontWeight: 600,
+                      color: '#667eea',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      margin: 0,
+                      fontSize: '1rem'
+                    }}>
+                      📋
                       Órdenes de Proveedor
-                    </Typography>
-                  </Box>
+                    </h6>
+                  </div>
 
                   {loading ? (
                     <ProviderOrdersTableSkeleton />
                   ) : ordenesProveedor.length === 0 ? (
-                    <Box sx={{
+                    <div style={{
                       textAlign: 'center',
-                      py: 4,
-                      bgcolor: '#f8fafc',
-                      borderRadius: 2,
+                      padding: '2rem',
+                      backgroundColor: '#f8fafc',
+                      borderRadius: '0.5rem',
                       border: '2px dashed #e2e8f0'
                     }}>
-                      <AssignmentIcon sx={{ fontSize: 48, color: '#cbd5e1', mb: 2 }} />
-                      <Typography variant="h6" sx={{ color: '#64748b', mb: 1 }}>
+                      <div style={{ fontSize: '3rem', color: '#cbd5e1', marginBottom: '1rem' }}>📋</div>
+                      <h6 style={{ color: '#64748b', marginBottom: '0.5rem', margin: 0 }}>
                         No hay órdenes de proveedor
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: '#94a3b8', mb: 3 }}>
+                      </h6>
+                      <p style={{ color: '#94a3b8', marginBottom: '1.5rem', margin: 0 }}>
                         No se encontraron órdenes de proveedor registradas para esta orden de compra
-                      </Typography>
-                    </Box>
+                      </p>
+                    </div>
                   ) : (
                     <ProviderOrdersTableComponent
                       ordenesProveedor={ordenesProveedor}
                       handlePrintOP={handlePrintOP}
                     />
                   )}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
               {/* Sección de Pagos de Venta Privada */}
               {sale.ventaPrivada && sale.ordenCompraPrivada?.pagos && (
-                <Box sx={{ mt: 3, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+                <div style={{ marginTop: '1.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
                   <PaymentsList
                     payments={sale.ordenCompraPrivada.pagos.map(p => ({
                       date: dayjs(p.fechaPago),
@@ -629,54 +644,63 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                     mode="readonly"
                     montoTotal={parseFloat(sale.montoVenta || '0')}
                   />
-                </Box>
+                </div>
               )}
               <BillingSection
                 billingHistory={billingHistory}
               />
-              <Box sx={{
+              <div style={{
                 display: 'flex',
-                gap: 3,
+                gap: '1.5rem',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                bgcolor: '#ffffff',
-                p: 3,
-                borderRadius: 2,
+                backgroundColor: '#ffffff',
+                padding: '1.5rem',
+                borderRadius: '0.5rem',
                 border: '1px solid #e2e8f0',
                 boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
               }}>
-                <Button
-                  variant="outlined"
-                  startIcon={<ArrowBackIcon />}
+                <button
                   onClick={() => navigate('/billing')}
-                  sx={{
+                  style={{
                     borderColor: '#667eea',
                     color: '#667eea',
                     fontWeight: 600,
-                    px: 3,
-                    py: 1.5,
-                    borderRadius: 2,
+                    padding: '0.75rem 1.5rem',
+                    borderRadius: '0.5rem',
                     textTransform: 'none',
-                    '&:hover': {
-                      borderColor: '#5a67d8',
-                      bgcolor: 'rgba(102, 94, 234, 0.05)',
-                    }
+                    border: '2px solid #667eea',
+                    backgroundColor: 'transparent',
+                    cursor: 'pointer',
+                    fontSize: '1rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = '#5a67d8';
+                    e.currentTarget.style.backgroundColor = 'rgba(102, 94, 234, 0.05)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = '#667eea';
+                    e.currentTarget.style.backgroundColor = 'transparent';
                   }}
                 >
-                  Regresar a Facturaciones
-                </Button>
+                  ← Regresar a Facturaciones
+                </button>
 
-                <Box sx={{ minWidth: 280 }}>
-                  <Typography sx={{
+                <div style={{ minWidth: 280 }}>
+                  <p style={{
                     color: '#475569',
-                    mb: 1.5,
+                    marginBottom: '1.5rem',
                     fontSize: '0.875rem',
                     fontWeight: 600,
                     textTransform: 'uppercase',
-                    letterSpacing: '0.05em'
+                    letterSpacing: '0.05em',
+                    margin: 0
                   }}>
                     Estado de Facturación
-                  </Typography>
+                  </p>
                   <Form.Item
                     name="estadoFacturacion"
                     initialValue={sale.estadoFacturacion || ESTADOS.PENDIENTE.value}
@@ -729,9 +753,9 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                       ))}
                     </Select>
                   </Form.Item>
-                </Box>
-              </Box>
-            </Stack>
+                </div>
+              </div>
+            </div>
 
             {/* Modal unificado de facturación */}
             <BillingModal
@@ -743,7 +767,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
               onSuccess={handleBillingSuccess}
             />
           </Form>
-        </Box>
+        </div>
       )}
     </>
   );
