@@ -118,7 +118,7 @@ const QuotesFormFirstStep = ({ form, isEditing, quoteId }: { form: FormInstance;
             return (
               <Fragment>
                 <Title level={3} style={{ color: '#ffffff', margin: 0 }}>
-                  {`${getFieldValue('codigoCotizacion')}`}
+                  {`${getFieldValue('codigoCotizacion') || 'ID Cotización'}`}
                 </Title>
                 <Text style={{ color: '#ffffff', opacity: 0.8, fontSize: '0.875rem', display: 'block' }}>
                   {cliente
