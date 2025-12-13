@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Box, Button, Stack } from '@mui/material';
-import { Form, message, notification, Spin, Input, Select } from 'antd';
+import { Form, message, notification, Spin, Select, Button, Space, Card } from 'antd';
 import { useParams, useNavigate } from 'react-router-dom';
 
 import { CotizacionProps, CotizacionEstado, TipoPago } from '@/types/cotizacion.types';
@@ -38,8 +37,17 @@ const QuotesPageForm = () => {
           const quoteData = await getCotizacionById(Number(id));
           setCurrentQuote(quoteData);
 
+          // Helper to safely get nested ID or ID directly
+          const getEmpresaId = (empresa: any) => {
+            if (typeof empresa === 'object' && empresa !== null && 'id' in empresa) {
+              return empresa.id;
+            }
+            return quoteData.empresaId;
+          };
+
           const formValues: Record<string, unknown> = {
-            empresa: (quoteData.empresa as { id: number })?.id || quoteData.empresaId,
+            codigoCotizacion: quoteData.codigoCotizacion,
+            empresa: getEmpresaId(quoteData.empresa),
             cliente: quoteData.cliente,
             contactoCliente: quoteData.contactoClienteId,
             contactoClienteComplete: quoteData.contactoCliente,
@@ -152,12 +160,8 @@ const QuotesPageForm = () => {
           fechaCotizacion: baseQuoteData.fechaCotizacion || dayjs().format('YYYY-MM-DD'),
         });
         notification.success({ message: 'La cotización fue creada correctamente' });
-        form.resetFields();
-        // Recargar las cotizaciones en el contexto global
-        await obtainQuotes();
       }
 
-      navigate('/quotes');
     } catch (error: unknown) {
       console.error('Error al guardar cotización:', error);
       const errorMessage = (error as { response?: { data?: { message?: string } }; message?: string })?.response?.data?.message ||
@@ -188,61 +192,65 @@ const QuotesPageForm = () => {
   }, [isEditing, form]);
 
   return (
-    <Box>
+    <div>
       <Spin spinning={loading} size="large" tip="..:: Espere mientras finaliza la operación ::..">
-        <Form form={form} onFinish={handleFinish}>
-          <Stack direction="column" spacing={2}>
+        <Form form={form} onFinish={handleFinish} layout="vertical">
+          <Space direction="vertical" size="large" style={{ width: '100%' }}>
             <QuotesFormFirstStep form={form} isEditing={isEditing} quoteId={id} />
             <QuotesFormSecondStep form={form} />
             <QuotesFormThirdStep form={form} />
 
             {/* Campos adicionales y botón de submit */}
-            <Stack direction="column" spacing={2} sx={{ p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
-              <Stack direction="row" spacing={2} sx={{ flexWrap: 'wrap' }}>
-                <Form.Item
-                  name="estado"
-                  label="Estado"
-                  rules={[{ required: isEditing, message: 'Seleccione el estado' }]}
-                  style={{ minWidth: 200 }}
-                >
-                  <Select placeholder="Seleccione estado">
-                    {estadoOptions.map(option => (
-                      <Select.Option key={option.value} value={option.value}>
-                        {option.label}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </Stack>
+            <Card style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                  <Form.Item
+                    name="estado"
+                    label="Estado"
+                    rules={[{ required: isEditing, message: 'Seleccione el estado' }]}
+                    style={{ minWidth: 200, marginBottom: 0 }}
+                  >
+                    <Select placeholder="Seleccione estado">
+                      {estadoOptions.map(option => (
+                        <Select.Option key={option.value} value={option.value}>
+                          {option.label}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </div>
 
-              <Stack direction="row" spacing={2} justifyContent="flex-end">
-                <Button
-                  variant="outlined"
-                  onClick={() => navigate('/quotes')}
-                  disabled={loading}
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  disabled={loading}
-                  sx={{
-                    bgcolor: 'primary.main',
-                    color: 'white',
-                    '&:hover': {
-                      bgcolor: 'primary.dark',
-                    },
-                  }}
-                >
-                  {isEditing ? 'Actualizar Cotización' : 'Crear Cotización'}
-                </Button>
-              </Stack>
-            </Stack>
-          </Stack>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px' }}>
+                  <Button
+                    onClick={
+                      async () => {
+                        await obtainQuotes();
+                        form.resetFields();
+                        navigate('/quotes');
+                      }
+                    }
+                    disabled={loading}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    disabled={loading}
+                    style={{
+                      backgroundColor: '#1890ff',
+                      borderColor: '#1890ff'
+                    }}
+                  >
+                    {isEditing ? 'Actualizar Cotización' : 'Crear Cotización'}
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          </Space>
         </Form>
       </Spin>
-    </Box>
+    </div>
   );
 };
 

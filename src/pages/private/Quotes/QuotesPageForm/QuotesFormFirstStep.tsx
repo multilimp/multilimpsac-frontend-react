@@ -1,17 +1,15 @@
-import { Fragment, useState } from 'react';
-import { Form, FormInstance, notification } from 'antd';
-import { Box, IconButton, Grid, Stack, Typography } from '@mui/material';
-import { StepItemContent } from '../../Sales/SalesPageForm/smallcomponents';
+import { Fragment, useState, useEffect } from 'react';
+import { Form, FormInstance, notification, Row, Col, Typography, Button } from 'antd';
+import { PrinterOutlined, UserOutlined, PhoneOutlined, FileTextOutlined } from '@ant-design/icons';
+import { StepItemContentAntd } from './StepItemContentAntd';
 import SelectCompanies from '@/components/selects/SelectCompanies';
-import { Handshake, Print } from '@mui/icons-material';
 import DatePickerAntd from '@/components/DatePickerAnt';
 import ClientSelectorModal from '../../Clients/components/ClientSelectorModal';
 import SelectContactsByClient from '@/components/selects/SelectContactsByClient';
 import { ClientProps } from '@/services/clients/clients';
-import PersonOutline from '@mui/icons-material/PersonOutline';
-import Phone from '@mui/icons-material/Phone';
 import dayjs from 'dayjs';
-import { useEffect } from 'react';
+
+const { Text, Title } = Typography;
 
 export const requiredField = { required: true, message: 'Campo requerido' };
 
@@ -38,7 +36,7 @@ const QuotesFormFirstStep = ({ form, isEditing, quoteId }: { form: FormInstance;
       });
       return;
     }
-    
+
     try {
       const { printCotizacion } = await import('../../../../services/print/print.requests');
       await printCotizacion(Number(quoteId));
@@ -58,29 +56,29 @@ const QuotesFormFirstStep = ({ form, isEditing, quoteId }: { form: FormInstance;
         const contactCargo = getFieldValue('cargoContacto') || '';
         const contactPhone = getFieldValue('celularContacto') || '';
         return (
-          <Box
-            sx={{
+          <div
+            style={{
               display: 'flex',
               alignItems: 'center',
-              gap: 4,
+              gap: '32px',
               width: '100%',
               margin: '-4px'
             }}
           >
-            <Stack direction="row" alignItems="center" spacing={1} sx={{ flex: 1 }}>
-              <PersonOutline sx={{ color: '#bfc6d1', fontSize: 28 }} />
-              <Typography component="span" fontWeight={700} color="#e5e7eb" fontSize={14}>
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <UserOutlined style={{ color: '#bfc6d1', fontSize: '28px' }} />
+              <Text strong style={{ color: '#e5e7eb', fontSize: '14px' }}>
                 {contactCargo || '—'}
-              </Typography>
-              <Typography component="span" color="#e5e7eb" fontSize={14} sx={{ ml: 0.5 }}>
+              </Text>
+              <Text style={{ color: '#e5e7eb', fontSize: '14px', marginLeft: '4px' }}>
                 {contactName || ''}
-              </Typography>
-              <Phone sx={{ color: '#bfc6d1', fontSize: 24 }} />
-              <Typography color="#e5e7eb" fontSize={14}>
+              </Text>
+              <PhoneOutlined style={{ color: '#bfc6d1', fontSize: '24px', marginLeft: '8px' }} />
+              <Text style={{ color: '#e5e7eb', fontSize: '14px' }}>
                 {contactPhone || '—'}
-              </Typography>
-            </Stack>
-            <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+              </Text>
+            </div>
+            <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
               <Form.Item name="contactoCliente" noStyle>
                 <SelectContactsByClient
                   placeholder="Contacto"
@@ -97,21 +95,21 @@ const QuotesFormFirstStep = ({ form, isEditing, quoteId }: { form: FormInstance;
                     });
                     updateFechaActualizacion();
                   }}
-                  style={{ backgroundColor: 'inherit' }}
+                  style={{ backgroundColor: 'inherit', width: '200px' }}
                 />
               </Form.Item>
-            </Box>
-          </Box>
+            </div>
+          </div>
         );
       }}
     </Form.Item>
   );
 
   return (
-    <StepItemContent
+    <StepItemContentAntd
       showHeader
       showFooter
-      ResumeIcon={Handshake}
+      ResumeIcon={FileTextOutlined}
       onClickSearch={() => setOpenClients(true)}
       resumeContent={
         <Form.Item noStyle shouldUpdate>
@@ -119,18 +117,18 @@ const QuotesFormFirstStep = ({ form, isEditing, quoteId }: { form: FormInstance;
             const cliente: ClientProps | null = getFieldValue('cliente');
             return (
               <Fragment>
-                <Typography variant="h6" sx={{ fontWeight: 600, color: '#ffffff' }}>
-                  {`${getFieldValue('idCotizacion') ?? 'ID Cotización'}`}
-                </Typography>
-                <Typography sx={{ fontWeight: 300, color: '#ffffff', opacity: 0.8, fontSize: '0.875rem' }}>
+                <Title level={3} style={{ color: '#ffffff', margin: 0 }}>
+                  {`${getFieldValue('codigoCotizacion')}`}
+                </Title>
+                <Text style={{ color: '#ffffff', opacity: 0.8, fontSize: '0.875rem', display: 'block' }}>
                   {cliente
                     ? `${cliente.razonSocial ?? 'Cliente seleccionado'}`
                     : 'Cliente no seleccionado'}
-                </Typography>
+                </Text>
                 {cliente && (
-                  <Typography sx={{ fontWeight: 300, color: '#ffffff', opacity: 0.7, fontSize: '0.85rem' }}>
+                  <Text style={{ color: '#ffffff', opacity: 0.7, fontSize: '0.85rem', display: 'block' }}>
                     RUC: {cliente.ruc ?? '—'}
-                  </Typography>
+                  </Text>
                 )}
               </Fragment>
             );
@@ -139,59 +137,60 @@ const QuotesFormFirstStep = ({ form, isEditing, quoteId }: { form: FormInstance;
       }
       footerContent={renderFooterContent()}
       resumeButtons={
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <IconButton
-            sx={{
-              border: '1px solid',
-              borderRadius: 1,
-              color: '#04BA6B',
-              zIndex: 900,
-              padding: 1.5,
-              minWidth: 44,
-              minHeight: 44,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-            onClick={() => {
-              printQuote();
-            }}
-          >
-            <Print sx={{ fontSize: 20 }} />
-          </IconButton>
-        </Box>
+        <div style={{ display: 'flex', gap: '16px' }}>
+          {isEditing && (
+            <Button
+              icon={<PrinterOutlined style={{ fontSize: '20px' }} />}
+              type="default"
+              ghost
+              style={{
+                borderColor: '#04BA6B',
+                color: '#04BA6B',
+                width: '44px',
+                height: '44px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: 0
+              }}
+              onClick={() => {
+                printQuote();
+              }}
+            />
+          )}
+        </div>
       }
     >
       <Form.Item name="cliente" noStyle />
-      <Typography variant="h6" sx={{ margin: 1, mb: 2 }}>
+      <Title level={5} style={{ margin: '8px 0 16px 0' }}>
         Empresa y fecha de cotización
-      </Typography>
-      <Grid container columnSpacing={2} rowSpacing={2}>
-        <Grid size={{ xs: 12, md: 4 }}>
+      </Title>
+      <Row gutter={[16, 16]}>
+        <Col xs={24} md={8}>
           <Form.Item name="empresa" rules={[requiredField]}>
             <SelectCompanies
               label="Empresa"
               onChange={updateFechaActualizacion}
             />
           </Form.Item>
-        </Grid>
-        <Grid size={{ xs: 12, md: 4 }}>
+        </Col>
+        <Col xs={24} md={8}>
           <Form.Item name="fechaCotizacion" rules={[requiredField]} initialValue={dayjs()}>
             <DatePickerAntd
               label="Fecha de Cotización"
               onChange={updateFechaActualizacion}
             />
           </Form.Item>
-        </Grid>
-        <Grid size={{ xs: 12, md: 4 }}>
+        </Col>
+        <Col xs={24} md={8}>
           <Form.Item name="fechaEntrega">
             <DatePickerAntd
               label="Fecha de Entrega"
               onChange={updateFechaActualizacion}
             />
           </Form.Item>
-        </Grid>
-      </Grid>
+        </Col>
+      </Row>
 
       {openClients ? (
         <ClientSelectorModal
@@ -199,9 +198,8 @@ const QuotesFormFirstStep = ({ form, isEditing, quoteId }: { form: FormInstance;
           onSelected={(data) => form.setFieldValue('cliente', data)}
         />
       ) : null}
-    </StepItemContent>
+    </StepItemContentAntd>
   );
 };
 
 export default QuotesFormFirstStep;
-

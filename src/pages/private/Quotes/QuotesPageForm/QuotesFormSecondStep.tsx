@@ -1,43 +1,42 @@
-import { Form, FormInstance, Input } from 'antd';
-import { Grid, Typography } from '@mui/material';
-import { StepItemContent } from '../../Sales/SalesPageForm/smallcomponents';
+import { Form, FormInstance, Input, Row, Col, Typography } from 'antd';
+import { StepItemContentAntd } from './StepItemContentAntd';
 import InputAntd from '@/components/InputAntd';
 
 const { TextArea } = Input;
+const { Title } = Typography;
 
 const QuotesFormSecondStep = ({ form }: { form: FormInstance }) => {
   return (
-    <StepItemContent
-    >
-      <Typography variant="h6" sx={{ margin: 1, mb: 2 }}>
+    <StepItemContentAntd>
+      <Title level={5} style={{ margin: '8px 0 16px 0' }}>
         Lugar de entrega
-      </Typography>
-      <Grid container columnSpacing={2} rowSpacing={2}>
-        <Grid size={{ xs: 12 }}>
+      </Title>
+      <Row gutter={[16, 16]}>
+        <Col xs={24}>
           <Form.Item name="direccionEntrega">
             <InputAntd placeholder="Dirección de entrega" />
           </Form.Item>
-        </Grid>
-        
-        <Grid size={{ xs: 12, md: 4 }}>
+        </Col>
+
+        <Col xs={24} md={8}>
           <Form.Item name="departamentoEntrega">
             <InputAntd placeholder="Departamento" />
           </Form.Item>
-        </Grid>
-        
-        <Grid size={{ xs: 12, md: 4 }}>
+        </Col>
+
+        <Col xs={24} md={8}>
           <Form.Item name="provinciaEntrega">
-            <InputAntd placeholder="Provincia"  />
+            <InputAntd placeholder="Provincia" />
           </Form.Item>
-        </Grid>
-        
-        <Grid size={{ xs: 12, md: 4 }}>
+        </Col>
+
+        <Col xs={24} md={8}>
           <Form.Item name="distritoEntrega">
-            <InputAntd placeholder="Distrito"  />
+            <InputAntd placeholder="Distrito" />
           </Form.Item>
-        </Grid>
-        
-        <Grid size={{ xs: 12 }}>
+        </Col>
+
+        <Col xs={24}>
           <Form.Item name="referenciaEntrega">
             <TextArea
               placeholder="Referencia de entrega (opcional)"
@@ -46,11 +45,10 @@ const QuotesFormSecondStep = ({ form }: { form: FormInstance }) => {
               showCount
             />
           </Form.Item>
-        </Grid>
-      </Grid>
-    </StepItemContent>
+        </Col>
+      </Row>
+    </StepItemContentAntd>
   );
 };
 
 export default QuotesFormSecondStep;
-
