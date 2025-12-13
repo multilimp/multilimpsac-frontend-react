@@ -231,7 +231,7 @@ const QuotesPageForm = () => {
                     }
                     disabled={loading}
                   >
-                    Cancelar
+                    Regresar
                   </Button>
                   <Button
                     type="primary"
