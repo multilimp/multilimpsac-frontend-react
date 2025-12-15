@@ -83,3 +83,16 @@ export const formattedDateTime = (value?: null | Date | string, format = 'DD/MM/
   if (!date.isValid()) return defaultText ?? '';
   return date.format(format);
 };
+
+// Helper: normaliza fechas para AntD DatePicker.
+// - Si llega en UTC con sufijo 'Z' (ISO), mantiene UTC para evitar desfase de 1 día en zonas horarias -05, etc.
+// - Para formatos sin zona horaria (YYYY-MM-DD), usa dayjs normal.
+export const toPickerDate = (value?: null | string | Date): dayjs.Dayjs | null => {
+  if (!value) return null;
+
+  if (typeof value === 'string' && value.includes('T') && value.endsWith('Z')) {
+    return dayjs.utc(value);
+  }
+
+  return dayjs(value);
+};

@@ -21,7 +21,7 @@ type ProductoRecord = {
 const getEmptyProductRecord = (): ProductoRecord => ({
   codigo: '',
   descripcion: '',
-  unidadMedida: '',
+  unidadMedida: 'UND',
   cantidad: '',
   cantidadAlmacen: '',
   precioUnitario: '',
@@ -84,7 +84,6 @@ const QuotesFormThirdStep = ({ form }: { form: FormInstance }) => {
           <SelectGeneric
             size="large"
             style={{ width: '100%' }}
-            defaultValue="und"
           >
             {unidadesMedida.map(unidad => (
               <Option key={unidad} value={unidad}>{unidad}</Option>

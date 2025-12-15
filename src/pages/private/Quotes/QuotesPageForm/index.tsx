@@ -9,6 +9,7 @@ import QuotesFormFirstStep from './QuotesFormFirstStep';
 import QuotesFormSecondStep from './QuotesFormSecondStep';
 import QuotesFormThirdStep from './QuotesFormThirdStep';
 import dayjs from 'dayjs';
+import { toPickerDate } from '@/utils/functions';
 
 type ProductoRecord = {
   codigo: string;
@@ -57,8 +58,9 @@ const QuotesPageForm = () => {
             tipoPago: quoteData.tipoPago,
             notaPago: quoteData.notaPago ?? '',
             notaPedido: quoteData.notaPedido ?? '',
-            fechaCotizacion: dayjs(quoteData.fechaCotizacion),
-            fechaEntrega: quoteData.fechaEntrega ? dayjs(quoteData.fechaEntrega) : null,
+            // AntD DatePicker espera un objeto dayjs; además, si llega en UTC (Z) hay que mantener UTC para no desfazar 1 día.
+            fechaCotizacion: toPickerDate(quoteData.fechaCotizacion),
+            fechaEntrega: toPickerDate(quoteData.fechaEntrega),
             direccionEntrega: quoteData.direccionEntrega ?? '',
             distritoEntrega: quoteData.distritoEntrega ?? '',
             provinciaEntrega: quoteData.provinciaEntrega ?? '',
