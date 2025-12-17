@@ -7,7 +7,7 @@ import { SaleProps } from '@/services/sales/sales';
 import { StepItemContent } from '../../Sales/SalesPageForm/smallcomponents';
 import SimpleFileUpload from '@/components/SimpleFileUpload';
 import { getBillingHistoryByOrdenCompraId } from '@/services/billings/billings.request';
-import { formatCurrency, formattedDate, formattedDateTime } from '@/utils/functions';
+import { formatCurrency, formattedDate, formattedDateTime, toPickerDate } from '@/utils/functions';
 import { ProviderOrderProps } from '@/services/providerOrders/providerOrders';
 import { estadoOptions, ESTADOS, estadoBgMap } from '@/utils/constants';
 import { getOpsByOrdenCompra } from '@/services/trackings/trackings.request';
@@ -633,7 +633,7 @@ const BillingFormContent = ({ sale }: BillingFormContentProps) => {
                 <div style={{ marginTop: '1.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
                   <PaymentsList
                     payments={sale.ordenCompraPrivada.pagos.map(p => ({
-                      date: dayjs(p.fechaPago),
+                      date: toPickerDate(p.fechaPago),
                       bank: p.bancoPago,
                       description: p.descripcionPago,
                       file: p.archivoPago || null,

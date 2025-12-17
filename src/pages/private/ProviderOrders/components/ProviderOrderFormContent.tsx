@@ -49,6 +49,7 @@ import { useAppContext } from '@/context';
 import { PermissionsEnum } from '@/services/users/permissions.enum';
 import { RolesEnum } from '@/services/users/user.enum';
 import SelectGeneric from '@/components/selects/SelectGeneric';
+import { toPickerDate } from '@/utils/functions';
 
 interface ProviderOrderFormContentProps {
   sale: SaleProps;
@@ -330,7 +331,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
         productos: productosFormatted,
         pagosProveedor: Array.isArray(orderData.pagos) && orderData.pagos.length > 0
           ? (orderData.pagos as any[]).map((pago: any): PagoRecord => ({
-            date: pago.fechaPago ? dayjs(pago.fechaPago) : null,
+            date: toPickerDate(pago.fechaPago),
             bank: pago.bancoPago || '',
             description: pago.descripcionPago || '',
             file: pago.archivoPago || null,
@@ -367,7 +368,7 @@ const calculateProductTotals = (form: any, fieldName: number) => {
             notaPago: transporte.notaPago || '',
             pagosTransporte: Array.isArray(transporte.pagos) && transporte.pagos.length > 0
               ? (transporte.pagos as any[]).map((pago: any): PagoRecord => ({
-                date: pago.fechaPago ? dayjs(pago.fechaPago) : null,
+                date: toPickerDate(pago.fechaPago),
                 bank: pago.bancoPago || '',
                 description: pago.descripcionPago || '',
                 file: pago.archivoPago || null,
