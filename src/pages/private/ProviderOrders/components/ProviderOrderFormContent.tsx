@@ -811,10 +811,10 @@ const calculateProductTotals = (form: any, fieldName: number) => {
       estadoPago: payment.status
     }));
 
-    const formaPago = form.getFieldValue('formaPago');
+    const tipoPago = form.getFieldValue('tipoPago');
     const notaPago = form.getFieldValue('notaPago');
 
-    await handlePaymentsUpdate(formattedPayments, formaPago, notaPago);
+    await handlePaymentsUpdate(formattedPayments, tipoPago, notaPago);
 
     form.setFieldValue('pagosProveedor', payments);
   };
