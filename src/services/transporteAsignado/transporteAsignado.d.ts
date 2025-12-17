@@ -22,7 +22,8 @@ export interface TransporteAsignadoProps {
     estadoPago: string | null;
     montoFlete: number | null;
     montoFletePagado: number | null;
-    grt: string | null;
+    guiaRemision: string | null;
+    archivoFactura: string | null;
     almacenId: number | null;
     createdAt: string;
     updatedAt: string;

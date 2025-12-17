@@ -66,11 +66,12 @@ const requiredField = { required: true, message: 'Requerido' };
 interface TransportPaymentsProps {
   transporteId: number;
   montoFlete: number;
+  montoFletePagado?: number;
   form: FormInstance;
   fieldName: number;
 }
 
-const TransportPayments = ({ transporteId, montoFlete, form, fieldName }: TransportPaymentsProps) => {
+const TransportPayments = ({ transporteId, montoFlete, montoFletePagado, form, fieldName }: TransportPaymentsProps) => {
   const { handlePaymentsUpdate } = usePayments({
     entityType: 'transporteAsignado',
     entityId: transporteId,
@@ -124,7 +125,7 @@ const TransportPayments = ({ transporteId, montoFlete, form, fieldName }: Transp
               payments={pagosTransporte}
               tipoPago={estadoPago}
               notaPago={notaPago}
-              montoTotal={montoFlete}
+              montoTotal={montoFletePagado ?? montoFlete}
               mode="edit"
               entityType="TRANSPORT"
               entityId={transporteId}
@@ -641,6 +642,7 @@ const TransportsSection = ({ form, isTreasury, isPrivateSale = false, incluyeTra
                             label="Nota de transporte"
                             type="textarea"
                             size="large"
+                            disabled={isTreasury}
                             style={{
                               border: '1px solid #007bff',
                               borderRadius: '8px',
@@ -666,6 +668,7 @@ const TransportsSection = ({ form, isTreasury, isPrivateSale = false, incluyeTra
                                     label="Seleccionar Almacén"
                                     placeholder="Elige el almacén de destino"
                                     size="large"
+                                    disabled={isTreasury}
                                     style={{
                                       border: '1px solid #007bff',
                                       borderRadius: '8px',
@@ -692,7 +695,7 @@ const TransportsSection = ({ form, isTreasury, isPrivateSale = false, incluyeTra
                         <Form.Item
                           name={[field.name, 'cotizacion']}
                         >
-                          <SimpleFileUpload
+                          <SimpleFileUpload editable={isTreasury ? false : true}
                           />
                         </Form.Item>
                       </Grid>
@@ -709,6 +712,7 @@ const TransportsSection = ({ form, isTreasury, isPrivateSale = false, incluyeTra
                             min={0}
                             step={0.01}
                             placeholder="0.00"
+                            disabled={isTreasury}
                             style={{
                               width: '100%',
                               border: '1px solid #007bff',
@@ -723,30 +727,84 @@ const TransportsSection = ({ form, isTreasury, isPrivateSale = false, incluyeTra
                       </Grid>
                       {isTreasury && (
                         <Grid size={12}>
-                          <Divider sx={{ mx: 2 }} />
+                          <Divider sx={{ mx: 2, mb: 2 }} />
                           <Form.Item noStyle shouldUpdate>
                             {({ getFieldValue }) => {
-                              const transporteData = getFieldValue(['transportes', field.name]);
+                              const transporteData = getFieldValue(['transportes', field.name]) || {};
                               const transporteId = transporteData?.id;
                               const montoFlete = Number(transporteData?.flete || 0);
-
-                              if (!transporteId) {
-                                return (
-                                  <Box sx={{ mt: 2, p: 3, bgcolor: '#f8f9fa', borderRadius: 1, textAlign: 'center' }}>
-                                    <Typography color="text.secondary">
-                                      Guarda el transporte primero para gestionar pagos
-                                    </Typography>
-                                  </Box>
-                                );
-                              }
+                              const montoPagado = Number(
+                                transporteData?.montoFletePagado ??
+                                transporteData?.montoFlete ??
+                                0
+                              );
+                              const numeroFactura = transporteData?.numeroFactura || '—';
+                              const archivoFactura = transporteData?.archivoFactura || transporteData?.facturaArchivo || transporteData?.facturaUrl;
+                              const numeroGrt = transporteData?.numeroGrt || transporteData?.grt || '—';
+                              const archivoGrt = transporteData?.archivoGrt || transporteData?.grtArchivo || transporteData?.grtUrl;
 
                               return (
-                                <TransportPayments
-                                  transporteId={transporteId}
-                                  montoFlete={montoFlete}
-                                  form={form}
-                                  fieldName={field.name}
-                                />
+                                <Stack spacing={2} sx={{ mt: 1 }}>
+                                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                                    <Box sx={{ flex: 1, p: 2, border: '1px solid #e0e0e0', borderRadius: 1, bgcolor: '#fafafa' }}>
+                                      <Typography variant="subtitle2" color="text.secondary" fontWeight={600}>Flete pagado</Typography>
+                                      <Typography variant="h6" sx={{ mt: 0.5 }}>{montoPagado ? `S/ ${montoPagado.toFixed(2)}` : '—'}</Typography>
+                                      <Typography variant="body2" color="text.secondary">Cotizado: {montoFlete ? `S/ ${montoFlete.toFixed(2)}` : '—'}</Typography>
+                                    </Box>
+                                    <Box sx={{ flex: 1, p: 2, border: '1px solid #e0e0e0', borderRadius: 1, bgcolor: '#fafafa' }}>
+                                      <Typography variant="subtitle2" color="text.secondary" fontWeight={600}>Factura Transporte</Typography>
+                                      <Typography variant="body1" fontWeight={600} sx={{ mt: 0.5 }}>{numeroFactura}</Typography>
+                                      {archivoFactura ? (
+                                        <MuiButton
+                                          size="small"
+                                          variant="outlined"
+                                          href={archivoFactura}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                          sx={{ mt: 1 }}
+                                        >
+                                          Ver archivo
+                                        </MuiButton>
+                                      ) : (
+                                        <Typography variant="body2" color="text.secondary">Sin archivo</Typography>
+                                      )}
+                                    </Box>
+                                    <Box sx={{ flex: 1, p: 2, border: '1px solid #e0e0e0', borderRadius: 1, bgcolor: '#fafafa' }}>
+                                      <Typography variant="subtitle2" color="text.secondary" fontWeight={600}>GRT</Typography>
+                                      <Typography variant="body1" fontWeight={600} sx={{ mt: 0.5 }}>{numeroGrt}</Typography>
+                                      {archivoGrt ? (
+                                        <MuiButton
+                                          size="small"
+                                          variant="outlined"
+                                          href={archivoGrt}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                          sx={{ mt: 1 }}
+                                        >
+                                          Ver archivo
+                                        </MuiButton>
+                                      ) : (
+                                        <Typography variant="body2" color="text.secondary">Sin archivo</Typography>
+                                      )}
+                                    </Box>
+                                  </Stack>
+
+                                  {transporteId ? (
+                                    <TransportPayments
+                                      transporteId={transporteId}
+                                      montoFlete={montoFlete}
+                                      montoFletePagado={montoPagado}
+                                      form={form}
+                                      fieldName={field.name}
+                                    />
+                                  ) : (
+                                    <Box sx={{ mt: 1, p: 3, bgcolor: '#f8f9fa', borderRadius: 1, textAlign: 'center' }}>
+                                      <Typography color="text.secondary">
+                                        Guarda el transporte primero para gestionar pagos
+                                      </Typography>
+                                    </Box>
+                                  )}
+                                </Stack>
                               );
                             }}
                           </Form.Item>
