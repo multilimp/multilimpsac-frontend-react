@@ -124,6 +124,7 @@ const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRe
         monto_venta: formatCurrency(item.montoVenta ? parseInt(item.montoVenta, 10) : 0),
         cue: item?.cliente?.codigoUnidadEjecutora ?? defaultText,
         direccion_entrega: `${item.direccionEntrega ?? ''} - ${item.departamentoEntrega ?? ''} ${item.provinciaEntrega ?? ''} ${item.distritoEntrega ?? ''} - ${item.referenciaEntrega ?? ''}`,
+        etapa_siaf: item.etapaSiaf ?? defaultText,
         fecha_estado_cobranza: formattedDate(item.fechaEstadoCobranza, undefined, defaultText),
         fecha_cobranza: formattedDate(item.fechaEstadoCobranza, undefined, defaultText),
         neto_cobrado: formatCurrency(netoCobradoNumber),
@@ -175,7 +176,7 @@ const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRe
     {
       title: 'Código OC',
       dataIndex: 'codigo_venta',
-      width: 120,
+      width: 180,
       render: (value, record: CollectionsRow) => {
         if (!record?.rawdata?.id) {
           return <span>{value}</span>;
@@ -257,6 +258,7 @@ const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRe
     { title: 'CUE', dataIndex: 'cue', width: 120, sort: true, filter: true },
     { title: 'Neto Cobrado', dataIndex: 'neto_cobrado', width: 180, sort: true, filter: true },
     { title: 'Fecha de Cobranza', dataIndex: 'fecha_cobranza', width: 180, sort: true, filter: true },
+    { title: 'Etapa Siaf', dataIndex: 'etapa_siaf', width: 120, sort: true, filter: true },
     { title: 'Penalidad', dataIndex: 'penalidad', width: 100, sort: true, filter: true },
     { title: 'Número Factura', dataIndex: 'numero_factura', width: 160, sort: true, filter: true },
     { title: 'Fecha Factura', dataIndex: 'fecha_factura', width: 130, sort: true, filter: true },
