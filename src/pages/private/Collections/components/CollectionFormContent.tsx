@@ -329,13 +329,20 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
   const [cobradores, setCobradores] = useState<UserProps[]>([]);
   const [loadingCobradores, setLoadingCobradores] = useState(false);
 
-  // Cálculos automáticos
+  // Cálculos automáticos con redondeo a centavos para evitar desfaces por flotantes
+  const toCents = (value: number) => Math.round((Number.isFinite(value) ? value : 0) * 100);
   const importeTotal = parseFloat(sale.montoVenta || '0');
-  const valorRetencion = (importeTotal * porcentajeRetencionEditable / 100).toFixed(2);
-  const valorDetraccion = (importeTotal * porcentajeDetraccionEditable / 100).toFixed(2);
+  const importeCents = toCents(importeTotal);
+  const valorRetencionCents = toCents(importeTotal * (porcentajeRetencionEditable / 100));
+  const valorDetraccionCents = toCents(importeTotal * (porcentajeDetraccionEditable / 100));
+  const penalidadCents = toCents(currentPenalidad);
 
-  // Calcular neto cobrado usando la penalidad actual del estado
-  const netoCobrado = (importeTotal - parseFloat(valorRetencion) - parseFloat(valorDetraccion) - currentPenalidad).toFixed(2); useEffect(() => {
+  const netoCobradoCents = importeCents - valorRetencionCents - valorDetraccionCents - penalidadCents;
+  const netoCobrado = Math.max(netoCobradoCents, 0) / 100;
+  const valorRetencion = valorRetencionCents / 100;
+  const valorDetraccion = valorDetraccionCents / 100;
+
+  useEffect(() => {
     loadInitialData();
   }, [sale.id]);
 
@@ -1221,7 +1228,7 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                         style={{ width: '120px' }}
                       />
                       <Typography variant="body2" sx={{ alignSelf: 'center', fontWeight: 600, color: 'primary.main' }}>
-                        = {formatCurrency(parseFloat(valorRetencion))}
+                        = {formatCurrency(valorRetencion)}
                       </Typography>
                     </Stack>
                   </Form.Item>
@@ -1239,7 +1246,7 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                         style={{ width: '120px' }}
                       />
                       <Typography variant="body2" sx={{ alignSelf: 'center', fontWeight: 600, color: 'primary.main' }}>
-                        = {formatCurrency(parseFloat(valorDetraccion))}
+                        = {formatCurrency(valorDetraccion)}
                       </Typography>
                     </Stack>
                   </Form.Item>
@@ -1256,7 +1263,7 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
                     <InputAntd
                       disabled
                       placeholder="0.00"
-                      value={formatCurrency(parseFloat(netoCobrado))}
+                      value={formatCurrency(netoCobrado)}
                       style={{ backgroundColor: '#f5f5f5' }}
                     />
                   </Form.Item>

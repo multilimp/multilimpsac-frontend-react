@@ -72,11 +72,42 @@ const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRe
       const numeroFactura = firstBilling?.factura ?? defaultText;
       const fechaFactura = formattedDate(firstBilling?.fechaFactura, undefined, defaultText);
 
+      // Calcular neto cobrado (usa API si viene; si no, calculamos en centavos para evitar desfases por flotantes)
+      const toCents = (value: number) => Math.round((Number.isFinite(value) ? value : 0) * 100);
+      const montoVentaNumber = parseFloat(item.montoVenta ?? '0');
+      const retencionPct = parseFloat(item.facturacion?.retencion ?? '0');
+      const detraccionPct = parseFloat(item.facturacion?.detraccion ?? '0');
+      const penalidadNumber = parseFloat(item.penalidad ?? '0');
+      const netoCobradoFromApi = item.netoCobrado !== undefined && item.netoCobrado !== null
+        ? parseFloat(item.netoCobrado)
+        : NaN;
+
+      const importeCents = toCents(montoVentaNumber);
+      const retencionCents = toCents(montoVentaNumber * (retencionPct / 100));
+      const detraccionCents = toCents(montoVentaNumber * (detraccionPct / 100));
+      const penalidadCents = toCents(penalidadNumber);
+      const netoCalculadoCents = Math.max(importeCents - retencionCents - detraccionCents - penalidadCents, 0);
+      const netoCobradoNumber = Number.isFinite(netoCobradoFromApi) ? netoCobradoFromApi : netoCalculadoCents / 100;
+
       // Obtener el código OCF sin prefijo (solo el número)
       const fullCodigoOcf = item?.codigoOcf || '';
       const codigoOcfSoloNumero = fullCodigoOcf.includes('-')
         ? fullCodigoOcf.split('-').slice(1).join('-').trim()
         : fullCodigoOcf;
+
+      // Calcular contador de cobranza: días desde entrega OC hasta fecha de cobranza; si no hay fecha de cobranza, usar hoy
+      const hasEntrega = Boolean(item.fechaEntregaOc);
+      let contadorCobranza = defaultText;
+      if (hasEntrega) {
+        const entregaTime = new Date(item.fechaEntregaOc as string).getTime();
+        const finTime = item.fechaEstadoCobranza
+          ? new Date(item.fechaEstadoCobranza).getTime()
+          : Date.now();
+        if (Number.isFinite(entregaTime) && Number.isFinite(finTime)) {
+          const diffDays = Math.max(0, Math.round((finTime - entregaTime) / (24 * 60 * 60 * 1000)));
+          contadorCobranza = `${diffDays} días`;
+        }
+      }
 
       return {
         id: item.id,
@@ -89,13 +120,15 @@ const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRe
         catalogo: item?.catalogoEmpresa?.nombre ?? defaultText,
         fecha_formalizacion: formattedDate(item.fechaForm, undefined, defaultText),
         fecha_max_entrega: formattedDate(item.fechaMaxForm, undefined, defaultText),
+        fecha_entrega_oc: formattedDate(item.fechaEntregaOc, undefined, defaultText),
         monto_venta: formatCurrency(item.montoVenta ? parseInt(item.montoVenta, 10) : 0),
         cue: item?.cliente?.codigoUnidadEjecutora ?? defaultText,
         direccion_entrega: `${item.direccionEntrega ?? ''} - ${item.departamentoEntrega ?? ''} ${item.provinciaEntrega ?? ''} ${item.distritoEntrega ?? ''} - ${item.referenciaEntrega ?? ''}`,
         fecha_estado_cobranza: formattedDate(item.fechaEstadoCobranza, undefined, defaultText),
-        neto_cobrado: formatCurrency(item.netoCobrado ? parseInt(item.netoCobrado, 10) : 0),
-        penalidad: formatCurrency(item.penalidad ? parseInt(item.penalidad, 10) : 0),
-        contador_cobranza: (item.fechaEntregaOc && item.fechaEstadoCobranza) ? `${Math.round((new Date(item.fechaEstadoCobranza).getTime() - new Date(item.fechaEntregaOc).getTime()) / (24 * 60 * 60 * 1000))} días` : defaultText,
+        fecha_cobranza: formattedDate(item.fechaEstadoCobranza, undefined, defaultText),
+        neto_cobrado: formatCurrency(netoCobradoNumber),
+        penalidad: formatCurrency(item.penalidad ? parseFloat(item.penalidad) : 0),
+        contador_cobranza: contadorCobranza,
         numero_factura: numeroFactura,
         fecha_factura: fechaFactura,
         cobrador: item?.cobrador?.nombre || 'Sin asignar',
@@ -186,8 +219,9 @@ const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRe
         </Tooltip>
       ),
     },
-    { title: 'Fecha Formalización', dataIndex: 'fecha_formalizacion', width: 150, sort: true, filter: true },
-    { title: 'Fecha Máx. Entrega', dataIndex: 'fecha_max_entrega', width: 150, sort: true, filter: true },
+    { title: 'Fecha Formalización', dataIndex: 'fecha_formalizacion', width: 180, sort: true, filter: true },
+    { title: 'Fecha Máx. Entrega', dataIndex: 'fecha_max_entrega', width: 180, sort: true, filter: true },
+    { title: 'Fecha Entrega OC', dataIndex: 'fecha_entrega_oc', width: 180, sort: true, filter: true },
     {
       title: 'Fuera de plazo',
       dataIndex: 'fuera_plazo',
@@ -221,10 +255,10 @@ const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRe
     { title: 'Cobrador', dataIndex: 'cobrador', width: 150, sort: true, filter: true },
 
     { title: 'CUE', dataIndex: 'cue', width: 120, sort: true, filter: true },
-    { title: 'Neto Cobrado', dataIndex: 'neto_cobrado', width: 120, sort: true, filter: true },
+    { title: 'Neto Cobrado', dataIndex: 'neto_cobrado', width: 180, sort: true, filter: true },
+    { title: 'Fecha de Cobranza', dataIndex: 'fecha_cobranza', width: 180, sort: true, filter: true },
     { title: 'Penalidad', dataIndex: 'penalidad', width: 100, sort: true, filter: true },
-    { title: 'Próxima Gestión', dataIndex: 'fecha_proxima_gestion', width: 150, sort: true, filter: true },
-    { title: 'Número Factura', dataIndex: 'numero_factura', width: 140, sort: true, filter: true },
+    { title: 'Número Factura', dataIndex: 'numero_factura', width: 160, sort: true, filter: true },
     { title: 'Fecha Factura', dataIndex: 'fecha_factura', width: 130, sort: true, filter: true },
     {
       title: 'OCE',
@@ -254,7 +288,7 @@ const CollectionsTable: React.FC<CollectionsTableProps> = ({ data, loading, onRe
     {
       title: 'Contador Cobranza',
       dataIndex: 'contador_cobranza',
-      width: 120,
+      width: 180,
       sort: true,
       filter: true
     },
