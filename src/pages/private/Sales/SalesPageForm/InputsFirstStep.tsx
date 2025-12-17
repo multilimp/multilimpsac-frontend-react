@@ -58,38 +58,6 @@ const InputsFirstStep = ({
     <Stack direction="column" spacing={2}>
       <Form.Item name="clientePrivate" noStyle />
 
-      {/* Datos de Factura - Sin wrapper azul */}
-      <StepItemContent>
-        <Box sx={{ backgroundColor: 'white', m: -2, p: 4, borderRadius: 1 }}>
-          <Typography variant="h6" fontWeight={600} component={Stack} direction="row" alignItems="flex-end" spacing={1} mb={2} sx={{ color: '#1f2937' }}>
-            <Receipt />
-            Datos de Factura
-          </Typography>
-          <Grid container columnSpacing={2} rowSpacing={2}>
-            {/* Fila única: Estado de Factura, Fecha Factura y Documento PDF */}
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Form.Item name="facturaStatus" rules={conditionalRules}>
-                <SelectGeneric showSearch={false} label="Estado de Factura" options={facturaStatusOptions} />
-              </Form.Item>
-            </Grid>
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Form.Item name="documentoFactura" rules={conditionalRules}>
-                <SimpleFileUpload
-                  label="Documento de Factura"
-                  onChange={(file) => form.setFieldValue('documentoFactura', file)}
-                  editable={!disableInvoiceFields}
-                />
-              </Form.Item>
-            </Grid>
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Form.Item name="fechaFactura" rules={conditionalRules}>
-                <DatePickerAntd label="Fecha factura" disabled={disableInvoiceFields} />
-              </Form.Item>
-            </Grid>
-          </Grid>
-        </Box>
-      </StepItemContent>
-
       {/* Pagos Recibidos - Componente Reutilizable */}
       {/* Lista de Pagos - Solo visible en modo edición */}
       {isEditing && (

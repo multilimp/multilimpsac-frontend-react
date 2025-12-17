@@ -156,11 +156,14 @@ const mapPaymentItemsToPayload = (payments: TransportePaymentItem[]): PaymentDat
   estadoPago: payment.status
 }));
 
-interface TransporteAsignadoUI extends TransporteAsignadoProps {
+type TransporteAsignadoUI = Omit<
+  TransporteAsignadoProps,
+  'archivoFactura' | 'guiaRemision' | 'guiaTransporte'
+> & {
   archivoFactura?: string | null;
   guiaRemision?: string | null;
   guiaTransporte?: string | null;
-}
+};
 
 const scheduleFields = ['fechaRecepcion', 'fechaProgramada', 'fechaDespacho'] as const;
 
@@ -1905,7 +1908,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                                   textAlign: 'left'
                                 }}>
                                   <LocalShippingIcon sx={{ color: '#10b981', fontSize: 14, mr: 1 }} />
-                                  Transportes Asignados ({op.transportesAsignados.length})
+                                  Transportes Asignados
                                 </Typography>
                               </Box>
 
@@ -1962,7 +1965,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
                                         borderBottom: '2px solid #e5e7eb',
                                         textAlign: 'right'
                                       }}>
-                                        Flete
+                                        Flete Cotizado
                                       </TableCell>
                                       <TableCell sx={{
                                         fontSize: '0.875rem',

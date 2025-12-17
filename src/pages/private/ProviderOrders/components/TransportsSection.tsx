@@ -57,6 +57,8 @@ const getEmptyTransformRecord = () => ({
   nota: '',
   flete: '',
   cotizacion: null,
+  estadoPago: 'PENDIENTE',
+  pagosTransporte: [],
 });
 
 export { getEmptyTransformRecord };
