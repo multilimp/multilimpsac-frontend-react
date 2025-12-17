@@ -140,11 +140,15 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
   // Callback inmediato para cambios en nota/tipo
   const handleTipoPagoChange = (value: string) => {
     setLocalTipoPago(value);
-    onTipoPagoChange?.(value);
+    if (mode === 'readonly') {
+      onTipoPagoChange?.(value);
+    }
   };
   const handleNotaPagoChange = (value: string) => {
     setLocalNotaPago(value);
-    onNotaPagoChange?.(value);
+    if (mode === 'readonly') {
+      onNotaPagoChange?.(value);
+    }
   };
 
   // Handler para abrir modal de pagos
@@ -389,9 +393,9 @@ const PaymentsList: React.FC<PaymentsListProps> = ({
                 type="primary"
                 disabled={!validatePayments()}
                 onClick={() => {
-                  onPaymentsChange?.(localPayments);
                   onTipoPagoChange?.(localTipoPago);
                   onNotaPagoChange?.(localNotaPago);
+                  onPaymentsChange?.(localPayments);
                   setIsDirty(false);
                 }}
                 style={{
