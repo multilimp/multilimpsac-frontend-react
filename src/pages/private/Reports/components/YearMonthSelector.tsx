@@ -7,6 +7,7 @@ interface YearMonthSelectorProps {
         mesFin: number;
     };
     setParams: (params: any) => void;
+    stacked?: boolean;
 }
 
 const meses = [
@@ -24,7 +25,47 @@ const meses = [
     { value: 12, label: 'Diciembre' },
 ];
 
-const YearMonthSelector = ({ params, setParams }: YearMonthSelectorProps) => {
+const YearMonthSelector = ({ params, setParams, stacked = false }: YearMonthSelectorProps) => {
+    if (stacked) {
+        return (
+            <div>
+                <div className="report-field">
+                    <label className="report-label">Año</label>
+                    <Select
+                        className="report-select"
+                        style={{ width: '100%' }}
+                        value={params.year}
+                        onChange={(year) => setParams({ ...params, year })}
+                        options={Array.from({ length: 5 }, (_, i) => ({
+                            value: new Date().getFullYear() - i,
+                            label: String(new Date().getFullYear() - i),
+                        }))}
+                    />
+                </div>
+                <div className="report-field">
+                    <label className="report-label">Mes Inicio</label>
+                    <Select
+                        className="report-select"
+                        style={{ width: '100%' }}
+                        value={params.mesInicio}
+                        onChange={(mesInicio) => setParams({ ...params, mesInicio })}
+                        options={meses}
+                    />
+                </div>
+                <div className="report-field">
+                    <label className="report-label">Mes Fin</label>
+                    <Select
+                        className="report-select"
+                        style={{ width: '100%' }}
+                        value={params.mesFin}
+                        onChange={(mesFin) => setParams({ ...params, mesFin })}
+                        options={meses}
+                    />
+                </div>
+            </div>
+        );
+    }
+
     return (
         <Row gutter={16}>
             <Col xs={24} sm={12} md={8}>

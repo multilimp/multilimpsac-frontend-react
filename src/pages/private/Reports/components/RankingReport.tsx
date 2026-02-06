@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Card, Row, Col, Select, Button, Space, Empty, Spin, Table, message } from 'antd';
+import { useState } from 'react';
+import { Select, Button, Spin, Table, message } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
 import { fetchRankingReport, exportRankingReport } from '@/services/reports/reports.api';
 
@@ -64,121 +64,113 @@ const RankingReport = () => {
     ];
 
     return (
-        <div style={{ paddingTop: 24, paddingBottom: 24 }}>
-            <Row gutter={24} style={{ minHeight: 'calc(100vh - 200px)' }}>
-                {/* Columna Izquierda - Filtros */}
-                <Col xs={24} sm={24} md={6}>
-                    <Card title="Filtros" style={{ position: 'sticky', top: 20 }}>
-                        <Space direction="vertical" style={{ width: '100%' }} size="large">
-                            <div className="form-group">
-                                <label>Año</label>
-                                <Select
-                                    style={{ width: '100%' }}
-                                    value={year}
-                                    onChange={setYear}
-                                    options={Array.from({ length: 5 }, (_, i) => ({
-                                        value: new Date().getFullYear() - i,
-                                        label: String(new Date().getFullYear() - i),
-                                    }))}
-                                />
+        <div className="report-columns">
+            <section className="report-filters">
+                <div className="report-filter-title">Filtros</div>
+                <div className="report-field">
+                    <label className="report-label">Año</label>
+                    <Select
+                        className="report-select"
+                        style={{ width: '100%' }}
+                        value={year}
+                        onChange={setYear}
+                        options={Array.from({ length: 5 }, (_, i) => ({
+                            value: new Date().getFullYear() - i,
+                            label: String(new Date().getFullYear() - i),
+                        }))}
+                    />
+                </div>
+
+                <div className="report-field">
+                    <label className="report-label">Mes</label>
+                    <Select
+                        className="report-select"
+                        style={{ width: '100%' }}
+                        placeholder="Todos los meses"
+                        allowClear
+                        value={mes || undefined}
+                        onChange={setMes}
+                        options={meses}
+                    />
+                </div>
+
+                <div className="report-field">
+                    <label className="report-label">Región</label>
+                    <Select
+                        className="report-select"
+                        style={{ width: '100%' }}
+                        placeholder="Todas las regiones"
+                        allowClear
+                        disabled={!data}
+                        value={region || undefined}
+                        onChange={setRegion}
+                        options={regiones.map((r) => ({ value: r, label: r }))}
+                    />
+                </div>
+
+                <div className="report-actions">
+                    <Button className="report-btn-primary" size="large" onClick={handleGenerateReport} loading={loading}>
+                        Generar Reporte
+                    </Button>
+                    <Button
+                        className="report-btn-secondary"
+                        icon={<DownloadOutlined />}
+                        size="large"
+                        onClick={handleExportExcel}
+                        disabled={!data}
+                    >
+                        Descargar Excel
+                    </Button>
+                </div>
+            </section>
+
+            <section className="report-content">
+                {loading && (
+                    <div className="report-card" style={{ textAlign: 'center', padding: 50 }}>
+                        <Spin size="large" />
+                    </div>
+                )}
+
+                {!loading && data && (
+                    <>
+                        <div className="report-content-header">
+                            <div className="report-content-title">Resumen</div>
+                            <Button className="report-btn-secondary" onClick={() => window.print()}>
+                                Imprimir
+                            </Button>
+                        </div>
+                        <div className="report-summary-grid">
+                            <div className="report-stat" style={{ borderLeftColor: '#edbd01' }}>
+                                <div className="report-stat-value">{data.resumen.totalOrdenes}</div>
+                                <div className="report-stat-label">Total Ordenes</div>
                             </div>
-
-                            <div className="form-group">
-                                <label>Mes (Opcional)</label>
-                                <Select
-                                    style={{ width: '100%' }}
-                                    placeholder="Todos los meses"
-                                    allowClear
-                                    value={mes || undefined}
-                                    onChange={setMes}
-                                    options={meses}
-                                />
+                            <div className="report-stat" style={{ borderLeftColor: '#db6c1a' }}>
+                                <div className="report-stat-value">S/ {data.resumen.montoTotal.toFixed(2)}</div>
+                                <div className="report-stat-label">Monto Total</div>
                             </div>
+                        </div>
 
-                            <div className="form-group">
-                                <label>Región (Opcional)</label>
-                                <Select
-                                    style={{ width: '100%' }}
-                                    placeholder="Todas las regiones"
-                                    allowClear
-                                    disabled={!data}
-                                    value={region || undefined}
-                                    onChange={setRegion}
-                                    options={regiones.map((r) => ({ value: r, label: r }))}
-                                />
-                            </div>
+                        <div className="report-card">
+                            <div className="report-card-title">Top 3 Departamentos</div>
+                            <Table
+                                columns={deptoColumns}
+                                dataSource={data.topDepartamentos.map((row: any, idx: number) => ({ ...row, key: idx }))}
+                                pagination={false}
+                            />
+                        </div>
+                        <div className="report-card">
+                            <div className="report-card-title">Top 3 Clientes</div>
+                            <Table
+                                columns={clienteColumns}
+                                dataSource={data.topClientes.map((row: any, idx: number) => ({ ...row, key: idx }))}
+                                pagination={false}
+                            />
+                        </div>
+                    </>
+                )}
 
-                            <Space direction="vertical" style={{ width: '100%' }}>
-                                <Button type="primary" size="large" onClick={handleGenerateReport} loading={loading} block>
-                                    Generar Reporte
-                                </Button>
-                                <Button icon={<DownloadOutlined />} size="large" onClick={handleExportExcel} disabled={!data} block>
-                                    Descargar Excel
-                                </Button>
-                            </Space>
-                        </Space>
-                    </Card>
-                </Col>
-
-                {/* Columna Derecha - Contenido */}
-                <Col xs={24} sm={24} md={18}>
-                    {loading && (
-                        <Card style={{ textAlign: 'center', padding: 50 }}>
-                            <Spin size="large" />
-                        </Card>
-                    )}
-
-                    {!loading && data && (
-                        <Space direction="vertical" style={{ width: '100%' }} size="large">
-                            <Row gutter={16}>
-                                <Col xs={24} sm={12} md={12}>
-                                    <Card>
-                                        <div style={{ textAlign: 'center' }}>
-                                            <div style={{ fontSize: 24, fontWeight: 'bold', color: '#1890ff' }}>
-                                                {data.resumen.totalOrdenes}
-                                            </div>
-                                            <div style={{ color: '#666', marginTop: 8 }}>Total Órdenes</div>
-                                        </div>
-                                    </Card>
-                                </Col>
-                                <Col xs={24} sm={12} md={12}>
-                                    <Card>
-                                        <div style={{ textAlign: 'center' }}>
-                                            <div style={{ fontSize: 24, fontWeight: 'bold', color: '#52c41a' }}>
-                                                S/ {data.resumen.montoTotal.toFixed(2)}
-                                            </div>
-                                            <div style={{ color: '#666', marginTop: 8 }}>Monto Total</div>
-                                        </div>
-                                    </Card>
-                                </Col>
-                            </Row>
-
-                            <Row gutter={16}>
-                                <Col xs={24} lg={12}>
-                                    <Card title="Top 3 Departamentos">
-                                        <Table
-                                            columns={deptoColumns}
-                                            dataSource={data.topDepartamentos.map((row: any, idx: number) => ({ ...row, key: idx }))}
-                                            pagination={false}
-                                        />
-                                    </Card>
-                                </Col>
-                                <Col xs={24} lg={12}>
-                                    <Card title="Top 3 Clientes">
-                                        <Table
-                                            columns={clienteColumns}
-                                            dataSource={data.topClientes.map((row: any, idx: number) => ({ ...row, key: idx }))}
-                                            pagination={false}
-                                        />
-                                    </Card>
-                                </Col>
-                            </Row>
-                        </Space>
-                    )}
-
-                    {!loading && !data && <Empty description="Genere un reporte para ver los datos" />}
-                </Col>
-            </Row>
+                {!loading && !data && <div className="report-empty">Genere un reporte para ver los datos</div>}
+            </section>
         </div>
     );
 };

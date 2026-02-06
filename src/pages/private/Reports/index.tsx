@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { Tabs, Card, Typography } from 'antd';
-import { TrendingUp, BarChart, LocalShipping, Star, Receipt } from '@mui/icons-material';
+import './reports.css';
 import VentasReport from './components/VentasReport';
 import EntregasReport from './components/EntregasReport';
 import CobranzaReport from './components/CobranzaReport';
@@ -9,79 +8,42 @@ import UtilidadReport from './components/UtilidadReport';
 
 const Reports = () => {
   const [activeTab, setActiveTab] = useState('ventas');
+  const [ventasFetched, setVentasFetched] = useState(false);
 
-  const tabItems = [
+  const reports = [
     {
       key: 'ventas',
-      label: (
-        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <TrendingUp style={{ fontSize: 18 }} />
-          Ventas
-        </span>
+      label: 'Ventas',
+      component: (
+        <VentasReport
+          autoFetch={!ventasFetched && activeTab === 'ventas'}
+          onAutoFetchComplete={() => setVentasFetched(true)}
+        />
       ),
-      children: <VentasReport />,
     },
-    {
-      key: 'entregas',
-      label: (
-        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <LocalShipping style={{ fontSize: 18 }} />
-          Entregas OC
-        </span>
-      ),
-      children: <EntregasReport />,
-    },
-    {
-      key: 'cobranza',
-      label: (
-        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Receipt style={{ fontSize: 18 }} />
-          Cobranza
-        </span>
-      ),
-      children: <CobranzaReport />,
-    },
-    {
-      key: 'ranking',
-      label: (
-        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Star style={{ fontSize: 18 }} />
-          Ranking
-        </span>
-      ),
-      children: <RankingReport />,
-    },
-    {
-      key: 'utilidad',
-      label: (
-        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <BarChart style={{ fontSize: 18 }} />
-          Utilidad
-        </span>
-      ),
-      children: <UtilidadReport />,
-    },
+    { key: 'entregas', label: 'Entregas OC', component: <EntregasReport /> },
+    { key: 'cobranza', label: 'Cobranza', component: <CobranzaReport /> },
+    { key: 'ranking', label: 'Ranking', component: <RankingReport /> },
+    { key: 'utilidad', label: 'Utilidad', component: <UtilidadReport /> },
   ];
 
-  return (
-    <div style={{ padding: 24 }}>
-      <Card
-        style={{ marginBottom: 24 }}
-        styles={{
-          body: { padding: 0 },
-        }}
-      >
-        <div style={{ padding: '24px' }}>
-          <Typography.Title level={2} style={{ margin: 0 }}>
-            Panel de Reportes
-          </Typography.Title>
-          <Typography.Text type="secondary">
-            Acceda a diferentes tipos de reportes para analizar el desempeño del negocio
-          </Typography.Text>
-        </div>
-      </Card>
+  const activeReport = reports.find((report) => report.key === activeTab) || reports[0];
 
-      <Tabs activeKey={activeTab} onChange={setActiveTab} items={tabItems} size="large" />
+  return (
+    <div className="reports-shell">
+      <nav className="reports-tabs">
+        {reports.map((report) => (
+          <button
+            key={report.key}
+            type="button"
+            className={`reports-tab-button ${activeTab === report.key ? 'active' : ''}`}
+            onClick={() => setActiveTab(report.key)}
+          >
+            {report.label}
+          </button>
+        ))}
+      </nav>
+      <main className="reports-workspace">{activeReport.component}</main>
     </div>
   );
 };

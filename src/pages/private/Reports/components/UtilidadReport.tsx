@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Card, Row, Col, Select, Button, Space, Empty, Spin, Table, message } from 'antd';
+import { useState } from 'react';
+import { Select, Button, Spin, Table, message } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { fetchUtilidadReport, exportUtilidadReport } from '@/services/reports/reports.api';
@@ -69,119 +69,103 @@ const UtilidadReport = () => {
     })) || [];
 
     return (
-        <div style={{ paddingTop: 24, paddingBottom: 24 }}>
-            <Row gutter={24} style={{ minHeight: 'calc(100vh - 200px)' }}>
-                {/* Columna Izquierda - Filtros */}
-                <Col xs={24} sm={24} md={6}>
-                    <Card title="Filtros" style={{ position: 'sticky', top: 20 }}>
-                        <Space direction="vertical" style={{ width: '100%' }} size="large">
-                            <YearMonthSelector params={params} setParams={setParams} />
+        <div className="report-columns">
+            <section className="report-filters">
+                <div className="report-filter-title">Filtros</div>
+                <YearMonthSelector params={params} setParams={setParams} stacked />
 
-                            <div className="form-group">
-                                <label>Empresa (Opcional)</label>
-                                <Select
-                                    style={{ width: '100%' }}
-                                    placeholder="Todas las empresas"
-                                    allowClear
-                                    value={empresaId || undefined}
-                                    onChange={setEmpresaId}
-                                    options={empresas.map((e) => ({ value: e.id, label: e.razonSocial }))}
-                                />
+                <div className="report-field">
+                    <label className="report-label">Empresa</label>
+                    <Select
+                        className="report-select"
+                        style={{ width: '100%' }}
+                        placeholder="Todas las empresas"
+                        allowClear
+                        value={empresaId || undefined}
+                        onChange={setEmpresaId}
+                        options={empresas.map((e) => ({ value: e.id, label: e.razonSocial }))}
+                    />
+                </div>
+
+                <div className="report-actions">
+                    <Button className="report-btn-primary" size="large" onClick={handleGenerateReport} loading={loading}>
+                        Generar Reporte
+                    </Button>
+                    <Button
+                        className="report-btn-secondary"
+                        icon={<DownloadOutlined />}
+                        size="large"
+                        onClick={handleExportExcel}
+                        disabled={!data}
+                    >
+                        Descargar Excel
+                    </Button>
+                </div>
+            </section>
+
+            <section className="report-content">
+                {loading && (
+                    <div className="report-card" style={{ textAlign: 'center', padding: 50 }}>
+                        <Spin size="large" />
+                    </div>
+                )}
+
+                {!loading && data && (
+                    <>
+                        <div className="report-content-header">
+                            <div className="report-content-title">Resumen</div>
+                            <Button className="report-btn-secondary" onClick={() => window.print()}>
+                                Imprimir
+                            </Button>
+                        </div>
+                        <div className="report-summary-grid">
+                            <div className="report-stat" style={{ borderLeftColor: '#1890ff' }}>
+                                <div className="report-stat-value">{data.resumen.totalOrdenes}</div>
+                                <div className="report-stat-label">Total de Ordenes</div>
                             </div>
+                            <div className="report-stat" style={{ borderLeftColor: '#52c41a' }}>
+                                <div className="report-stat-value">S/ {data.resumen.totalVentas.toFixed(2)}</div>
+                                <div className="report-stat-label">Total de Ventas</div>
+                            </div>
+                            <div className="report-stat" style={{ borderLeftColor: '#f5222d' }}>
+                                <div className="report-stat-value">S/ {data.resumen.totalUtilidad.toFixed(2)}</div>
+                                <div className="report-stat-label">Total de Utilidad</div>
+                            </div>
+                            <div className="report-stat" style={{ borderLeftColor: '#000000' }}>
+                                <div className="report-stat-value">{data.resumen.porcentajeUtilidadPromedio.toFixed(2)}%</div>
+                                <div className="report-stat-label">Utilidad Promedio</div>
+                            </div>
+                        </div>
 
-                            <Space direction="vertical" style={{ width: '100%' }}>
-                                <Button type="primary" size="large" onClick={handleGenerateReport} loading={loading} block>
-                                    Generar Reporte
-                                </Button>
-                                <Button icon={<DownloadOutlined />} size="large" onClick={handleExportExcel} disabled={!data} block>
-                                    Descargar Excel
-                                </Button>
-                            </Space>
-                        </Space>
-                    </Card>
-                </Col>
+                        <div className="report-card">
+                            <div className="report-card-title">Rangos de Utilidad</div>
+                            <ResponsiveContainer width="100%" height={300}>
+                                <BarChart data={chartData}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="rango" />
+                                    <YAxis yAxisId="left" />
+                                    <YAxis yAxisId="right" orientation="right" />
+                                    <Tooltip />
+                                    <Legend />
+                                    <Bar yAxisId="left" dataKey="cantidad" fill="#08b8ab" name="Cantidad" />
+                                    <Bar yAxisId="right" dataKey="utilidad" fill="#000000" name="Utilidad (S/)" />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
 
-                {/* Columna Derecha - Contenido */}
-                <Col xs={24} sm={24} md={18}>
-                    {loading && (
-                        <Card style={{ textAlign: 'center', padding: 50 }}>
-                            <Spin size="large" />
-                        </Card>
-                    )}
+                        <div className="report-card">
+                            <div className="report-card-title">Detalle de Rangos</div>
+                            <Table
+                                columns={columns}
+                                dataSource={data.tabla.map((row: any, idx: number) => ({ ...row, key: idx }))}
+                                pagination={false}
+                            />
+                        </div>
+                    </>
+                )}
 
-                    {!loading && data && (
-                        <Space direction="vertical" style={{ width: '100%' }} size="large">
-                            <Row gutter={16}>
-                                <Col xs={24} sm={12} md={6}>
-                                    <Card>
-                                        <div style={{ textAlign: 'center' }}>
-                                            <div style={{ fontSize: 24, fontWeight: 'bold', color: '#1890ff' }}>
-                                                {data.resumen.totalOrdenes}
-                                            </div>
-                                            <div style={{ color: '#666', marginTop: 8 }}>Total de Órdenes</div>
-                                        </div>
-                                    </Card>
-                                </Col>
-                                <Col xs={24} sm={12} md={6}>
-                                    <Card>
-                                        <div style={{ textAlign: 'center' }}>
-                                            <div style={{ fontSize: 24, fontWeight: 'bold', color: '#52c41a' }}>
-                                                S/ {data.resumen.totalVentas.toFixed(2)}
-                                            </div>
-                                            <div style={{ color: '#666', marginTop: 8 }}>Total de Ventas</div>
-                                        </div>
-                                    </Card>
-                                </Col>
-                                <Col xs={24} sm={12} md={6}>
-                                    <Card>
-                                        <div style={{ textAlign: 'center' }}>
-                                            <div style={{ fontSize: 24, fontWeight: 'bold', color: '#f5222d' }}>
-                                                S/ {data.resumen.totalUtilidad.toFixed(2)}
-                                            </div>
-                                            <div style={{ color: '#666', marginTop: 8 }}>Total de Utilidad</div>
-                                        </div>
-                                    </Card>
-                                </Col>
-                                <Col xs={24} sm={12} md={6}>
-                                    <Card>
-                                        <div style={{ textAlign: 'center' }}>
-                                            <div style={{ fontSize: 24, fontWeight: 'bold', color: '#722ed1' }}>
-                                                {data.resumen.porcentajeUtilidadPromedio.toFixed(2)}%
-                                            </div>
-                                            <div style={{ color: '#666', marginTop: 8 }}>Utilidad Promedio</div>
-                                        </div>
-                                    </Card>
-                                </Col>
-                            </Row>
-
-                            <Card title="Rangos de Utilidad">
-                                <ResponsiveContainer width="100%" height={300}>
-                                    <BarChart data={chartData}>
-                                        <CartesianGrid strokeDasharray="3 3" />
-                                        <XAxis dataKey="rango" />
-                                        <YAxis yAxisId="left" />
-                                        <YAxis yAxisId="right" orientation="right" />
-                                        <Tooltip />
-                                        <Legend />
-                                        <Bar yAxisId="left" dataKey="cantidad" fill="#1890ff" name="Cantidad" />
-                                        <Bar yAxisId="right" dataKey="utilidad" fill="#f5222d" name="Utilidad (S/)" />
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            </Card>
-
-                            <Card title="Detalle de Rangos">
-                                <Table
-                                    columns={columns}
-                                    dataSource={data.tabla.map((row: any, idx: number) => ({ ...row, key: idx }))}
-                                    pagination={false}
-                                />
-                            </Card>
-                        </Space>
-                    )}
-
-                    {!loading && !data && <Empty description="Genere un reporte para ver los datos" />}
-                </Col>
-            </Row>
+                {!loading && !data && <div className="report-empty">Genere un reporte para ver los datos</div>}
+            </section>
         </div>
     );
 };
