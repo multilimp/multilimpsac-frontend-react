@@ -65,10 +65,11 @@ const RankingReport = () => {
 
     return (
         <div style={{ padding: 24 }}>
-            <Card title="Reporte de Ranking" style={{ marginBottom: 24 }}>
-                <Space direction="vertical" style={{ width: '100%' }} size="large">
-                    <Row gutter={16}>
-                        <Col xs={24} sm={12} md={6}>
+            <Row gutter={24} style={{ minHeight: 'calc(100vh - 200px)' }}>
+                {/* Columna Izquierda - Filtros */}
+                <Col xs={24} sm={24} md={6}>
+                    <Card title="Filtros" style={{ position: 'sticky', top: 20 }}>
+                        <Space direction="vertical" style={{ width: '100%' }} size="large">
                             <div className="form-group">
                                 <label>Año</label>
                                 <Select
@@ -81,8 +82,7 @@ const RankingReport = () => {
                                     }))}
                                 />
                             </div>
-                        </Col>
-                        <Col xs={24} sm={12} md={6}>
+
                             <div className="form-group">
                                 <label>Mes (Opcional)</label>
                                 <Select
@@ -94,8 +94,7 @@ const RankingReport = () => {
                                     options={meses}
                                 />
                             </div>
-                        </Col>
-                        <Col xs={24} sm={12} md={12}>
+
                             <div className="form-group">
                                 <label>Región (Opcional)</label>
                                 <Select
@@ -108,75 +107,78 @@ const RankingReport = () => {
                                     options={regiones.map((r) => ({ value: r, label: r }))}
                                 />
                             </div>
-                        </Col>
-                    </Row>
 
-                    <Space>
-                        <Button type="primary" size="large" onClick={handleGenerateReport} loading={loading}>
-                            Generar Reporte
-                        </Button>
-                        <Button icon={<DownloadOutlined />} size="large" onClick={handleExportExcel} disabled={!data}>
-                            Descargar Excel
-                        </Button>
-                    </Space>
-                </Space>
-            </Card>
+                            <Space direction="vertical" style={{ width: '100%' }}>
+                                <Button type="primary" size="large" onClick={handleGenerateReport} loading={loading} block>
+                                    Generar Reporte
+                                </Button>
+                                <Button icon={<DownloadOutlined />} size="large" onClick={handleExportExcel} disabled={!data} block>
+                                    Descargar Excel
+                                </Button>
+                            </Space>
+                        </Space>
+                    </Card>
+                </Col>
 
-            {loading && (
-                <Card style={{ textAlign: 'center', padding: 50 }}>
-                    <Spin size="large" />
-                </Card>
-            )}
+                {/* Columna Derecha - Contenido */}
+                <Col xs={24} sm={24} md={18}>
+                    {loading && (
+                        <Card style={{ textAlign: 'center', padding: 50 }}>
+                            <Spin size="large" />
+                        </Card>
+                    )}
 
-            {!loading && data && (
-                <>
-                    <Row gutter={16} style={{ marginBottom: 24 }}>
-                        <Col xs={24} sm={12} md={8}>
-                            <Card>
-                                <div style={{ textAlign: 'center' }}>
-                                    <div style={{ fontSize: 24, fontWeight: 'bold', color: '#1890ff' }}>
-                                        {data.resumen.totalOrdenes}
-                                    </div>
-                                    <div style={{ color: '#666', marginTop: 8 }}>Total Órdenes</div>
-                                </div>
-                            </Card>
-                        </Col>
-                        <Col xs={24} sm={12} md={8}>
-                            <Card>
-                                <div style={{ textAlign: 'center' }}>
-                                    <div style={{ fontSize: 24, fontWeight: 'bold', color: '#52c41a' }}>
-                                        S/ {data.resumen.montoTotal.toFixed(2)}
-                                    </div>
-                                    <div style={{ color: '#666', marginTop: 8 }}>Monto Total</div>
-                                </div>
-                            </Card>
-                        </Col>
-                    </Row>
+                    {!loading && data && (
+                        <Space direction="vertical" style={{ width: '100%' }} size="large">
+                            <Row gutter={16}>
+                                <Col xs={24} sm={12} md={12}>
+                                    <Card>
+                                        <div style={{ textAlign: 'center' }}>
+                                            <div style={{ fontSize: 24, fontWeight: 'bold', color: '#1890ff' }}>
+                                                {data.resumen.totalOrdenes}
+                                            </div>
+                                            <div style={{ color: '#666', marginTop: 8 }}>Total Órdenes</div>
+                                        </div>
+                                    </Card>
+                                </Col>
+                                <Col xs={24} sm={12} md={12}>
+                                    <Card>
+                                        <div style={{ textAlign: 'center' }}>
+                                            <div style={{ fontSize: 24, fontWeight: 'bold', color: '#52c41a' }}>
+                                                S/ {data.resumen.montoTotal.toFixed(2)}
+                                            </div>
+                                            <div style={{ color: '#666', marginTop: 8 }}>Monto Total</div>
+                                        </div>
+                                    </Card>
+                                </Col>
+                            </Row>
 
-                    <Row gutter={16} style={{ marginBottom: 24 }}>
-                        <Col xs={24} lg={12}>
-                            <Card title="Top 3 Departamentos">
-                                <Table
-                                    columns={deptoColumns}
-                                    dataSource={data.topDepartamentos.map((row: any, idx: number) => ({ ...row, key: idx }))}
-                                    pagination={false}
-                                />
-                            </Card>
-                        </Col>
-                        <Col xs={24} lg={12}>
-                            <Card title="Top 3 Clientes">
-                                <Table
-                                    columns={clienteColumns}
-                                    dataSource={data.topClientes.map((row: any, idx: number) => ({ ...row, key: idx }))}
-                                    pagination={false}
-                                />
-                            </Card>
-                        </Col>
-                    </Row>
-                </>
-            )}
+                            <Row gutter={16}>
+                                <Col xs={24} lg={12}>
+                                    <Card title="Top 3 Departamentos">
+                                        <Table
+                                            columns={deptoColumns}
+                                            dataSource={data.topDepartamentos.map((row: any, idx: number) => ({ ...row, key: idx }))}
+                                            pagination={false}
+                                        />
+                                    </Card>
+                                </Col>
+                                <Col xs={24} lg={12}>
+                                    <Card title="Top 3 Clientes">
+                                        <Table
+                                            columns={clienteColumns}
+                                            dataSource={data.topClientes.map((row: any, idx: number) => ({ ...row, key: idx }))}
+                                            pagination={false}
+                                        />
+                                    </Card>
+                                </Col>
+                            </Row>
+                        </Space>
+                    )}
 
-            {!loading && !data && <Empty description="Genere un reporte para ver los datos" />}
+                    {!loading && !data && <Empty description="Genere un reporte para ver los datos" />}
+                </Col>
+            </Row>
         </div>
     );
 };
