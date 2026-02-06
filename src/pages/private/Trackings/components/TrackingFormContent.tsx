@@ -77,7 +77,7 @@ import { RolesEnum } from '@/services/users/user.enum';
 import BillingHistory from '@/components/BillingHistory';
 import { BillingProps } from '@/services/billings/billings';
 import { getBillingHistoryByOrdenCompraId } from '@/services/billings/billings.request';
-import { getGestionesCobranza, createGestionCobranza, updateGestionCobranza, type GestionCobranza } from '@/services/cobranza/cobranza.service';
+import { getCobranzaByOrdenCompra, updateCobranzaFields } from '@/services/cobranza/cobranza.service';
 import { useGlobalInformation } from '@/context/GlobalInformationProvider';
 
 interface TrackingFormContentProps {
@@ -250,7 +250,6 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
   const [savingTransportePayments, setSavingTransportePayments] = useState(false);
 
   // Estados para gestión de cobranzas por OC
-  const [gestionesCobranza, setGestionesCobranza] = useState<GestionCobranza[]>([]);
   const [notaCobranzaOC, setNotaCobranzaOC] = useState('');
   const [originalNotaCobranzaOC, setOriginalNotaCobranzaOC] = useState('');
   const [notaCobranzaChanged, setNotaCobranzaChanged] = useState(false);
@@ -260,7 +259,7 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
     loadProviderOrders();
     initializeOCValues();
     loadTransportCompanies();
-    loadGestionesCobranza();
+    loadNotaCobranzaSeguimiento();
   }, [sale.id]);
 
   useEffect(() => {
@@ -1120,20 +1119,15 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
   };
 
   // Funciones para gestión de cobranzas por OC
-  const loadGestionesCobranza = async () => {
+  const loadNotaCobranzaSeguimiento = async () => {
     try {
-      const gestiones = await getGestionesCobranza(sale.id);
-      setGestionesCobranza(gestiones);
-
-      // Cargar la nota de cobranza más reciente si existe
-      const ultimaGestion = gestiones.find(g => g.notaGestion);
-      if (ultimaGestion?.notaGestion) {
-        setNotaCobranzaOC(ultimaGestion.notaGestion);
-        setOriginalNotaCobranzaOC(ultimaGestion.notaGestion);
-      }
+      const cobranzaData = await getCobranzaByOrdenCompra(sale.id);
+      const notaSeguimiento = cobranzaData.notaCobranzaSeguimiento || '';
+      setNotaCobranzaOC(notaSeguimiento);
+      setOriginalNotaCobranzaOC(notaSeguimiento);
+      setNotaCobranzaChanged(false);
     } catch (error) {
-      console.error('Error loading gestiones cobranza:', error);
-      setGestionesCobranza([]);
+      console.error('Error loading nota de cobranza seguimiento:', error);
     }
   };
 
@@ -1149,29 +1143,12 @@ const TrackingFormContent = ({ sale }: TrackingFormContentProps) => {
 
     setSavingNotaCobranza(true);
     try {
-      const gestionData: Partial<GestionCobranza> = {
-        ordenCompraId: sale.id,
-        fechaGestion: dayjs().format('YYYY-MM-DD'),
-        notaGestion: notaCobranzaOC.trim(),
-        usuarioId: 1 // TODO: Obtener del contexto de usuario
-      };
-
-      // Buscar si ya existe una gestión con nota
-      const existingGestion = gestionesCobranza.find(g => g.notaGestion);
-
-      if (existingGestion) {
-        // Actualizar gestión existente
-        await updateGestionCobranza(existingGestion.id!, gestionData);
-      } else {
-        // Crear nueva gestión
-        await createGestionCobranza(gestionData as Omit<GestionCobranza, 'id' | 'createdAt' | 'updatedAt'>);
-      }
+      await updateCobranzaFields(sale.id, {
+        notaCobranzaSeguimiento: notaCobranzaOC.trim()
+      });
 
       setOriginalNotaCobranzaOC(notaCobranzaOC);
       setNotaCobranzaChanged(false);
-
-      // Recargar gestiones
-      await loadGestionesCobranza();
 
       notification.success({
         message: 'Nota de cobranza guardada',
