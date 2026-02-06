@@ -370,12 +370,6 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
     load();
   }, [sale?.id]);
 
-  // Cargar nota de cobranza por OC
-  useEffect(() => {
-    if (sale?.id) {
-      loadNotaCobranzaOC();
-    }
-  }, [sale?.id]);
 
   const loadInitialData = async () => {
     setLoading(true);
@@ -401,6 +395,12 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
       cobradorForm.setFieldsValue({
         cobradorId: cobranzaData.cobradorId || undefined,
       });
+
+      // Cargar nota de cobranza en seguimiento (separada de gestiones)
+      const notaSeguimiento = cobranzaData.notaCobranzaSeguimiento || '';
+      setNotaCobranzaOC(notaSeguimiento);
+      setOriginalNotaCobranzaOC(notaSeguimiento);
+      setNotaCobranzaChanged(false);
 
       // Inicializar penalidad para cálculo de neto cobrado
       setCurrentPenalidad(parseFloat(cobranzaData.penalidad || '0'));
@@ -875,22 +875,6 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
     return option ? option.label : tipo;
   };
 
-  // Funciones para gestión de nota de cobranza por OC
-  const loadNotaCobranzaOC = async () => {
-    try {
-      const gestionesCobranza = await getGestionesCobranza(sale.id);
-
-      // Cargar la nota de cobranza más reciente si existe
-      const ultimaGestion = gestionesCobranza.find(g => g.notaGestion);
-      if (ultimaGestion?.notaGestion) {
-        setNotaCobranzaOC(ultimaGestion.notaGestion);
-        setOriginalNotaCobranzaOC(ultimaGestion.notaGestion);
-      }
-    } catch (error) {
-      console.error('Error loading nota cobranza OC:', error);
-    }
-  };
-
   const handleNotaCobranzaChange = (value: string) => {
     setNotaCobranzaOC(value);
     setNotaCobranzaChanged(value !== originalNotaCobranzaOC);
@@ -903,30 +887,12 @@ export const CollectionFormContent = ({ sale }: CollectionFormContentProps) => {
 
     setSavingNotaCobranza(true);
     try {
-      const gestionData: Partial<GestionCobranza> = {
-        ordenCompraId: sale.id,
-        fechaGestion: dayjs().format('YYYY-MM-DD'),
-        notaGestion: notaCobranzaOC.trim(),
-        usuarioId: user?.id || 1
-      };
-
-      // Buscar si ya existe una gestión con nota
-      const gestionesCobranza = await getGestionesCobranza(sale.id);
-      const existingGestion = gestionesCobranza.find(g => g.notaGestion);
-
-      if (existingGestion) {
-        // Actualizar gestión existente
-        await updateGestionCobranza(existingGestion.id!, gestionData);
-      } else {
-        // Crear nueva gestión
-        await createGestionCobranza(gestionData as Omit<GestionCobranza, 'id' | 'createdAt' | 'updatedAt'>);
-      }
+      await updateCobranzaFields(sale.id, {
+        notaCobranzaSeguimiento: notaCobranzaOC.trim()
+      });
 
       setOriginalNotaCobranzaOC(notaCobranzaOC);
       setNotaCobranzaChanged(false);
-
-      // Recargar gestiones
-      await loadGestiones();
 
       notification.success({
         message: 'Nota de cobranza guardada',
