@@ -70,7 +70,7 @@ const CobranzaReport = () => {
     })) || [];
 
     return (
-        <div style={{ padding: 24 }}>
+        <div style={{ paddingTop: 24, paddingBottom: 24 }}>
             <Row gutter={24} style={{ minHeight: 'calc(100vh - 200px)' }}>
                 {/* Columna Izquierda - Filtros */}
                 <Col xs={24} sm={24} md={6}>
