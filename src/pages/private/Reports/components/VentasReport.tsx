@@ -87,6 +87,38 @@ const VentasReport = () => {
         },
     ];
 
+    const monthlyColumns = [
+        { title: 'Mes', dataIndex: 'mes1', key: 'mes1' },
+        {
+            title: 'Total Ventas',
+            dataIndex: 'total1',
+            key: 'total1',
+            render: (value: number) => `S/ ${value.toFixed(2)}`,
+        },
+        { title: 'Mes', dataIndex: 'mes2', key: 'mes2' },
+        {
+            title: 'Total Ventas',
+            dataIndex: 'total2',
+            key: 'total2',
+            render: (value: number) => (value !== undefined ? `S/ ${value.toFixed(2)}` : ''),
+        },
+    ];
+
+    const monthlyTableData = (data?.mensualAnual?.meses || []).reduce((rows: any[], mes: string, i: number) => {
+        const rowIndex = Math.floor(i / 2);
+        if (!rows[rowIndex]) {
+            rows[rowIndex] = { key: rowIndex };
+        }
+        if (i % 2 === 0) {
+            rows[rowIndex].mes1 = mes;
+            rows[rowIndex].total1 = data?.mensualAnual?.datos?.[i] ?? 0;
+        } else {
+            rows[rowIndex].mes2 = mes;
+            rows[rowIndex].total2 = data?.mensualAnual?.datos?.[i] ?? 0;
+        }
+        return rows;
+    }, []);
+
     return (
         <div style={{ paddingTop: 24, paddingBottom: 24 }}>
             <Row gutter={24} style={{ minHeight: 'calc(100vh - 200px)' }}>
@@ -202,21 +234,35 @@ const VentasReport = () => {
                                 </Col>
                             </Row>
 
-                            {/* Gráfico mensual */}
-                            <Card title="Ventas Mensuales">
-                                <ResponsiveContainer width="100%" height={300}>
-                                    <BarChart data={data.gráficoMensual.meses.map((mes: string, i: number) => ({
-                                        mes,
-                                        monto: data.gráficoMensual.datos[i],
-                                    }))}>
-                                        <CartesianGrid strokeDasharray="3 3" />
-                                        <XAxis dataKey="mes" />
-                                        <YAxis />
-                                        <Tooltip formatter={(value: any) => `S/ ${value.toFixed(2)}`} />
-                                        <Bar dataKey="monto" fill="#1890ff" />
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            </Card>
+                            <Row gutter={16}>
+                                <Col xs={24} lg={18}>
+                                    {/* Gráfico mensual */}
+                                    <Card title="Ventas Mensuales">
+                                        <ResponsiveContainer width="100%" height={300}>
+                                            <BarChart data={data.gráficoMensual.meses.map((mes: string, i: number) => ({
+                                                mes,
+                                                monto: data.gráficoMensual.datos[i],
+                                            }))}>
+                                                <CartesianGrid strokeDasharray="3 3" />
+                                                <XAxis dataKey="mes" />
+                                                <YAxis />
+                                                <Tooltip formatter={(value: any) => `S/ ${value.toFixed(2)}`} />
+                                                <Bar dataKey="monto" fill="#1890ff" />
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    </Card>
+                                </Col>
+                                <Col xs={24} lg={6}>
+                                    <Card title="Ventas Anuales por Mes">
+                                        <Table
+                                            columns={monthlyColumns}
+                                            dataSource={monthlyTableData}
+                                            pagination={false}
+                                            size="small"
+                                        />
+                                    </Card>
+                                </Col>
+                            </Row>
 
                             {/* Tabla */}
                             <Card title="Detalle de Ventas">

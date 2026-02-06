@@ -117,7 +117,7 @@ export const exportToExcel = (data: any[], fileName: string, sheetName: string =
  * Exportar reporte de Ventas a Excel
  */
 export const exportVentasReport = (reportData: any) => {
-    const { tabla, resumen } = reportData;
+    const { tabla, resumen, mensualAnual } = reportData;
 
     // Crear sheet de resumen
     const resumeData = [
@@ -130,9 +130,15 @@ export const exportVentasReport = (reportData: any) => {
 
     const wsResumen = XLSX.utils.json_to_sheet(resumeData);
     const wsTabla = XLSX.utils.json_to_sheet(tabla);
+    const mensualData = (mensualAnual?.meses || []).map((mes: string, i: number) => ({
+        Mes: mes,
+        TotalVentas: mensualAnual?.datos?.[i] ?? 0,
+    }));
+    const wsMensual = XLSX.utils.json_to_sheet(mensualData);
 
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, wsResumen, 'Resumen');
+    XLSX.utils.book_append_sheet(wb, wsMensual, 'Mensual');
     XLSX.utils.book_append_sheet(wb, wsTabla, 'Detalle');
 
     XLSX.writeFile(wb, `Reporte-Ventas-${new Date().toISOString().split('T')[0]}.xlsx`);
